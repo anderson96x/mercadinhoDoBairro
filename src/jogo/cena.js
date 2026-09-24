@@ -48,19 +48,95 @@ export function criarProduto(id, escala = 1) {
   grupo.scale.setScalar(escala); return grupo;
 }
 
-function personagem(cor, pele = 0xf2c49c, jogador = false) {
+function braco(cor, pele, x) {
+  const grupo = new THREE.Group();
+  const superior = caixa(grupo, 0.16, 1, 0.18, cor, 0, 0, 0);
+  const inferior = caixa(grupo, 0.13, 1, 0.14, pele, 0, 0, 0);
+  const mao = esfera(grupo, 0.09, pele, 0, 0, 0);
+  grupo.userData = { superior, inferior, mao, ombro: new THREE.Vector3(x, 0.89, 0) };
+  return grupo;
+}
+
+function posicionarBraco(grupo, destino) {
+  const { superior, inferior, mao, ombro } = grupo.userData;
+  const cotovelo = ombro.clone().lerp(destino, 0.5);
+  cotovelo.x += Math.sign(ombro.x) * 0.08;
+  cotovelo.y -= 0.12;
+  for (const [parte, inicio, fim] of [[superior, ombro, cotovelo], [inferior, cotovelo, destino]]) {
+    const direcao = fim.clone().sub(inicio);
+    parte.position.copy(inicio).lerp(fim, 0.5);
+    parte.scale.y = direcao.length();
+    parte.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direcao.normalize());
+  }
+  mao.position.copy(destino);
+}
+
+function contornoArredondado(caminho, w, h, r) {
+  const x = -w / 2, y = -h / 2;
+  caminho.moveTo(x + r, y);
+  caminho.lineTo(x + w - r, y); caminho.quadraticCurveTo(x + w, y, x + w, y + r);
+  caminho.lineTo(x + w, y + h - r); caminho.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  caminho.lineTo(x + r, y + h); caminho.quadraticCurveTo(x, y + h, x, y + h - r);
+  caminho.lineTo(x, y + r); caminho.quadraticCurveTo(x, y, x + r, y);
+  return caminho;
+}
+
+function criarCesta(cor = 0xe50918, corBorda = 0xff2933, corAlca = 0x17191b) {
+  const cesta = new THREE.Group();
+  // Base menor, paredes inclinadas e duas fileiras de aberturas verticais.
+  const base = contornoArredondado(new THREE.Shape(), 0.8, 0.54, 0.08);
+  const fundo = objeto(new THREE.ExtrudeGeometry(base, { depth: 0.045, bevelEnabled: false, curveSegments: 3 }), cor);
+  fundo.rotation.x = -Math.PI / 2; cesta.add(fundo);
+  for (const [y, w, h, espessura, corAro] of [
+    [0.03, 0.81, 0.55, 0.06, cor],
+    [0.23, 0.88, 0.62, 0.055, cor],
+    [0.44, 0.97, 0.71, 0.065, corBorda]
+  ]) {
+    const aro = contornoArredondado(new THREE.Shape(), w, h, 0.09);
+    aro.holes.push(contornoArredondado(new THREE.Path(), w - 0.09, h - 0.09, 0.045));
+    const borda = objeto(new THREE.ExtrudeGeometry(aro, { depth: espessura, bevelEnabled: false, curveSegments: 3 }), corAro, 0, y, 0);
+    borda.rotation.x = -Math.PI / 2; cesta.add(borda);
+  }
+  for (const lado of [-1, 1]) {
+    for (let i = -3; i <= 3; i++) {
+      const tira = caixa(cesta, 0.065, 0.44, 0.045, cor, i * 0.125, 0.25, lado * 0.292);
+      tira.rotation.x = lado * 0.16;
+    }
+    for (let i = -2; i <= 2; i++) {
+      const tira = caixa(cesta, 0.045, 0.44, 0.065, cor, lado * 0.422, 0.25, i * 0.123);
+      tira.rotation.z = -lado * 0.16;
+    }
+  }
+  // Alça única, alta e com cantos arredondados, presa às laterais longas.
+  const alca = new THREE.Shape();
+  alca.moveTo(-0.35, 0.44); alca.lineTo(-0.35, 0.82);
+  alca.quadraticCurveTo(-0.35, 0.92, -0.25, 0.92);
+  alca.lineTo(0.25, 0.92); alca.quadraticCurveTo(0.35, 0.92, 0.35, 0.82);
+  alca.lineTo(0.35, 0.44); alca.lineTo(0.285, 0.44); alca.lineTo(0.285, 0.81);
+  alca.quadraticCurveTo(0.285, 0.855, 0.24, 0.855);
+  alca.lineTo(-0.24, 0.855); alca.quadraticCurveTo(-0.285, 0.855, -0.285, 0.81);
+  alca.lineTo(-0.285, 0.44); alca.closePath();
+  const pega = objeto(new THREE.ExtrudeGeometry(alca, { depth: 0.055, bevelEnabled: false, curveSegments: 4 }), corAlca, -0.0275, 0, 0);
+  pega.rotation.y = Math.PI / 2; cesta.add(pega);
+  cesta.userData.pega = new THREE.Vector3(0, 0.89, 0);
+  return cesta;
+}
+
+export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = []) {
   const g = new THREE.Group();
   const corpo = new THREE.Group(); g.add(corpo);
   const sombra = new THREE.Mesh(new THREE.CircleGeometry(0.38, 20), new THREE.MeshBasicMaterial({ color: 0x204c31, transparent: true, opacity: 0.13, depthWrite: false }));
   sombra.rotation.x = -Math.PI / 2; sombra.position.y = 0.014; g.add(sombra);
   const pernaE = caixa(corpo, 0.19, 0.36, 0.22, 0x344b58, -0.15, 0.28, 0);
   const pernaD = caixa(corpo, 0.19, 0.36, 0.22, 0x344b58, 0.15, 0.28, 0);
-  caixa(corpo, 0.22, 0.12, 0.32, 0xf8f0dc, -0.15, 0.09, 0.06);
-  caixa(corpo, 0.22, 0.12, 0.32, 0xf8f0dc, 0.15, 0.09, 0.06);
+  const peE = caixa(corpo, 0.22, 0.12, 0.32, 0xf8f0dc, -0.15, 0.09, 0.06);
+  const peD = caixa(corpo, 0.22, 0.12, 0.32, 0xf8f0dc, 0.15, 0.09, 0.06);
+  const coxas = [-0.15, 0.15].map(x => caixa(corpo, 0.19, 0.19, 0.34, 0x344b58, x, 0.43, 0.13));
+  coxas.forEach(coxa => { coxa.visible = false; });
   const torso = objeto(new THREE.CapsuleGeometry(0.24, 0.22, 3, 8), cor, 0, 0.73, 0); torso.scale.x = 1.13; corpo.add(torso);
-  const bracoE = caixa(corpo, 0.16, 0.44, 0.19, jogador ? 0xf9efda : cor, -0.34, 0.7, 0);
-  const bracoD = caixa(corpo, 0.16, 0.44, 0.19, jogador ? 0xf9efda : cor, 0.34, 0.7, 0);
-  esfera(corpo, 0.10, pele, -0.34, 0.45, 0); esfera(corpo, 0.10, pele, 0.34, 0.45, 0);
+  const bracoE = braco(jogador ? 0xf9efda : cor, pele, -0.34);
+  const bracoD = braco(jogador ? 0xf9efda : cor, pele, 0.34);
+  corpo.add(bracoE, bracoD);
   esfera(corpo, 0.28, pele, 0, 1.16, 0, 1, 1.05, 0.92);
   esfera(corpo, 0.285, 0x49362d, 0, 1.29, -0.04, 1, 0.64, 0.95);
   esfera(corpo, 0.025, 0x3e352c, -0.09, 1.17, 0.235);
@@ -71,8 +147,13 @@ function personagem(cor, pele = 0xf2c49c, jogador = false) {
     cilindro(corpo, 0.29, 0.3, 0.12, 0x1e7155, 0, 1.46, 0);
     caixa(corpo, 0.45, 0.05, 0.27, 0x1e7155, 0, 1.45, 0.18);
   }
-  const carga = new THREE.Group(); carga.position.set(0, 0.87, -0.35); g.add(carga);
-  g.userData = { corpo, pernaE, pernaD, bracoE, bracoD, carga, chaveCarga: '' };
+  const cesta = jogador ? criarCesta(0x858b91, 0xaeb4ba) : criarCesta(...coresCesta);
+  cesta.position.set(0, 0.26, 0.58); corpo.add(cesta);
+  const carga = new THREE.Group(); cesta.add(carga);
+  const produtoNaMao = new THREE.Group(); corpo.add(produtoNaMao);
+  g.userData = { corpo, pernaE, pernaD, peE, peD, coxas, bracoE, bracoD, cesta, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0 };
+  posicionarBraco(bracoE, cesta.userData.pega.clone().add(cesta.position));
+  posicionarBraco(bracoD, new THREE.Vector3(0.4, 0.65, 0.32));
   return g;
 }
 
@@ -104,12 +185,12 @@ export class Cena {
     this.clientes = new Map(); this.labels = [];
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) this.construirEstacao(id, p);
-    this.caixeiro = personagem(0x428b88, 0x9b6848); this.caixeiro.position.set(4.2, 0, 4.1); this.caixeiro.rotation.y = Math.PI / 2; this.cena.add(this.caixeiro);
+    this.caixeiro = personagem(0x428b88, 0x9b6848); this.caixeiro.position.set(4.2, 0.23, 3.15); this.caixeiro.rotation.y = Math.PI / 2; this.cena.add(this.caixeiro);
+    this.caixeiro.userData.cesta.visible = false;
+    posicionarBraco(this.caixeiro.userData.bracoE, new THREE.Vector3(-0.34, 0.45, 0));
+    posicionarBraco(this.caixeiro.userData.bracoD, new THREE.Vector3(0.34, 0.45, 0));
     this.ajudante = personagem(0xf2b349, 0xdba271); this.cena.add(this.ajudante);
     this.criarLabel('caixa', CONFIG.caixa, 'CAIXA', 'Atenda aqui', 'verde');
-    this.marcador = new THREE.Group();
-    const aro = new THREE.Mesh(new THREE.TorusGeometry(0.75, 0.04, 6, 40), new THREE.MeshBasicMaterial({ color: 0xfff4b3 })); aro.rotation.x = Math.PI / 2; this.marcador.add(aro);
-    this.seta = objeto(new THREE.ConeGeometry(0.2, 0.37, 4), 0xffdd6f, 0, 1.8, 0); this.seta.rotation.z = Math.PI; this.marcador.add(this.seta); this.cena.add(this.marcador);
     this.redimensionar(); window.addEventListener('resize', () => this.redimensionar());
   }
   construirMundo() {
@@ -141,6 +222,40 @@ export class Cena {
     caixa(c, 0.17, 0.018, 0.45, 0xffffff, 5.12, 1.3, 3.55);
     const circulo = new THREE.Mesh(new THREE.RingGeometry(0.82, 0.9, 48), new THREE.MeshBasicMaterial({ color: 0x318466, transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
     circulo.rotation.x = -Math.PI / 2; circulo.position.set(3.9, 0.225, 4.1); c.add(circulo);
+    const cadeira = new THREE.Group();
+    cadeira.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z);
+    cadeira.rotation.y = Math.PI / 2; c.add(cadeira);
+    // Base giratória de cinco raios, com rodízios e coluna central.
+    for (let i = 0; i < 5; i++) {
+      const raio = new THREE.Group(); raio.rotation.y = i * Math.PI * 2 / 5; cadeira.add(raio);
+      caixa(raio, 0.11, 0.07, 0.47, 0x52616b, 0, 0.12, 0.2);
+      const roda = cilindro(raio, 0.08, 0.08, 0.075, 0x353e45, 0, 0.08, 0.41);
+      roda.rotation.z = Math.PI / 2;
+      const eixo = cilindro(raio, 0.047, 0.047, 0.08, 0x74818b, 0, 0.08, 0.41);
+      eixo.rotation.z = Math.PI / 2;
+    }
+    cilindro(cadeira, 0.09, 0.1, 0.26, 0x3c464e, 0, 0.24, 0);
+    cilindro(cadeira, 0.065, 0.065, 0.18, 0x74818b, 0, 0.4, 0);
+    const assento = objeto(new THREE.ExtrudeGeometry(
+      contornoArredondado(new THREE.Shape(), 0.72, 0.68, 0.14),
+      { depth: 0.1, bevelEnabled: false, curveSegments: 5 }
+    ), 0x63717e, 0, 0.48, 0);
+    assento.rotation.x = -Math.PI / 2; cadeira.add(assento);
+    caixa(cadeira, 0.1, 0.36, 0.08, 0x3c464e, 0, 0.6, -0.28);
+    const encosto = objeto(new THREE.ExtrudeGeometry(
+      contornoArredondado(new THREE.Shape(), 0.64, 0.98, 0.28),
+      { depth: 0.1, bevelEnabled: false, curveSegments: 6 }
+    ), 0x3c464e, 0, 1.04, -0.36);
+    cadeira.add(encosto);
+    // Apoios tubulares lavanda, com curvas suaves como na referência.
+    for (const x of [-0.36, 0.36]) {
+      const curva = new THREE.CatmullRomCurve3([
+        new THREE.Vector3(x, 0.55, -0.23), new THREE.Vector3(x, 0.82, -0.23),
+        new THREE.Vector3(x, 0.84, -0.15), new THREE.Vector3(x, 0.84, 0.16),
+        new THREE.Vector3(x, 0.78, 0.25), new THREE.Vector3(x, 0.55, 0.25)
+      ]);
+      cadeira.add(objeto(new THREE.TubeGeometry(curva, 16, 0.026, 6, false), 0xb2acf0));
+    }
     const tapete = caixa(c, 3.0, 0.025, 1.2, 0x3f8a66, 7.35, 0.226, 6.2);
     for (let x = -9.2; x < 7.8; x += 1.5) {
       caixa(c, 0.16, 0.7, 0.16, 0xe9d6a8, x, 0.25, -8.4);
@@ -218,24 +333,108 @@ export class Cena {
     const p = new THREE.Vector3(ponto.x, ponto.y ?? 1.5, ponto.z).project(this.camera);
     return { x: (p.x + 1) * this.w / 2, y: (1 - p.y) * this.h / 2 };
   }
-  animarPersonagem(modelo, ator, dt, tempo, inventario = []) {
+  animarPersonagem(modelo, ator, dt, tempo, inventario = [], origem = 'horta', duracao = 0.26) {
     modelo.position.set(ator.x, 0.23, ator.z);
-    const alvo = ator.angulo ?? Math.PI / 4;
-    const delta = Math.atan2(Math.sin(alvo - modelo.rotation.y), Math.cos(alvo - modelo.rotation.y));
-    modelo.rotation.y += delta * Math.min(1, dt * 12);
     const d = modelo.userData;
-    const balanco = ator.andando ? Math.sin(tempo * 13) : 0;
-    d.corpo.position.y = ator.andando ? Math.abs(balanco) * 0.05 : Math.sin(tempo * 2) * 0.012;
-    d.pernaE.rotation.x = balanco * 0.55; d.pernaD.rotation.x = -balanco * 0.55;
-    d.bracoE.rotation.x = -balanco * 0.35; d.bracoD.rotation.x = balanco * 0.35;
-    const chave = inventario.join(',');
-    if (chave !== d.chaveCarga) {
+    const evento = this.sim?.reposicoes.get(ator);
+    if (evento && evento !== d.ultimaReposicao) {
+      d.ultimaReposicao = evento;
+      const inicio = d.carga.children[evento.indice]?.position.clone() ?? new THREE.Vector3(0, 0.13, 0);
+      d.reposicao = { ...evento, inicio: inicio.add(d.cesta.position), decorrido: 0, duracao: Math.min(duracao, 0.36) };
+      d.coleta = null;
+      liberarGeometrias(d.produtoNaMao);
+      d.produtoNaMao.add(criarProduto(evento.id, 0.75));
+    }
+    if (d.inventario?.join(',') !== inventario.join(',')) {
+      const anteriores = [...(d.inventario ?? [])];
+      const novos = [];
+      inventario.forEach((id, indice) => {
+        const encontrado = anteriores.indexOf(id);
+        if (encontrado >= 0) anteriores.splice(encontrado, 1);
+        else novos.push({ id, indice });
+      });
+      // Ao carregar um jogo, os produtos já estão guardados na cesta.
+      if (d.inventario !== null && novos.length) {
+        d.reposicao = null;
+        const { id, indice } = novos[novos.length - 1];
+        d.coleta = { decorrido: 0, duracao, indice, fonte: PRODUTOS[id][origem] };
+        liberarGeometrias(d.produtoNaMao);
+        d.produtoNaMao.add(criarProduto(id, 0.75));
+      } else d.coleta = null;
       liberarGeometrias(d.carga);
       inventario.forEach((id, i) => {
-        const fruta = criarProduto(id, 1.2); fruta.position.set(i % 2 * 0.25 - 0.12, Math.floor(i / 2) * 0.28, 0); d.carga.add(fruta);
+        const fruta = criarProduto(id, 0.75);
+        fruta.position.set((i % 3 - 1) * 0.25, 0.13 + Math.floor(i / 9) * 0.18, (Math.floor(i / 3) % 3 - 1) * 0.17);
+        d.carga.add(fruta);
       });
-      d.chaveCarga = chave;
+      d.inventario = [...inventario];
     }
+    const coleta = d.coleta;
+    const reposicao = d.reposicao;
+    const fonte = reposicao ? PRODUTOS[reposicao.id].prateleira : coleta?.fonte;
+    const alvo = fonte && !ator.andando
+      ? Math.atan2(fonte.x - ator.x, fonte.z - ator.z)
+      : ator.angulo ?? Math.PI / 4;
+    const delta = Math.atan2(Math.sin(alvo - modelo.rotation.y), Math.cos(alvo - modelo.rotation.y));
+    modelo.rotation.y += delta * Math.min(1, dt * 12);
+    const balanco = ator.andando ? Math.sin(tempo * 13) : 0;
+    d.sentar = THREE.MathUtils.clamp(d.sentar + (ator.sentado ? 1 : -1) * dt * 3, 0, 1);
+    const sentado = d.sentar * d.sentar * (3 - 2 * d.sentar);
+    d.corpo.position.y = (ator.andando ? Math.abs(balanco) * 0.05 : Math.sin(tempo * 2) * 0.012) * (1 - sentado) + 0.08 * sentado;
+    d.pernaE.rotation.x = balanco * 0.55 * (1 - sentado); d.pernaD.rotation.x = -balanco * 0.55 * (1 - sentado);
+    for (const perna of [d.pernaE, d.pernaD]) {
+      perna.position.y = 0.28 - 0.05 * sentado; perna.position.z = 0.3 * sentado;
+    }
+    for (const pe of [d.peE, d.peD]) { pe.position.y = 0.09 - 0.06 * sentado; pe.position.z = 0.06 + 0.3 * sentado; }
+    d.coxas.forEach(coxa => { coxa.visible = sentado > 0; coxa.scale.z = sentado; });
+    d.cesta.position.set(0, 0.26, 0.58).lerp(new THREE.Vector3(-1, -d.corpo.position.y, 0), sentado);
+    const repouso = new THREE.Vector3(0.4, 0.65, 0.32);
+    const mao = repouso.clone();
+    d.produtoNaMao.visible = false;
+    d.carga.children.forEach(f => { f.visible = true; });
+    if (coleta) {
+      coleta.decorrido += dt;
+      const t = Math.min(1, coleta.decorrido / coleta.duracao);
+      const alcance = new THREE.Vector3(0.34, 1.03, 0.98);
+      const fruta = d.carga.children[coleta.indice];
+      const destino = fruta.position.clone().add(d.cesta.position);
+      const suave = v => v * v * (3 - 2 * v);
+      if (t < 0.28) mao.lerp(alcance, suave(t / 0.28));
+      else if (t < 0.85) {
+        const p = (t - 0.28) / 0.57;
+        mao.copy(alcance).lerp(destino, suave(p));
+        mao.y += Math.sin(p * Math.PI) * 0.4;
+      } else mao.copy(destino).lerp(repouso, suave((t - 0.85) / 0.15));
+      fruta.visible = t >= 0.85;
+      d.produtoNaMao.visible = t >= 0.28 && t < 0.85;
+      d.produtoNaMao.position.copy(mao);
+      if (t >= 1) d.coleta = null;
+    }
+    if (reposicao) {
+      reposicao.decorrido += dt;
+      const t = Math.min(1, reposicao.decorrido / reposicao.duracao);
+      const p = PRODUTOS[reposicao.id].prateleira, i = reposicao.lugar;
+      // O destino usa exatamente a posição do produto desenhado na prateleira.
+      d.corpo.updateWorldMatrix(true, false);
+      const destino = d.corpo.worldToLocal(new THREE.Vector3(p.x - 0.83 + i % 4 * 0.56, 1.11, p.z - 0.5 + Math.floor(i / 4) * 0.49));
+      const suave = v => v * v * (3 - 2 * v);
+      if (t < 0.22) mao.lerp(reposicao.inicio, suave(t / 0.22));
+      else if (t < 0.85) {
+        const progresso = (t - 0.22) / 0.63;
+        mao.copy(reposicao.inicio).lerp(destino, suave(progresso));
+        mao.y += Math.sin(progresso * Math.PI) * 0.55;
+      } else mao.copy(destino).lerp(repouso, suave((t - 0.85) / 0.15));
+      d.produtoNaMao.visible = t < 0.85;
+      d.produtoNaMao.position.copy(t < 0.22 ? reposicao.inicio : mao);
+      d.produtoNaMao.children[0].scale.setScalar(0.75 + 0.95 * suave(Math.max(0, Math.min(1, (t - 0.22) / 0.63))));
+      if (t >= 1) d.reposicao = null;
+    }
+    const maoE = d.cesta.userData.pega.clone().add(d.cesta.position);
+    const soltar = THREE.MathUtils.smoothstep(sentado, 0.65, 1);
+    maoE.lerp(new THREE.Vector3(-0.3, 0.87, 0.7), soltar);
+    mao.lerp(new THREE.Vector3(0.3, 0.87, 0.7), sentado);
+    posicionarBraco(d.bracoE, maoE);
+    posicionarBraco(d.bracoD, mao);
   }
   atualizar(dt) {
     const sim = this.sim, e = sim.estado, tempo = sim.tempo;
@@ -245,22 +444,20 @@ export class Cena {
     this.animarPersonagem(this.jogador, e.jogador, dt, tempo, e.jogador.inventario);
     const cores = [0x72a9bb, 0xd7a35d, 0xa995c6, 0xd77c73, 0x6a9c7d];
     for (const c of sim.clientes) {
-      if (!this.clientes.has(c.id)) { const m = personagem(cores[c.cor], c.id % 2 ? 0xebbe92 : 0x9a674b); this.clientes.set(c.id, m); this.cena.add(m); }
-      this.animarPersonagem(this.clientes.get(c.id), c, dt, tempo + c.id, Array(c.quantidade).fill(c.produto));
+      if (!this.clientes.has(c.id)) { const m = personagem(cores[c.cor], c.id % 2 ? 0xebbe92 : 0x9a674b, false, [0x1d654b, 0x3d8a65, 0x254233]); this.clientes.set(c.id, m); this.cena.add(m); }
+      this.animarPersonagem(this.clientes.get(c.id), c, dt, tempo + c.id, Array(c.quantidade).fill(c.produto), 'prateleira', 0.55);
     }
     for (const [id, m] of this.clientes) if (!sim.clientes.some(c => c.id === id)) { this.cena.remove(m); liberarGeometrias(m); this.clientes.delete(id); }
     this.caixeiro.visible = !!e.melhorias.caixa;
     this.ajudante.visible = !!e.melhorias.ajudante;
-    if (this.ajudante.visible) this.animarPersonagem(this.ajudante, sim.ajudante, dt, tempo, sim.ajudante.inventario);
+    if (this.ajudante.visible) this.animarPersonagem(this.ajudante, sim.ajudante, dt, tempo, sim.ajudante.inventario, 'horta', 0.44);
     for (const [id, objetos] of Object.entries(this.produtos)) {
       const estado = e.produtos[id]; objetos.grupo.visible = estado.liberado; objetos.bloqueio.visible = !estado.liberado;
       objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = 1 + Math.sin(tempo * 2 + i) * 0.025; });
-      objetos.frutas.forEach((f, i) => { f.visible = i < estado.prateleira; });
+      const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
+        .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);
+      objetos.frutas.forEach((f, i) => { f.visible = i < estado.prateleira && !emTransito.some(r => r.lugar === i); });
     }
-    const missao = sim.missao();
-    let destino = missao.destino === 'horta' ? PRODUTOS.tomate.coleta : missao.destino === 'prateleira' ? PRODUTOS.tomate.reposicao : missao.destino === 'caixa' ? CONFIG.caixa : null;
-    this.marcador.visible = !!destino;
-    if (destino) { this.marcador.position.set(destino.x, 0.23, destino.z); this.seta.position.y = 2 + Math.sin(tempo * 3) * 0.16; }
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
       if (produto && !e.produtos[produto].liberado) { el.hidden = true; continue; }

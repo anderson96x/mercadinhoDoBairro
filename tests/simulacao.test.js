@@ -8,16 +8,82 @@ function avancar(sim, segundos, entrada) {
 }
 function aproximar(sim, ponto) { Object.assign(sim.estado.jogador, ponto); }
 
+test('jogador senta na cadeira, atende e levanta ao andar sem perder produtos', () => {
+  const sim = new Simulacao();
+  aproximar(sim, CONFIG.cadeiraCaixa);
+  sim.estado.jogador.inventario = ['tomate'];
+  sim.clientes.push({ id: 1, x: 7.1, z: 4.1, fase: 'fila', quantidade: 2, produto: 'tomate' });
+  sim.atualizar(0.05);
+  assert.equal(sim.estado.jogador.sentado, true);
+  assert.equal(sim.estado.jogador.angulo, Math.PI / 2);
+  sim.atualizarCaixa(CONFIG.tempoCaixa);
+  assert.equal(sim.estado.dinheiro, 16);
+  sim.atualizar(0.05, { x: -1, y: 0 });
+  assert.equal(sim.estado.jogador.sentado, false);
+  assert.deepEqual(sim.estado.jogador.inventario, ['tomate']);
+  aproximar(sim, { x: -3, z: 3 });
+  sim.atualizar(0.05);
+  assert.equal(sim.estado.jogador.sentado, false);
+});
+
+test('colheita e reposição funcionam em todos os lados das estações', () => {
+  for (const id of ['tomate', 'milho']) {
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const sim = new Simulacao(), p = PRODUTOS[id];
+      sim.estado.produtos[id].liberado = true;
+      sim.estado.produtos[id].horta = 8;
+      aproximar(sim, { x: p.horta.x + dx * 1.75, z: p.horta.z + dz * 2.3 });
+      sim.interagir();
+      assert.deepEqual(sim.estado.jogador.inventario, [id]);
+      sim.tempo = 1;
+      aproximar(sim, { x: p.prateleira.x + dx * 1.725, z: p.prateleira.z + dz * 1.4 });
+      sim.interagir();
+      assert.equal(sim.estado.produtos[id].prateleira, 1);
+      assert.deepEqual(sim.estado.jogador.inventario, []);
+    }
+  }
+});
+
+test('caixa atende por qualquer lado, mas não quando o jogador está longe', () => {
+  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const sim = new Simulacao();
+    sim.clientes.push({ x: 7.1, z: 4.1, fase: 'fila', quantidade: 2, produto: 'tomate' });
+    aproximar(sim, { x: -9, z: 8 });
+    sim.atualizarCaixa(CONFIG.tempoCaixa);
+    assert.equal(sim.estado.dinheiro, 0);
+    aproximar(sim, { x: 5.5 + dx * 1.265, z: 4.1 + dz * 1.95 });
+    sim.atualizarCaixa(CONFIG.tempoCaixa);
+    assert.equal(sim.estado.dinheiro, 16);
+  }
+});
+
+test('os quatro níveis da cesta comportam 4, 8, 12 e 16 produtos', () => {
+  const sim = new Simulacao();
+  sim.estado.dinheiro = 1000;
+  aproximar(sim, PRODUTOS.tomate.coleta);
+  for (const capacidade of [4, 8, 12, 16]) {
+    assert.equal(sim.capacidade, capacidade);
+    avancar(sim, 40);
+    assert.equal(sim.estado.jogador.inventario.length, capacidade);
+    const salvo = structuredClone(sim.estado);
+    salvo.jogador.inventario = Array(30).fill('tomate');
+    assert.equal(validarEstado(salvo).jogador.inventario.length, capacidade);
+    if (capacidade < 16) assert.equal(sim.comprarMelhoria('mochila').sucesso, true);
+  }
+  assert.equal(sim.comprarMelhoria('mochila').sucesso, false);
+  assert.equal(sim.capacidade, 16);
+});
+
 test('colher, repor, atender e receber o valor exato da compra', () => {
   const sim = new Simulacao();
   aproximar(sim, { x: -4.8, z: -1.7 });
   avancar(sim, 3);
-  assert.equal(sim.estado.jogador.inventario.length, 6);
-  assert.equal(sim.estado.estatisticas.colhidos, 6);
+  assert.equal(sim.estado.jogador.inventario.length, 4);
+  assert.equal(sim.estado.estatisticas.colhidos, 4);
   aproximar(sim, PRODUTOS.tomate.reposicao);
   avancar(sim, 3);
   assert.equal(sim.estado.jogador.inventario.length, 0);
-  assert.equal(sim.estado.estatisticas.repostos, 6);
+  assert.equal(sim.estado.estatisticas.repostos, 4);
   aproximar(sim, CONFIG.caixa);
   avancar(sim, 30);
   assert.ok(sim.estado.estatisticas.clientes >= 1);
@@ -26,7 +92,7 @@ test('colher, repor, atender e receber o valor exato da compra', () => {
   assert.equal(sim.estado.dinheiro % PRODUTOS.tomate.preco, 0);
   const vendidos = sim.estado.dinheiro / PRODUTOS.tomate.preco;
   const carregados = sim.clientes.filter(c => !['saindo','fim'].includes(c.fase)).reduce((s,c) => s+c.quantidade,0);
-  assert.equal(vendidos + carregados + sim.estado.produtos.tomate.prateleira, 6);
+  assert.equal(vendidos + carregados + sim.estado.produtos.tomate.prateleira, 4);
 });
 
 test('a cesta tem limite, e uma prateleira cheia não consome produtos', () => {
@@ -35,7 +101,7 @@ test('a cesta tem limite, e uma prateleira cheia não consome produtos', () => {
   assert.equal(sim.estado.jogador.inventario.length, sim.capacidade);
   sim.estado.produtos.tomate.prateleira = 12;
   aproximar(sim, PRODUTOS.tomate.reposicao); sim.interagir();
-  assert.equal(sim.estado.jogador.inventario.length, 6);
+  assert.equal(sim.estado.jogador.inventario.length, 4);
   assert.equal(sim.estado.produtos.tomate.prateleira, 12);
 });
 
@@ -51,7 +117,7 @@ test('melhorias respeitam o saldo, o limite e o desbloqueio de produtos', () => 
   assert.equal(sim.comprarMelhoria('milho').sucesso, false);
   assert.equal(sim.estado.dinheiro, 420);
   assert.equal(sim.comprarMelhoria('mochila').sucesso, true);
-  assert.equal(sim.capacidade, 10);
+  assert.equal(sim.capacidade, 8);
   assert.equal(sim.custoMelhoria('mochila'), 105);
 });
 

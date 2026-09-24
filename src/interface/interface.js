@@ -25,7 +25,7 @@ export class Interface {
         <div id="atividade" role="status"></div>
         <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Use as setas ou arraste para andar</span></span></div>
         <footer class="rodape">
-          <div class="inventario"><span class="cesta-icone">${icone('cesta')}</span><div class="inventario-conteudo"><div class="inventario-titulo"><b>Sua cesta</b><span id="capacidade">0 / 6</span></div><div id="itens"></div></div></div>
+          <div class="inventario"><span class="cesta-icone">${icone('cesta')}</span><div class="inventario-conteudo"><div class="inventario-titulo"><b id="nivel-cesta">Sua cesta · Nível ${this.sim.estado.melhorias.mochila + 1}</b><span id="capacidade">${this.sim.estado.jogador.inventario.length} / ${this.sim.capacidade}</span></div><div id="itens"></div></div></div>
           <button class="botao-melhorias" id="melhorias">${icone('melhorar')}<span>Melhorias<small id="melhorias-dica">Faça sua loja crescer</small></span><span class="aviso-melhoria" id="aviso-melhoria" hidden></span>${icone('seta')}</button>
         </footer>
         <div id="joystick" aria-hidden="true"><span></span></div>
@@ -66,7 +66,9 @@ export class Interface {
     const chave = `${s.capacidade}:${inv.join(',')}`;
     if (chave !== this.ultimoInventario) {
       this.el('capacidade').textContent = `${inv.length} / ${s.capacidade}`;
-      this.el('itens').innerHTML = Array.from({ length: Math.min(s.capacidade, 8) }, (_, i) => `<span class="item ${inv[i] || ''}" title="${inv[i] ? PRODUTOS[inv[i]].nome : 'Espaço livre'}">${inv[i] ? icone(inv[i]) : '<i></i>'}</span>`).join('') + (s.capacidade > 8 ? `<span class="item-extra">+${s.capacidade - 8}</span>` : '');
+      this.el('nivel-cesta').textContent = `Sua cesta · Nível ${e.melhorias.mochila + 1}`;
+      this.el('itens').style.setProperty('--colunas', Math.min(s.capacidade, 8));
+      this.el('itens').innerHTML = Array.from({ length: s.capacidade }, (_, i) => `<span class="item ${inv[i] || ''}" title="${inv[i] ? PRODUTOS[inv[i]].nome : 'Espaço livre'}">${inv[i] ? icone(inv[i]) : '<i></i>'}</span>`).join('');
       this.el('itens').setAttribute('aria-label', inv.length ? `${inv.filter(i => i === 'tomate').length} tomates e ${inv.filter(i => i === 'milho').length} milhos.` : 'Cesta vazia');
       this.ultimoInventario = chave;
     }
@@ -88,6 +90,8 @@ export class Interface {
     if (tipo === 'melhorias') {
       conteudo = `<p class="painel-subtitulo">Cada venda abre novas possibilidades.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${MELHORIAS.map(m => {
         const nivel = this.sim.estado.melhorias[m.id], completa = nivel >= m.max, custo = this.sim.custoMelhoria(m.id), pode = this.sim.estado.dinheiro >= custo;
+        const nivelExibido = m.id === 'mochila' ? nivel + 1 : nivel;
+        const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
         return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.max > 1 ? `<span class="nivel-melhoria">Nível ${nivel} de ${m.max}</span>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${completa ? m.titulo + ' concluída' : 'Comprar ' + m.titulo + ' por ' + reais(custo)}">${completa ? icone('certo') + ' Pronto' : reais(custo)}</button></div>`;
       }).join('')}</div>`;
     } else if (tipo === 'ajuda') {

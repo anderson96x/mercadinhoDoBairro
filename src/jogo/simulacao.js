@@ -3,6 +3,14 @@ import { CONFIG, PRODUTOS, MELHORIAS, MISSOES } from './configuracao.js';
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
 
+// Mede a distância à borda do objeto, permitindo interagir por qualquer lado.
+function pertoEstacao(ator, centro, largura, profundidade) {
+  return Math.hypot(
+    Math.max(0, Math.abs(ator.x - centro.x) - largura / 2),
+    Math.max(0, Math.abs(ator.z - centro.z) - profundidade / 2)
+  ) < CONFIG.raioInteracao;
+}
+
 export function estadoInicial() {
   return {
     versao: CONFIG.versaoSalvamento, dinheiro: CONFIG.dinheiroInicial,
@@ -45,6 +53,7 @@ export class Simulacao {
     this.estado = validarEstado(salvo);
     this.clientes = [];
     this.eventos = [];
+    this.reposicoes = new WeakMap();
     this.tempo = 0;
     this.proximoCliente = 2;
     this.proximaInteracao = 0;
@@ -118,6 +127,12 @@ export class Simulacao {
     this.tempo += dt;
     const a = CONFIG.anguloCamera;
     this.mover(this.estado.jogador, entrada.x * Math.cos(a) + entrada.y * Math.sin(a), -entrada.x * Math.sin(a) + entrada.y * Math.cos(a), dt, this.velocidade);
+    const jogador = this.estado.jogador;
+    jogador.sentado = !jogador.andando && distancia(jogador, CONFIG.cadeiraCaixa) < 0.65;
+    if (jogador.sentado) {
+      jogador.x = CONFIG.cadeiraCaixa.x; jogador.z = CONFIG.cadeiraCaixa.z;
+      jogador.angulo = Math.PI / 2;
+    }
     for (const [id, estoque] of Object.entries(this.estado.produtos)) {
       const p = PRODUTOS[id];
       if (estoque.liberado && estoque.horta < p.capacidadeHorta) {
@@ -138,18 +153,19 @@ export class Simulacao {
     for (const [id, p] of Object.entries(PRODUTOS)) {
       const e = this.estado.produtos[id];
       if (!e.liberado) continue;
-      if (distancia(jogador, p.reposicao) < CONFIG.raioInteracao) {
+      if (pertoEstacao(jogador, p.prateleira, 2.45, 1.8)) {
         const indice = jogador.inventario.indexOf(id);
         if (indice >= 0 && e.prateleira < p.capacidadePrateleira) {
           this.atividade = 'Abastecendo a prateleira…';
           if (this.tempo >= this.proximaInteracao) {
             jogador.inventario.splice(indice, 1); e.prateleira++; this.estado.estatisticas.repostos++;
+            this.reposicoes.set(jogador, { id, indice, lugar: e.prateleira - 1 });
             this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
             this.emitir('reposicao', { id, ponto: p.prateleira });
           }
         } else if (e.prateleira >= p.capacidadePrateleira && indice >= 0) this.atividade = 'Prateleira cheia';
       }
-      if (distancia(jogador, p.coleta) < CONFIG.raioInteracao) {
+      if (pertoEstacao(jogador, p.horta, 2.5, 3.6)) {
         if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Cesta cheia · leve os produtos à prateleira'; continue; }
         if (!e.horta) { this.atividade = 'A colheita está crescendo…'; continue; }
         this.atividade = `Colhendo ${p.plural.toLocaleLowerCase('pt-BR')}…`;
@@ -200,7 +216,7 @@ export class Simulacao {
   }
   atualizarCaixa(dt) {
     const primeiro = this.clientes.find(c => c.fase === 'fila');
-    const atendendo = this.estado.melhorias.caixa || distancia(this.estado.jogador, CONFIG.caixa) < 1.8;
+    const atendendo = this.estado.melhorias.caixa || pertoEstacao(this.estado.jogador, { x: 5.5, z: 4.1 }, 1.53, 2.9);
     if (primeiro && atendendo && distancia(primeiro, { x: 7.1, z: 4.1 }) < 0.2) {
       this.progressoCaixa += dt;
       if (!this.estado.melhorias.caixa) this.atividade = 'Atendendo no caixa…';
@@ -226,7 +242,11 @@ export class Simulacao {
         if (a.inventario.length >= 4 || (!e.horta && a.inventario.length)) a.destino = 'prateleira';
       }
     } else if (this.caminhar(a, p.reposicao, dt, 2.8) && a.temporizador <= 0) {
-      if (a.inventario.length && e.prateleira < p.capacidadePrateleira) { e.prateleira++; a.inventario.pop(); a.temporizador = 0.4; }
+      if (a.inventario.length && e.prateleira < p.capacidadePrateleira) {
+        const indice = a.inventario.length - 1;
+        e.prateleira++; a.inventario.pop(); a.temporizador = 0.4;
+        this.reposicoes.set(a, { id: a.produto, indice, lugar: e.prateleira - 1 });
+      }
       if (!a.inventario.length) {
         a.destino = 'horta';
         const ids = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);

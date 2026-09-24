@@ -25,7 +25,7 @@ Para testar em um celular na mesma rede Wi-Fi, mantenha o servidor aberto e aces
 | Andar com o mouse | Clique, segure e arraste no cenário. |
 | Andar pelo teclado | W, A, S, D ou as setas. |
 | Colher | Fique ao lado da horta. |
-| Repor | Fique na frente da prateleira do mesmo produto. |
+| Repor | Fique ao lado da prateleira do mesmo produto. |
 | Vender | Fique no círculo do caixa enquanto há clientes esperando. |
 | Melhorar a loja | Botão **Melhorias**. |
 | Pausar | Botão de pausa ou Esc. |
@@ -36,7 +36,8 @@ O joystick aparece onde você começa a arrastar. O movimento acompanha as dire�
 ## O que já funciona
 
 - Tomates, milho, crescimento dos produtos e estoques limitados.
-- Cesta com capacidade, produtos empilhados no personagem e melhorias.
+- Cesta com capacidade, animação de pegar e guardar os produtos e melhorias.
+- Cesta cinza do jogador: níveis 1, 2, 3 e 4 com capacidade para 4, 8, 12 e 16 produtos.
 - Clientes com percurso até a prateleira, fila, compra e saída.
 - Dinheiro de jogo, contratação de caixa e ajudante de reposição.
 - Objetivos progressivos, níveis, efeitos sonoros e pausa.
