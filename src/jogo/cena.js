@@ -4,6 +4,7 @@ import { CONFIG, PRODUTOS } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
 
+const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
 const materiais = new Map();
 function material(cor) {
   if (!materiais.has(cor)) materiais.set(cor, new THREE.MeshStandardMaterial({ color: cor, roughness: 0.92, metalness: 0 }));
@@ -233,13 +234,13 @@ export class Cena {
     this.cena.add(sol);
     this.alvoCamera = new THREE.Vector3(-0.5, 0, 0.8);
     this.construirMundo();
-    this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.set(CONFIG.balcao.x - 0.35, 1.31, CONFIG.balcao.z + 0.72); this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
+    this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, 0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
     this.jogador = personagem(0xf8ecd1, 0xe9b489, true); this.cena.add(this.jogador);
     this.clientes = new Map(); this.labels = [];
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) this.construirEstacao(id, p);
-    this.caixeiro = personagem(0x428b88, 0x9b6848); this.caixeiro.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z); this.caixeiro.rotation.y = Math.PI / 2; this.cena.add(this.caixeiro);
+    this.caixeiro = personagem(0x428b88, 0x9b6848); this.caixeiro.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z); this.caixeiro.rotation.y = CONFIG.anguloCaixa; this.cena.add(this.caixeiro);
     this.caixeiro.userData.cesta.visible = false;
     posicionarBraco(this.caixeiro.userData.bracoE, new THREE.Vector3(-0.34, 0.45, 0));
     posicionarBraco(this.caixeiro.userData.bracoD, new THREE.Vector3(0.34, 0.45, 0));
@@ -247,7 +248,8 @@ export class Cena {
     this.redimensionar(); window.addEventListener('resize', () => this.redimensionar());
   }
   construirMundo() {
-    const c = new THREE.Group(); c.position.x = CONFIG.balcao.x - 5.5; this.cena.add(c);
+    const suporte = new THREE.Group(); suporte.position.set(CONFIG.balcao.x, 0, CONFIG.balcao.z); suporte.rotation.y = Math.PI / 2; this.cena.add(suporte);
+    const c = new THREE.Group(); c.position.set(-5.5, 0, -4.1); suporte.add(c);
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera, placa });
     this.bairro.aplicar(this.sim.estado.personalizacao);
     // Caixa e esteira, com produtos e recibo visíveis de perto.
@@ -288,7 +290,7 @@ export class Cena {
     this.marcaCaixa.rotation.x = -Math.PI / 2; this.marcaCaixa.position.set(CONFIG.cadeiraCaixa.x, 0.225, CONFIG.cadeiraCaixa.z); this.cena.add(this.marcaCaixa);
     const cadeira = new THREE.Group();
     cadeira.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z);
-    cadeira.rotation.y = Math.PI / 2; this.cena.add(cadeira);
+    cadeira.rotation.y = CONFIG.anguloCaixa; this.cena.add(cadeira);
     // Base giratória de cinco raios, com rodízios e coluna central.
     for (let i = 0; i < 5; i++) {
       const raio = new THREE.Group(); raio.rotation.y = i * Math.PI * 2 / 5; cadeira.add(raio);
@@ -517,8 +519,8 @@ export class Cena {
     this.itensEmbalagem.children.forEach((item, i) => {
       const inicio = 0.08 + i * 0.22;
       const t = THREE.MathUtils.clamp((progresso - inicio) / 0.34, 0, 1);
-      const origem = new THREE.Vector3(CONFIG.balcao.x, 1.39, CONFIG.balcao.z + 0.4 + (i - (cliente.quantidade - 1) / 2) * 0.13);
-      const destino = posicaoProdutoSacola(i).add(this.sacolaEmbalagem.position);
+      const origem = pontoNoBalcao(0, 1.39, 0.4 + (i - (cliente.quantidade - 1) / 2) * 0.13);
+      const destino = posicaoProdutoSacola(i).applyQuaternion(this.sacolaEmbalagem.quaternion).add(this.sacolaEmbalagem.position);
       item.position.copy(origem).lerp(destino, t);
       if (t < 1) item.position.y += Math.sin(t * Math.PI) * 0.32;
     });
@@ -527,6 +529,7 @@ export class Cena {
   atualizar(dt) {
     const sim = this.sim, e = sim.estado, tempo = sim.tempo;
     this.bairro.aplicar(e.personalizacao);
+    this.bairro.animarPorta(sim.aberturaPortaEscritorio);
     const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(-0.7, 0, 0.5);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
@@ -576,7 +579,7 @@ export class Cena {
     this.caixeiro.visible = !!e.melhorias.caixa;
     this.marcaCaixa.visible = !this.caixeiro.visible;
     if (this.caixeiro.visible) {
-      this.animarPersonagem(this.caixeiro, { x: CONFIG.cadeiraCaixa.x, z: CONFIG.cadeiraCaixa.z, angulo: Math.PI / 2, andando: false, sentado: true }, dt, tempo);
+      this.animarPersonagem(this.caixeiro, { x: CONFIG.cadeiraCaixa.x, z: CONFIG.cadeiraCaixa.z, angulo: CONFIG.anguloCaixa, andando: false, sentado: true }, dt, tempo);
       this.animarAtendimento(this.caixeiro, tempo, atendendoNoCaixa, progressoCaixa);
       this.caixeiro.userData.corpo.rotation.z = Math.sin(tempo * 1.8) * 0.018;
     }

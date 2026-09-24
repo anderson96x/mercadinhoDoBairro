@@ -10,8 +10,14 @@ export const PAREDES_LOJA = [
   { x: 4.65, z: 6.7, w: 8.9, d: 0.28, h: 0.65 }
 ];
 
+export const PAREDES_ESCRITORIO = [
+  { x: 1.1, z: -4, w: 0.18, d: 4, h: 2.8 },
+  { x: -2.25, z: -2, w: 1.7, d: 0.18, h: 2.8 },
+  { x: 0.55, z: -2, w: 1.1, d: 0.18, h: 2.8 }
+];
+export const PORTA_ESCRITORIO = { x: -0.7, z: -2, w: 1.4, d: 0.12 };
+
 export const MOBILIARIO_LOJA = [
-  { x: 1.1, z: -4, w: 0.16, d: 3.6 },
   { x: -0.8, z: -4.6, w: 2.7, d: 0.85 },
   { x: -2.65, z: -4.4, w: 0.45, d: 1.7 },
   { x: 7.75, z: -4.5, w: 1.8, d: 0.85 },
@@ -41,7 +47,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   chao(4, 12.1, 0.07, 12.4, 0xe3dcc8, 3, 0.19, 0.35, 'piso');
   for (let x = -2.8; x < 9; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, 0.35);
   for (let z = -5.8; z < 6.6; z += 1.2) chao(5, 12, 0.008, 0.018, 0xc8bfae, 3, 0.23, z);
-  for (const p of PAREDES_LOJA) {
+  for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) {
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     bloco(p.w, 0.22, p.d + 0.035, 0x286750, p.x, 0.34, p.z, 'principal');
@@ -54,8 +60,17 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   acesso.rotation.y = Math.PI / 2; acesso.position.set(-2.89, 2.83, 0.7); grupo.add(acesso);
   // Escritório no canto esquerdo, separado do salão por uma divisória baixa.
   chao(6, 3.85, 0.012, 3.8, 0xd5c2d5, -1, 0.241, -3.95);
-  bloco(0.16, 1.05, 3.6, 0xf1ead7, 1.1, 0.75, -4, 'parede');
-  bloco(0.2, 0.07, 3.65, 0x286750, 1.1, 1.3, -4, 'principal');
+  for (const x of [-1.4, 0]) bloco(0.09, 2.5, 0.23, 0x286750, x, 1.48, -2, 'principal');
+  bloco(1.5, 0.35, 0.2, 0xf1ead7, -0.7, 2.86, -2, 'parede');
+  bloco(1.5, 0.12, 0.23, 0x286750, -0.7, 2.67, -2, 'principal');
+  const porta = new THREE.Group(); porta.position.set(-1.4, 0.23, -2); grupo.add(porta); destino = porta;
+  bloco(1.32, 2.37, 0.09, 0x286750, 0.7, 1.2, 0, 'principal');
+  bloco(1.1, 0.98, 0.015, 0xa8c7c9, 0.7, 1.57, 0.053);
+  bloco(1.1, 0.98, 0.015, 0xa8c7c9, 0.7, 1.57, -0.053);
+  for (const z of [-0.1, 0.1]) bloco(0.18, 0.045, 0.08, 0xe7b65a, 1.14, 1.05, z, 'destaque');
+  destino = grupo;
+  const nomeEscritorio = placa('ESCRIT?RIO', '#286750', '#fff5df', 1.15, 0.19);
+  nomeEscritorio.position.set(-0.7, 2.87, -1.885); grupo.add(nomeEscritorio);
   bloco(2.7, 0.14, 0.85, 0xbc8752, -0.8, 1.02, -4.6);
   for (const x of [-1.9, 0.3]) bloco(0.35, 0.72, 0.65, 0xa87244, x, 0.6, -4.6);
   bloco(0.68, 0.5, 0.07, 0x414846, -0.7, 1.4, -4.72);
@@ -121,6 +136,10 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   const letreiros = new THREE.Group(); grupo.add(letreiros);
   let anterior;
   return {
+    animarPorta(abertura) {
+      const t = THREE.MathUtils.smoothstep(abertura, 0, 1);
+      porta.rotation.y = t * Math.PI / 2;
+    },
     vincular(mesh, papel) {
       mesh.material = mesh.material.clone(); materiais.push({ material: mesh.material, papel }); anterior = undefined;
     },
