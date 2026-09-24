@@ -10,6 +10,8 @@ export const CONFIG = {
   tempoCaixa: 1.15,
   intervaloClientes: 5,
   maxClientes: 5,
+  espacoClientes: 1.15,
+  distanciaClientes: 1.05,
   limiteMundo: { minX: -10.5, maxX: 10.5, minZ: -8, maxZ: 9 },
   inicio: { x: -2.8, z: 3.4 },
   caixa: { x: 4.5, z: 4.1 },

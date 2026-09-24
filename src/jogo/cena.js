@@ -190,7 +190,6 @@ export class Cena {
     posicionarBraco(this.caixeiro.userData.bracoE, new THREE.Vector3(-0.34, 0.45, 0));
     posicionarBraco(this.caixeiro.userData.bracoD, new THREE.Vector3(0.34, 0.45, 0));
     this.ajudante = personagem(0xf2b349, 0xdba271); this.cena.add(this.ajudante);
-    this.criarLabel('caixa', CONFIG.caixa, 'CAIXA', 'Atenda aqui', 'verde');
     this.redimensionar(); window.addEventListener('resize', () => this.redimensionar());
   }
   construirMundo() {
@@ -467,7 +466,6 @@ export class Cena {
       const detalhe = el.lastElementChild;
       if (tipo === 'horta') detalhe.textContent = `${e.produtos[produto].horta} para colher`;
       else if (tipo === 'loja') detalhe.textContent = `${e.produtos[produto].prateleira} / ${PRODUTOS[produto].capacidadePrateleira}`;
-      else detalhe.textContent = e.melhorias.caixa ? 'Atendimento automático' : sim.clientes.some(c => c.fase === 'fila') ? 'Cliente esperando' : 'Atenda aqui';
     }
     this.renderer.render(this.cena, this.camera);
   }

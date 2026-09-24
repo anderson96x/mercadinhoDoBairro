@@ -1,4 +1,5 @@
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES } from './configuracao.js';
+import { buscarCaminho } from './navegacao.js';
 
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
@@ -54,10 +55,12 @@ export class Simulacao {
     this.clientes = [];
     this.eventos = [];
     this.reposicoes = new WeakMap();
+    this.caminhosClientes = new WeakMap();
     this.tempo = 0;
     this.proximoCliente = 2;
     this.proximaInteracao = 0;
     this.proximaId = 1;
+    this.proximaOrdemFila = 1;
     this.progressoCaixa = 0;
     this.atividade = '';
     this.pausado = false;
@@ -121,6 +124,50 @@ export class Simulacao {
     this.mover(ator, (ponto.x - ator.x) / d, (ponto.z - ator.z) / d, dt, velocidade, false);
     return false;
   }
+  caminharCliente(ator, ponto, dt) {
+    ator.andando = false;
+    if (distancia(ator, ponto) < 0.025) return true;
+    if (!dt) return false;
+    const obstaculos = this.obstaculos();
+    const livre = (inicio, fim) => {
+      const dx = fim.x - inicio.x, dz = fim.z - inicio.z, comprimento = dx * dx + dz * dz;
+      if (this.clientes.some(outro => {
+        if (outro === ator || outro.fase === 'fim') return false;
+        const t = comprimento ? limitar(((outro.x - inicio.x) * dx + (outro.z - inicio.z) * dz) / comprimento, 0, 1) : 0;
+        return Math.hypot(inicio.x + t * dx - outro.x, inicio.z + t * dz - outro.z) < CONFIG.distanciaClientes - 1e-6;
+      })) return false;
+      for (const o of obstaculos) {
+        let entrada = 0, saida = 1;
+        for (const [pos, delta, centro, metade] of [[inicio.x, dx, o.x, o.w / 2 + 0.3], [inicio.z, dz, o.z, o.d / 2 + 0.3]]) {
+          if (Math.abs(delta) < 1e-9) {
+            if (Math.abs(pos - centro) >= metade) { entrada = 2; break; }
+          } else {
+            const a = (centro - metade - pos) / delta, b = (centro + metade - pos) / delta;
+            entrada = Math.max(entrada, Math.min(a, b)); saida = Math.min(saida, Math.max(a, b));
+          }
+        }
+        if (entrada <= saida) return false;
+      }
+      return true;
+    };
+    let alvo = ponto;
+    if (!livre(ator, ponto)) {
+      let rota = this.caminhosClientes.get(ator);
+      if (!rota || distancia(rota.destino, ponto) > 0.1 || this.tempo >= rota.recalcular) {
+        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livre, CONFIG.limiteMundo), recalcular: this.tempo + 0.6 };
+        this.caminhosClientes.set(ator, rota);
+      }
+      while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) rota.pontos.shift();
+      if (!rota.pontos.length) return false;
+      alvo = rota.pontos[0];
+    } else this.caminhosClientes.delete(ator);
+    const d = distancia(ator, alvo), passo = Math.min(d, 2.4 * dt);
+    const proximo = { x: ator.x + (alvo.x - ator.x) / d * passo, z: ator.z + (alvo.z - ator.z) / d * passo };
+    if (!livre(ator, proximo)) return false;
+    ator.angulo = Math.atan2(proximo.x - ator.x, proximo.z - ator.z);
+    ator.x = proximo.x; ator.z = proximo.z; ator.andando = true;
+    return distancia(ator, ponto) < 0.025;
+  }
   atualizar(dt, entrada = { x: 0, y: 0 }) {
     if (this.pausado) return;
     dt = limitar(dt, 0, 0.05);
@@ -178,21 +225,24 @@ export class Simulacao {
     }
   }
   criarCliente() {
+    if (this.clientes.some(c => distancia(c, CONFIG.entrada) < CONFIG.distanciaClientes)) return false;
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
     const produto = disponiveis[(this.proximaId - 1) % disponiveis.length];
     this.clientes.push({ id: this.proximaId++, ...CONFIG.entrada, produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, cor: this.proximaId % 5, andando: false });
+    return true;
   }
   atualizarClientes(dt) {
     this.proximoCliente -= dt;
-    if (this.proximoCliente <= 0 && this.clientes.length < CONFIG.maxClientes) { this.criarCliente(); this.proximoCliente = CONFIG.intervaloClientes; }
-    const fila = this.clientes.filter(c => c.fase === 'fila');
+    if (this.proximoCliente <= 0 && this.clientes.length < CONFIG.maxClientes && this.criarCliente()) this.proximoCliente = CONFIG.intervaloClientes;
+    const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));
     for (const c of this.clientes) {
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
       if (c.fase === 'chegando') {
-        const rota = [{ x: 7.5, z: 1.5 }, { x: p.cliente.x, z: 1.5 }, p.cliente];
-        if (this.caminhar(c, rota[c.etapa], dt)) {
-          c.etapa++;
-          if (c.etapa === rota.length) { c.fase = 'comprando'; c.espera = 0; }
+        const espera = this.clientes.filter(outro => outro.produto === c.produto && ['chegando', 'comprando'].includes(outro.fase));
+        const indice = espera.indexOf(c);
+        const destino = { x: p.cliente.x - Math.floor(indice / 3) * CONFIG.espacoClientes, z: p.cliente.z + (indice % 3) * CONFIG.espacoClientes };
+        if (this.caminharCliente(c, destino, dt) && indice === 0) {
+          c.fase = 'comprando'; c.espera = 0; c.andando = false;
         }
       } else if (c.fase === 'comprando') {
         c.andando = false; c.espera += dt;
@@ -200,24 +250,23 @@ export class Simulacao {
           e.prateleira--; c.quantidade++; c.espera = 0;
           this.emitir('pegou', { id: c.produto });
         }
-        if (c.quantidade >= c.desejado || (c.quantidade > 0 && c.espera > 2.5)) { c.fase = 'indoCaixa'; c.etapa = 0; }
+        if (c.quantidade >= c.desejado || (c.quantidade > 0 && c.espera > 2.5)) { c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++; }
       } else if (c.fase === 'indoCaixa') {
-        const rota = [{ x: p.cliente.x, z: 1.6 }, { x: 7.1, z: 1.6 }, { x: 7.1, z: 4.1 }];
-        if (this.caminhar(c, rota[c.etapa], dt)) { c.etapa++; if (c.etapa === rota.length) c.fase = 'fila'; }
+        const indice = fila.indexOf(c), z = 4.1 + indice * CONFIG.espacoClientes;
+        if (this.caminharCliente(c, { x: 7.1, z }, dt)) c.fase = 'fila';
       } else if (c.fase === 'fila') {
         const indice = Math.max(0, fila.indexOf(c));
-        this.caminhar(c, { x: 7.1, z: 4.1 + indice * 0.85 }, dt);
+        if (this.caminharCliente(c, { x: 7.1, z: 4.1 + indice * CONFIG.espacoClientes }, dt)) { c.andando = false; c.angulo = -Math.PI / 2; }
       } else if (c.fase === 'saindo') {
-        const rota = [{ x: 8.3, z: 4.1 }, CONFIG.entrada, { x: 10.3, z: 9 }];
-        if (this.caminhar(c, rota[c.etapa], dt)) { c.etapa++; if (c.etapa === rota.length) c.fase = 'fim'; }
+        if (this.caminharCliente(c, { x: 10.3, z: 9 }, dt)) c.fase = 'fim';
       }
     }
     this.clientes = this.clientes.filter(c => c.fase !== 'fim');
   }
   atualizarCaixa(dt) {
-    const primeiro = this.clientes.find(c => c.fase === 'fila');
+    const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
     const atendendo = this.estado.melhorias.caixa || pertoEstacao(this.estado.jogador, { x: 5.5, z: 4.1 }, 1.53, 2.9);
-    if (primeiro && atendendo && distancia(primeiro, { x: 7.1, z: 4.1 }) < 0.2) {
+    if (primeiro?.fase === 'fila' && atendendo && distancia(primeiro, { x: 7.1, z: 4.1 }) < 0.2) {
       this.progressoCaixa += dt;
       if (!this.estado.melhorias.caixa) this.atividade = 'Atendendo no caixa…';
       if (this.progressoCaixa >= CONFIG.tempoCaixa) {

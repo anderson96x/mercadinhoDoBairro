@@ -1,12 +1,49 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Simulacao, validarEstado } from '../src/jogo/simulacao.js';
+import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 
 function avancar(sim, segundos, entrada) {
   for (let i = 0; i < segundos * 60; i++) sim.atualizar(1 / 60, entrada);
 }
 function aproximar(sim, ponto) { Object.assign(sim.estado.jogador, ponto); }
+
+test('cinco clientes formam fila espaçada e são atendidos na ordem sem se atravessar', () => {
+  const sim = new Simulacao();
+  aproximar(sim, { x: -9, z: 8 });
+  const verificarEspaco = () => {
+    for (let i = 0; i < sim.clientes.length; i++) for (let j = i + 1; j < sim.clientes.length; j++) {
+      assert.ok(distancia(sim.clientes[i], sim.clientes[j]) >= CONFIG.distanciaClientes - 1e-5, 'clientes não podem se sobrepor');
+    }
+  };
+  for (let i = 0; i < 1800; i++) {
+    sim.estado.produtos.tomate.prateleira = 12;
+    sim.atualizar(0.05); verificarEspaco();
+  }
+  const fila = sim.clientes.filter(c => c.fase === 'fila').sort((a, b) => a.ordemFila - b.ordemFila);
+  assert.equal(fila.length, 5);
+  fila.forEach((c, i) => {
+    assert.ok(Math.abs(c.x - 7.1) < 0.025);
+    assert.ok(Math.abs(c.z - (4.1 + i * CONFIG.espacoClientes)) < 0.025);
+  });
+  sim.proximoCliente = Infinity;
+  sim.estado.melhorias.caixa = 1;
+  const atendidos = [];
+  for (let i = 0; i < 1800; i++) {
+    const antes = sim.clientes.filter(c => c.fase === 'fila');
+    sim.atualizar(0.05); verificarEspaco();
+    atendidos.push(...antes.filter(c => c.fase === 'saindo').map(c => c.id));
+  }
+  assert.deepEqual(atendidos, fila.map(c => c.id));
+  assert.equal(sim.clientes.length, 0);
+});
+
+test('entrada ocupada não cria clientes sobrepostos', () => {
+  const sim = new Simulacao();
+  assert.equal(sim.criarCliente(), true);
+  assert.equal(sim.criarCliente(), false);
+  assert.equal(sim.clientes.length, 1);
+});
 
 test('jogador senta na cadeira, atende e levanta ao andar sem perder produtos', () => {
   const sim = new Simulacao();
