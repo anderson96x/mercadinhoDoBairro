@@ -175,7 +175,7 @@ export class Simulacao {
     const a = CONFIG.anguloCamera;
     this.mover(this.estado.jogador, entrada.x * Math.cos(a) + entrada.y * Math.sin(a), -entrada.x * Math.sin(a) + entrada.y * Math.cos(a), dt, this.velocidade);
     const jogador = this.estado.jogador;
-    jogador.sentado = !jogador.andando && distancia(jogador, CONFIG.cadeiraCaixa) < 0.65;
+    jogador.sentado = !this.estado.melhorias.caixa && !jogador.andando && distancia(jogador, CONFIG.cadeiraCaixa) < 0.65;
     if (jogador.sentado) {
       jogador.x = CONFIG.cadeiraCaixa.x; jogador.z = CONFIG.cadeiraCaixa.z;
       jogador.angulo = Math.PI / 2;
@@ -228,7 +228,7 @@ export class Simulacao {
     if (this.clientes.some(c => distancia(c, CONFIG.entrada) < CONFIG.distanciaClientes)) return false;
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
     const produto = disponiveis[(this.proximaId - 1) % disponiveis.length];
-    this.clientes.push({ id: this.proximaId++, ...CONFIG.entrada, produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, cor: this.proximaId % 5, andando: false });
+    this.clientes.push({ id: this.proximaId++, ...CONFIG.entrada, produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, cor: this.proximaId % 5, andando: false, temCesta: false, levaSacolas: false });
     return true;
   }
   atualizarClientes(dt) {
@@ -238,6 +238,7 @@ export class Simulacao {
     for (const c of this.clientes) {
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
       if (c.fase === 'chegando') {
+        if (c.x < CONFIG.entrada.x - 0.45) c.temCesta = true;
         const espera = this.clientes.filter(outro => outro.produto === c.produto && ['chegando', 'comprando'].includes(outro.fase));
         const indice = espera.indexOf(c);
         const destino = { x: p.cliente.x - Math.floor(indice / 3) * CONFIG.espacoClientes, z: p.cliente.z + (indice % 3) * CONFIG.espacoClientes };
@@ -272,6 +273,7 @@ export class Simulacao {
       if (this.progressoCaixa >= CONFIG.tempoCaixa) {
         const valor = primeiro.quantidade * PRODUTOS[primeiro.produto].preco;
         this.estado.dinheiro += valor; this.estado.estatisticas.faturamento += valor; this.estado.estatisticas.clientes++;
+        primeiro.embalado = true; primeiro.temCesta = false; primeiro.levaSacolas = true;
         primeiro.fase = 'saindo'; primeiro.etapa = 0;
         this.progressoCaixa = 0;
         this.emitir('venda', { valor, ponto: CONFIG.caixa });

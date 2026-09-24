@@ -122,6 +122,41 @@ function criarCesta(cor = 0xe50918, corBorda = 0xff2933, corAlca = 0x17191b) {
   return cesta;
 }
 
+function criarSacola() {
+  const sacola = new THREE.Group();
+  // Uma casca aberta, com cantos unidos e laterais dobradas para dentro.
+  const abertura = [
+    [-0.4, 0.7, -0.26], [0.4, 0.72, -0.26], [0.35, 0.68, 0],
+    [0.4, 0.73, 0.26], [-0.4, 0.71, 0.26], [-0.35, 0.67, 0]
+  ];
+  const base = abertura.map(([x, , z]) => [x * 0.84, 0.025, z * 0.84]);
+  const interior = abertura.map(([x, y, z]) => [x * 0.94, y - 0.012, z * 0.94]);
+  const fundo = base.map(([x, , z]) => [x * 0.94, 0.045, z * 0.94]);
+  const face = (pontos, cor) => {
+    const geometria = new THREE.BufferGeometry();
+    geometria.setAttribute('position', new THREE.Float32BufferAttribute(pontos.flat(), 3));
+    geometria.setIndex([0, 1, 2, 0, 2, 3]); geometria.computeVertexNormals();
+    sacola.add(objeto(geometria, cor));
+  };
+  for (let i = 0; i < abertura.length; i++) {
+    const j = (i + 1) % abertura.length;
+    const dobra = abertura[i].map((v, eixo) => eixo === 1 ? v - 0.045 : v);
+    const proximaDobra = abertura[j].map((v, eixo) => eixo === 1 ? v - 0.045 : v);
+    const cor = [0xb38350, 0x95663e, 0xa37343, 0xbd8b54, 0x98693e, 0xaa7848][i];
+    face([base[i], dobra, proximaDobra, base[j]], cor);
+    face([dobra, abertura[i], abertura[j], proximaDobra], 0xc99a62);
+    face([fundo[j], interior[j], interior[i], fundo[i]], 0xd0a16a);
+    face([abertura[i], interior[i], interior[j], abertura[j]], 0xe0b984);
+  }
+  caixa(sacola, 0.68, 0.04, 0.44, 0xb38350, 0, 0.02, 0);
+  sacola.userData.conteudo = new THREE.Group(); sacola.add(sacola.userData.conteudo);
+  return sacola;
+}
+
+function posicaoProdutoSacola(indice) {
+  return new THREE.Vector3(indice % 2 ? 0.16 : -0.16, 0.69 + Math.floor(indice / 2) * 0.08, indice % 2 ? 0.09 : -0.09);
+}
+
 export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = []) {
   const g = new THREE.Group();
   const corpo = new THREE.Group(); g.add(corpo);
@@ -181,11 +216,13 @@ export class Cena {
     this.cena.add(sol);
     this.alvoCamera = new THREE.Vector3(-0.5, 0, 0.8);
     this.construirMundo();
+    this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.set(5.15, 1.31, 4.82); this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
+    this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
     this.jogador = personagem(0xf8ecd1, 0xe9b489, true); this.cena.add(this.jogador);
     this.clientes = new Map(); this.labels = [];
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) this.construirEstacao(id, p);
-    this.caixeiro = personagem(0x428b88, 0x9b6848); this.caixeiro.position.set(4.2, 0.23, 3.15); this.caixeiro.rotation.y = Math.PI / 2; this.cena.add(this.caixeiro);
+    this.caixeiro = personagem(0x428b88, 0x9b6848); this.caixeiro.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z); this.caixeiro.rotation.y = Math.PI / 2; this.cena.add(this.caixeiro);
     this.caixeiro.userData.cesta.visible = false;
     posicionarBraco(this.caixeiro.userData.bracoE, new THREE.Vector3(-0.34, 0.45, 0));
     posicionarBraco(this.caixeiro.userData.bracoD, new THREE.Vector3(0.34, 0.45, 0));
@@ -215,12 +252,38 @@ export class Cena {
     caixa(c, 1.35, 0.95, 2.7, 0x297b61, 5.5, 0.65, 4.1);
     caixa(c, 1.53, 0.17, 2.9, 0xfaf3d7, 5.5, 1.2, 4.1);
     caixa(c, 1.0, 0.025, 1.5, 0x384d46, 5.5, 1.31, 4.5);
-    caixa(c, 0.5, 0.13, 0.42, 0x274839, 5.5, 1.38, 3.28);
-    const monitor = caixa(c, 0.47, 0.4, 0.1, 0x354d42, 5.5, 1.63, 3.25); monitor.rotation.x = -0.25;
-    caixa(c, 0.36, 0.25, 0.02, 0xc4e4a5, 5.5, 1.65, 3.31);
-    caixa(c, 0.17, 0.018, 0.45, 0xffffff, 5.12, 1.3, 3.55);
-    const circulo = new THREE.Mesh(new THREE.RingGeometry(0.82, 0.9, 48), new THREE.MeshBasicMaterial({ color: 0x318466, transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
-    circulo.rotation.x = -Math.PI / 2; circulo.position.set(3.9, 0.225, 4.1); c.add(circulo);
+    // Computador do caixa: base, coluna, monitor e tela.
+    caixa(c, 0.5, 0.13, 0.42, 0x274839, 5.12, 1.38, 4.1);
+    caixa(c, 0.08, 0.13, 0.08, 0x354d42, 5.12, 1.5, 4.1);
+    const monitor = caixa(c, 0.47, 0.4, 0.1, 0x354d42, 5.12, 1.63, 4.1); monitor.rotation.x = -0.25; monitor.rotation.y = -Math.PI / 2;
+    const tela = caixa(c, 0.36, 0.25, 0.02, 0xc4e4a5, 5.06, 1.65, 4.1); tela.rotation.y = -Math.PI / 2;
+    // Teclado compacto na frente do monitor.
+    const teclado = caixa(c, 0.52, 0.035, 0.2, 0x354d42, 4.83, 1.315, 4.1); teclado.rotation.y = Math.PI / 2;
+    for (let linha = 0; linha < 2; linha++) for (let tecla = 0; tecla < 6; tecla++) {
+      const teclaMesh = caixa(c, 0.045, 0.012, 0.035, 0xb6c7a0, 4.78 + linha * 0.07, 1.339, 3.89 + tecla * 0.084); teclaMesh.rotation.y = Math.PI / 2;
+    }
+    // Leitor de código de barras com janela vermelha.
+    caixa(c, 0.3, 0.065, 0.24, 0x354d42, 5.05, 1.34, 4.0);
+    caixa(c, 0.2, 0.012, 0.11, 0xe86b55, 5.05, 1.379, 4.0);
+    // Maquininha de cartão com tela e teclas.
+    caixa(c, 0.27, 0.09, 0.3, 0x344b58, 5.96, 1.36, 3.75);
+    caixa(c, 0.19, 0.018, 0.1, 0xb9d9a2, 5.96, 1.414, 3.68);
+    for (let linha = 0; linha < 2; linha++) for (let tecla = 0; tecla < 3; tecla++) {
+      caixa(c, 0.035, 0.012, 0.03, 0xe8d9b6, 5.91 + tecla * 0.05, 1.414, 3.75 + linha * 0.045);
+    }
+    // Impressora de recibos e papel saindo pela abertura.
+    caixa(c, 0.38, 0.19, 0.32, 0x52616b, 5.85, 1.38, 3.03);
+    caixa(c, 0.24, 0.012, 0.035, 0x263b37, 5.85, 1.482, 3.03);
+    caixa(c, 0.16, 0.012, 0.2, 0xffffff, 5.85, 1.49, 2.91);
+    // Gaveta de dinheiro na face voltada para o caixa.
+    caixa(c, 0.45, 0.16, 0.62, 0x354d42, 4.94, 1.04, 4.95);
+    caixa(c, 0.025, 0.1, 0.56, 0x52616b, 4.70, 1.07, 4.95);
+    caixa(c, 0.03, 0.025, 0.13, 0xb6c7a0, 4.68, 1.08, 4.95);
+    // Papel extra e pequeno suporte para sacolas.
+    caixa(c, 0.17, 0.018, 0.36, 0xffffff, 5.12, 1.3, 3.48);
+    caixa(c, 0.09, 0.018, 0.14, 0xd9d2b9, 5.5, 1.3, 3.98);
+    this.marcaCaixa = new THREE.Mesh(new THREE.RingGeometry(0.82, 0.9, 48), new THREE.MeshBasicMaterial({ color: 0x318466, transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
+    this.marcaCaixa.rotation.x = -Math.PI / 2; this.marcaCaixa.position.set(3.9, 0.225, 4.1); c.add(this.marcaCaixa);
     const cadeira = new THREE.Group();
     cadeira.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z);
     cadeira.rotation.y = Math.PI / 2; c.add(cadeira);
@@ -435,19 +498,100 @@ export class Cena {
     posicionarBraco(d.bracoE, maoE);
     posicionarBraco(d.bracoD, mao);
   }
+  animarAtendimento(modelo, tempo, ativo, progresso = 0) {
+    if (!ativo) return;
+    const fase = tempo * 8;
+    if (progresso > 0.52) {
+      const alcancando = Math.sin(fase) > 0;
+      posicionarBraco(modelo.userData.bracoE, alcancando
+        ? new THREE.Vector3(-0.42, 0.58, 1.02)
+        : new THREE.Vector3(-0.3, 0.84, 0.72));
+      posicionarBraco(modelo.userData.bracoD, !alcancando
+        ? new THREE.Vector3(0.42, 0.58, 1.02)
+        : new THREE.Vector3(0.3, 0.84, 0.72));
+      return;
+    }
+    const toque = Math.max(0, Math.sin(fase)) * 0.22;
+    posicionarBraco(modelo.userData.bracoD, new THREE.Vector3(0.3, 0.86 - toque, 0.82));
+    posicionarBraco(modelo.userData.bracoE, new THREE.Vector3(-0.3, 0.86 - Math.max(0, Math.sin(fase + Math.PI)) * 0.16, 0.76));
+  }
+  atualizarEmbalagem(sim) {
+    const cliente = sim.clientes.filter(c => c.fase === 'fila').sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
+    if (!cliente || sim.progressoCaixa <= 0) {
+      this.sacolaEmbalagem.visible = false; this.itensEmbalagem.visible = false;
+      this.clienteEmbalandoId = null;
+      return null;
+    }
+    if (this.clienteEmbalandoId !== cliente.id) {
+      liberarGeometrias(this.itensEmbalagem);
+      this.clienteEmbalandoId = cliente.id;
+      for (let i = 0; i < cliente.quantidade; i++) this.itensEmbalagem.add(criarProduto(cliente.produto, 0.82));
+    }
+    const progresso = THREE.MathUtils.clamp(sim.progressoCaixa / CONFIG.tempoCaixa, 0, 1);
+    this.sacolaEmbalagem.visible = true; this.itensEmbalagem.visible = true;
+    this.itensEmbalagem.children.forEach((item, i) => {
+      const inicio = 0.08 + i * 0.22;
+      const t = THREE.MathUtils.clamp((progresso - inicio) / 0.34, 0, 1);
+      const origem = new THREE.Vector3(5.5, 1.39, 4.5 + (i - (cliente.quantidade - 1) / 2) * 0.13);
+      const destino = posicaoProdutoSacola(i).add(this.sacolaEmbalagem.position);
+      item.position.copy(origem).lerp(destino, t);
+      if (t < 1) item.position.y += Math.sin(t * Math.PI) * 0.32;
+    });
+    return { cliente, progresso };
+  }
   atualizar(dt) {
     const sim = this.sim, e = sim.estado, tempo = sim.tempo;
     const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(-0.7, 0, 0.5);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(12, 24, 18)); this.camera.lookAt(this.alvoCamera);
     this.animarPersonagem(this.jogador, e.jogador, dt, tempo, e.jogador.inventario);
+    const atendendoNoCaixa = sim.progressoCaixa > 0;
+    const progressoCaixa = sim.progressoCaixa / CONFIG.tempoCaixa;
+    this.animarAtendimento(this.jogador, tempo, atendendoNoCaixa && !e.melhorias.caixa && e.jogador.sentado, progressoCaixa);
+    const embalagem = this.atualizarEmbalagem(sim);
     const cores = [0x72a9bb, 0xd7a35d, 0xa995c6, 0xd77c73, 0x6a9c7d];
     for (const c of sim.clientes) {
-      if (!this.clientes.has(c.id)) { const m = personagem(cores[c.cor], c.id % 2 ? 0xebbe92 : 0x9a674b, false, [0x1d654b, 0x3d8a65, 0x254233]); this.clientes.set(c.id, m); this.cena.add(m); }
-      this.animarPersonagem(this.clientes.get(c.id), c, dt, tempo + c.id, Array(c.quantidade).fill(c.produto), 'prateleira', 0.55);
+      if (!this.clientes.has(c.id)) {
+        const m = personagem(cores[c.cor], c.id % 2 ? 0xebbe92 : 0x9a674b, false, [0x1d654b, 0x3d8a65, 0x254233]);
+        m.userData.sacolas = new THREE.Group(); m.userData.corpo.add(m.userData.sacolas);
+        const sacola = criarSacola(); sacola.position.set(0, 0.18, 0.58); sacola.visible = false; m.userData.sacolas.add(sacola);
+        this.clientes.set(c.id, m); this.cena.add(m);
+      }
+      const modelo = this.clientes.get(c.id);
+      this.animarPersonagem(modelo, c, dt, tempo + c.id, Array(c.quantidade).fill(c.produto), 'prateleira', 0.55);
+      modelo.userData.cesta.visible = !!c.temCesta && !c.levaSacolas;
+      modelo.userData.sacolas.children.forEach((sacola, i) => {
+        sacola.visible = !!c.levaSacolas;
+        sacola.rotation.z = c.andando ? Math.sin(tempo * 8 + i) * 0.025 : 0;
+        if (c.levaSacolas) {
+          // As duas mãos apoiam a mesma sacola junto ao corpo.
+          for (const [braco, lado] of [[modelo.userData.bracoE, -1], [modelo.userData.bracoD, 1]]) {
+            const apoio = new THREE.Vector3(lado * 0.37, 0.25, 0.03).applyQuaternion(sacola.quaternion).add(sacola.position);
+            posicionarBraco(braco, apoio);
+          }
+        }
+        if (c.levaSacolas && !sacola.userData.cheia) {
+          for (let indice = 0; indice < c.quantidade; indice++) {
+            const produto = criarProduto(c.produto, 0.82);
+            produto.position.copy(posicaoProdutoSacola(indice));
+            sacola.userData.conteudo.add(produto);
+          }
+          sacola.userData.cheia = true;
+        }
+      });
+      if (embalagem?.cliente === c) {
+        const embalados = Math.floor(embalagem.progresso * c.quantidade);
+        modelo.userData.carga.children.forEach((produto, i) => { if (i < embalados) produto.visible = false; });
+      }
     }
     for (const [id, m] of this.clientes) if (!sim.clientes.some(c => c.id === id)) { this.cena.remove(m); liberarGeometrias(m); this.clientes.delete(id); }
     this.caixeiro.visible = !!e.melhorias.caixa;
+    this.marcaCaixa.visible = !this.caixeiro.visible;
+    if (this.caixeiro.visible) {
+      this.animarPersonagem(this.caixeiro, { x: CONFIG.cadeiraCaixa.x, z: CONFIG.cadeiraCaixa.z, angulo: Math.PI / 2, andando: false, sentado: true }, dt, tempo);
+      this.animarAtendimento(this.caixeiro, tempo, atendendoNoCaixa, progressoCaixa);
+      this.caixeiro.userData.corpo.rotation.z = Math.sin(tempo * 1.8) * 0.018;
+    }
     this.ajudante.visible = !!e.melhorias.ajudante;
     if (this.ajudante.visible) this.animarPersonagem(this.ajudante, sim.ajudante, dt, tempo, sim.ajudante.inventario, 'horta', 0.44);
     for (const [id, objetos] of Object.entries(this.produtos)) {
