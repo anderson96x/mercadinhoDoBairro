@@ -40,11 +40,11 @@ export const PRODUTOS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
-  { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 14.', custo: 80, icone: 'milho', max: 1, tipo: 'produto' },
-  { id: 'mochila', titulo: 'Cabe mais um pouco', descricao: 'Leve mais 4 produtos por viagem.', custo: 60, multiplicador: 1.75, icone: 'mochila', max: 3 },
-  { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 90, multiplicador: 1.8, icone: 'raio', max: 3 },
-  { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 140, icone: 'pessoa', max: 1 },
-  { id: 'ajudante', titulo: 'Ajuda na reposição', descricao: 'Um ajudante colhe e abastece suas prateleiras.', custo: 220, icone: 'cesta', max: 1 }
+  { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 14.', custo: 80, icone: 'milho', max: 1, tipo: 'produto', categoria: 'mercado' },
+  { id: 'mochila', titulo: 'Cabe mais um pouco', descricao: 'Leve mais 4 produtos por viagem.', custo: 60, multiplicador: 1.75, icone: 'mochila', max: 3, categoria: 'jogador' },
+  { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 90, multiplicador: 1.8, icone: 'raio', max: 3, categoria: 'jogador' },
+  { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 140, icone: 'pessoa', max: 1, categoria: 'funcionarios' },
+  { id: 'ajudante', titulo: 'Ajuda na reposição', descricao: 'Um ajudante colhe e abastece suas prateleiras.', custo: 220, icone: 'cesta', max: 1, categoria: 'funcionarios' }
 ];
 
 export const MISSOES = [

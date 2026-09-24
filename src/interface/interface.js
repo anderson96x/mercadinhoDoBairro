@@ -1,10 +1,15 @@
 import { icone } from './icones.js';
 import { MELHORIAS, PRODUTOS, MISSOES } from '../jogo/configuracao.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
+const ABAS_MELHORIAS = [
+  { id: 'mercado', titulo: 'Mercado' },
+  { id: 'funcionarios', titulo: 'Funcionários' },
+  { id: 'jogador', titulo: 'Jogador' }
+];
 
 export class Interface {
   constructor(sim, acoes) {
-    this.sim = sim; this.acoes = acoes; this.ultimoInventario = ''; this.ultimaAtualizacao = '';
+    this.sim = sim; this.acoes = acoes; this.ultimoInventario = ''; this.ultimaAtualizacao = ''; this.abaMelhorias = 'mercado';
     document.getElementById('app').innerHTML = `
       <main class="jogo" aria-label="Mercadinho do Bairro">
         <div id="mundo"></div><div id="etiquetas" aria-hidden="true"></div>
@@ -90,7 +95,10 @@ export class Interface {
     const titulos = { melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', pausa: 'Uma pausa para respirar', reiniciar: 'Começar do zero?', dev: 'Menu de desenvolvimento' };
     let conteudo = '';
     if (tipo === 'melhorias') {
-      conteudo = `<p class="painel-subtitulo">Cada venda abre novas possibilidades.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${MELHORIAS.map(m => {
+      const abaAtiva = ABAS_MELHORIAS.find(aba => aba.id === this.abaMelhorias) ?? ABAS_MELHORIAS[0];
+      const melhorias = MELHORIAS.filter(m => m.categoria === abaAtiva.id);
+      const abas = `<div class="abas-melhorias" role="tablist" aria-label="Tipo de melhoria">${ABAS_MELHORIAS.map(aba => `<button class="aba-melhoria ${aba.id === abaAtiva.id ? 'ativa' : ''}" id="aba-${aba.id}" role="tab" aria-selected="${aba.id === abaAtiva.id}" aria-controls="lista-melhorias" tabindex="${aba.id === abaAtiva.id ? 0 : -1}" data-aba-melhoria="${aba.id}">${aba.titulo}</button>`).join('')}</div>`;
+      conteudo = `<p class="painel-subtitulo">Cada venda abre novas possibilidades.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div>${abas}<div class="lista-melhorias" id="lista-melhorias" role="tabpanel" aria-labelledby="aba-${abaAtiva.id}">${melhorias.map(m => {
         const nivel = this.sim.estado.melhorias[m.id], completa = nivel >= m.max, custo = this.sim.custoMelhoria(m.id), pode = this.sim.estado.dinheiro >= custo;
         const nivelExibido = m.id === 'mochila' ? nivel + 1 : nivel;
         const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
@@ -110,6 +118,10 @@ export class Interface {
     }
     this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
     this.el('painel').querySelectorAll('[data-fechar]').forEach(b => b.onclick = () => this.fechar());
+    this.el('painel').querySelectorAll('[data-aba-melhoria]').forEach(b => b.onclick = () => {
+      this.abaMelhorias = b.dataset.abaMelhoria;
+      this.renderizarPainel();
+    });
     this.el('painel').querySelectorAll('[data-melhoria]').forEach(b => b.onclick = () => {
       const resultado = this.acoes.comprar(b.dataset.melhoria);
       if (resultado.sucesso) this.renderizarPainel(); else this.mensagem(resultado.motivo);
