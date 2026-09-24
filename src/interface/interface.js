@@ -1,4 +1,5 @@
 import { icone } from './icones.js';
+import { PALETAS } from '../jogo/personalizacao.js';
 import { MELHORIAS, PRODUTOS, MISSOES } from '../jogo/configuracao.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
@@ -61,6 +62,16 @@ export class Interface {
   }
   atualizar() {
     const s = this.sim, e = s.estado, m = s.missao();
+    const identidade = JSON.stringify(e.personalizacao);
+    if (identidade !== this.ultimaIdentidade) {
+      const marca = document.querySelector('.marca h1');
+      marca.textContent = e.personalizacao.nome;
+      const slogan = document.createElement('span'); slogan.textContent = e.personalizacao.slogan; marca.append(slogan);
+      marca.title = `${e.personalizacao.nome} · ${e.personalizacao.slogan}`;
+      const paleta = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
+      document.documentElement.style.setProperty('--verde', paleta.principal);
+      this.ultimaIdentidade = identidade;
+    }
     this.el('saldo').textContent = reais(e.dinheiro);
     this.el('clientes').textContent = e.estatisticas.clientes;
     this.el('nivel').textContent = `NÍVEL ${s.nivel}`;
@@ -104,6 +115,16 @@ export class Interface {
         const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
         return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.max > 1 ? `<span class="nivel-melhoria">Nível ${nivel} de ${m.max}</span>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${completa ? m.titulo + ' concluída' : 'Comprar ' + m.titulo + ' por ' + reais(custo)}">${completa ? icone('certo') + ' Pronto' : reais(custo)}</button></div>`;
       }).join('')}</div>`;
+    } else if (tipo === 'personalizacao') {
+      titulos.personalizacao = 'Sua loja, do seu jeito';
+      conteudo = `<p class="painel-subtitulo">Dê personalidade ao seu cantinho do bairro.</p>
+        <form id="form-personalizacao" class="form-personalizacao">
+          <div class="previa-loja" id="previa-loja"><small>SEU MERCADINHO</small><strong id="previa-nome"></strong><span id="previa-slogan"></span><div class="previa-toldo"></div></div>
+          <label for="nome-loja">Nome do mercadinho</label><input id="nome-loja" name="nome" maxlength="32" required autocomplete="off">
+          <label for="slogan-loja">Slogan</label><input id="slogan-loja" name="slogan" maxlength="60" required autocomplete="off">
+          <fieldset><legend>Paleta de cores</legend><div class="paletas-loja">${PALETAS.map(p => `<label class="paleta-loja"><input type="radio" name="paleta" value="${p.id}" ${p.id === this.sim.estado.personalizacao.paleta ? 'checked' : ''}><span class="paleta-cores" aria-hidden="true">${[p.principal,p.destaque,p.parede,p.piso].map(cor => `<i style="background:${cor}"></i>`).join('')}</span><span>${p.nome}</span></label>`).join('')}</div></fieldset>
+          <button type="submit" class="botao-principal">Salvar personalização</button><button type="button" class="botao-secundario" id="voltar-personalizacao">Voltar ao menu</button>
+        </form>`;
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p></div></div>
@@ -128,6 +149,10 @@ export class Interface {
       this.atualizar();
     });
     if (tipo === 'pausa') {
+      const personalizar = document.createElement('button'); personalizar.className = 'botao-secundario';
+      personalizar.textContent = 'Personalizar mercadinho';
+      personalizar.onclick = () => this.abrir('personalizacao');
+      this.el('como-jogar').before(personalizar);
       const somBotao = document.createElement('button'); somBotao.className = 'botao-secundario';
       somBotao.innerHTML = `${icone(this.sim.estado.som ? 'som' : 'mudo')} ${this.sim.estado.som ? 'Desativar sons' : 'Ativar sons'}`;
       somBotao.onclick = () => { this.acoes.som(); this.atualizarSom(); this.renderizarPainel(); };
@@ -149,6 +174,25 @@ export class Interface {
       this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-100);
       this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(100);
       this.el('dev-reset').onclick = () => this.abrir('reiniciar');
+    }
+    if (tipo === 'personalizacao') {
+      const form = this.el('form-personalizacao');
+      this.el('nome-loja').value = this.sim.estado.personalizacao.nome;
+      this.el('slogan-loja').value = this.sim.estado.personalizacao.slogan;
+      const atualizarPrevia = () => {
+        const paleta = PALETAS.find(p => p.id === form.elements.paleta.value) || PALETAS[0];
+        this.el('previa-nome').textContent = form.elements.nome.value || 'Seu mercadinho';
+        this.el('previa-slogan').textContent = form.elements.slogan.value;
+        this.el('previa-loja').style.setProperty('--cor-loja', paleta.principal);
+        this.el('previa-loja').style.setProperty('--cor-toldo', paleta.destaque);
+      };
+      form.oninput = atualizarPrevia; atualizarPrevia();
+      form.onsubmit = evento => {
+        evento.preventDefault();
+        const salvo = this.acoes.personalizar(Object.fromEntries(new FormData(form)));
+        if (salvo) this.mensagem('Seu mercadinho ganhou uma nova identidade!');
+      };
+      this.el('voltar-personalizacao').onclick = () => this.abrir('pausa');
     }
   }
   mensagem(texto) {

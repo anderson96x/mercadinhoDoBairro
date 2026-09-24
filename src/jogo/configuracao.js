@@ -13,27 +13,30 @@ export const CONFIG = {
   espacoClientes: 1.15,
   distanciaClientes: 1.05,
   limiteMundo: { minX: -10.5, maxX: 10.5, minZ: -8, maxZ: 9 },
-  inicio: { x: -2.8, z: 3.4 },
-  caixa: { x: 4.5, z: 4.1 },
-  cadeiraCaixa: { x: 3.9, z: 4.1 },
-  entrada: { x: 8.5, z: 8.4 },
-  anguloCamera: Math.atan2(12, 18)
+  inicio: { x: -1.8, z: 3.4 },
+  caixa: { x: 0.5, z: 4.1 },
+  balcao: { x: 1.5, z: 4.1 },
+  clienteCaixa: { x: 3.1, z: 4.1 },
+  cadeiraCaixa: { x: -0.1, z: 4.1 },
+  entrada: { x: -1.3, z: 8.4 },
+  anguloCamera: Math.PI / 4,
+  cameraIsometrica: { x: 18, y: 18, z: 18 }
 };
 
 export const PRODUTOS = {
   tomate: {
     nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 8,
     tempoCrescimento: 1.8, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -6.6, z: -2.8 }, coleta: { x: -5.3, z: -1.7 },
-    prateleira: { x: 0.4, z: -1.8 }, reposicao: { x: -0.6, z: -0.1 },
-    cliente: { x: 1.4, z: -0.1 }, liberado: true
+    horta: { x: -6.6, z: -2.8 }, coleta: { x: -5.0, z: -1.7 },
+    prateleira: { x: 3, z: -0.5 }, reposicao: { x: 2, z: 1.2 },
+    cliente: { x: 4, z: 1.2 }, liberado: true
   },
   milho: {
     nome: 'Milho', plural: 'Milhos', cor: 0xf6c844, preco: 14,
     tempoCrescimento: 2.8, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -6.6, z: 3.4 }, coleta: { x: -5.3, z: 3.4 },
-    prateleira: { x: 4.5, z: -1.8 }, reposicao: { x: 3.5, z: -0.1 },
-    cliente: { x: 5.5, z: -0.1 }, liberado: false
+    horta: { x: -6.6, z: 3.4 }, coleta: { x: -5.0, z: 3.4 },
+    prateleira: { x: 4.5, z: -3.8 }, reposicao: { x: 3.5, z: -2.1 },
+    cliente: { x: 5.5, z: -2.1 }, liberado: false
   }
 };
 

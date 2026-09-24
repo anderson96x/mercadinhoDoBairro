@@ -14,6 +14,7 @@ import { Cena } from './jogo/cena.js';
 import { Controles } from './jogo/controles.js';
 import { Sons } from './jogo/audio.js';
 import { Interface } from './interface/interface.js';
+import { validarPersonalizacao } from './jogo/personalizacao.js';
 
 const sim = new Simulacao(carregar());
 const sons = new Sons();
@@ -46,6 +47,11 @@ function reiniciar() {
 }
 const ui = new Interface(sim, {
   pausar, comprar, alterarSaldo,
+  personalizar: dados => {
+    sim.estado.personalizacao = validarPersonalizacao(dados);
+    const salvo = gravar(); ui.atualizar();
+    return salvo;
+  },
   som: () => { sim.estado.som = !sim.estado.som; sons.ativar(sim.estado.som); gravar(); },
   reiniciar
 });

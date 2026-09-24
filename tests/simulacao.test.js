@@ -23,8 +23,8 @@ test('cinco clientes formam fila espaçada e são atendidos na ordem sem se atra
   const fila = sim.clientes.filter(c => c.fase === 'fila').sort((a, b) => a.ordemFila - b.ordemFila);
   assert.equal(fila.length, 5);
   fila.forEach((c, i) => {
-    assert.ok(Math.abs(c.x - 7.1) < 0.025);
-    assert.ok(Math.abs(c.z - (4.1 + i * CONFIG.espacoClientes)) < 0.025);
+    assert.ok(Math.abs(c.x - (CONFIG.clienteCaixa.x + i * CONFIG.espacoClientes)) < 0.025);
+    assert.ok(Math.abs(c.z - CONFIG.clienteCaixa.z) < 0.025);
   });
   sim.proximoCliente = Infinity;
   sim.estado.melhorias.caixa = 1;
@@ -49,7 +49,7 @@ test('jogador senta na cadeira, atende e levanta ao andar sem perder produtos', 
   const sim = new Simulacao();
   aproximar(sim, CONFIG.cadeiraCaixa);
   sim.estado.jogador.inventario = ['tomate'];
-  sim.clientes.push({ id: 1, x: 7.1, z: 4.1, fase: 'fila', quantidade: 2, produto: 'tomate' });
+  sim.clientes.push({ id: 1, ...CONFIG.clienteCaixa, fase: 'fila', quantidade: 2, produto: 'tomate' });
   sim.atualizar(0.05);
   assert.equal(sim.estado.jogador.sentado, true);
   assert.equal(sim.estado.jogador.angulo, Math.PI / 2);
@@ -84,11 +84,11 @@ test('colheita e reposição funcionam em todos os lados das estações', () => 
 test('caixa atende por qualquer lado, mas não quando o jogador está longe', () => {
   for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
     const sim = new Simulacao();
-    sim.clientes.push({ x: 7.1, z: 4.1, fase: 'fila', quantidade: 2, produto: 'tomate' });
+    sim.clientes.push({ ...CONFIG.clienteCaixa, fase: 'fila', quantidade: 2, produto: 'tomate' });
     aproximar(sim, { x: -9, z: 8 });
     sim.atualizarCaixa(CONFIG.tempoCaixa);
     assert.equal(sim.estado.dinheiro, 0);
-    aproximar(sim, { x: 5.5 + dx * 1.265, z: 4.1 + dz * 1.95 });
+    aproximar(sim, { x: CONFIG.balcao.x + dx * 1.265, z: CONFIG.balcao.z + dz * 1.95 });
     sim.atualizarCaixa(CONFIG.tempoCaixa);
     assert.equal(sim.estado.dinheiro, 16);
   }
@@ -172,9 +172,9 @@ test('funcionários conseguem produzir e vender com o jogador distante', () => {
 
 test('movimento respeita obstáculos e limites do mapa; pausa congela o mundo', () => {
   const sim = new Simulacao();
-  aproximar(sim, { x: 0.4, z: 0.5 });
+  aproximar(sim, { x: PRODUTOS.tomate.prateleira.x, z: PRODUTOS.tomate.prateleira.z + 2.3 });
   for (let i=0;i<120;i++) sim.mover(sim.estado.jogador,0,-1,1/60,4);
-  assert.ok(sim.estado.jogador.z >= -0.68);
+  assert.ok(sim.estado.jogador.z >= PRODUTOS.tomate.prateleira.z + 1.1);
   aproximar(sim, { x: -10, z: 8 });
   for (let i=0;i<100;i++) sim.mover(sim.estado.jogador,-1,0,1/60,4);
   assert.ok(sim.estado.jogador.x >= CONFIG.limiteMundo.minX);

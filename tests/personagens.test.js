@@ -11,7 +11,7 @@ function preparar(origem = 'horta', duracao = 0.26) {
   return { modelo, d: modelo.userData, animar };
 }
 
-test('sentar coloca a cesta no chão e levantar recupera a cesta e a postura', () => {
+test('sentar e levantar preserva os produtos nas mãos do jogador', () => {
   const modelo = personagem(0xffffff, 0xf2c49c, true);
   const ator = { x: 3.9, z: 4.1, angulo: Math.PI / 2, sentado: true, andando: false };
   const d = modelo.userData;
@@ -21,8 +21,8 @@ test('sentar coloca a cesta no chão e levantar recupera a cesta e a postura', (
   assert.ok(d.coxas.every(c => c.visible));
   modelo.updateMatrixWorld(true);
   const cesta = d.cesta.getWorldPosition(d.cesta.position.clone());
-  assert.ok(Math.abs(cesta.y - 0.23) < 1e-8);
-  assert.ok(Math.abs(cesta.z - 5.1) < 1e-8);
+  assert.ok(cesta.y > 0.23);
+  assert.equal(d.cesta.children.filter(m => m.isMesh).length, 0);
   assert.equal(d.carga.children.length, 2);
   animar(0);
   assert.equal(d.sentar, 1);
@@ -31,7 +31,7 @@ test('sentar coloca a cesta no chão e levantar recupera a cesta e a postura', (
   assert.equal(d.sentar, 0);
   assert.ok(d.coxas.every(c => !c.visible));
   assert.equal(d.cesta.position.x, 0);
-  assert.equal(d.cesta.position.z, 0.58);
+  assert.equal(d.cesta.position.z, 0.5);
   assert.equal(d.carga.children.length, 2);
 });
 

@@ -1,3 +1,5 @@
+import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
+import { PAREDES_LOJA, MOBILIARIO_LOJA } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES } from './configuracao.js';
 import { buscarCaminho } from './navegacao.js';
 
@@ -16,6 +18,7 @@ export function estadoInicial() {
   return {
     versao: CONFIG.versaoSalvamento, dinheiro: CONFIG.dinheiroInicial,
     jogador: { ...CONFIG.inicio, inventario: [] },
+    personalizacao: { ...PERSONALIZACAO_PADRAO },
     melhorias: Object.fromEntries(MELHORIAS.map(m => [m.id, 0])),
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0
@@ -32,6 +35,7 @@ export function validarEstado(dados) {
   if (!dados || dados.versao !== CONFIG.versaoSalvamento) return base;
   const numero = (v, max = 1e9) => Number.isFinite(v) ? limitar(Math.floor(v), 0, max) : 0;
   base.dinheiro = numero(dados.dinheiro);
+  base.personalizacao = validarPersonalizacao(dados.personalizacao);
   for (const m of MELHORIAS) base.melhorias[m.id] = numero(dados.melhorias?.[m.id], m.max);
   for (const [id, p] of Object.entries(PRODUTOS)) {
     const salvo = dados.produtos?.[id];
@@ -64,7 +68,7 @@ export class Simulacao {
     this.progressoCaixa = 0;
     this.atividade = '';
     this.pausado = false;
-    this.ajudante = { x: -3, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false };
+    this.ajudante = { x: -1.8, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false };
     this.missaoAnterior = this.missao().indice;
   }
   get capacidade() { return CONFIG.capacidadeInicial + this.estado.melhorias.mochila * 4; }
@@ -100,12 +104,11 @@ export class Simulacao {
   obstaculos() {
     const caixas = [
       { x: -6.6, z: -2.8, w: 2.2, d: 3.3 },
-      { x: 0.4, z: -1.8, w: 2.2, d: 1.7 },
-      { x: 5.5, z: 4.1, w: 1.35, d: 2.7 },
-      { x: 3, z: -6, w: 12.2, d: 0.35 },
-      { x: 9, z: -2, w: 0.35, d: 8 }
+      { ...PRODUTOS.tomate.prateleira, w: 2.2, d: 1.7 },
+      { ...CONFIG.balcao, w: 1.35, d: 2.7 },
+      ...PAREDES_LOJA, ...MOBILIARIO_LOJA
     ];
-    if (this.estado.produtos.milho.liberado) caixas.push({ x: -6.6, z: 3.4, w: 2.2, d: 3.3 }, { x: 4.5, z: -1.8, w: 2.2, d: 1.7 });
+    if (this.estado.produtos.milho.liberado) caixas.push({ x: -6.6, z: 3.4, w: 2.2, d: 3.3 }, { ...PRODUTOS.milho.prateleira, w: 2.2, d: 1.7 });
     return caixas;
   }
   mover(ator, dx, dz, dt, velocidade, colisao = true) {
@@ -124,7 +127,7 @@ export class Simulacao {
     this.mover(ator, (ponto.x - ator.x) / d, (ponto.z - ator.z) / d, dt, velocidade, false);
     return false;
   }
-  caminharCliente(ator, ponto, dt) {
+  caminharCliente(ator, ponto, dt, velocidade = 2.4) {
     ator.andando = false;
     if (distancia(ator, ponto) < 0.025) return true;
     if (!dt) return false;
@@ -161,7 +164,7 @@ export class Simulacao {
       if (!rota.pontos.length) return false;
       alvo = rota.pontos[0];
     } else this.caminhosClientes.delete(ator);
-    const d = distancia(ator, alvo), passo = Math.min(d, 2.4 * dt);
+    const d = distancia(ator, alvo), passo = Math.min(d, velocidade * dt);
     const proximo = { x: ator.x + (alvo.x - ator.x) / d * passo, z: ator.z + (alvo.z - ator.z) / d * passo };
     if (!livre(ator, proximo)) return false;
     ator.angulo = Math.atan2(proximo.x - ator.x, proximo.z - ator.z);
@@ -238,7 +241,7 @@ export class Simulacao {
     for (const c of this.clientes) {
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
       if (c.fase === 'chegando') {
-        if (c.x < CONFIG.entrada.x - 0.45) c.temCesta = true;
+        if (c.z < 6.3) c.temCesta = true;
         const espera = this.clientes.filter(outro => outro.produto === c.produto && ['chegando', 'comprando'].includes(outro.fase));
         const indice = espera.indexOf(c);
         const destino = { x: p.cliente.x - Math.floor(indice / 3) * CONFIG.espacoClientes, z: p.cliente.z + (indice % 3) * CONFIG.espacoClientes };
@@ -253,11 +256,11 @@ export class Simulacao {
         }
         if (c.quantidade >= c.desejado || (c.quantidade > 0 && c.espera > 2.5)) { c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++; }
       } else if (c.fase === 'indoCaixa') {
-        const indice = fila.indexOf(c), z = 4.1 + indice * CONFIG.espacoClientes;
-        if (this.caminharCliente(c, { x: 7.1, z }, dt)) c.fase = 'fila';
+        const indice = fila.indexOf(c), x = CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes;
+        if (this.caminharCliente(c, { x, z: CONFIG.clienteCaixa.z }, dt)) c.fase = 'fila';
       } else if (c.fase === 'fila') {
         const indice = Math.max(0, fila.indexOf(c));
-        if (this.caminharCliente(c, { x: 7.1, z: 4.1 + indice * CONFIG.espacoClientes }, dt)) { c.andando = false; c.angulo = -Math.PI / 2; }
+        if (this.caminharCliente(c, { x: CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes, z: CONFIG.clienteCaixa.z }, dt)) { c.andando = false; c.angulo = -Math.PI / 2; }
       } else if (c.fase === 'saindo') {
         if (this.caminharCliente(c, { x: 10.3, z: 9 }, dt)) c.fase = 'fim';
       }
@@ -266,8 +269,8 @@ export class Simulacao {
   }
   atualizarCaixa(dt) {
     const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
-    const atendendo = this.estado.melhorias.caixa || pertoEstacao(this.estado.jogador, { x: 5.5, z: 4.1 }, 1.53, 2.9);
-    if (primeiro?.fase === 'fila' && atendendo && distancia(primeiro, { x: 7.1, z: 4.1 }) < 0.2) {
+    const atendendo = this.estado.melhorias.caixa || pertoEstacao(this.estado.jogador, CONFIG.balcao, 1.53, 2.9);
+    if (primeiro?.fase === 'fila' && atendendo && distancia(primeiro, CONFIG.clienteCaixa) < 0.2) {
       this.progressoCaixa += dt;
       if (!this.estado.melhorias.caixa) this.atividade = 'Atendendo no caixa…';
       if (this.progressoCaixa >= CONFIG.tempoCaixa) {
@@ -286,13 +289,13 @@ export class Simulacao {
     a.temporizador -= dt;
     if (a.destino === 'horta') {
       // O corredor entre a horta e a loja permanece livre.
-      if (this.caminhar(a, p.coleta, dt, 2.8)) {
+      if (this.caminharCliente(a, p.coleta, dt, 2.8)) {
         if (e.horta && a.inventario.length < 4 && a.temporizador <= 0) {
           e.horta--; a.inventario.push(a.produto); a.temporizador = 0.5;
         }
         if (a.inventario.length >= 4 || (!e.horta && a.inventario.length)) a.destino = 'prateleira';
       }
-    } else if (this.caminhar(a, p.reposicao, dt, 2.8) && a.temporizador <= 0) {
+    } else if (this.caminharCliente(a, p.reposicao, dt, 2.8) && a.temporizador <= 0) {
       if (a.inventario.length && e.prateleira < p.capacidadePrateleira) {
         const indice = a.inventario.length - 1;
         e.prateleira++; a.inventario.pop(); a.temporizador = 0.4;
