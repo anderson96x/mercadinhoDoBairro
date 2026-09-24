@@ -28,6 +28,12 @@ function gravar() {
 }
 function pausar(valor) { sim.pausado = valor; if (controles) { controles.bloqueado = valor; controles.limpar(); } }
 function comprar(id) { const r = sim.comprarMelhoria(id); if (r.sucesso) gravar(); return r; }
+function alterarSaldo(valor) {
+  sim.estado.dinheiro = Math.max(0, sim.estado.dinheiro + valor);
+  gravar();
+  ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+}
 function reiniciar() {
   if (!salvar(estadoInicial())) {
     ui.mensagem('Não foi possível apagar o progresso salvo. Verifique o armazenamento do navegador.');
@@ -39,7 +45,7 @@ function reiniciar() {
   window.location.reload();
 }
 const ui = new Interface(sim, {
-  pausar, comprar,
+  pausar, comprar, alterarSaldo,
   som: () => { sim.estado.som = !sim.estado.som; sons.ativar(sim.estado.som); gravar(); },
   reiniciar
 });

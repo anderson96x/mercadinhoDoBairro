@@ -15,7 +15,7 @@ export class Interface {
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
             <button class="botao-icone" id="ajuda" title="Como jogar" aria-label="Como jogar">${icone('ajuda')}</button>
             <button class="botao-icone" id="pausa" title="Pausar" aria-label="Pausar">${icone('pausa')}</button>
-            ${import.meta.env.DEV ? `<button class="botao-icone reset-dev" id="reset-dev" title="DEV: zerar todo o progresso" aria-label="DEV: zerar todo o progresso">${icone('reiniciar')}<small>DEV</small></button>` : ''}
+            ${import.meta.env.DEV ? `<button class="botao-icone reset-dev" id="dev-menu" title="Abrir menu de desenvolvimento" aria-label="Abrir menu de desenvolvimento">${icone('dev')}<small>DEV</small></button>` : ''}
           </nav>
         </header>
         <aside class="objetivo" aria-label="Objetivo atual">
@@ -38,7 +38,7 @@ export class Interface {
     this.el('som').onclick = () => { this.acoes.som(); this.atualizarSom(); };
     this.el('ajuda').onclick = () => this.abrir('ajuda');
     this.el('pausa').onclick = () => this.abrir('pausa');
-    if (import.meta.env.DEV) this.el('reset-dev').onclick = () => this.acoes.reiniciar();
+    if (import.meta.env.DEV) this.el('dev-menu').onclick = () => this.abrir('dev');
     this.el('melhorias').onclick = () => this.abrir('melhorias');
     this.el('painel').addEventListener('cancel', e => { e.preventDefault(); this.fechar(); });
     this.el('painel').addEventListener('click', e => { if (e.target === this.el('painel')) this.fechar(); });
@@ -87,7 +87,7 @@ export class Interface {
   fechar() { this.el('painel').close(); this.tipoPainel = null; this.acoes.pausar(false); }
   renderizarPainel() {
     const tipo = this.tipoPainel;
-    const titulos = { melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', pausa: 'Uma pausa para respirar', reiniciar: 'Começar do zero?' };
+    const titulos = { melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', pausa: 'Uma pausa para respirar', reiniciar: 'Começar do zero?', dev: 'Menu de desenvolvimento' };
     let conteudo = '';
     if (tipo === 'melhorias') {
       conteudo = `<p class="painel-subtitulo">Cada venda abre novas possibilidades.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${MELHORIAS.map(m => {
@@ -103,6 +103,8 @@ export class Interface {
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'pausa') {
       conteudo = `<p class="painel-subtitulo">A loja espera por você.</p><div class="resumo-pausa"><div><strong>${reais(this.sim.estado.dinheiro)}</strong><span>em caixa</span></div><div><strong>${this.sim.estado.estatisticas.clientes}</strong><span>clientes atendidos</span></div></div><button class="botao-principal" data-fechar>${icone('jogar')} Continuar jogando</button><button class="botao-secundario" id="como-jogar">${icone('ajuda')} Como jogar</button><button class="botao-secundario" id="tela-cheia">${icone('tela')} ${document.fullscreenElement ? 'Sair da tela cheia' : 'Jogar em tela cheia'}</button><button class="botao-texto" id="reiniciar">Começar um novo jogo</button><p class="nota central">O progresso fica salvo neste navegador.</p>`;
+    } else if (tipo === 'dev') {
+      conteudo = `<p class="painel-subtitulo">Ferramentas para ajustar esta sessão de desenvolvimento.</p><div class="saldo-painel">${icone('moeda')} Saldo atual <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="dev-saldo-controles"><button class="botao-secundario" id="dev-remover" ${this.sim.estado.dinheiro < 100 ? 'disabled' : ''}>− R$ 100</button><button class="botao-secundario" id="dev-adicionar">+ R$ 100</button></div><button class="botao-principal perigo" id="dev-reset">${icone('reiniciar')} Zerar todo o progresso</button>`;
     } else {
       conteudo = `<p class="painel-subtitulo">O dinheiro, as melhorias e o progresso deste mercadinho serão apagados neste navegador.</p><button class="botao-principal perigo" id="confirmar-reinicio">${icone('reiniciar')} Apagar e começar de novo</button><button class="botao-secundario" id="cancelar-reinicio">Voltar para minha loja</button>`;
     }
@@ -130,6 +132,11 @@ export class Interface {
     if (tipo === 'reiniciar') {
       this.el('cancelar-reinicio').onclick = () => this.abrir('pausa');
       this.el('confirmar-reinicio').onclick = () => this.acoes.reiniciar();
+    }
+    if (tipo === 'dev') {
+      this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-100);
+      this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(100);
+      this.el('dev-reset').onclick = () => this.abrir('reiniciar');
     }
   }
   mensagem(texto) {
