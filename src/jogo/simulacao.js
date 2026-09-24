@@ -1,0 +1,243 @@
+import { CONFIG, PRODUTOS, MELHORIAS, MISSOES } from './configuracao.js';
+
+export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
+
+export function estadoInicial() {
+  return {
+    versao: CONFIG.versaoSalvamento, dinheiro: CONFIG.dinheiroInicial,
+    jogador: { ...CONFIG.inicio, inventario: [] },
+    melhorias: Object.fromEntries(MELHORIAS.map(m => [m.id, 0])),
+    produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
+      liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0
+    }])),
+    estatisticas: { colhidos: 0, repostos: 0, clientes: 0, faturamento: 0 },
+    som: false
+  };
+}
+
+// O estado persistente contém apenas números, booleanos e listas pequenas.
+// Clientes e animações são transitórios; inventário e estoque são preservados.
+export function validarEstado(dados) {
+  const base = estadoInicial();
+  if (!dados || dados.versao !== CONFIG.versaoSalvamento) return base;
+  const numero = (v, max = 1e9) => Number.isFinite(v) ? limitar(Math.floor(v), 0, max) : 0;
+  base.dinheiro = numero(dados.dinheiro);
+  for (const m of MELHORIAS) base.melhorias[m.id] = numero(dados.melhorias?.[m.id], m.max);
+  for (const [id, p] of Object.entries(PRODUTOS)) {
+    const salvo = dados.produtos?.[id];
+    const liberado = p.liberado || base.melhorias[id] > 0;
+    base.produtos[id] = {
+      liberado, horta: liberado ? numero(salvo?.horta ?? p.capacidadeHorta, p.capacidadeHorta) : 0,
+      prateleira: liberado ? numero(salvo?.prateleira, p.capacidadePrateleira) : 0, crescimento: 0
+    };
+  }
+  for (const id of Object.keys(base.estatisticas)) base.estatisticas[id] = numero(dados.estatisticas?.[id]);
+  base.jogador.inventario = Array.isArray(dados.jogador?.inventario)
+    ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + 4 * base.melhorias.mochila) : [];
+  // Retomar em um ponto livre evita que mudanças futuras no mapa prendam o jogador.
+  base.som = dados.som === true;
+  return base;
+}
+
+export class Simulacao {
+  constructor(salvo) {
+    this.estado = validarEstado(salvo);
+    this.clientes = [];
+    this.eventos = [];
+    this.tempo = 0;
+    this.proximoCliente = 2;
+    this.proximaInteracao = 0;
+    this.proximaId = 1;
+    this.progressoCaixa = 0;
+    this.atividade = '';
+    this.pausado = false;
+    this.ajudante = { x: -3, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false };
+    this.missaoAnterior = this.missao().indice;
+  }
+  get capacidade() { return CONFIG.capacidadeInicial + this.estado.melhorias.mochila * 4; }
+  get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
+  get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / 8); }
+  emitir(tipo, dados = {}) { this.eventos.push({ tipo, ...dados }); }
+  consumirEventos() { const eventos = this.eventos; this.eventos = []; return eventos; }
+  custoMelhoria(id) {
+    const m = MELHORIAS.find(m => m.id === id);
+    return m ? Math.round(m.custo * Math.pow(m.multiplicador || 1, this.estado.melhorias[id])) : Infinity;
+  }
+  comprarMelhoria(id) {
+    const m = MELHORIAS.find(m => m.id === id);
+    if (!m) return { sucesso: false, motivo: 'Melhoria desconhecida.' };
+    if (this.estado.melhorias[id] >= m.max) return { sucesso: false, motivo: 'Essa melhoria já está completa.' };
+    const custo = this.custoMelhoria(id);
+    if (this.estado.dinheiro < custo) return { sucesso: false, motivo: 'Você ainda não tem dinheiro suficiente.' };
+    this.estado.dinheiro -= custo;
+    this.estado.melhorias[id]++;
+    if (m.tipo === 'produto') {
+      this.estado.produtos[id].liberado = true;
+      this.estado.produtos[id].horta = PRODUTOS[id].capacidadeHorta;
+    }
+    this.emitir('melhoria', { id, texto: m.titulo });
+    return { sucesso: true, dinheiro: this.estado.dinheiro };
+  }
+  missao() {
+    const indice = MISSOES.findIndex(m => (this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) < m.alvo);
+    if (indice === -1) return { indice: MISSOES.length, completa: true, titulo: 'O bairro é seu!', texto: 'Continue cuidando da loja e descubra todas as melhorias.', valor: 1, alvo: 1 };
+    const m = MISSOES[indice];
+    return { ...m, indice, valor: Math.min(m.alvo, this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) };
+  }
+  obstaculos() {
+    const caixas = [
+      { x: -6.6, z: -2.8, w: 2.2, d: 3.3 },
+      { x: 0.4, z: -1.8, w: 2.2, d: 1.7 },
+      { x: 5.5, z: 4.1, w: 1.35, d: 2.7 },
+      { x: 3, z: -6, w: 12.2, d: 0.35 },
+      { x: 9, z: -2, w: 0.35, d: 8 }
+    ];
+    if (this.estado.produtos.milho.liberado) caixas.push({ x: -6.6, z: 3.4, w: 2.2, d: 3.3 }, { x: 4.5, z: -1.8, w: 2.2, d: 1.7 });
+    return caixas;
+  }
+  mover(ator, dx, dz, dt, velocidade, colisao = true) {
+    const limites = CONFIG.limiteMundo;
+    const testar = (x, z) => !colisao || !this.obstaculos().some(o => Math.abs(x - o.x) < o.w / 2 + 0.27 && Math.abs(z - o.z) < o.d / 2 + 0.27);
+    const nx = limitar(ator.x + dx * dt * velocidade, limites.minX, limites.maxX);
+    if (testar(nx, ator.z)) ator.x = nx;
+    const nz = limitar(ator.z + dz * dt * velocidade, limites.minZ, limites.maxZ);
+    if (testar(ator.x, nz)) ator.z = nz;
+    if (Math.hypot(dx, dz) > 0.05) ator.angulo = Math.atan2(dx, dz);
+    ator.andando = Math.hypot(dx, dz) > 0.05;
+  }
+  caminhar(ator, ponto, dt, velocidade = 2.4) {
+    const d = distancia(ator, ponto);
+    if (d < velocidade * dt + 0.03) { ator.x = ponto.x; ator.z = ponto.z; ator.andando = false; return true; }
+    this.mover(ator, (ponto.x - ator.x) / d, (ponto.z - ator.z) / d, dt, velocidade, false);
+    return false;
+  }
+  atualizar(dt, entrada = { x: 0, y: 0 }) {
+    if (this.pausado) return;
+    dt = limitar(dt, 0, 0.05);
+    this.tempo += dt;
+    const a = CONFIG.anguloCamera;
+    this.mover(this.estado.jogador, entrada.x * Math.cos(a) + entrada.y * Math.sin(a), -entrada.x * Math.sin(a) + entrada.y * Math.cos(a), dt, this.velocidade);
+    for (const [id, estoque] of Object.entries(this.estado.produtos)) {
+      const p = PRODUTOS[id];
+      if (estoque.liberado && estoque.horta < p.capacidadeHorta) {
+        estoque.crescimento += dt;
+        if (estoque.crescimento >= p.tempoCrescimento) { estoque.horta++; estoque.crescimento = 0; }
+      }
+    }
+    this.interagir();
+    this.atualizarClientes(dt);
+    this.atualizarCaixa(dt);
+    if (this.estado.melhorias.ajudante) this.atualizarAjudante(dt);
+    const missao = this.missao();
+    if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: 'Objetivo concluído!' }); this.missaoAnterior = missao.indice; }
+  }
+  interagir() {
+    this.atividade = '';
+    const jogador = this.estado.jogador;
+    for (const [id, p] of Object.entries(PRODUTOS)) {
+      const e = this.estado.produtos[id];
+      if (!e.liberado) continue;
+      if (distancia(jogador, p.reposicao) < CONFIG.raioInteracao) {
+        const indice = jogador.inventario.indexOf(id);
+        if (indice >= 0 && e.prateleira < p.capacidadePrateleira) {
+          this.atividade = 'Abastecendo a prateleira…';
+          if (this.tempo >= this.proximaInteracao) {
+            jogador.inventario.splice(indice, 1); e.prateleira++; this.estado.estatisticas.repostos++;
+            this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
+            this.emitir('reposicao', { id, ponto: p.prateleira });
+          }
+        } else if (e.prateleira >= p.capacidadePrateleira && indice >= 0) this.atividade = 'Prateleira cheia';
+      }
+      if (distancia(jogador, p.coleta) < CONFIG.raioInteracao) {
+        if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Cesta cheia · leve os produtos à prateleira'; continue; }
+        if (!e.horta) { this.atividade = 'A colheita está crescendo…'; continue; }
+        this.atividade = `Colhendo ${p.plural.toLocaleLowerCase('pt-BR')}…`;
+        if (this.tempo >= this.proximaInteracao) {
+          e.horta--; jogador.inventario.push(id); this.estado.estatisticas.colhidos++;
+          this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
+          this.emitir('colheita', { id, ponto: p.coleta });
+        }
+      }
+    }
+  }
+  criarCliente() {
+    const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
+    const produto = disponiveis[(this.proximaId - 1) % disponiveis.length];
+    this.clientes.push({ id: this.proximaId++, ...CONFIG.entrada, produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, cor: this.proximaId % 5, andando: false });
+  }
+  atualizarClientes(dt) {
+    this.proximoCliente -= dt;
+    if (this.proximoCliente <= 0 && this.clientes.length < CONFIG.maxClientes) { this.criarCliente(); this.proximoCliente = CONFIG.intervaloClientes; }
+    const fila = this.clientes.filter(c => c.fase === 'fila');
+    for (const c of this.clientes) {
+      const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
+      if (c.fase === 'chegando') {
+        const rota = [{ x: 7.5, z: 1.5 }, { x: p.cliente.x, z: 1.5 }, p.cliente];
+        if (this.caminhar(c, rota[c.etapa], dt)) {
+          c.etapa++;
+          if (c.etapa === rota.length) { c.fase = 'comprando'; c.espera = 0; }
+        }
+      } else if (c.fase === 'comprando') {
+        c.andando = false; c.espera += dt;
+        if (e.prateleira > 0 && c.espera > 0.65) {
+          e.prateleira--; c.quantidade++; c.espera = 0;
+          this.emitir('pegou', { id: c.produto });
+        }
+        if (c.quantidade >= c.desejado || (c.quantidade > 0 && c.espera > 2.5)) { c.fase = 'indoCaixa'; c.etapa = 0; }
+      } else if (c.fase === 'indoCaixa') {
+        const rota = [{ x: p.cliente.x, z: 1.6 }, { x: 7.1, z: 1.6 }, { x: 7.1, z: 4.1 }];
+        if (this.caminhar(c, rota[c.etapa], dt)) { c.etapa++; if (c.etapa === rota.length) c.fase = 'fila'; }
+      } else if (c.fase === 'fila') {
+        const indice = Math.max(0, fila.indexOf(c));
+        this.caminhar(c, { x: 7.1, z: 4.1 + indice * 0.85 }, dt);
+      } else if (c.fase === 'saindo') {
+        const rota = [{ x: 8.3, z: 4.1 }, CONFIG.entrada, { x: 10.3, z: 9 }];
+        if (this.caminhar(c, rota[c.etapa], dt)) { c.etapa++; if (c.etapa === rota.length) c.fase = 'fim'; }
+      }
+    }
+    this.clientes = this.clientes.filter(c => c.fase !== 'fim');
+  }
+  atualizarCaixa(dt) {
+    const primeiro = this.clientes.find(c => c.fase === 'fila');
+    const atendendo = this.estado.melhorias.caixa || distancia(this.estado.jogador, CONFIG.caixa) < 1.8;
+    if (primeiro && atendendo && distancia(primeiro, { x: 7.1, z: 4.1 }) < 0.2) {
+      this.progressoCaixa += dt;
+      if (!this.estado.melhorias.caixa) this.atividade = 'Atendendo no caixa…';
+      if (this.progressoCaixa >= CONFIG.tempoCaixa) {
+        const valor = primeiro.quantidade * PRODUTOS[primeiro.produto].preco;
+        this.estado.dinheiro += valor; this.estado.estatisticas.faturamento += valor; this.estado.estatisticas.clientes++;
+        primeiro.fase = 'saindo'; primeiro.etapa = 0;
+        this.progressoCaixa = 0;
+        this.emitir('venda', { valor, ponto: CONFIG.caixa });
+      }
+    } else this.progressoCaixa = 0;
+  }
+  atualizarAjudante(dt) {
+    const a = this.ajudante;
+    const p = PRODUTOS[a.produto], e = this.estado.produtos[a.produto];
+    a.temporizador -= dt;
+    if (a.destino === 'horta') {
+      // O corredor entre a horta e a loja permanece livre.
+      if (this.caminhar(a, p.coleta, dt, 2.8)) {
+        if (e.horta && a.inventario.length < 4 && a.temporizador <= 0) {
+          e.horta--; a.inventario.push(a.produto); a.temporizador = 0.5;
+        }
+        if (a.inventario.length >= 4 || (!e.horta && a.inventario.length)) a.destino = 'prateleira';
+      }
+    } else if (this.caminhar(a, p.reposicao, dt, 2.8) && a.temporizador <= 0) {
+      if (a.inventario.length && e.prateleira < p.capacidadePrateleira) { e.prateleira++; a.inventario.pop(); a.temporizador = 0.4; }
+      if (!a.inventario.length) {
+        a.destino = 'horta';
+        const ids = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
+        a.produto = ids[(ids.indexOf(a.produto) + 1) % ids.length];
+      }
+    }
+  }
+  resumo() {
+    return { dinheiro: this.estado.dinheiro, capacidade: this.capacidade, nivel: this.nivel,
+      inventario: [...this.estado.jogador.inventario], melhorias: { ...this.estado.melhorias },
+      produtos: structuredClone(this.estado.produtos), clientesAtendidos: this.estado.estatisticas.clientes,
+      objetivo: this.missao().titulo, pausado: this.pausado };
+  }
+}
