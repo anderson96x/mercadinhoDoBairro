@@ -182,11 +182,12 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
     cilindro(corpo, 0.29, 0.3, 0.12, 0x1e7155, 0, 1.46, 0);
     caixa(corpo, 0.45, 0.05, 0.27, 0x1e7155, 0, 1.45, 0.18);
   }
-  const cesta = jogador ? criarCesta(0x858b91, 0xaeb4ba) : criarCesta(...coresCesta);
-  cesta.position.set(0, 0.26, 0.58); corpo.add(cesta);
+  const cesta = jogador ? new THREE.Group() : criarCesta(...coresCesta);
+  cesta.position.set(0, jogador ? 0.42 : 0.26, jogador ? 0.5 : 0.58); corpo.add(cesta);
+  cesta.userData.pega ??= new THREE.Vector3(0, 0.89, 0);
   const carga = new THREE.Group(); cesta.add(carga);
   const produtoNaMao = new THREE.Group(); corpo.add(produtoNaMao);
-  g.userData = { corpo, pernaE, pernaD, peE, peD, coxas, bracoE, bracoD, cesta, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0 };
+  g.userData = { corpo, pernaE, pernaD, peE, peD, coxas, bracoE, bracoD, cesta, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0, jogador };
   posicionarBraco(bracoE, cesta.userData.pega.clone().add(cesta.position));
   posicionarBraco(bracoD, new THREE.Vector3(0.4, 0.65, 0.32));
   return g;
@@ -226,7 +227,7 @@ export class Cena {
     this.caixeiro.userData.cesta.visible = false;
     posicionarBraco(this.caixeiro.userData.bracoE, new THREE.Vector3(-0.34, 0.45, 0));
     posicionarBraco(this.caixeiro.userData.bracoD, new THREE.Vector3(0.34, 0.45, 0));
-    this.ajudante = personagem(0xf2b349, 0xdba271); this.cena.add(this.ajudante);
+    this.ajudante = personagem(0xf2b349, 0xdba271, false, [0x858b91, 0xaeb4ba]); this.cena.add(this.ajudante);
     this.redimensionar(); window.addEventListener('resize', () => this.redimensionar());
   }
   construirMundo() {
@@ -426,7 +427,8 @@ export class Cena {
       liberarGeometrias(d.carga);
       inventario.forEach((id, i) => {
         const fruta = criarProduto(id, 0.75);
-        fruta.position.set((i % 3 - 1) * 0.25, 0.13 + Math.floor(i / 9) * 0.18, (Math.floor(i / 3) % 3 - 1) * 0.17);
+        if (d.jogador) fruta.position.set(i % 2 ? 0.14 : -0.14, 0.16 + Math.floor(i / 2) * 0.18, 0.08);
+        else fruta.position.set((i % 3 - 1) * 0.25, 0.13 + Math.floor(i / 9) * 0.18, (Math.floor(i / 3) % 3 - 1) * 0.17);
         d.carga.add(fruta);
       });
       d.inventario = [...inventario];
@@ -449,7 +451,8 @@ export class Cena {
     }
     for (const pe of [d.peE, d.peD]) { pe.position.y = 0.09 - 0.06 * sentado; pe.position.z = 0.06 + 0.3 * sentado; }
     d.coxas.forEach(coxa => { coxa.visible = sentado > 0; coxa.scale.z = sentado; });
-    d.cesta.position.set(0, 0.26, 0.58).lerp(new THREE.Vector3(-1, -d.corpo.position.y, 0), sentado);
+    if (d.jogador) d.cesta.position.set(0, 0.42, 0.5);
+    else d.cesta.position.set(0, 0.26, 0.58).lerp(new THREE.Vector3(-1, -d.corpo.position.y, 0), sentado);
     const repouso = new THREE.Vector3(0.4, 0.65, 0.32);
     const mao = repouso.clone();
     d.produtoNaMao.visible = false;
@@ -491,10 +494,12 @@ export class Cena {
       d.produtoNaMao.children[0].scale.setScalar(0.75 + 0.95 * suave(Math.max(0, Math.min(1, (t - 0.22) / 0.63))));
       if (t >= 1) d.reposicao = null;
     }
-    const maoE = d.cesta.userData.pega.clone().add(d.cesta.position);
+    const carregandoNasMaos = d.jogador && inventario.length > 0;
+    const maoE = carregandoNasMaos ? new THREE.Vector3(-0.3, 0.62, 0.5) : d.cesta.userData.pega.clone().add(d.cesta.position);
     const soltar = THREE.MathUtils.smoothstep(sentado, 0.65, 1);
-    maoE.lerp(new THREE.Vector3(-0.3, 0.87, 0.7), soltar);
-    mao.lerp(new THREE.Vector3(0.3, 0.87, 0.7), sentado);
+    if (!carregandoNasMaos) maoE.lerp(new THREE.Vector3(-0.3, 0.87, 0.7), soltar);
+    if (carregandoNasMaos) mao.set(0.3, 0.62, 0.5);
+    else mao.lerp(new THREE.Vector3(0.3, 0.87, 0.7), sentado);
     posicionarBraco(d.bracoE, maoE);
     posicionarBraco(d.bracoD, mao);
   }
