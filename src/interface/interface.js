@@ -15,6 +15,7 @@ export class Interface {
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
             <button class="botao-icone" id="ajuda" title="Como jogar" aria-label="Como jogar">${icone('ajuda')}</button>
             <button class="botao-icone" id="pausa" title="Pausar" aria-label="Pausar">${icone('pausa')}</button>
+            ${import.meta.env.DEV ? `<button class="botao-icone reset-dev" id="reset-dev" title="DEV: zerar todo o progresso" aria-label="DEV: zerar todo o progresso">${icone('reiniciar')}<small>DEV</small></button>` : ''}
           </nav>
         </header>
         <aside class="objetivo" aria-label="Objetivo atual">
@@ -37,6 +38,7 @@ export class Interface {
     this.el('som').onclick = () => { this.acoes.som(); this.atualizarSom(); };
     this.el('ajuda').onclick = () => this.abrir('ajuda');
     this.el('pausa').onclick = () => this.abrir('pausa');
+    if (import.meta.env.DEV) this.el('reset-dev').onclick = () => this.acoes.reiniciar();
     this.el('melhorias').onclick = () => this.abrir('melhorias');
     this.el('painel').addEventListener('cancel', e => { e.preventDefault(); this.fechar(); });
     this.el('painel').addEventListener('click', e => { if (e.target === this.el('painel')) this.fechar(); });

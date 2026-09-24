@@ -19,17 +19,29 @@ const sim = new Simulacao(carregar());
 const sons = new Sons();
 let controles, cena;
 let avisoSalvamento = false;
+let reiniciando = false;
 function gravar() {
+  if (reiniciando) return true;
   const sucesso = salvar(sim.estado, sim.clientes);
   if (!sucesso && !avisoSalvamento) { avisoSalvamento = true; ui.mensagem('O navegador não permitiu salvar. O progresso dura até fechar a página.'); }
   return sucesso;
 }
 function pausar(valor) { sim.pausado = valor; if (controles) { controles.bloqueado = valor; controles.limpar(); } }
 function comprar(id) { const r = sim.comprarMelhoria(id); if (r.sucesso) gravar(); return r; }
+function reiniciar() {
+  if (!salvar(estadoInicial())) {
+    ui.mensagem('Não foi possível apagar o progresso salvo. Verifique o armazenamento do navegador.');
+    return;
+  }
+  // Impede que pagehide, visibilitychange ou o salvamento automático restaurem o jogo antigo.
+  reiniciando = true;
+  pausar(true);
+  window.location.reload();
+}
 const ui = new Interface(sim, {
   pausar, comprar,
   som: () => { sim.estado.som = !sim.estado.som; sons.ativar(sim.estado.som); gravar(); },
-  reiniciar: () => { salvar(estadoInicial()); window.location.reload(); }
+  reiniciar
 });
 try {
   cena = new Cena(document.getElementById('mundo'), sim);

@@ -15,6 +15,8 @@ npm run dev
 
 Abra `http://localhost:4173`. Não abra `index.html` com duplo clique: o projeto usa módulos e precisa do servidor.
 
+Em desenvolvimento (`npm run dev`), o botão **DEV** no canto superior direito zera todo o progresso e recarrega o jogo com um clique. Ele não aparece na versão de produção.
+
 Para testar em um celular na mesma rede Wi-Fi, mantenha o servidor aberto e acesse `http://IP-DO-COMPUTADOR:4173` no navegador do celular. Autorize o acesso à rede local no firewall, se necessário.
 
 ## Controles
