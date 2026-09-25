@@ -131,6 +131,34 @@ function criarCesta(cor = 0xe50918, corBorda = 0xff2933, corAlca = 0x17191b) {
   return cesta;
 }
 
+function criarCaixaMadeira() {
+  const caixaMadeira = new THREE.Group();
+  caixa(caixaMadeira, 0.82, 0.07, 0.58, 0x8b5a32, 0, 0.04, 0);
+  for (const lado of [-1, 1]) {
+    for (const y of [0.14, 0.3, 0.46]) {
+      caixa(caixaMadeira, 0.86, 0.1, 0.055, y === 0.3 ? 0xb57a43 : 0xa66d3b, 0, y, lado * 0.29);
+    }
+    caixa(caixaMadeira, 0.07, 0.52, 0.07, 0x744725, lado * 0.37, 0.27, -0.29);
+    caixa(caixaMadeira, 0.07, 0.52, 0.07, 0x744725, lado * 0.37, 0.27, 0.29);
+  }
+  for (const x of [-0.4, 0.4]) {
+    for (const y of [0.14, 0.3, 0.46]) caixa(caixaMadeira, 0.055, 0.1, 0.58, 0x9b6336, x, y, 0);
+  }
+  return caixaMadeira;
+}
+
+export function usarCaixaMadeira(modelo, usar) {
+  const d = modelo.userData;
+  if (!d.caixaMadeira) return;
+  d.caixaMadeira.visible = usar;
+  d.visualCestaNormal.forEach(parte => { parte.visible = !usar; });
+  d.usandoCaixaMadeira = usar;
+}
+
+export function ajudanteUsaCaixaMadeira(ajudante) {
+  return ajudante.inventario.some(id => PRODUTOS[id]?.origem === 'horta');
+}
+
 function aplicarPaletaCesta(cesta, paleta) {
   if (cesta.userData.paletaAplicada === paleta.id) return;
   cesta.traverse(malha => {
@@ -142,6 +170,21 @@ function aplicarPaletaCesta(cesta, paleta) {
     malha.material.color.set(paleta.principal);
   });
   cesta.userData.paletaAplicada = paleta.id;
+}
+
+export function aplicarPaletaFuncionario(modelo, paleta) {
+  const uniforme = modelo.userData.uniforme;
+  if (!uniforme || uniforme.paletaAplicada === paleta.id) return;
+  for (const [malhas, cor] of [[uniforme.camisa, paleta.principal], [uniforme.chapeu, paleta.principal]]) {
+    for (const malha of malhas) {
+      if (!malha.userData.materialUniforme) {
+        malha.material = malha.material.clone();
+        malha.userData.materialUniforme = true;
+      }
+      malha.material.color.set(cor);
+    }
+  }
+  uniforme.paletaAplicada = paleta.id;
 }
 
 function criarSacola() {
@@ -275,14 +318,16 @@ function detalhesCliente(corpo, visual) {
   }
 }
 
-export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [], visual = null) {
+export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [], visual = null, funcao = null) {
   const g = new THREE.Group();
   const corpo = new THREE.Group(); g.add(corpo);
   const corpulento = visual?.porte === 'corpulento';
+  const funcionario = funcao === 'caixa' || funcao === 'ajudante';
+  const uniformizado = jogador || funcionario;
   const sombra = new THREE.Mesh(new THREE.CircleGeometry(0.38, 20), new THREE.MeshBasicMaterial({ color: 0x204c31, transparent: true, opacity: 0.13, depthWrite: false }));
   sombra.rotation.x = -Math.PI / 2; sombra.position.y = 0.014; sombra.scale.setScalar(corpulento ? 1.5 : 1); g.add(sombra);
-  const corCalca = visual?.genero === 'mulher' ? pele : (visual?.corCalca ?? 0x344b58);
-  const corSapato = visual?.corSapato ?? 0xf8f0dc;
+  const corCalca = uniformizado ? 0x17191b : visual?.genero === 'mulher' ? pele : (visual?.corCalca ?? 0x344b58);
+  const corSapato = uniformizado ? 0x242628 : (visual?.corSapato ?? 0xf8f0dc);
   const afastamentoPernas = corpulento ? 0.24 : 0.15;
   const larguraPerna = corpulento ? 0.27 : 0.19;
   const pernaE = caixa(corpo, larguraPerna, 0.36, 0.22, corCalca, -afastamentoPernas, 0.28, 0);
@@ -297,12 +342,17 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
   corpo.add(torso);
   const barriga = corpulento ? esfera(corpo, 0.37, cor, 0, 0.66, 0.09, 1.55, 1.08, 1.35) : null;
   const ombro = corpulento ? 0.59 : 0.34;
-  const bracoE = braco(jogador ? 0xf9efda : cor, pele, -ombro);
-  const bracoD = braco(jogador ? 0xf9efda : cor, pele, ombro);
+  const bracoE = braco(cor, pele, -ombro);
+  const bracoD = braco(cor, pele, ombro);
   corpo.add(bracoE, bracoD);
   esfera(corpo, 0.28, pele, 0, 1.16, 0, corpulento ? 1.22 : 1, 1.05, corpulento ? 1.08 : 0.92);
   if (visual) cabeloCliente(corpo, visual);
   else esfera(corpo, 0.285, 0x49362d, 0, 1.29, -0.04, 1, 0.64, 0.95);
+  const chapeu = [];
+  if (uniformizado) {
+    chapeu.push(cilindro(corpo, 0.22, 0.26, 0.2, cor, 0, 1.48, -0.01));
+    chapeu.push(caixa(corpo, 0.52, 0.045, 0.34, cor, 0, 1.4, 0.08));
+  }
   esfera(corpo, 0.025, 0x3e352c, -0.09, 1.17, 0.235);
   esfera(corpo, 0.025, 0x3e352c, 0.09, 1.17, 0.235);
   if (visual?.idoso) {
@@ -312,19 +362,17 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
       caixa(corpo, 0.045, 0.008, 0.012, corLinha, lado * 0.215, 1.13, 0.15);
     }
   }
-  if (jogador) {
-    caixa(corpo, 0.42, 0.48, 0.09, 0xd85c40, 0, 0.64, 0.24);
-    caixa(corpo, 0.23, 0.13, 0.025, 0xf4af65, 0, 0.6, 0.3);
-    cilindro(corpo, 0.29, 0.3, 0.12, 0x1e7155, 0, 1.46, 0);
-    caixa(corpo, 0.45, 0.05, 0.27, 0x1e7155, 0, 1.45, 0.18);
-  }
   if (visual) detalhesCliente(corpo, visual);
   const cesta = jogador ? new THREE.Group() : criarCesta(...coresCesta);
   cesta.position.set(0, jogador ? 0.42 : corpulento ? 0.2 : 0.26, jogador ? 0.5 : corpulento ? 0.72 : 0.58); corpo.add(cesta);
   cesta.userData.pega ??= new THREE.Vector3(0, 0.89, 0);
+  const visualCestaNormal = [...cesta.children];
+  const caixaMadeira = funcao === 'ajudante' ? criarCaixaMadeira() : null;
+  if (caixaMadeira) { caixaMadeira.visible = false; cesta.add(caixaMadeira); }
   const carga = new THREE.Group(); cesta.add(carga);
   const produtoNaMao = new THREE.Group(); corpo.add(produtoNaMao);
-  g.userData = { corpo, torso, barriga, corpulento, pernaE, pernaD, peE, peD, coxas, bracoE, bracoD, cesta, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0, jogador };
+  const uniforme = uniformizado ? { camisa: [torso, bracoE.userData.superior, bracoD.userData.superior, ...(barriga ? [barriga] : [])], chapeu, paletaAplicada: null } : null;
+  g.userData = { corpo, torso, barriga, corpulento, pernaE, pernaD, peE, peD, coxas, bracoE, bracoD, cesta, visualCestaNormal, caixaMadeira, usandoCaixaMadeira: false, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0, jogador, funcao, uniforme };
   posicionarBraco(bracoE, cesta.userData.pega.clone().add(cesta.position));
   posicionarBraco(bracoD, new THREE.Vector3(0.4, 0.65, 0.32));
   return g;
@@ -360,11 +408,11 @@ export class Cena {
     this.clientes = new Map(); this.labels = [];
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) this.construirEstacao(id, p);
-    this.caixeiro = personagem(0x428b88, 0x9b6848); this.caixeiro.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z); this.caixeiro.rotation.y = CONFIG.anguloCaixa; this.cena.add(this.caixeiro);
+    this.caixeiro = personagem(0x428b88, 0x9b6848, false, [], null, 'caixa'); this.caixeiro.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z); this.caixeiro.rotation.y = CONFIG.anguloCaixa; this.cena.add(this.caixeiro);
     this.caixeiro.userData.cesta.visible = false;
     posicionarBraco(this.caixeiro.userData.bracoE, new THREE.Vector3(-0.34, 0.45, 0));
     posicionarBraco(this.caixeiro.userData.bracoD, new THREE.Vector3(0.34, 0.45, 0));
-    this.ajudante = personagem(0xf2b349, 0xdba271, false, [0x858b91, 0xaeb4ba]); this.cena.add(this.ajudante);
+    this.ajudante = personagem(0xf2b349, 0xdba271, false, [0x858b91, 0xaeb4ba], null, 'ajudante'); this.cena.add(this.ajudante);
     this.redimensionar(); window.addEventListener('resize', () => this.redimensionar());
   }
   construirMundo() {
@@ -554,7 +602,9 @@ export class Cena {
     d.coxas.forEach(coxa => { coxa.visible = sentado > 0; coxa.scale.z = sentado; });
     if (d.jogador) d.cesta.position.set(0, 0.42, 0.5);
     else d.cesta.position.set(0, d.corpulento ? 0.2 : 0.26, d.corpulento ? 0.72 : 0.58).lerp(new THREE.Vector3(-1, -d.corpo.position.y, 0), sentado);
-    const repouso = new THREE.Vector3(0.4, 0.65, 0.32);
+    const repouso = d.usandoCaixaMadeira
+      ? new THREE.Vector3(0.43, d.cesta.position.y + 0.32, d.cesta.position.z)
+      : new THREE.Vector3(0.4, 0.65, 0.32);
     const mao = repouso.clone();
     d.produtoNaMao.visible = false;
     d.carga.children.forEach(f => { f.visible = true; });
@@ -595,7 +645,10 @@ export class Cena {
       d.produtoNaMao.children[0].scale.setScalar(0.75 + 0.95 * suave(Math.max(0, Math.min(1, (t - 0.22) / 0.63))));
       if (t >= 1) d.reposicao = null;
     }
-    const semCarga = ator.temCesta === false && !ator.levaSacolas && inventario.length === 0;
+    const semCarga = !coleta && !reposicao && inventario.length === 0 && (
+      d.jogador || d.funcao === 'caixa' || (ator.temCesta === false && !ator.levaSacolas)
+      || d.funcao === 'ajudante'
+    );
     if (semCarga) {
       const oscilacaoBraco = balanco * 0.16;
       const maoLivreE = new THREE.Vector3(d.bracoE.userData.ombro.x, 0.46, oscilacaoBraco);
@@ -605,7 +658,11 @@ export class Cena {
       return;
     }
     const carregandoNasMaos = d.jogador && inventario.length > 0;
-    const maoE = carregandoNasMaos ? new THREE.Vector3(-0.3, 0.62, 0.5) : d.cesta.userData.pega.clone().add(d.cesta.position);
+    const maoE = carregandoNasMaos
+      ? new THREE.Vector3(-0.3, 0.62, 0.5)
+      : d.usandoCaixaMadeira
+        ? new THREE.Vector3(-0.43, d.cesta.position.y + 0.32, d.cesta.position.z)
+        : d.cesta.userData.pega.clone().add(d.cesta.position);
     const soltar = THREE.MathUtils.smoothstep(sentado, 0.65, 1);
     if (!carregandoNasMaos) maoE.lerp(new THREE.Vector3(-0.3, 0.87, 0.7), soltar);
     if (carregandoNasMaos) mao.set(0.3, 0.62, 0.5);
@@ -666,7 +723,10 @@ export class Cena {
     const progressoCaixa = sim.progressoCaixa / CONFIG.tempoCaixa;
     this.animarAtendimento(this.jogador, tempo, atendendoNoCaixa && !e.melhorias.caixa && e.jogador.sentado, progressoCaixa);
     const embalagem = this.atualizarEmbalagem(sim);
-    const paletaCesta = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
+    const paletaAtual = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
+    aplicarPaletaFuncionario(this.jogador, paletaAtual);
+    aplicarPaletaFuncionario(this.caixeiro, paletaAtual);
+    aplicarPaletaFuncionario(this.ajudante, paletaAtual);
     for (const c of sim.clientes) {
       if (!this.clientes.has(c.id)) {
         const visual = APARENCIAS_CLIENTES[c.aparencia] ?? APARENCIAS_CLIENTES[0];
@@ -676,7 +736,7 @@ export class Cena {
         this.clientes.set(c.id, m); this.cena.add(m);
       }
       const modelo = this.clientes.get(c.id);
-      if (c.temCesta && !c.levaSacolas) aplicarPaletaCesta(modelo.userData.cesta, paletaCesta);
+      if (c.temCesta && !c.levaSacolas) aplicarPaletaCesta(modelo.userData.cesta, paletaAtual);
       this.animarPersonagem(modelo, c, dt, tempo + c.id, Array(c.quantidade).fill(c.produto), 'prateleira', 0.55);
       modelo.userData.cesta.visible = !!c.temCesta && !c.levaSacolas;
       modelo.userData.sacolas.children.forEach((sacola, i) => {
@@ -711,7 +771,11 @@ export class Cena {
       this.caixeiro.userData.corpo.rotation.z = Math.sin(tempo * 1.8) * 0.018;
     }
     this.ajudante.visible = !!e.melhorias.ajudante;
-    if (this.ajudante.visible) this.animarPersonagem(this.ajudante, sim.ajudante, dt, tempo, sim.ajudante.inventario, 'horta', 0.44);
+    if (this.ajudante.visible) {
+      this.ajudante.userData.cesta.visible = sim.ajudante.inventario.length > 0;
+      usarCaixaMadeira(this.ajudante, ajudanteUsaCaixaMadeira(sim.ajudante));
+      this.animarPersonagem(this.ajudante, sim.ajudante, dt, tempo, sim.ajudante.inventario, 'horta', 0.44);
+    }
     for (const [id, objetos] of Object.entries(this.produtos)) {
       const estado = e.produtos[id]; objetos.grupo.visible = estado.liberado; objetos.bloqueio.visible = !estado.liberado;
       objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = 1 + Math.sin(tempo * 2 + i) * 0.025; });

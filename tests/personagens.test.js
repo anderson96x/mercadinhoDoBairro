@@ -1,9 +1,69 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Cena, personagem } from '../src/jogo/cena.js';
+import { Cena, ajudanteUsaCaixaMadeira, aplicarPaletaFuncionario, personagem, usarCaixaMadeira } from '../src/jogo/cena.js';
 import { PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { APARENCIAS_CLIENTES } from '../src/jogo/aparencias-clientes.js';
+import { PALETAS } from '../src/jogo/personalizacao.js';
+
+test('jogador e funcionários usam calça preta, camisa e chapéu na cor da loja', () => {
+  const modelos = [
+    personagem(0xffffff, 0xf2c49c, true),
+    personagem(0xffffff, 0xf2c49c, false, [], null, 'caixa'),
+    personagem(0xffffff, 0xf2c49c, false, [], null, 'ajudante')
+  ];
+  for (const modelo of modelos) {
+    const { pernaE, pernaD, uniforme } = modelo.userData;
+    assert.equal(pernaE.material.color.getHex(), 0x17191b);
+    assert.equal(pernaD.material.color.getHex(), 0x17191b);
+    assert.equal(uniforme.chapeu.length, 2);
+    aplicarPaletaFuncionario(modelo, PALETAS[2]);
+    assert.ok(uniforme.camisa.every(m => `#${m.material.color.getHexString()}` === PALETAS[2].principal));
+    assert.ok(uniforme.chapeu.every(m => `#${m.material.color.getHexString()}` === PALETAS[2].principal));
+  }
+});
+
+test('jogador sem produtos mantém os braços livres ao andar', () => {
+  const modelo = personagem(0xffffff, 0xf2c49c, true);
+  Cena.prototype.animarPersonagem(modelo, { x: 0, z: 0, andando: true }, 1 / 60, 0.12, []);
+  const { bracoE, bracoD } = modelo.userData;
+  assert.ok(bracoE.userData.mao.position.y < 0.5);
+  assert.ok(bracoD.userData.mao.position.y < 0.5);
+  assert.ok(bracoE.userData.mao.position.z * bracoD.userData.mao.position.z <= 0);
+});
+
+test('ajudante usa caixa de madeira apenas quando carrega produtos da horta', () => {
+  const modelo = personagem(0xffffff, 0xf2c49c, false, [], null, 'ajudante');
+  const ajudante = { x: 0, z: 0, andando: false, destino: 'horta', inventario: [] };
+  assert.equal(ajudanteUsaCaixaMadeira(ajudante), false);
+  ajudante.inventario = ['tomate'];
+  assert.equal(ajudanteUsaCaixaMadeira(ajudante), true);
+  usarCaixaMadeira(modelo, true);
+  assert.equal(modelo.userData.caixaMadeira.visible, true);
+  assert.ok(modelo.userData.visualCestaNormal.every(parte => !parte.visible));
+  Cena.prototype.animarPersonagem(modelo, ajudante, 0, 0, ajudante.inventario);
+  assert.ok(modelo.userData.bracoE.userData.mao.position.x < -0.4);
+  assert.ok(modelo.userData.bracoD.userData.mao.position.x > 0.4);
+
+  modelo.userData.inventario = [];
+  ajudante.destino = 'prateleira'; ajudante.inventario = [];
+  assert.equal(ajudanteUsaCaixaMadeira(ajudante), false);
+  ajudante.inventario = ['produto-futuro-nao-agricola'];
+  assert.equal(ajudanteUsaCaixaMadeira(ajudante), false);
+  usarCaixaMadeira(modelo, false);
+  assert.equal(modelo.userData.caixaMadeira.visible, false);
+  assert.ok(modelo.userData.visualCestaNormal.every(parte => parte.visible));
+});
+
+test('ajudante sem carga fica sem recipiente e com as mãos livres', () => {
+  const modelo = personagem(0xffffff, 0xf2c49c, false, [], null, 'ajudante');
+  const ajudante = { x: 0, z: 0, andando: true, destino: 'horta', inventario: [] };
+  modelo.userData.cesta.visible = ajudante.inventario.length > 0;
+  Cena.prototype.animarPersonagem(modelo, ajudante, 1 / 60, 0.12, ajudante.inventario);
+  assert.equal(modelo.userData.cesta.visible, false);
+  assert.ok(modelo.userData.bracoE.userData.mao.position.y < 0.5);
+  assert.ok(modelo.userData.bracoD.userData.mao.position.y < 0.5);
+});
 
 test('clientes usam 144 aparências distintas em ordem aleatória sem repetição imediata', () => {
   assert.equal(APARENCIAS_CLIENTES.length, 144);

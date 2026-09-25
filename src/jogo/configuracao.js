@@ -28,7 +28,7 @@ export const CONFIG = {
 
 export const PRODUTOS = {
   tomate: {
-    nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 8,
+    nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 8, origem: 'horta',
     tempoCrescimento: 1.8, capacidadeHorta: 8, capacidadePrateleira: 12,
     horta: { x: -6.6, z: -2.8 }, coleta: { x: -5.0, z: -1.7 },
     prateleira: { x: 3, z: -0.5 }, reposicao: { x: 2, z: 1.2 },
@@ -36,7 +36,7 @@ export const PRODUTOS = {
     pontosCompra: [{ x: 4, z: 1.2 }, { x: 3, z: 1.2 }, { x: 2, z: 1.2 }, { x: 4.6, z: -0.5 }, { x: 1.4, z: -0.5 }], liberado: true
   },
   milho: {
-    nome: 'Milho', plural: 'Milhos', cor: 0xf6c844, preco: 14,
+    nome: 'Milho', plural: 'Milhos', cor: 0xf6c844, preco: 14, origem: 'horta',
     tempoCrescimento: 2.8, capacidadeHorta: 8, capacidadePrateleira: 12,
     horta: { x: -6.6, z: 3.4 }, coleta: { x: -5.0, z: 3.4 },
     prateleira: { x: 4.5, z: -3.8 }, reposicao: { x: 3.5, z: -2.1 },
