@@ -28,7 +28,7 @@ Para testar em um celular na mesma rede Wi-Fi, mantenha o servidor aberto e aces
 | Andar pelo teclado | W, A, S, D ou as setas. |
 | Colher | Fique ao lado da horta. |
 | Repor | Fique ao lado da prateleira do mesmo produto. |
-| Vender | Fique no círculo do caixa enquanto há clientes esperando. |
+| Vender | Sente-se na cadeira do caixa enquanto há clientes esperando. |
 | Melhorar a loja | Botão **Melhorias**. |
 | Pausar | Botão de pausa ou Esc. |
 | Som, ajuda e novo jogo | Menu de pausa. |

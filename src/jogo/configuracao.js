@@ -18,6 +18,7 @@ export const CONFIG = {
   balcao: { x: 1.5, z: 4.1 },
   clienteCaixa: { x: 1.5, z: 2.5 },
   cadeiraCaixa: { x: 1.5, z: 5.7 },
+  areaFuncionarioCaixa: { x: 1.5, z: 5.7, w: 0.8, d: 1.9 },
   anguloCaixa: Math.PI,
   entrada: { x: -1.3, z: 8.4 },
   anguloCamera: Math.PI / 4,
@@ -56,7 +57,7 @@ export const MELHORIAS = [
 export const MISSOES = [
   { titulo: 'Da horta para a loja', texto: 'Aproxime-se da horta vermelha para colher 3 tomates.', chave: 'colhidos', alvo: 3, destino: 'horta' },
   { titulo: 'Prateleiras cheias', texto: 'Leve os tomates até a prateleira dentro da loja.', chave: 'repostos', alvo: 3, destino: 'prateleira' },
-  { titulo: 'A primeira venda', texto: 'Fique no círculo do caixa para atender um cliente.', chave: 'clientes', alvo: 1, destino: 'caixa' },
+  { titulo: 'A primeira venda', texto: 'Sente-se na cadeira do caixa para atender um cliente.', chave: 'clientes', alvo: 1, destino: 'caixa' },
   { titulo: 'Hora de crescer', texto: 'Junte R$ 80 e libere o milho em Melhorias.', chave: 'milho', alvo: 1, destino: 'melhorias' },
   { titulo: 'Trabalho em equipe', texto: 'Contrate alguém para o caixa por R$ 140.', chave: 'caixa', alvo: 1, destino: 'melhorias' },
   { titulo: 'O queridinho do bairro', texto: 'Atenda 20 clientes e faça o bairro voltar sempre.', chave: 'clientes', alvo: 20, destino: 'caixa' }

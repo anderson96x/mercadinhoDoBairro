@@ -286,8 +286,6 @@ export class Cena {
     // Papel extra e pequeno suporte para sacolas.
     caixa(c, 0.17, 0.018, 0.36, 0xffffff, 5.12, 1.3, 3.48);
     caixa(c, 0.09, 0.018, 0.14, 0xd9d2b9, 5.5, 1.3, 3.98);
-    this.marcaCaixa = new THREE.Mesh(new THREE.RingGeometry(0.82, 0.9, 48), new THREE.MeshBasicMaterial({ color: 0x318466, transparent: true, opacity: 0.55, side: THREE.DoubleSide }));
-    this.marcaCaixa.rotation.x = -Math.PI / 2; this.marcaCaixa.position.set(CONFIG.cadeiraCaixa.x, 0.225, CONFIG.cadeiraCaixa.z); this.cena.add(this.marcaCaixa);
     const cadeira = new THREE.Group();
     cadeira.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z);
     cadeira.rotation.y = CONFIG.anguloCaixa; this.cena.add(cadeira);
@@ -577,7 +575,6 @@ export class Cena {
     }
     for (const [id, m] of this.clientes) if (!sim.clientes.some(c => c.id === id)) { this.cena.remove(m); liberarGeometrias(m); this.clientes.delete(id); }
     this.caixeiro.visible = !!e.melhorias.caixa;
-    this.marcaCaixa.visible = !this.caixeiro.visible;
     if (this.caixeiro.visible) {
       this.animarPersonagem(this.caixeiro, { x: CONFIG.cadeiraCaixa.x, z: CONFIG.cadeiraCaixa.z, angulo: CONFIG.anguloCaixa, andando: false, sentado: true }, dt, tempo);
       this.animarAtendimento(this.caixeiro, tempo, atendendoNoCaixa, progressoCaixa);

@@ -38,6 +38,22 @@ test('cinco clientes formam fila espaçada e são atendidos na ordem sem se atra
   assert.equal(sim.clientes.length, 0);
 });
 
+test('clientes não passam pelo espaço reservado atrás do caixa', () => {
+  const sim = new Simulacao();
+  aproximar(sim, { x: -9, z: 8 });
+  const area = CONFIG.areaFuncionarioCaixa;
+  for (let i = 0; i < 1800; i++) {
+    sim.estado.produtos.tomate.prateleira = 12;
+    sim.atualizar(0.05);
+    for (const cliente of sim.clientes) {
+      const dentroDaArea = Math.abs(cliente.x - area.x) < area.w / 2
+        && Math.abs(cliente.z - area.z) < area.d / 2;
+      assert.equal(dentroDaArea, false, 'clientes devem usar as laterais ou a frente do caixa');
+    }
+  }
+  assert.equal(sim.clientes.filter(c => c.fase === 'fila').length, CONFIG.maxClientes);
+});
+
 test('entrada ocupada não cria clientes sobrepostos', () => {
   const sim = new Simulacao();
   assert.equal(sim.criarCliente(), true);
@@ -52,7 +68,7 @@ test('jogador senta na cadeira, atende e levanta ao andar sem perder produtos', 
   sim.clientes.push({ id: 1, ...CONFIG.clienteCaixa, fase: 'fila', quantidade: 2, produto: 'tomate' });
   sim.atualizar(0.05);
   assert.equal(sim.estado.jogador.sentado, true);
-  assert.equal(sim.estado.jogador.angulo, Math.PI / 2);
+  assert.equal(sim.estado.jogador.angulo, CONFIG.anguloCaixa);
   sim.atualizarCaixa(CONFIG.tempoCaixa);
   assert.equal(sim.estado.dinheiro, 16);
   sim.atualizar(0.05, { x: -1, y: 0 });
@@ -81,17 +97,19 @@ test('colheita e reposição funcionam em todos os lados das estações', () => 
   }
 });
 
-test('caixa atende por qualquer lado, mas não quando o jogador está longe', () => {
-  for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-    const sim = new Simulacao();
-    sim.clientes.push({ ...CONFIG.clienteCaixa, fase: 'fila', quantidade: 2, produto: 'tomate' });
-    aproximar(sim, { x: -9, z: 8 });
-    sim.atualizarCaixa(CONFIG.tempoCaixa);
-    assert.equal(sim.estado.dinheiro, 0);
-    aproximar(sim, { x: CONFIG.balcao.x + dx * 1.265, z: CONFIG.balcao.z + dz * 1.95 });
-    sim.atualizarCaixa(CONFIG.tempoCaixa);
-    assert.equal(sim.estado.dinheiro, 16);
-  }
+test('jogador só atende o caixa sentado na cadeira', () => {
+  const sim = new Simulacao();
+  sim.clientes.push({ ...CONFIG.clienteCaixa, fase: 'fila', quantidade: 2, produto: 'tomate' });
+
+  aproximar(sim, { x: CONFIG.balcao.x, z: CONFIG.balcao.z + 1.2 });
+  sim.atualizarCaixa(CONFIG.tempoCaixa);
+  assert.equal(sim.estado.dinheiro, 0);
+
+  aproximar(sim, CONFIG.cadeiraCaixa);
+  sim.atualizar(0.05);
+  assert.equal(sim.estado.jogador.sentado, true);
+  sim.atualizarCaixa(CONFIG.tempoCaixa);
+  assert.equal(sim.estado.dinheiro, 16);
 });
 
 test('os quatro níveis da cesta comportam 4, 8, 12 e 16 produtos', () => {

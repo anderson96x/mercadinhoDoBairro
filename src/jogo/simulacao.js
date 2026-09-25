@@ -113,6 +113,14 @@ export class Simulacao {
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
+  obstaculosCliente(ator) {
+    const caixas = this.obstaculos();
+    // O corredor imediatamente atrás da cadeira é reservado ao caixa.
+    // Outros atores ainda podem acessá-lo, mas clientes devem passar
+    // pela frente ou pelas laterais do atendente.
+    if (this.clientes.includes(ator)) caixas.push(CONFIG.areaFuncionarioCaixa);
+    return caixas;
+  }
   mover(ator, dx, dz, dt, velocidade, colisao = true) {
     const limites = CONFIG.limiteMundo;
     const testar = (x, z) => !colisao || !this.obstaculos().some(o => Math.abs(x - o.x) < o.w / 2 + 0.27 && Math.abs(z - o.z) < o.d / 2 + 0.27);
@@ -133,7 +141,7 @@ export class Simulacao {
     ator.andando = false;
     if (distancia(ator, ponto) < 0.025) return true;
     if (!dt) return false;
-    const obstaculos = this.obstaculos();
+    const obstaculos = this.obstaculosCliente(ator);
     const livre = (inicio, fim) => {
       const dx = fim.x - inicio.x, dz = fim.z - inicio.z, comprimento = dx * dx + dz * dz;
       if (this.clientes.some(outro => {
@@ -280,7 +288,9 @@ export class Simulacao {
   }
   atualizarCaixa(dt) {
     const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
-    const atendendo = this.estado.melhorias.caixa || pertoEstacao(this.estado.jogador, CONFIG.balcao, 2.9, 1.53);
+    const jogadorNoCaixa = this.estado.jogador.sentado
+      && distancia(this.estado.jogador, CONFIG.cadeiraCaixa) < 0.01;
+    const atendendo = this.estado.melhorias.caixa || jogadorNoCaixa;
     if (primeiro?.fase === 'fila' && atendendo && distancia(primeiro, CONFIG.clienteCaixa) < 0.2) {
       this.progressoCaixa += dt;
       if (!this.estado.melhorias.caixa) this.atividade = 'Atendendo no caixa…';
