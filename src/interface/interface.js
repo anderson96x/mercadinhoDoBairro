@@ -36,7 +36,7 @@ export class Interface {
         </footer>
         <div id="joystick" aria-hidden="true"><span></span></div>
         <div id="mensagens" aria-live="polite" aria-atomic="true"></div>
-        <div id="efeitos" aria-hidden="true"></div>
+        <div id="efeitos" aria-hidden="true"></div><div id="cursor-melhoria" aria-hidden="true" hidden>${icone('folha')}</div>
         <dialog id="painel" aria-labelledby="painel-titulo"><div id="painel-conteudo"></div></dialog>
       </main>`;
     this.el = id => document.getElementById(id);
@@ -161,7 +161,11 @@ export class Interface {
     });
     this.el('painel').querySelectorAll('[data-melhoria]').forEach(b => b.onclick = () => {
       const resultado = this.acoes.comprar(b.dataset.melhoria);
-      if (resultado.sucesso) this.renderizarPainel(); else this.mensagem(resultado.motivo);
+      if (resultado.selecionarProduto) {
+        this.fechar();
+        this.iniciarSelecaoHorta();
+        this.acoes.iniciarSelecaoHorta();
+      } else if (resultado.sucesso) this.renderizarPainel(); else this.mensagem(resultado.motivo);
       this.atualizar();
     });
     if (tipo === 'escritorio') {
@@ -221,6 +225,19 @@ export class Interface {
     clearTimeout(this.tempoMensagem); this.el('mensagens').textContent = texto;
     this.el('mensagens').classList.add('visivel');
     this.tempoMensagem = setTimeout(() => this.el('mensagens').classList.remove('visivel'), 3200);
+  }
+  iniciarSelecaoHorta() {
+    this.el('mundo').classList.add('selecionando-horta');
+    this.el('cursor-melhoria').hidden = false;
+    this.mensagem('Clique na horta de tomate ou milho para aplicar o produto.');
+  }
+  moverCursorHorta(x, y) {
+    const cursor = this.el('cursor-melhoria');
+    cursor.style.transform = `translate(${x}px,${y}px) translate(-50%,-50%)`;
+  }
+  finalizarSelecaoHorta() {
+    this.el('mundo').classList.remove('selecionando-horta');
+    this.el('cursor-melhoria').hidden = true;
   }
   subiuDeNivel(nivel) {
     const indicador = this.el('nivel');

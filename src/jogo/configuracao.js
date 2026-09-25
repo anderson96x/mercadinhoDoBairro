@@ -11,8 +11,10 @@ export const CONFIG = {
   intervaloClientesReputacao: { ruim: 20, media: 15, boa: 5 },
   quantidadeCestas: 5,
   capacidadeCestaCliente: 5,
+  capacidadeAjudante: 8,
+  multiplicadorVelocidadeAjudante: 1.2,
+  multiplicadorCrescimentoMelhorado: 0.5,
   tempoEsperaCliente: 10,
-  tempoEsperaFila: 10,
   clientesPorNivel: 25,
   pontosSatisfacao: { feliz: 10, neutro: 5, irritado: 0 },
   reputacaoInicial: 60,
@@ -64,11 +66,13 @@ export const PRODUTOS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
-  { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 10.', custo: 80, icone: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', ativa: false },
-  { id: 'mochila', titulo: 'Cabe mais um pouco', descricao: 'Leve mais 4 produtos por viagem.', custo: 60, icone: 'mochila', max: 1, categoria: 'jogador', nivelMinimo: 2 },
-  { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 90, multiplicador: 1.8, icone: 'raio', max: 3, categoria: 'jogador', ativa: false },
-  { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 140, icone: 'pessoa', max: 1, categoria: 'funcionarios', nivelMinimo: 2 },
-  { id: 'ajudante', titulo: 'Ajuda na reposição', descricao: 'Um ajudante colhe e abastece suas prateleiras.', custo: 220, icone: 'cesta', max: 1, categoria: 'funcionarios', ativa: false }
+  { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 10.', custo: 650, icone: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 4 },
+  { id: 'mochila', titulo: 'Cabe mais um pouco', descricao: 'Leve mais 4 produtos por viagem.', custo: 100, icone: 'mochila', max: 1, categoria: 'jogador', nivelMinimo: 2 },
+  { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 100, icone: 'raio', max: 1, categoria: 'jogador', nivelMinimo: 5 },
+  { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 500, icone: 'pessoa', max: 1, categoria: 'funcionarios', nivelMinimo: 2 },
+  { id: 'ajudante', titulo: 'Ajuda na reposição', descricao: 'Um ajudante colhe e abastece suas prateleiras.', custo: 500, icone: 'cesta', max: 1, categoria: 'funcionarios', nivelMinimo: 3 },
+  { id: 'velocidadeAjudante', titulo: 'Ajudante ligeiro', descricao: 'O ajudante anda 20% mais rápido.', custo: 100, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: 5 },
+  { id: 'fertilizante', titulo: 'Crescimento acelerado', descricao: 'Escolha uma horta para reduzir pela metade o tempo de crescimento. Uma vez por produto.', custo: 100, icone: 'folha', max: Object.keys(PRODUTOS).length, tipo: 'selecaoProduto', categoria: 'mercado', nivelMinimo: 5 }
 ];
 
 export const MISSOES = [

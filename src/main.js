@@ -27,8 +27,12 @@ function gravar() {
   if (!sucesso && !avisoSalvamento) { avisoSalvamento = true; ui.mensagem('O navegador não permitiu salvar. O progresso dura até fechar a página.'); }
   return sucesso;
 }
-function pausar(valor) { sim.pausado = valor; if (controles) { controles.bloqueado = valor; controles.limpar(); } }
+function pausar(valor) { sim.pausado = valor; if (controles) { controles.bloqueado = valor || sim.estado.melhoriaPendente === 'fertilizante'; controles.limpar(); } }
 function comprar(id) { const r = sim.comprarMelhoria(id); if (r.sucesso) gravar(); return r; }
+function iniciarSelecaoHorta() {
+  if (!controles) return;
+  controles.limpar(); controles.bloqueado = true;
+}
 function alterarSaldo(valor) {
   sim.estado.dinheiro = Math.max(0, sim.estado.dinheiro + valor);
   gravar();
@@ -46,7 +50,7 @@ function reiniciar() {
   window.location.reload();
 }
 const ui = new Interface(sim, {
-  pausar, comprar, alterarSaldo,
+  pausar, comprar, alterarSaldo, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;
@@ -62,6 +66,17 @@ const ui = new Interface(sim, {
 try {
   cena = new Cena(document.getElementById('mundo'), sim);
   controles = new Controles(document.getElementById('mundo'), document.getElementById('joystick'));
+  const mundo = document.getElementById('mundo');
+  mundo.addEventListener('pointermove', e => { if (sim.estado.melhoriaPendente === 'fertilizante') ui.moverCursorHorta(e.clientX, e.clientY); });
+  mundo.addEventListener('click', e => {
+    if (sim.estado.melhoriaPendente !== 'fertilizante') return;
+    const id = cena.selecionarHorta(e.clientX, e.clientY);
+    if (!id) { ui.mensagem('Clique diretamente em uma horta para aplicar o produto.'); return; }
+    const resultado = sim.aplicarFertilizante(id);
+    if (!resultado.sucesso) { ui.mensagem(resultado.motivo); return; }
+    controles.bloqueado = false; ui.finalizarSelecaoHorta(); gravar(); ui.atualizar();
+  });
+  if (sim.estado.melhoriaPendente === 'fertilizante') { ui.iniciarSelecaoHorta(); iniciarSelecaoHorta(); }
   document.addEventListener('pointerdown', () => { if (sim.estado.som) sons.ativar(true); }, { once: true });
   let anterior = performance.now(), proximaUI = 0, acumulado = 0;
   const quadro = agora => {
@@ -76,6 +91,7 @@ try {
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
         if (evento.tipo === 'nivel') ui.subiuDeNivel(evento.nivel);
         if (evento.tipo === 'melhoria') ui.mensagem(`${evento.texto} · melhoria adquirida!`);
+        if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
         if (evento.tipo === 'missao') ui.mensagem(evento.texto);
         if (evento.tipo === 'escritorio') ui.abrir('escritorio');
       }
@@ -93,9 +109,11 @@ try {
     const opcoes = { signal: new AbortController().signal };
     for (const ferramenta of [
       { name: 'consultar_mercadinho', title: 'Consultar mercadinho', description: 'Consulta dinheiro, estoque, melhorias e o objetivo atual do jogo.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true }, execute: () => sim.resumo() },
-      { name: 'comprar_melhoria', title: 'Comprar melhoria', description: 'Gasta o dinheiro do jogo para comprar uma melhoria, como o botão Melhorias. Não envolve dinheiro real.', inputSchema: { type: 'object', properties: { id: { type: 'string', enum: ['milho','mochila','velocidade','caixa','ajudante'] } }, required: ['id'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: (entrada) => {
+      { name: 'comprar_melhoria', title: 'Comprar melhoria', description: 'Gasta o dinheiro do jogo para comprar uma melhoria, como o botão Melhorias. Não envolve dinheiro real.', inputSchema: { type: 'object', properties: { id: { type: 'string', enum: ['milho','mochila','velocidade','caixa','ajudante','velocidadeAjudante','fertilizante'] } }, required: ['id'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: (entrada) => {
         if (!entrada || typeof entrada.id !== 'string' || Object.keys(entrada).length !== 1) throw new Error('Informe apenas o identificador da melhoria.');
-        const resultado = comprar(entrada.id); ui.atualizar(); if (ui.tipoPainel === 'melhorias') ui.renderizarPainel(); return resultado;
+        const resultado = comprar(entrada.id);
+        if (resultado.selecionarProduto) { if (ui.tipoPainel) ui.fechar(); ui.iniciarSelecaoHorta(); iniciarSelecaoHorta(); }
+        ui.atualizar(); if (ui.tipoPainel === 'melhorias') ui.renderizarPainel(); return resultado;
       } }
     ]) {
       try { Promise.resolve(document.modelContext.registerTool(ferramenta, opcoes)).catch(() => {}); } catch { /* O jogo funciona sem essa API opcional. */ }

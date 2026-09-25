@@ -439,7 +439,8 @@ export class Cena {
     this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, -0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
     this.jogador = personagem(0xf8ecd1, 0xe9b489, true); this.cena.add(this.jogador);
-    this.clientes = new Map(); this.labels = [];
+    this.clientes = new Map(); this.labels = []; this.alvosHorta = []; this.efeitosCrescimento = [];
+    this.raycaster = new THREE.Raycaster(); this.ponteiroRaycast = new THREE.Vector2();
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) this.construirEstacao(id, p);
     this.caixeiro = personagem(0x428b88, 0x9b6848, false, [], null, 'caixa'); this.caixeiro.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z); this.caixeiro.rotation.y = CONFIG.anguloCaixa; this.cena.add(this.caixeiro);
@@ -540,6 +541,9 @@ export class Cena {
     const h = p.horta;
     caixa(grupo, 2.5, 0.35, 3.6, 0xbd7545, h.x, 0.22, h.z);
     caixa(grupo, 2.23, 0.05, 3.32, 0x70401f, h.x, 0.42, h.z);
+    const alvoHorta = caixa(grupo, 2.5, 1.5, 3.6, 0xffffff, h.x, 0.9, h.z);
+    alvoHorta.material.transparent = true; alvoHorta.material.opacity = 0; alvoHorta.material.depthWrite = false;
+    alvoHorta.userData.produtoHorta = id; this.alvosHorta.push(alvoHorta);
     const frutos = [];
     for (let i = 0; i < 8; i++) {
       const x = h.x - 0.65 + i % 2 * 1.25, z = h.z - 1.18 + Math.floor(i / 2) * 0.78;
@@ -588,6 +592,28 @@ export class Cena {
   projetar(ponto) {
     const p = new THREE.Vector3(ponto.x, ponto.y ?? 1.5, ponto.z).project(this.camera);
     return { x: (p.x + 1) * this.w / 2, y: (1 - p.y) * this.h / 2 };
+  }
+  selecionarHorta(clientX, clientY) {
+    const retangulo = this.renderer.domElement.getBoundingClientRect();
+    this.ponteiroRaycast.set(
+      ((clientX - retangulo.left) / retangulo.width) * 2 - 1,
+      -((clientY - retangulo.top) / retangulo.height) * 2 + 1
+    );
+    this.raycaster.setFromCamera(this.ponteiroRaycast, this.camera);
+    return this.raycaster.intersectObjects(this.alvosHorta, false)[0]?.object.userData.produtoHorta ?? null;
+  }
+  animarMelhoriaHorta(id) {
+    const horta = PRODUTOS[id]?.horta;
+    if (!horta) return;
+    const grupo = new THREE.Group(); grupo.position.set(horta.x, 0.48, horta.z); this.cena.add(grupo);
+    const material = new THREE.MeshBasicMaterial({ color: 0xf4d35e, transparent: true, opacity: 0.9, side: THREE.DoubleSide, depthWrite: false });
+    const anel = new THREE.Mesh(new THREE.RingGeometry(0.65, 0.82, 32), material); anel.rotation.x = -Math.PI / 2; grupo.add(anel);
+    const particulas = Array.from({ length: 14 }, (_, i) => {
+      const particula = esfera(grupo, 0.07, i % 2 ? 0x7fbd55 : 0xf4d35e);
+      particula.userData.angulo = i / 14 * Math.PI * 2;
+      return particula;
+    });
+    this.efeitosCrescimento.push({ grupo, anel, particulas, inicio: this.tempoVisual, duracao: 1.8 });
   }
   animarPersonagem(modelo, ator, dt, tempo, inventario = [], origem = 'horta', duracao = 0.26) {
     modelo.position.set(ator.x, 0.23, ator.z);
@@ -790,6 +816,19 @@ export class Cena {
     const dtVisual = dt || (e.jogador.sentadoEscritorio ? 1 / 60 : 0);
     this.tempoVisual += dtVisual;
     const tempo = this.tempoVisual;
+    for (let i = this.efeitosCrescimento.length - 1; i >= 0; i--) {
+      const efeito = this.efeitosCrescimento[i], progresso = (tempo - efeito.inicio) / efeito.duracao;
+      if (progresso >= 1) {
+        this.cena.remove(efeito.grupo); liberarGeometrias(efeito.grupo); this.efeitosCrescimento.splice(i, 1); continue;
+      }
+      const pulso = 1 + progresso * 2.4;
+      efeito.anel.scale.setScalar(pulso); efeito.anel.material.opacity = 0.9 * (1 - progresso);
+      efeito.particulas.forEach((particula, indice) => {
+        const raio = 0.45 + progresso * 1.35;
+        particula.position.set(Math.cos(particula.userData.angulo) * raio, progresso * 2 + Math.sin(progresso * Math.PI * 3 + indice) * 0.12, Math.sin(particula.userData.angulo) * raio);
+        particula.scale.setScalar(1 - progresso * 0.65);
+      });
+    }
     this.bairro.aplicar(e.personalizacao);
     this.bairro.animarPorta(sim.aberturaPortaEscritorio);
     const aberturaAlvo = sim.portaEntradaDeveAbrir() ? 1 : 0;
@@ -832,9 +871,8 @@ export class Cena {
       this.animarPersonagem(modelo, c, dt, tempo + c.id, itens, 'prateleira', 0.55);
       const compra = c.compras?.[c.compraAtual ?? 0];
       const mostrarCompra = compra && ['chegando', 'pegandoCesta', 'comprando'].includes(c.fase) && !c.recusado;
-      const mostrarFila = c.fase === 'fila' && sim.clienteEmAtendimento !== c;
       const mostrarReacao = c.satisfacao && c.fase === 'saindo' && !c.recusado;
-      const mostrarBalao = mostrarCompra || mostrarFila || mostrarReacao;
+      const mostrarBalao = mostrarCompra || mostrarReacao;
       const balao = modelo.userData.balao;
       balao.hidden = !mostrarBalao;
       if (mostrarBalao) {
@@ -851,18 +889,6 @@ export class Cena {
             balao.className = `balao-compra balao-reacao ${c.satisfacao}`;
             balao.innerHTML = icone(reacao);
           }
-        } else if (mostrarFila) {
-          if (balao.dataset.conteudo !== 'fila') {
-            balao.dataset.conteudo = 'fila';
-            balao.className = 'balao-compra balao-fila';
-            balao.innerHTML = `${icone('relogio')}<b></b><progress max="${CONFIG.tempoEsperaFila}"></progress>`;
-          }
-          const restante = Math.max(0, CONFIG.tempoEsperaFila - (c.esperaFila ?? 0));
-          const proporcao = restante / CONFIG.tempoEsperaFila;
-          balao.querySelector('b').textContent = `${Math.ceil(restante)}s`;
-          const paciencia = balao.querySelector('progress');
-          paciencia.value = restante;
-          paciencia.style.setProperty('--cor-paciencia', proporcao > 0.6 ? '#4d9a67' : proporcao > 0.3 ? '#e5a83e' : '#d45c49');
         } else {
           const chave = `compra:${compra.produto}:${compra.desejado}`;
           if (balao.dataset.conteudo !== chave) {
