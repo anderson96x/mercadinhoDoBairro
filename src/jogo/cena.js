@@ -4,6 +4,7 @@ import { CONFIG, PRODUTOS } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
+import { icone } from '../interface/icones.js';
 
 const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
 const materiais = new Map();
@@ -732,7 +733,8 @@ export class Cena {
     if (this.clienteEmbalandoId !== cliente.id) {
       liberarGeometrias(this.itensEmbalagem);
       this.clienteEmbalandoId = cliente.id;
-      for (let i = 0; i < cliente.quantidade; i++) this.itensEmbalagem.add(criarProduto(cliente.produto, 0.82));
+      const itens = cliente.itens ?? Array(cliente.quantidade).fill(cliente.produto);
+      for (const id of itens) this.itensEmbalagem.add(criarProduto(id, 0.82));
     }
     const progresso = THREE.MathUtils.clamp(sim.progressoCaixa / CONFIG.tempoCaixa, 0, 1);
     this.sacolaEmbalagem.visible = true; this.itensEmbalagem.visible = true;
@@ -783,11 +785,37 @@ export class Cena {
         const m = personagem(visual.corRoupa, visual.pele, false, [0x1d654b, 0x3d8a65, 0x254233], visual);
         m.userData.sacolas = new THREE.Group(); m.userData.corpo.add(m.userData.sacolas);
         const sacola = criarSacola(); sacola.position.set(0, 0.18, 0.58); sacola.visible = false; m.userData.sacolas.add(sacola);
+        const balao = document.createElement('div'); balao.className = 'balao-compra'; balao.hidden = true;
+        document.getElementById('etiquetas').append(balao); m.userData.balao = balao;
         this.clientes.set(c.id, m); this.cena.add(m);
       }
       const modelo = this.clientes.get(c.id);
+      const itens = c.itens ?? Array(c.quantidade).fill(c.produto);
       if (c.temCesta && !c.levaSacolas) aplicarPaletaCesta(modelo.userData.cesta, paletaAtual);
-      this.animarPersonagem(modelo, c, dt, tempo + c.id, Array(c.quantidade).fill(c.produto), 'prateleira', 0.55);
+      this.animarPersonagem(modelo, c, dt, tempo + c.id, itens, 'prateleira', 0.55);
+      const compra = c.compras?.[c.compraAtual ?? 0];
+      const mostrarBalao = compra && ['chegando', 'pegandoCesta', 'comprando'].includes(c.fase) && !c.recusado;
+      const balao = modelo.userData.balao;
+      balao.hidden = !mostrarBalao;
+      if (mostrarBalao) {
+        const chave = `${compra.produto}:${compra.desejado}`;
+        if (balao.dataset.compra !== chave) {
+          balao.dataset.compra = chave;
+          const nomeProduto = compra.desejado === 1 ? PRODUTOS[compra.produto].nome : PRODUTOS[compra.produto].plural;
+          balao.innerHTML = `${icone(compra.produto)}<b>${compra.desejado}</b><span class="balao-produto">${nomeProduto.toLocaleLowerCase('pt-BR')}</span><span class="balao-espera" hidden>${icone('relogio')}<b></b></span>`;
+        }
+        const espera = c.esperaSemEstoque ?? 0;
+        const esperando = c.fase === 'comprando' && e.produtos[compra.produto].prateleira === 0 && compra.quantidade < compra.desejado;
+        const relogio = balao.querySelector('.balao-espera');
+        relogio.hidden = !esperando;
+        if (esperando) {
+          relogio.lastElementChild.textContent = `${Math.max(0, Math.ceil(CONFIG.tempoEsperaCliente - espera))}s`;
+          relogio.style.setProperty('--progresso-espera', `${Math.min(1, espera / CONFIG.tempoEsperaCliente) * 360}deg`);
+        }
+        const pos = this.projetar({ x: c.x, y: 3.15, z: c.z });
+        balao.hidden = pos.x < 20 || pos.x > this.w - 20 || pos.y < 20 || pos.y > this.h - 90;
+        balao.style.transform = `translate(${pos.x}px,${pos.y}px) translate(-50%,-100%)`;
+      }
       modelo.userData.cesta.visible = !!c.temCesta && !c.levaSacolas;
       modelo.userData.sacolas.children.forEach((sacola, i) => {
         sacola.visible = !!c.levaSacolas;
@@ -800,8 +828,8 @@ export class Cena {
           }
         }
         if (c.levaSacolas && !sacola.userData.cheia) {
-          for (let indice = 0; indice < c.quantidade; indice++) {
-            const produto = criarProduto(c.produto, 0.82);
+          for (let indice = 0; indice < itens.length; indice++) {
+            const produto = criarProduto(itens[indice], 0.82);
             produto.position.copy(posicaoProdutoSacola(indice));
             sacola.userData.conteudo.add(produto);
           }
@@ -813,7 +841,7 @@ export class Cena {
         modelo.userData.carga.children.forEach((produto, i) => { if (i < embalados) produto.visible = false; });
       }
     }
-    for (const [id, m] of this.clientes) if (!sim.clientes.some(c => c.id === id)) { this.cena.remove(m); liberarGeometrias(m); this.clientes.delete(id); }
+    for (const [id, m] of this.clientes) if (!sim.clientes.some(c => c.id === id)) { m.userData.balao?.remove(); this.cena.remove(m); liberarGeometrias(m); this.clientes.delete(id); }
     this.caixeiro.visible = !!e.melhorias.caixa;
     if (this.caixeiro.visible) {
       this.animarPersonagem(this.caixeiro, { x: CONFIG.cadeiraCaixa.x, z: CONFIG.cadeiraCaixa.z, angulo: CONFIG.anguloCaixa, andando: false, sentado: true }, dt, tempo);

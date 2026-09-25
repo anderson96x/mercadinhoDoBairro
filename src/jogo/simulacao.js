@@ -274,7 +274,15 @@ export class Simulacao {
   criarCliente() {
     if (this.cestasDisponiveis <= 0) return false;
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
-    const produto = disponiveis[(this.proximaId - 1) % disponiveis.length];
+    const inicioProdutos = (this.proximaId - 1) % disponiveis.length;
+    const produtosDesejados = Array.from({ length: Math.min(disponiveis.length, CONFIG.capacidadeCestaCliente) }, (_, i) => disponiveis[(inicioProdutos + i) % disponiveis.length]);
+    const totalDesejado = 1 + (this.proximaId + 3) % CONFIG.capacidadeCestaCliente;
+    const compras = produtosDesejados.slice(0, totalDesejado).map((produto, indice, lista) => ({
+      produto,
+      desejado: Math.floor(totalDesejado / lista.length) + (indice < totalDesejado % lista.length ? 1 : 0),
+      quantidade: 0
+    }));
+    const produto = compras[0].produto;
     const ordemEntradas = [this.proximoLadoEntrada, 1 - this.proximoLadoEntrada];
     const ladoEntrada = ordemEntradas.find(indice => !this.clientes.some(c => distancia(c, CONFIG.extremosCalcada[indice]) < CONFIG.distanciaClientes));
     if (ladoEntrada === undefined) return false;
@@ -298,8 +306,43 @@ export class Simulacao {
     }
     const aparencia = this.aparenciasDisponiveis.pop();
     this.ultimaAparenciaCliente = aparencia;
-    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada: true, temCesta: false, levaSacolas: false });
+    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: compras[0].desejado, compras, compraAtual: 0, itens: [], fase: 'chegando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada: true, temCesta: false, levaSacolas: false });
     return true;
+  }
+  normalizarComprasCliente(c) {
+    if (!Array.isArray(c.compras) || !c.compras.length) {
+      c.compras = [{ produto: c.produto, desejado: c.desejado ?? c.quantidade ?? 1, quantidade: c.quantidade ?? 0 }];
+      c.compraAtual = 0;
+    }
+    c.compraAtual = Math.min(c.compraAtual ?? 0, c.compras.length - 1);
+    const compra = c.compras[c.compraAtual];
+    c.produto = compra.produto;
+    c.desejado = compra.desejado;
+    if (!Array.isArray(c.itens)) c.itens = c.compras.flatMap(item => Array(item.quantidade ?? 0).fill(item.produto));
+    c.quantidade = c.itens.length;
+    return compra;
+  }
+  escolherPontoCompra(c, produto) {
+    const ocupados = new Set(this.clientes
+      .filter(outro => outro !== c && outro.produto === produto && !['indoCaixa', 'fila', 'saindo', 'fim'].includes(outro.fase))
+      .map(outro => outro.pontoCompra));
+    const livre = PRODUTOS[produto].pontosCompra.findIndex((_, indice) => !ocupados.has(indice));
+    return Math.max(0, livre);
+  }
+  concluirCompraAtual(c) {
+    if (c.compraAtual + 1 < c.compras.length && c.quantidade < CONFIG.capacidadeCestaCliente) {
+      c.compraAtual++;
+      const proxima = c.compras[c.compraAtual];
+      c.produto = proxima.produto; c.desejado = proxima.desejado;
+      c.pontoCompra = this.escolherPontoCompra(c, proxima.produto);
+      c.fase = 'chegando'; c.etapa = 2; c.espera = 0; c.esperaSemEstoque = 0;
+      return;
+    }
+    if (c.quantidade > 0) {
+      c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++;
+    } else {
+      c.fase = 'saindo'; c.etapa = 0; c.temCesta = false; c.cestaReservada = false;
+    }
   }
   portaEntradaDeveAbrir() {
     return this.clientes.some(c => {
@@ -313,6 +356,7 @@ export class Simulacao {
     if (this.proximoCliente <= 0 && this.cestasDisponiveis > 0 && this.criarCliente()) this.proximoCliente = CONFIG.intervaloClientes;
     const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));
     for (const c of this.clientes) {
+      const compra = this.normalizarComprasCliente(c);
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
       if (!this.estado.lojaAberta && c.fase === 'chegando' && c.etapa > 0 && c.z >= 6.7) {
         c.fase = 'saindo'; c.etapa = 1; c.temCesta = false; c.cestaReservada = false; c.ladoSaida = c.ladoEntrada; c.recusado = true;
@@ -334,7 +378,7 @@ export class Simulacao {
         const chegou = this.caminharCliente(c, destino, dt);
         if (chegou) {
           c.angulo = Math.atan2(p.prateleira.x - c.x, p.prateleira.z - c.z);
-          c.fase = 'comprando'; c.espera = 0; c.andando = false;
+          c.fase = 'comprando'; c.espera = 0; c.esperaSemEstoque = 0; c.andando = false;
         }
       } else if (c.fase === 'pegandoCesta') {
         c.andando = false; c.espera += dt;
@@ -344,11 +388,12 @@ export class Simulacao {
         }
       } else if (c.fase === 'comprando') {
         c.andando = false; c.espera += dt;
+        c.esperaSemEstoque = e.prateleira > 0 ? 0 : (c.esperaSemEstoque ?? 0) + dt;
         if (e.prateleira > 0 && c.quantidade < CONFIG.capacidadeCestaCliente && c.espera > 0.65) {
-          e.prateleira--; c.quantidade++; c.espera = 0;
+          e.prateleira--; compra.quantidade++; c.itens.push(c.produto); c.quantidade = c.itens.length; c.espera = 0; c.esperaSemEstoque = 0;
           this.emitir('pegou', { id: c.produto });
         }
-        if (c.quantidade >= Math.min(c.desejado, CONFIG.capacidadeCestaCliente) || (c.quantidade > 0 && c.espera > 2.5)) { c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++; }
+        if (compra.quantidade >= compra.desejado || c.quantidade >= CONFIG.capacidadeCestaCliente || c.esperaSemEstoque >= CONFIG.tempoEsperaCliente) this.concluirCompraAtual(c);
       } else if (c.fase === 'indoCaixa') {
         const indice = fila.indexOf(c), x = CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes;
         if (this.caminharCliente(c, { x, z: CONFIG.clienteCaixa.z }, dt)) c.fase = 'fila';
@@ -372,7 +417,8 @@ export class Simulacao {
       this.progressoCaixa += dt;
       if (!this.estado.melhorias.caixa) this.atividade = 'Atendendo no caixa…';
       if (this.progressoCaixa >= CONFIG.tempoCaixa) {
-        const valor = primeiro.quantidade * PRODUTOS[primeiro.produto].preco;
+        this.normalizarComprasCliente(primeiro);
+        const valor = primeiro.itens.reduce((total, id) => total + PRODUTOS[id].preco, 0);
         this.estado.dinheiro += valor; this.estado.estatisticas.faturamento += valor; this.estado.estatisticas.clientes++;
         primeiro.embalado = true; primeiro.temCesta = false; primeiro.cestaReservada = false; primeiro.levaSacolas = true;
         primeiro.fase = 'saindo'; primeiro.etapa = 0;
