@@ -804,32 +804,43 @@ export class Cena {
       this.animarPersonagem(modelo, c, dt, tempo + c.id, itens, 'prateleira', 0.55);
       const compra = c.compras?.[c.compraAtual ?? 0];
       const mostrarCompra = compra && ['chegando', 'pegandoCesta', 'comprando'].includes(c.fase) && !c.recusado;
+      const mostrarFila = c.fase === 'fila' && sim.clienteEmAtendimento !== c;
       const mostrarReacao = c.satisfacao && c.fase === 'saindo' && !c.recusado;
-      const mostrarBalao = mostrarCompra || mostrarReacao;
+      const mostrarBalao = mostrarCompra || mostrarFila || mostrarReacao;
       const balao = modelo.userData.balao;
       balao.hidden = !mostrarBalao;
       if (mostrarBalao) {
         if (mostrarReacao) {
           const reacoes = {
-            feliz: { icone: 'sorriso', texto: 'Feliz' },
-            neutro: { icone: 'neutro', texto: 'Neutro' },
-            irritado: { icone: 'irritado', texto: 'Irritado' }
+            feliz: 'sorriso',
+            neutro: 'neutro',
+            irritado: 'irritado'
           };
           const reacao = reacoes[c.satisfacao];
           const chave = `reacao:${c.satisfacao}`;
           if (balao.dataset.conteudo !== chave) {
             balao.dataset.conteudo = chave;
             balao.className = `balao-compra balao-reacao ${c.satisfacao}`;
-            const pontos = CONFIG.pontosSatisfacao[c.satisfacao];
-            balao.innerHTML = `${icone(reacao.icone)}<b>${reacao.texto}</b><span>${pontos ? `+${pontos}` : '0'} pts</span>`;
+            balao.innerHTML = icone(reacao);
           }
+        } else if (mostrarFila) {
+          if (balao.dataset.conteudo !== 'fila') {
+            balao.dataset.conteudo = 'fila';
+            balao.className = 'balao-compra balao-fila';
+            balao.innerHTML = `${icone('relogio')}<b></b><progress max="${CONFIG.tempoEsperaFila}"></progress>`;
+          }
+          const restante = Math.max(0, CONFIG.tempoEsperaFila - (c.esperaFila ?? 0));
+          const proporcao = restante / CONFIG.tempoEsperaFila;
+          balao.querySelector('b').textContent = `${Math.ceil(restante)}s`;
+          const paciencia = balao.querySelector('progress');
+          paciencia.value = restante;
+          paciencia.style.setProperty('--cor-paciencia', proporcao > 0.6 ? '#4d9a67' : proporcao > 0.3 ? '#e5a83e' : '#d45c49');
         } else {
           const chave = `compra:${compra.produto}:${compra.desejado}`;
           if (balao.dataset.conteudo !== chave) {
             balao.dataset.conteudo = chave;
             balao.className = 'balao-compra';
-            const nomeProduto = compra.desejado === 1 ? PRODUTOS[compra.produto].nome : PRODUTOS[compra.produto].plural;
-            balao.innerHTML = `${icone(compra.produto)}<b>${compra.desejado}</b><span class="balao-produto">${nomeProduto.toLocaleLowerCase('pt-BR')}</span><span class="balao-espera" hidden>${icone('relogio')}<b></b></span>`;
+            balao.innerHTML = `${icone(compra.produto)}<b>${compra.desejado}</b><span class="balao-espera" hidden>${icone('relogio')}<b></b></span>`;
           }
           const espera = c.esperaSemEstoque ?? 0;
           const esperando = c.fase === 'comprando' && e.produtos[compra.produto].prateleira === 0 && compra.quantidade < compra.desejado;

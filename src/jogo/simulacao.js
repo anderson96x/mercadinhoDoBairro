@@ -25,6 +25,7 @@ export function estadoInicial() {
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0
     }])),
+    satisfacoesRecentes: [],
     estatisticas: { colhidos: 0, repostos: 0, clientes: 0, faturamento: 0, satisfacao: 0, clientesFelizes: 0, clientesNeutros: 0, clientesIrritados: 0 },
     som: false
   };
@@ -55,6 +56,9 @@ export function validarEstado(dados) {
     base.estatisticas.satisfacao = base.estatisticas.clientes;
     base.estatisticas.clientesFelizes = base.estatisticas.clientes;
   }
+  const satisfacoesValidas = Object.keys(CONFIG.valoresReputacao);
+  base.satisfacoesRecentes = Array.isArray(dados.satisfacoesRecentes)
+    ? dados.satisfacoesRecentes.filter(item => satisfacoesValidas.includes(item)).slice(-CONFIG.tamanhoHistoricoReputacao) : [];
   base.jogador.inventario = Array.isArray(dados.jogador?.inventario)
     ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + 4 * base.melhorias.mochila) : [];
   // Retomar em um ponto livre evita que mudanças futuras no mapa prendam o jogador.
@@ -82,6 +86,7 @@ export class Simulacao {
     this.progressoCaixa = 0;
     this.atividade = '';
     this.pausado = false;
+    this.aleatorio = Math.random;
     this.ajudante = { x: -1.8, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false };
     this.missaoAnterior = this.missao().indice;
   }
@@ -89,9 +94,23 @@ export class Simulacao {
   get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
   get nivel() { return 1 + Math.floor(this.estado.estatisticas.satisfacao / CONFIG.pontosPorNivel); }
   get progressoSatisfacao() { return this.estado.estatisticas.satisfacao % CONFIG.pontosPorNivel; }
+  get reputacao() {
+    const valores = this.estado.satisfacoesRecentes.map(item => CONFIG.valoresReputacao[item]);
+    const faltantes = CONFIG.tamanhoHistoricoReputacao - valores.length;
+    return Math.round((valores.reduce((total, valor) => total + valor, 0) + faltantes * CONFIG.reputacaoInicial) / CONFIG.tamanhoHistoricoReputacao);
+  }
+  get faixaReputacao() { return this.reputacao <= 40 ? 'ruim' : this.reputacao <= 60 ? 'media' : 'boa'; }
+  get intervaloClientes() { return CONFIG.intervaloClientesReputacao[this.faixaReputacao]; }
+  get limitePedidoCliente() { return CONFIG.limitePedidoReputacao[this.faixaReputacao]; }
   get cestasEmUso() { return this.clientes.filter(c => c.cestaReservada).length; }
   get cestasDisponiveis() { return Math.max(0, CONFIG.quantidadeCestas - this.cestasEmUso); }
   get cestasNoSuporte() { return Math.max(0, CONFIG.quantidadeCestas - this.clientes.filter(c => c.temCesta).length); }
+  get clienteEmAtendimento() {
+    const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
+    const jogadorNoCaixa = this.estado.jogador.sentadoCaixa && distancia(this.estado.jogador, CONFIG.cadeiraCaixa) < 0.01;
+    const caixaAtivo = this.estado.melhorias.caixa || jogadorNoCaixa;
+    return primeiro?.fase === 'fila' && caixaAtivo && distancia(primeiro, CONFIG.clienteCaixa) < 0.2 ? primeiro : null;
+  }
   emitir(tipo, dados = {}) { this.eventos.push({ tipo, ...dados }); }
   consumirEventos() { const eventos = this.eventos; this.eventos = []; return eventos; }
   custoMelhoria(id) {
@@ -283,7 +302,7 @@ export class Simulacao {
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
     const inicioProdutos = (this.proximaId - 1) % disponiveis.length;
     const produtosDesejados = Array.from({ length: Math.min(disponiveis.length, CONFIG.capacidadeCestaCliente) }, (_, i) => disponiveis[(inicioProdutos + i) % disponiveis.length]);
-    const totalDesejado = 1 + (this.proximaId + 3) % CONFIG.capacidadeCestaCliente;
+    const totalDesejado = 1 + Math.floor(this.aleatorio() * this.limitePedidoCliente);
     const compras = produtosDesejados.slice(0, totalDesejado).map((produto, indice, lista) => ({
       produto,
       desejado: Math.floor(totalDesejado / lista.length) + (indice < totalDesejado % lista.length ? 1 : 0),
@@ -313,7 +332,7 @@ export class Simulacao {
     }
     const aparencia = this.aparenciasDisponiveis.pop();
     this.ultimaAparenciaCliente = aparencia;
-    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: compras[0].desejado, compras, compraAtual: 0, itens: [], fase: 'chegando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada: true, temCesta: false, levaSacolas: false });
+    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: compras[0].desejado, compras, compraAtual: 0, itens: [], fase: 'chegando', etapa: 0, espera: 0, esperaFila: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada: true, temCesta: false, levaSacolas: false });
     return true;
   }
   normalizarComprasCliente(c) {
@@ -359,15 +378,28 @@ export class Simulacao {
     if (encontrado === 0) return 'irritado';
     return encontrado >= desejado ? 'feliz' : 'neutro';
   }
-  registrarSatisfacao(c) {
+  registrarSatisfacao(c, satisfacaoForcada = null) {
     if (c.satisfacaoRegistrada) return c.satisfacao;
-    c.satisfacao = this.avaliarSatisfacao(c);
+    c.satisfacao = satisfacaoForcada ?? this.avaliarSatisfacao(c);
     c.satisfacaoRegistrada = true;
     const pontos = CONFIG.pontosSatisfacao[c.satisfacao];
     const contador = { feliz: 'clientesFelizes', neutro: 'clientesNeutros', irritado: 'clientesIrritados' }[c.satisfacao];
     this.estado.estatisticas.satisfacao += pontos;
     this.estado.estatisticas[contador]++;
+    this.estado.satisfacoesRecentes.push(c.satisfacao);
+    this.estado.satisfacoesRecentes = this.estado.satisfacoesRecentes.slice(-CONFIG.tamanhoHistoricoReputacao);
     return c.satisfacao;
+  }
+  abandonarFila(c) {
+    this.registrarSatisfacao(c, 'neutro');
+    for (const id of c.itens ?? []) {
+      const estoque = this.estado.produtos[id];
+      if (estoque) estoque.prateleira = Math.min(PRODUTOS[id].capacidadePrateleira, estoque.prateleira + 1);
+    }
+    c.itens = []; c.quantidade = 0;
+    for (const compra of c.compras ?? []) compra.quantidade = 0;
+    c.fase = 'saindo'; c.etapa = 0; c.andando = false;
+    c.temCesta = false; c.cestaReservada = false; c.levaSacolas = false;
   }
   portaEntradaDeveAbrir() {
     return this.clientes.some(c => {
@@ -378,8 +410,9 @@ export class Simulacao {
   }
   atualizarClientes(dt) {
     this.proximoCliente -= dt;
-    if (this.proximoCliente <= 0 && this.cestasDisponiveis > 0 && this.criarCliente()) this.proximoCliente = CONFIG.intervaloClientes;
+    if (this.proximoCliente <= 0 && this.cestasDisponiveis > 0 && this.criarCliente()) this.proximoCliente = this.intervaloClientes;
     const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));
+    const clienteEmAtendimento = this.clienteEmAtendimento;
     for (const c of this.clientes) {
       const compra = this.normalizarComprasCliente(c);
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
@@ -421,8 +454,12 @@ export class Simulacao {
         if (compra.quantidade >= compra.desejado || c.quantidade >= CONFIG.capacidadeCestaCliente || c.esperaSemEstoque >= CONFIG.tempoEsperaCliente) this.concluirCompraAtual(c);
       } else if (c.fase === 'indoCaixa') {
         const indice = fila.indexOf(c), x = CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes;
-        if (this.caminharCliente(c, { x, z: CONFIG.clienteCaixa.z }, dt)) c.fase = 'fila';
+        if (this.caminharCliente(c, { x, z: CONFIG.clienteCaixa.z }, dt)) { c.fase = 'fila'; c.esperaFila = 0; }
       } else if (c.fase === 'fila') {
+        if (c !== clienteEmAtendimento) {
+          c.esperaFila = (c.esperaFila ?? 0) + dt;
+          if (c.esperaFila >= CONFIG.tempoEsperaFila) { this.abandonarFila(c); continue; }
+        }
         const indice = Math.max(0, fila.indexOf(c));
         if (this.caminharCliente(c, { x: CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes, z: CONFIG.clienteCaixa.z }, dt)) { c.andando = false; c.angulo = CONFIG.anguloCaixa + Math.PI; }
       } else if (c.fase === 'saindo') {
@@ -435,10 +472,7 @@ export class Simulacao {
   }
   atualizarCaixa(dt) {
     const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
-    const jogadorNoCaixa = this.estado.jogador.sentadoCaixa
-      && distancia(this.estado.jogador, CONFIG.cadeiraCaixa) < 0.01;
-    const atendendo = this.estado.melhorias.caixa || jogadorNoCaixa;
-    if (primeiro?.fase === 'fila' && atendendo && distancia(primeiro, CONFIG.clienteCaixa) < 0.2) {
+    if (primeiro && this.clienteEmAtendimento === primeiro) {
       this.progressoCaixa += dt;
       if (!this.estado.melhorias.caixa) this.atividade = 'Atendendo no caixa…';
       if (this.progressoCaixa >= CONFIG.tempoCaixa) {
@@ -481,6 +515,7 @@ export class Simulacao {
   resumo() {
     return { dinheiro: this.estado.dinheiro, capacidade: this.capacidade, nivel: this.nivel,
       satisfacao: this.estado.estatisticas.satisfacao,
+      reputacao: this.reputacao, faixaReputacao: this.faixaReputacao,
       clientesPorSatisfacao: { felizes: this.estado.estatisticas.clientesFelizes, neutros: this.estado.estatisticas.clientesNeutros, irritados: this.estado.estatisticas.clientesIrritados },
       lojaAberta: this.estado.lojaAberta,
       inventario: [...this.estado.jogador.inventario], melhorias: { ...this.estado.melhorias },

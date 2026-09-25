@@ -28,6 +28,41 @@ test('clientes felizes, neutros e irritados rendem 10, 5 e 0 pontos', () => {
   );
   sim.registrarSatisfacao(clientes[0]);
   assert.equal(sim.estado.estatisticas.satisfacao, 15, 'cada visita deve pontuar apenas uma vez');
+  assert.deepEqual(sim.estado.satisfacoesRecentes, ['feliz', 'neutro', 'irritado']);
+  assert.equal(sim.reputacao, 57);
+});
+
+test('reputação controla intervalo e tamanho máximo dos pedidos', () => {
+  const cenarios = [
+    { satisfacoes: Array(10).fill('irritado'), reputacao: 0, faixa: 'ruim', intervalo: 20, limite: 2 },
+    { satisfacoes: Array(10).fill('neutro'), reputacao: 50, faixa: 'media', intervalo: 15, limite: 3 },
+    { satisfacoes: [...Array(6).fill('feliz'), ...Array(3).fill('neutro'), 'irritado'], reputacao: 75, faixa: 'boa', intervalo: 5, limite: 5 }
+  ];
+  for (const cenario of cenarios) {
+    const sim = new Simulacao();
+    sim.estado.satisfacoesRecentes = cenario.satisfacoes;
+    sim.aleatorio = () => 0.999;
+    assert.equal(sim.reputacao, cenario.reputacao);
+    assert.equal(sim.faixaReputacao, cenario.faixa);
+    assert.equal(sim.intervaloClientes, cenario.intervalo);
+    assert.equal(sim.limitePedidoCliente, cenario.limite);
+    assert.equal(sim.criarCliente(), true);
+    assert.equal(sim.clientes[0].compras.reduce((total, compra) => total + compra.desejado, 0), cenario.limite);
+    Object.assign(sim.clientes[0], { x: 0, z: 0 });
+    sim.proximoCliente = 0; sim.atualizarClientes(0);
+    assert.equal(sim.proximoCliente, cenario.intervalo);
+  }
+});
+
+test('reputação começa em 60 e usa somente as dez experiências mais recentes', () => {
+  const sim = new Simulacao();
+  assert.equal(sim.reputacao, 60);
+  assert.equal(sim.faixaReputacao, 'media');
+  sim.estado.satisfacoesRecentes = [...Array(10).fill('irritado'), ...Array(10).fill('feliz')];
+  sim.estado = validarEstado(sim.estado);
+  assert.deepEqual(sim.estado.satisfacoesRecentes, Array(10).fill('feliz'));
+  assert.equal(sim.reputacao, 100);
+  assert.equal(sim.faixaReputacao, 'boa');
 });
 
 test('salvamento antigo mantém o nível conquistado ao receber satisfação', () => {
@@ -98,7 +133,9 @@ test('cinco clientes formam fila espaçada e são atendidos na ordem sem se atra
   };
   for (let i = 0; i < 1800; i++) {
     sim.estado.produtos.tomate.prateleira = 12;
-    sim.atualizar(0.05); verificarEspaco();
+    sim.atualizar(0.05);
+    for (const cliente of sim.clientes) if (cliente.fase === 'fila') cliente.esperaFila = -1e9;
+    verificarEspaco();
   }
   const fila = sim.clientes.filter(c => c.fase === 'fila').sort((a, b) => a.ordemFila - b.ordemFila);
   assert.equal(fila.length, 5);
@@ -125,6 +162,7 @@ test('clientes não passam pelo espaço reservado atrás do caixa', () => {
   for (let i = 0; i < 1800; i++) {
     sim.estado.produtos.tomate.prateleira = 12;
     sim.atualizar(0.05);
+    for (const cliente of sim.clientes) if (cliente.fase === 'fila') cliente.esperaFila = -1e9;
     for (const cliente of sim.clientes) {
       const dentroDaArea = Math.abs(cliente.x - area.x) < area.w / 2
         && Math.abs(cliente.z - area.z) < area.d / 2;
@@ -132,6 +170,45 @@ test('clientes não passam pelo espaço reservado atrás do caixa', () => {
     }
   }
   assert.equal(sim.clientes.filter(c => c.fase === 'fila').length, CONFIG.maxClientes);
+});
+
+test('cliente perde a paciência após dez segundos na fila e sai neutro', () => {
+  const sim = new Simulacao(); sim.proximoCliente = Infinity;
+  const cliente = {
+    id: 1, ...CONFIG.clienteCaixa, produto: 'tomate', quantidade: 2, desejado: 2,
+    compras: [{ produto: 'tomate', desejado: 2, quantidade: 2 }], itens: ['tomate', 'tomate'],
+    fase: 'fila', esperaFila: 0, ordemFila: 1, andando: false, temCesta: true, cestaReservada: true
+  };
+  sim.clientes.push(cliente);
+  sim.atualizarClientes(CONFIG.tempoEsperaFila - 0.1);
+  assert.equal(cliente.fase, 'fila');
+  sim.atualizarClientes(0.1);
+  assert.equal(cliente.fase, 'saindo');
+  assert.equal(cliente.satisfacao, 'neutro');
+  assert.equal(sim.estado.estatisticas.satisfacao, 5);
+  assert.equal(sim.estado.estatisticas.clientesNeutros, 1);
+  assert.equal(sim.estado.produtos.tomate.prateleira, 2);
+  assert.deepEqual(cliente.itens, []);
+  assert.equal(cliente.cestaReservada, false);
+});
+
+test('paciência pausa enquanto o cliente está no processo de checkout', () => {
+  const sim = new Simulacao(); sim.proximoCliente = Infinity; sim.estado.melhorias.caixa = 1;
+  const cliente = {
+    id: 1, ...CONFIG.clienteCaixa, produto: 'tomate', quantidade: 1, desejado: 1,
+    compras: [{ produto: 'tomate', desejado: 1, quantidade: 1 }], itens: ['tomate'],
+    fase: 'fila', esperaFila: 9.9, ordemFila: 1, andando: false, temCesta: true, cestaReservada: true
+  };
+  sim.clientes.push(cliente);
+  sim.atualizarClientes(1);
+  assert.equal(cliente.fase, 'fila');
+  assert.equal(cliente.esperaFila, 9.9);
+  assert.equal(sim.clienteEmAtendimento, cliente);
+
+  sim.estado.melhorias.caixa = 0;
+  sim.atualizarClientes(0.1);
+  assert.equal(cliente.fase, 'saindo');
+  assert.equal(cliente.satisfacao, 'neutro');
 });
 
 test('clientes usam as duas pontas da calçada sem nascer sobrepostos', () => {
