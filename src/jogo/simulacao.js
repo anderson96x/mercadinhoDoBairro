@@ -82,6 +82,9 @@ export class Simulacao {
   get capacidade() { return CONFIG.capacidadeInicial + this.estado.melhorias.mochila * 4; }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
   get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / 100); }
+  get cestasEmUso() { return this.clientes.filter(c => c.cestaReservada).length; }
+  get cestasDisponiveis() { return Math.max(0, CONFIG.quantidadeCestas - this.cestasEmUso); }
+  get cestasNoSuporte() { return Math.max(0, CONFIG.quantidadeCestas - this.clientes.filter(c => c.temCesta).length); }
   emitir(tipo, dados = {}) { this.eventos.push({ tipo, ...dados }); }
   consumirEventos() { const eventos = this.eventos; this.eventos = []; return eventos; }
   custoMelhoria(id) {
@@ -119,6 +122,7 @@ export class Simulacao {
       { x: -6.6, z: -2.8, w: 2.2, d: 3.3 },
       { ...PRODUTOS.tomate.prateleira, w: 2.2, d: 1.7 },
       { ...CONFIG.balcao, w: 2.7, d: 1.35 },
+      { ...CONFIG.cestas, w: 0.9, d: 1.25 },
       ...PAREDES_LOJA, ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA
     ];
     if (this.estado.produtos.milho.liberado) caixas.push({ x: -6.6, z: 3.4, w: 2.2, d: 3.3 }, { ...PRODUTOS.milho.prateleira, w: 2.2, d: 1.7 });
@@ -268,6 +272,7 @@ export class Simulacao {
     }
   }
   criarCliente() {
+    if (this.cestasDisponiveis <= 0) return false;
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
     const produto = disponiveis[(this.proximaId - 1) % disponiveis.length];
     const ordemEntradas = [this.proximoLadoEntrada, 1 - this.proximoLadoEntrada];
@@ -293,7 +298,7 @@ export class Simulacao {
     }
     const aparencia = this.aparenciasDisponiveis.pop();
     this.ultimaAparenciaCliente = aparencia;
-    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, temCesta: false, levaSacolas: false });
+    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada: true, temCesta: false, levaSacolas: false });
     return true;
   }
   portaEntradaDeveAbrir() {
@@ -305,32 +310,45 @@ export class Simulacao {
   }
   atualizarClientes(dt) {
     this.proximoCliente -= dt;
-    if (this.proximoCliente <= 0 && this.clientes.length < CONFIG.maxClientes && this.criarCliente()) this.proximoCliente = CONFIG.intervaloClientes;
+    if (this.proximoCliente <= 0 && this.cestasDisponiveis > 0 && this.criarCliente()) this.proximoCliente = CONFIG.intervaloClientes;
     const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));
     for (const c of this.clientes) {
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
       if (!this.estado.lojaAberta && c.fase === 'chegando' && c.etapa > 0 && c.z >= 6.7) {
-        c.fase = 'saindo'; c.etapa = 1; c.temCesta = false; c.ladoSaida = c.ladoEntrada; c.recusado = true;
+        c.fase = 'saindo'; c.etapa = 1; c.temCesta = false; c.cestaReservada = false; c.ladoSaida = c.ladoEntrada; c.recusado = true;
       }
       if (c.fase === 'chegando') {
         if (c.etapa === 0) {
           if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;
           continue;
         }
-        if (c.z < 6.3) c.temCesta = true;
+        if (c.etapa === 1 && c.cestaReservada === true) {
+          if (this.caminharCliente(c, CONFIG.pontoCestasCliente, dt)) {
+            c.fase = 'pegandoCesta'; c.espera = 0; c.temCesta = true;
+            c.acaoCesta = 'pegando'; c.progressoCesta = 0;
+            c.angulo = Math.atan2(CONFIG.cestas.x - c.x, CONFIG.cestas.z - c.z);
+          }
+          continue;
+        }
         const destino = p.pontosCompra[c.pontoCompra] ?? p.cliente;
         const chegou = this.caminharCliente(c, destino, dt);
         if (chegou) {
           c.angulo = Math.atan2(p.prateleira.x - c.x, p.prateleira.z - c.z);
           c.fase = 'comprando'; c.espera = 0; c.andando = false;
         }
+      } else if (c.fase === 'pegandoCesta') {
+        c.andando = false; c.espera += dt;
+        c.progressoCesta = Math.min(1, c.espera / CONFIG.tempoAnimacaoCesta);
+        if (c.progressoCesta >= 1) {
+          c.fase = 'chegando'; c.etapa = 2; c.acaoCesta = null; c.espera = 0;
+        }
       } else if (c.fase === 'comprando') {
         c.andando = false; c.espera += dt;
-        if (e.prateleira > 0 && c.espera > 0.65) {
+        if (e.prateleira > 0 && c.quantidade < CONFIG.capacidadeCestaCliente && c.espera > 0.65) {
           e.prateleira--; c.quantidade++; c.espera = 0;
           this.emitir('pegou', { id: c.produto });
         }
-        if (c.quantidade >= c.desejado || (c.quantidade > 0 && c.espera > 2.5)) { c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++; }
+        if (c.quantidade >= Math.min(c.desejado, CONFIG.capacidadeCestaCliente) || (c.quantidade > 0 && c.espera > 2.5)) { c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++; }
       } else if (c.fase === 'indoCaixa') {
         const indice = fila.indexOf(c), x = CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes;
         if (this.caminharCliente(c, { x, z: CONFIG.clienteCaixa.z }, dt)) c.fase = 'fila';
@@ -356,7 +374,7 @@ export class Simulacao {
       if (this.progressoCaixa >= CONFIG.tempoCaixa) {
         const valor = primeiro.quantidade * PRODUTOS[primeiro.produto].preco;
         this.estado.dinheiro += valor; this.estado.estatisticas.faturamento += valor; this.estado.estatisticas.clientes++;
-        primeiro.embalado = true; primeiro.temCesta = false; primeiro.levaSacolas = true;
+        primeiro.embalado = true; primeiro.temCesta = false; primeiro.cestaReservada = false; primeiro.levaSacolas = true;
         primeiro.fase = 'saindo'; primeiro.etapa = 0;
         this.progressoCaixa = 0;
         this.emitir('venda', { valor, ponto: CONFIG.caixa });

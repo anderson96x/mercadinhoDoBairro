@@ -57,6 +57,7 @@ dialog::backdrop{background:color-mix(in srgb,var(--paleta-principal) 48%,transp
 button:focus-visible{outline-color:var(--paleta-destaque)}
 .marca-icone{background:var(--paleta-principal);color:color-mix(in srgb,var(--paleta-destaque) 42%,#fff);box-shadow:0 5px 0 color-mix(in srgb,var(--paleta-principal) 78%,#171d1a)}
 .saldo{background:var(--ui-superficie);box-shadow:0 8px 28px var(--ui-sombra)}
+.cestas-topo .icone{color:var(--paleta-destaque)}
 .moeda{color:color-mix(in srgb,var(--paleta-destaque) 60%,#5e4828);background:color-mix(in srgb,var(--paleta-destaque) 72%,#fff);box-shadow:inset 0 0 0 4px color-mix(in srgb,var(--paleta-destaque) 42%,#fff)}
 .saldo small,.inventario-titulo>span{color:var(--ui-texto-suave)}
 .vendas{border-color:var(--ui-borda)}

@@ -422,6 +422,18 @@ export class Cena {
     const c = new THREE.Group(); c.position.set(-5.5, 0, -4.1); suporte.add(c);
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera, placa });
     this.bairro.aplicar(this.sim.estado.personalizacao);
+    const suporteCestas = new THREE.Group();
+    suporteCestas.position.set(CONFIG.cestas.x, 0, CONFIG.cestas.z); this.cena.add(suporteCestas);
+    caixa(suporteCestas, 0.78, 0.08, 1.12, 0x545c5b, 0, 0.27, 0);
+    for (const z of [-0.48, 0.48]) {
+      caixa(suporteCestas, 0.08, 0.52, 0.08, 0x545c5b, -0.33, 0.28, z);
+      caixa(suporteCestas, 0.08, 0.52, 0.08, 0x545c5b, 0.33, 0.28, z);
+    }
+    this.cestasEntrada = Array.from({ length: CONFIG.quantidadeCestas }, (_, i) => {
+      const cesta = criarCesta(0x1d654b, 0x3d8a65, 0x254233);
+      cesta.position.set(0, 0.31 + i * 0.055, (i - 2) * 0.075);
+      cesta.scale.setScalar(0.78); suporteCestas.add(cesta); return cesta;
+    });
     // Caixa e esteira, com produtos e recibo visíveis de perto.
     caixa(c, 1.35, 0.95, 2.7, 0x747b80, 5.5, 0.65, 4.1);
     caixa(c, 1.53, 0.17, 2.9, 0xc9cdcf, 5.5, 1.2, 4.1);
@@ -602,7 +614,20 @@ export class Cena {
     for (const pe of [d.peE, d.peD]) { pe.position.y = 0.09 - 0.06 * sentado; pe.position.z = 0.06 + 0.3 * sentado; }
     d.coxas.forEach(coxa => { coxa.visible = sentado > 0; coxa.scale.z = sentado; });
     if (d.jogador) d.cesta.position.set(0, 0.42, 0.5);
-    else d.cesta.position.set(0, d.corpulento ? 0.2 : 0.26, d.corpulento ? 0.72 : 0.58).lerp(new THREE.Vector3(-1, -d.corpo.position.y, 0), sentado);
+    else {
+      const posicaoCarregada = new THREE.Vector3(0, d.corpulento ? 0.2 : 0.26, d.corpulento ? 0.72 : 0.58)
+        .lerp(new THREE.Vector3(-1, -d.corpo.position.y, 0), sentado);
+      if (ator.acaoCesta) {
+        const t = THREE.MathUtils.smoothstep(ator.progressoCesta ?? 0, 0, 1);
+        const posicaoSuporte = new THREE.Vector3(0, 0.31 - d.corpo.position.y, 1.05);
+        d.cesta.position.copy(posicaoSuporte).lerp(posicaoCarregada, t);
+        d.cesta.position.y += Math.sin(t * Math.PI) * 0.13;
+        d.cesta.rotation.z = Math.sin(t * Math.PI) * -0.12;
+      } else {
+        d.cesta.position.copy(posicaoCarregada);
+        d.cesta.rotation.z = 0;
+      }
+    }
     const repouso = d.usandoCaixaMadeira
       ? new THREE.Vector3(0.43, d.cesta.position.y + 0.32, d.cesta.position.z)
       : new THREE.Vector3(0.4, 0.65, 0.32);
@@ -745,6 +770,10 @@ export class Cena {
     this.animarComputador(this.jogador, tempo, !!e.jogador.sentadoEscritorio);
     const embalagem = this.atualizarEmbalagem(sim);
     const paletaAtual = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
+    this.cestasEntrada.forEach((cesta, i) => {
+      cesta.visible = i < sim.cestasNoSuporte;
+      aplicarPaletaCesta(cesta, paletaAtual);
+    });
     aplicarPaletaFuncionario(this.jogador, paletaAtual);
     aplicarPaletaFuncionario(this.caixeiro, paletaAtual);
     aplicarPaletaFuncionario(this.ajudante, paletaAtual);

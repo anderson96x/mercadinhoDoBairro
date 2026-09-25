@@ -16,7 +16,7 @@ export class Interface {
         <div id="mundo"></div><div id="etiquetas" aria-hidden="true"></div>
         <header class="cabecalho">
           <div class="marca"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div><span class="nivel" id="nivel">NÍVEL 1</span></div>
-          <div class="saldo" aria-label="Dinheiro disponível"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes felizes</small></div></div>
+          <div class="saldo" aria-label="Resumo do mercado"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes felizes</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div></div>
           <nav class="ferramentas" aria-label="Opções do jogo">
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
             <button class="botao-icone" id="ajuda" title="Como jogar" aria-label="Como jogar">${icone('ajuda')}</button>
@@ -76,6 +76,7 @@ export class Interface {
     }
     this.el('saldo').textContent = reais(e.dinheiro);
     this.el('clientes').textContent = e.estatisticas.clientes;
+    this.el('cestas').textContent = s.cestasNoSuporte;
     this.el('nivel').textContent = `NÍVEL ${s.nivel}`;
     this.el('objetivo-titulo').textContent = m.titulo;
     this.el('objetivo-texto').textContent = m.texto;
