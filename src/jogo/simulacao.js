@@ -50,8 +50,8 @@ export function validarEstado(dados) {
     };
   }
   for (const id of Object.keys(base.estatisticas)) base.estatisticas[id] = numero(dados.estatisticas?.[id]);
-  // Salvamentos anteriores não tinham satisfação. Considerar os clientes
-  // atendidos como felizes preserva o nível que o jogador já conquistou.
+  // Salvamentos anteriores não tinham satisfação. As vendas registradas
+  // continuam alimentando o histórico de satisfação desses jogos.
   if (dados.estatisticas?.satisfacao === undefined) {
     base.estatisticas.satisfacao = base.estatisticas.clientes;
     base.estatisticas.clientesFelizes = base.estatisticas.clientes;
@@ -92,8 +92,8 @@ export class Simulacao {
   }
   get capacidade() { return CONFIG.capacidadeInicial + this.estado.melhorias.mochila * 4; }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
-  get nivel() { return 1 + Math.floor(this.estado.estatisticas.satisfacao / CONFIG.pontosPorNivel); }
-  get progressoSatisfacao() { return this.estado.estatisticas.satisfacao % CONFIG.pontosPorNivel; }
+  get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / CONFIG.clientesPorNivel); }
+  get progressoClientes() { return this.estado.estatisticas.clientes % CONFIG.clientesPorNivel; }
   get reputacao() {
     const valores = this.estado.satisfacoesRecentes.map(item => CONFIG.valoresReputacao[item]);
     const faltantes = CONFIG.tamanhoHistoricoReputacao - valores.length;
@@ -476,6 +476,7 @@ export class Simulacao {
       this.progressoCaixa += dt;
       if (!this.estado.melhorias.caixa) this.atividade = 'Atendendo no caixa…';
       if (this.progressoCaixa >= CONFIG.tempoCaixa) {
+        const nivelAnterior = this.nivel;
         this.normalizarComprasCliente(primeiro);
         const valor = primeiro.itens.reduce((total, id) => total + PRODUTOS[id].preco, 0);
         this.estado.dinheiro += valor; this.estado.estatisticas.faturamento += valor; this.estado.estatisticas.clientes++;
@@ -484,6 +485,7 @@ export class Simulacao {
         primeiro.fase = 'saindo'; primeiro.etapa = 0;
         this.progressoCaixa = 0;
         this.emitir('venda', { valor, ponto: CONFIG.caixa });
+        if (this.nivel > nivelAnterior) this.emitir('nivel', { nivel: this.nivel });
       }
     } else this.progressoCaixa = 0;
   }

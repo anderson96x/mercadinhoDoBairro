@@ -15,8 +15,8 @@ export class Interface {
       <main class="jogo" aria-label="Mercadinho do Bairro">
         <div id="mundo"></div><div id="etiquetas" aria-hidden="true"></div>
         <header class="cabecalho">
-          <div class="marca"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div><span class="nivel" id="nivel">NÍVEL 1</span></div>
-          <div class="saldo" aria-label="Resumo do mercado"><div class="saldo-linha"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div><div class="satisfacao-pontos-topo"><span class="satisfacao-resumo">${icone('sorriso')}<b id="satisfacao-pontos">0 pts</b></span><small>satisfação</small></div></div><div class="reputacao-topo media" id="reputacao-painel" aria-label="Reputação média, 60 de 100"><progress id="reputacao-progresso" value="60" max="100" aria-label="Reputação do mercadinho"></progress><small id="reputacao-meta">Média · 60 / 100</small></div></div>
+          <div class="marca"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div><span class="nivel" id="nivel" role="status" aria-live="polite">NÍVEL 1</span></div>
+          <div class="saldo" aria-label="Resumo do mercado"><div class="saldo-linha"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div></div><div class="reputacao-topo media" id="reputacao-painel" aria-label="Satisfação média, 60 de 100"><span class="satisfacao-rosto" id="satisfacao-rosto">${icone('neutro')}</span><progress id="reputacao-progresso" value="60" max="100" aria-label="Satisfação do mercadinho"></progress><small id="reputacao-meta">Média · 60 / 100</small></div></div>
           <nav class="ferramentas" aria-label="Opções do jogo">
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
             <button class="botao-icone" id="ajuda" title="Como jogar" aria-label="Como jogar">${icone('ajuda')}</button>
@@ -77,14 +77,15 @@ export class Interface {
     this.el('saldo').textContent = reais(e.dinheiro);
     this.el('clientes').textContent = e.estatisticas.clientes;
     this.el('cestas').textContent = s.cestasNoSuporte;
-    this.el('satisfacao-pontos').textContent = `${e.estatisticas.satisfacao} pts`;
     const nomesReputacao = { ruim: 'Ruim', media: 'Média', boa: 'Boa' };
+    const rostosSatisfacao = { ruim: 'irritado', media: 'neutro', boa: 'sorriso' };
     const painelReputacao = this.el('reputacao-painel');
     painelReputacao.classList.remove('ruim', 'media', 'boa'); painelReputacao.classList.add(s.faixaReputacao);
-    painelReputacao.setAttribute('aria-label', `Reputação ${nomesReputacao[s.faixaReputacao].toLocaleLowerCase('pt-BR')}, ${s.reputacao} de 100`);
+    this.el('satisfacao-rosto').innerHTML = icone(rostosSatisfacao[s.faixaReputacao]);
+    painelReputacao.setAttribute('aria-label', `Satisfação ${nomesReputacao[s.faixaReputacao].toLocaleLowerCase('pt-BR')}, ${s.reputacao} de 100`);
     this.el('reputacao-progresso').value = s.reputacao;
     this.el('reputacao-meta').textContent = `${nomesReputacao[s.faixaReputacao]} · ${s.reputacao} / 100`;
-    this.el('reputacao-progresso').setAttribute('aria-valuetext', `${s.reputacao} de 100, reputação ${nomesReputacao[s.faixaReputacao].toLocaleLowerCase('pt-BR')}`);
+    this.el('reputacao-progresso').setAttribute('aria-valuetext', `${s.reputacao} de 100, satisfação ${nomesReputacao[s.faixaReputacao].toLocaleLowerCase('pt-BR')}`);
     this.el('nivel').textContent = `NÍVEL ${s.nivel}`;
     this.el('objetivo-titulo').textContent = m.titulo;
     this.el('objetivo-texto').textContent = m.texto;
@@ -140,7 +141,7 @@ export class Interface {
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p></div></div>
-        <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento.</p></div></li><li><span>4</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0. Cada 100 pontos aumenta o nível.</p></div></li><li><span>5</span><div><b>Construa sua reputação</b><p>As últimas 10 experiências formam a reputação. Uma reputação ruim traz clientes mais devagar; uma boa permite pedidos maiores e variados.</p></div></li><li><span>6</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
+          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>5</span><div><b>Construa sua reputação</b><p>As últimas 10 experiências formam a reputação. Uma reputação ruim traz clientes mais devagar; uma boa permite pedidos maiores e variados.</p></div></li><li><span>6</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'pausa') {
       conteudo = `<p class="painel-subtitulo">A loja espera por você.</p><div class="resumo-pausa"><div><strong>${reais(this.sim.estado.dinheiro)}</strong><span>em caixa</span></div><div><strong>${this.sim.estado.estatisticas.satisfacao}</strong><span>pontos de satisfação</span></div><div><strong>${this.sim.reputacao}</strong><span>de reputação</span></div></div><button class="botao-principal" data-fechar>${icone('jogar')} Continuar jogando</button><button class="botao-secundario" id="como-jogar">${icone('ajuda')} Como jogar</button><button class="botao-secundario" id="tela-cheia">${icone('tela')} ${document.fullscreenElement ? 'Sair da tela cheia' : 'Jogar em tela cheia'}</button><button class="botao-texto" id="reiniciar">Começar um novo jogo</button><p class="nota central">O progresso fica salvo neste navegador.</p>`;
@@ -217,6 +218,15 @@ export class Interface {
     clearTimeout(this.tempoMensagem); this.el('mensagens').textContent = texto;
     this.el('mensagens').classList.add('visivel');
     this.tempoMensagem = setTimeout(() => this.el('mensagens').classList.remove('visivel'), 3200);
+  }
+  subiuDeNivel(nivel) {
+    const indicador = this.el('nivel');
+    indicador.textContent = `NÍVEL ${nivel}`;
+    indicador.classList.remove('subindo');
+    void indicador.offsetWidth;
+    indicador.classList.add('subindo');
+    clearTimeout(this.tempoAnimacaoNivel);
+    this.tempoAnimacaoNivel = setTimeout(() => indicador.classList.remove('subindo'), 1800);
   }
   venda(valor, ponto) {
     const el = document.createElement('div'); el.className = 'dinheiro-flutuante'; el.textContent = `+ ${reais(valor)}`;

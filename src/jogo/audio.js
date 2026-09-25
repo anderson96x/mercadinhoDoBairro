@@ -10,7 +10,7 @@ export class Sons {
   }
   tocar(tipo) {
     if (!this.ativo || !this.contexto || this.contexto.state !== 'running') return;
-    const notas = tipo === 'venda' ? [660, 880, 1100] : tipo === 'melhoria' || tipo === 'missao' ? [523, 659, 784, 1046] : [tipo === 'colheita' ? 520 : 380];
+    const notas = tipo === 'nivel' ? [523, 659, 784, 1046, 1319] : tipo === 'venda' ? [660, 880, 1100] : tipo === 'melhoria' || tipo === 'missao' ? [523, 659, 784, 1046] : [tipo === 'colheita' ? 520 : 380];
     notas.forEach((nota, i) => {
       const inicio = this.contexto.currentTime + i * 0.08;
       const oscilador = this.contexto.createOscillator(), ganho = this.contexto.createGain();

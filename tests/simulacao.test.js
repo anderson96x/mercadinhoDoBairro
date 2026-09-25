@@ -4,13 +4,31 @@ import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { MOBILIARIO_CALCADA } from '../src/jogo/bairro.js';
 
-test('o nível aumenta a cada 100 pontos de satisfação', () => {
+test('o nível aumenta a cada 25 clientes atendidos', () => {
   const sim = new Simulacao();
-  for (const [pontos, nivel] of [[0, 1], [99, 1], [100, 2], [199, 2], [200, 3]]) {
-    sim.estado.estatisticas.satisfacao = pontos;
+  for (const [clientes, nivel] of [[0, 1], [24, 1], [25, 2], [49, 2], [50, 3]]) {
+    sim.estado.estatisticas.clientes = clientes;
     assert.equal(sim.nivel, nivel);
-    assert.equal(sim.missao().alvo, nivel * 100);
+    assert.equal(sim.missao().alvo, nivel * 25);
   }
+  sim.estado.estatisticas.clientes = 24;
+  sim.estado.estatisticas.satisfacao = 10_000;
+  assert.equal(sim.nivel, 1, 'satisfação não deve mais alterar o nível');
+});
+
+test('checkout do vigésimo quinto cliente emite o evento de novo nível uma única vez', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 24;
+  sim.estado.melhorias.caixa = 1;
+  sim.clientes.push({
+    id: 1, ...CONFIG.clienteCaixa, fase: 'fila', quantidade: 1,
+    produto: 'tomate', desejado: 1, itens: ['tomate']
+  });
+  sim.atualizarCaixa(CONFIG.tempoCaixa);
+  assert.equal(sim.nivel, 2);
+  assert.deepEqual(sim.consumirEventos().filter(evento => evento.tipo === 'nivel'), [{ tipo: 'nivel', nivel: 2 }]);
+  sim.atualizarCaixa(CONFIG.tempoCaixa);
+  assert.equal(sim.consumirEventos().filter(evento => evento.tipo === 'nivel').length, 0);
 });
 
 test('clientes felizes, neutros e irritados rendem 10, 5 e 0 pontos', () => {
@@ -65,7 +83,7 @@ test('reputação começa em 60 e usa somente as dez experiências mais recentes
   assert.equal(sim.faixaReputacao, 'boa');
 });
 
-test('salvamento antigo mantém o nível conquistado ao receber satisfação', () => {
+test('salvamento antigo calcula o nível pelos clientes atendidos', () => {
   const antigo = new Simulacao().estado;
   antigo.estatisticas.clientes = 205;
   delete antigo.estatisticas.satisfacao;
@@ -74,7 +92,7 @@ test('salvamento antigo mantém o nível conquistado ao receber satisfação', (
   delete antigo.estatisticas.clientesIrritados;
   const sim = new Simulacao(antigo);
   assert.equal(sim.estado.estatisticas.satisfacao, 205);
-  assert.equal(sim.nivel, 3);
+  assert.equal(sim.nivel, 9);
 });
 
 test('jogador senta no escritorio e aciona o computador uma vez por visita', () => {

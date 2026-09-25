@@ -74,6 +74,7 @@ try {
       for (const evento of sim.consumirEventos()) {
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
+        if (evento.tipo === 'nivel') ui.subiuDeNivel(evento.nivel);
         if (evento.tipo === 'melhoria') ui.mensagem(`${evento.texto} · melhoria adquirida!`);
         if (evento.tipo === 'missao') ui.mensagem(evento.texto);
         if (evento.tipo === 'escritorio') ui.abrir('escritorio');
