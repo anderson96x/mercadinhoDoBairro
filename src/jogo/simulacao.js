@@ -79,7 +79,7 @@ export class Simulacao {
   }
   get capacidade() { return CONFIG.capacidadeInicial + this.estado.melhorias.mochila * 4; }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
-  get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / 8); }
+  get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / 100); }
   emitir(tipo, dados = {}) { this.eventos.push({ tipo, ...dados }); }
   consumirEventos() { const eventos = this.eventos; this.eventos = []; return eventos; }
   custoMelhoria(id) {
@@ -102,6 +102,11 @@ export class Simulacao {
     return { sucesso: true, dinheiro: this.estado.dinheiro };
   }
   missao() {
+    const recorrente = MISSOES.find(m => m.intervalo);
+    if (recorrente) {
+      const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
+      return { ...recorrente, indice: 0, valor, alvo: this.nivel * recorrente.intervalo };
+    }
     const indice = MISSOES.findIndex(m => (this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) < m.alvo);
     if (indice === -1) return { indice: MISSOES.length, completa: true, titulo: 'O bairro é seu!', texto: 'Continue cuidando da loja e descubra todas as melhorias.', valor: 1, alvo: 1 };
     const m = MISSOES[indice];
@@ -241,7 +246,7 @@ export class Simulacao {
         } else if (e.prateleira >= p.capacidadePrateleira && indice >= 0) this.atividade = 'Prateleira cheia';
       }
       if (pertoEstacao(jogador, p.horta, 2.5, 3.6)) {
-        if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Cesta cheia · leve os produtos à prateleira'; continue; }
+        if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Inventário cheio · leve os produtos à prateleira'; continue; }
         if (!e.horta) { this.atividade = 'A colheita está crescendo…'; continue; }
         this.atividade = `Colhendo ${p.plural.toLocaleLowerCase('pt-BR')}…`;
         if (this.tempo >= this.proximaInteracao) {

@@ -4,6 +4,15 @@ import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { MOBILIARIO_CALCADA } from '../src/jogo/bairro.js';
 
+test('o nivel aumenta a cada 100 clientes atendidos', () => {
+  const sim = new Simulacao();
+  for (const [clientes, nivel] of [[0, 1], [99, 1], [100, 2], [199, 2], [200, 3]]) {
+    sim.estado.estatisticas.clientes = clientes;
+    assert.equal(sim.nivel, nivel);
+    assert.equal(sim.missao().alvo, nivel * 100);
+  }
+});
+
 function avancar(sim, segundos, entrada) {
   for (let i = 0; i < segundos * 60; i++) sim.atualizar(1 / 60, entrada);
 }

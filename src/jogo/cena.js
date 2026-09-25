@@ -7,6 +7,10 @@ import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 
 const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
 const materiais = new Map();
+const pertoDaEstacao = (ator, centro, largura, profundidade) => Math.hypot(
+  Math.max(0, Math.abs(ator.x - centro.x) - largura / 2),
+  Math.max(0, Math.abs(ator.z - centro.z) - profundidade / 2)
+) < CONFIG.raioInteracao;
 function material(cor) {
   if (!materiais.has(cor)) materiais.set(cor, new THREE.MeshStandardMaterial({ color: cor, roughness: 0.92, metalness: 0 }));
   return materiais.get(cor);
@@ -475,6 +479,7 @@ export class Cena {
   }
   criarLabel(id, ponto, titulo, detalhe, classe) {
     const el = document.createElement('div'); el.className = `etiqueta etiqueta-${classe}`;
+    el.hidden = true;
     el.innerHTML = `<b>${titulo}</b><span>${detalhe}</span>`;
     document.getElementById('etiquetas').append(el);
     this.labels.push({ id, el, ponto });
@@ -717,6 +722,11 @@ export class Cena {
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
       if (produto && !e.produtos[produto].liberado) { el.hidden = true; continue; }
+      const estacao = PRODUTOS[produto]?.[tipo === 'horta' ? 'horta' : 'prateleira'];
+      const perto = tipo === 'horta'
+        ? pertoDaEstacao(e.jogador, estacao, 2.5, 3.6)
+        : pertoDaEstacao(e.jogador, estacao, 2.45, 1.8);
+      if (!perto) { el.hidden = true; continue; }
       const pos = this.projetar(ponto);
       el.hidden = pos.x < 25 || pos.x > this.w - 25 || pos.y < (this.mobile ? 200 : 120) || pos.y > this.h - 100;
       el.style.transform = `translate(${pos.x}px,${pos.y}px) translate(-50%,-100%)`;

@@ -56,10 +56,5 @@ export const MELHORIAS = [
 ];
 
 export const MISSOES = [
-  { titulo: 'Da horta para a loja', texto: 'Aproxime-se da horta vermelha para colher 3 tomates.', chave: 'colhidos', alvo: 3, destino: 'horta' },
-  { titulo: 'Prateleiras cheias', texto: 'Leve os tomates até a prateleira dentro da loja.', chave: 'repostos', alvo: 3, destino: 'prateleira' },
-  { titulo: 'A primeira venda', texto: 'Sente-se na cadeira do caixa para atender um cliente.', chave: 'clientes', alvo: 1, destino: 'caixa' },
-  { titulo: 'Hora de crescer', texto: 'Junte R$ 80 e libere o milho em Melhorias.', chave: 'milho', alvo: 1, destino: 'melhorias' },
-  { titulo: 'Trabalho em equipe', texto: 'Contrate alguém para o caixa por R$ 140.', chave: 'caixa', alvo: 1, destino: 'melhorias' },
-  { titulo: 'O queridinho do bairro', texto: 'Atenda 20 clientes e faça o bairro voltar sempre.', chave: 'clientes', alvo: 20, destino: 'caixa' }
+  { titulo: 'Suba de nível', texto: 'A cada 100 clientes atendidos, seu mercadinho sobe um nível.', chave: 'clientes', intervalo: 100, destino: 'caixa' }
 ];
