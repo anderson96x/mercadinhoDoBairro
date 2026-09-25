@@ -1,10 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { Cena, ajudanteUsaCaixaMadeira, aplicarPaletaFuncionario, personagem, usarCaixaMadeira } from '../src/jogo/cena.js';
+import { Cena, ajustarSacola, ajudanteUsaCaixaMadeira, aplicarPaletaFuncionario, criarSacola, personagem, posicaoProdutoSacola, usarCaixaMadeira } from '../src/jogo/cena.js';
 import { PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { APARENCIAS_CLIENTES } from '../src/jogo/aparencias-clientes.js';
 import { PALETAS } from '../src/jogo/personalizacao.js';
+
+test('sacola cresce com a compra e organiza os produtos em camadas internas', () => {
+  const sacola = criarSacola();
+  ajustarSacola(sacola, 1, 1);
+  const escalaPequena = sacola.userData.papel.scale.clone();
+  ajustarSacola(sacola, 5, 1);
+  assert.ok(sacola.userData.papel.scale.x > escalaPequena.x);
+  assert.ok(sacola.userData.papel.scale.y > escalaPequena.y);
+  const posicoes = Array.from({ length: 5 }, (_, indice) => posicaoProdutoSacola(indice, 5));
+  assert.ok(posicoes.slice(3).every(posicao => posicao.y > posicoes[0].y));
+  assert.ok(posicoes.every(posicao => Math.abs(posicao.x) <= 0.2 && posicao.y < 0.7));
+});
 
 test('jogador e funcionários usam calça preta, camisa e chapéu na cor da loja', () => {
   const modelos = [

@@ -188,8 +188,9 @@ export function aplicarPaletaFuncionario(modelo, paleta) {
   uniforme.paletaAplicada = paleta.id;
 }
 
-function criarSacola() {
+export function criarSacola() {
   const sacola = new THREE.Group();
+  const papel = new THREE.Group(); sacola.add(papel);
   // Uma casca aberta, com cantos unidos e laterais dobradas para dentro.
   const abertura = [
     [-0.4, 0.7, -0.26], [0.4, 0.72, -0.26], [0.35, 0.68, 0],
@@ -202,7 +203,7 @@ function criarSacola() {
     const geometria = new THREE.BufferGeometry();
     geometria.setAttribute('position', new THREE.Float32BufferAttribute(pontos.flat(), 3));
     geometria.setIndex([0, 1, 2, 0, 2, 3]); geometria.computeVertexNormals();
-    sacola.add(objeto(geometria, cor));
+    papel.add(objeto(geometria, cor));
   };
   for (let i = 0; i < abertura.length; i++) {
     const j = (i + 1) % abertura.length;
@@ -214,13 +215,34 @@ function criarSacola() {
     face([fundo[j], interior[j], interior[i], fundo[i]], 0xd0a16a);
     face([abertura[i], interior[i], interior[j], abertura[j]], 0xe0b984);
   }
-  caixa(sacola, 0.68, 0.04, 0.44, 0xb38350, 0, 0.02, 0);
+  caixa(papel, 0.68, 0.04, 0.44, 0xb38350, 0, 0.02, 0);
   sacola.userData.conteudo = new THREE.Group(); sacola.add(sacola.userData.conteudo);
+  sacola.userData.papel = papel;
+  sacola.userData.aparicao = 0;
   return sacola;
 }
 
-function posicaoProdutoSacola(indice) {
-  return new THREE.Vector3(indice % 2 ? 0.16 : -0.16, 0.69 + Math.floor(indice / 2) * 0.08, indice % 2 ? 0.09 : -0.09);
+export function posicaoProdutoSacola(indice, quantidade = 5) {
+  const layouts = {
+    1: [[0, 0.45, 0]],
+    2: [[-0.14, 0.49, 0], [0.14, 0.49, 0]],
+    3: [[-0.14, 0.38, 0.06], [0.14, 0.38, 0.06], [0, 0.55, -0.05]],
+    4: [[-0.14, 0.4, 0.07], [0.14, 0.4, 0.07], [-0.14, 0.59, -0.06], [0.14, 0.59, -0.06]],
+    5: [[-0.2, 0.43, 0.07], [0, 0.43, 0.07], [0.2, 0.43, 0.07], [-0.11, 0.63, -0.07], [0.11, 0.63, -0.07]]
+  };
+  const layout = layouts[Math.max(1, Math.min(5, quantidade))];
+  return new THREE.Vector3(...(layout[indice] ?? layout.at(-1)));
+}
+
+export function ajustarSacola(sacola, quantidade, preenchimento = 1) {
+  const total = Math.max(1, Math.min(5, quantidade));
+  const cheio = (total - 1) / 4;
+  const entrada = THREE.MathUtils.smoothstep(THREE.MathUtils.clamp(preenchimento, 0, 1), 0, 1);
+  sacola.userData.papel.scale.set(
+    (0.88 + cheio * 0.12) * (0.94 + entrada * 0.06),
+    (0.8 + cheio * 0.23) * (0.82 + entrada * 0.18),
+    (0.9 + cheio * 0.1) * (0.94 + entrada * 0.06)
+  );
 }
 
 function cabeloCliente(corpo, visual) {
@@ -747,15 +769,21 @@ export class Cena {
     }
     const progresso = THREE.MathUtils.clamp(sim.progressoCaixa / CONFIG.tempoCaixa, 0, 1);
     this.sacolaEmbalagem.visible = true; this.itensEmbalagem.visible = true;
+    let preenchimento = 0, embalados = 0;
     this.itensEmbalagem.children.forEach((item, i) => {
-      const inicio = 0.08 + i * 0.22;
-      const t = THREE.MathUtils.clamp((progresso - inicio) / 0.34, 0, 1);
+      const intervalo = cliente.quantidade > 1 ? 0.5 / (cliente.quantidade - 1) : 0;
+      const inicio = 0.05 + i * intervalo;
+      const t = THREE.MathUtils.clamp((progresso - inicio) / 0.38, 0, 1);
       const origem = pontoNoBalcao(0, 1.39, 0.4 + (i - (cliente.quantidade - 1) / 2) * 0.13);
-      const destino = posicaoProdutoSacola(i).applyQuaternion(this.sacolaEmbalagem.quaternion).add(this.sacolaEmbalagem.position);
+      const destino = posicaoProdutoSacola(i, cliente.quantidade).applyQuaternion(this.sacolaEmbalagem.quaternion).add(this.sacolaEmbalagem.position);
       item.position.copy(origem).lerp(destino, t);
       if (t < 1) item.position.y += Math.sin(t * Math.PI) * 0.32;
+      item.rotation.z = (1 - t) * (i % 2 ? 0.45 : -0.45);
+      preenchimento += t;
+      if (t > 0) embalados++;
     });
-    return { cliente, progresso };
+    ajustarSacola(this.sacolaEmbalagem, cliente.quantidade, preenchimento / Math.max(1, cliente.quantidade));
+    return { cliente, progresso, embalados };
   }
   atualizar(dt) {
     const sim = this.sim, e = sim.estado;
@@ -858,6 +886,31 @@ export class Cena {
       modelo.userData.cesta.visible = !!c.temCesta && !c.levaSacolas;
       modelo.userData.sacolas.children.forEach((sacola, i) => {
         sacola.visible = !!c.levaSacolas;
+        const assinaturaItens = itens.join(',');
+        if (c.levaSacolas && sacola.userData.assinaturaItens !== assinaturaItens) {
+          liberarGeometrias(sacola.userData.conteudo);
+          sacola.userData.assinaturaItens = assinaturaItens;
+          sacola.userData.aparicao = 0;
+          itens.forEach((id, indice) => {
+            const produto = criarProduto(id, 0.72);
+            produto.userData.destinoSacola = posicaoProdutoSacola(indice, itens.length);
+            produto.position.copy(produto.userData.destinoSacola).add(new THREE.Vector3(0, 0.2 + indice * 0.025, 0));
+            produto.rotation.z = indice % 2 ? 0.35 : -0.35;
+            sacola.userData.conteudo.add(produto);
+          });
+        }
+        if (c.levaSacolas) {
+          sacola.userData.aparicao = Math.min(1, (sacola.userData.aparicao ?? 0) + dt * 4.5);
+          const entrada = THREE.MathUtils.smoothstep(sacola.userData.aparicao, 0, 1);
+          ajustarSacola(sacola, itens.length, entrada);
+          sacola.position.set(0, 0.18 + Math.sin(entrada * Math.PI) * 0.07, 0.58);
+          sacola.scale.setScalar(0.86 + entrada * 0.14);
+          sacola.userData.conteudo.children.forEach((produto, indice) => {
+            const t = THREE.MathUtils.smoothstep(THREE.MathUtils.clamp(entrada * 1.35 - indice * 0.09, 0, 1), 0, 1);
+            produto.position.copy(produto.userData.destinoSacola).add(new THREE.Vector3(0, (1 - t) * 0.2, 0));
+            produto.rotation.z = (1 - t) * (indice % 2 ? 0.35 : -0.35);
+          });
+        }
         sacola.rotation.z = c.andando ? Math.sin(tempo * 8 + i) * 0.025 : 0;
         if (c.levaSacolas) {
           // As duas mãos apoiam a mesma sacola junto ao corpo.
@@ -866,18 +919,9 @@ export class Cena {
             posicionarBraco(braco, apoio);
           }
         }
-        if (c.levaSacolas && !sacola.userData.cheia) {
-          for (let indice = 0; indice < itens.length; indice++) {
-            const produto = criarProduto(itens[indice], 0.82);
-            produto.position.copy(posicaoProdutoSacola(indice));
-            sacola.userData.conteudo.add(produto);
-          }
-          sacola.userData.cheia = true;
-        }
       });
       if (embalagem?.cliente === c) {
-        const embalados = Math.floor(embalagem.progresso * c.quantidade);
-        modelo.userData.carga.children.forEach((produto, i) => { if (i < embalados) produto.visible = false; });
+        modelo.userData.carga.children.forEach((produto, i) => { if (i < embalagem.embalados) produto.visible = false; });
       }
     }
     for (const [id, m] of this.clientes) if (!sim.clientes.some(c => c.id === id)) { m.userData.balao?.remove(); this.cena.remove(m); liberarGeometrias(m); this.clientes.delete(id); }
