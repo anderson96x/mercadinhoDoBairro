@@ -3,6 +3,137 @@ import assert from 'node:assert/strict';
 import { Cena, personagem } from '../src/jogo/cena.js';
 import { PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
+import { APARENCIAS_CLIENTES } from '../src/jogo/aparencias-clientes.js';
+
+test('clientes usam 144 aparências distintas em ordem aleatória sem repetição imediata', () => {
+  assert.equal(APARENCIAS_CLIENTES.length, 144);
+  const combinacoes = APARENCIAS_CLIENTES.map(({ genero, pele, cabelo, roupa }) => `${genero}-${pele}-${cabelo}-${roupa}`);
+  assert.equal(new Set(combinacoes).size, 144);
+  assert.equal(new Set(APARENCIAS_CLIENTES.map(a => a.pele)).size, 6);
+  assert.ok(new Set(APARENCIAS_CLIENTES.map(a => a.cabelo)).size >= 12);
+  assert.equal(new Set(APARENCIAS_CLIENTES.map(a => a.roupa)).size, 4);
+  assert.ok(APARENCIAS_CLIENTES.some(a => a.oculos === 'grau'));
+  assert.ok(APARENCIAS_CLIENTES.some(a => a.oculos === 'sol'));
+
+  const sim = new Simulacao(), sorteadas = [];
+  for (let i = 0; i < 144; i++) {
+    assert.equal(sim.criarCliente(), true);
+    sorteadas.push(sim.clientes.pop().aparencia);
+  }
+  assert.equal(new Set(sorteadas).size, 144);
+  assert.deepEqual([...sorteadas].sort((a, b) => a - b), Array.from(APARENCIAS_CLIENTES.keys()));
+  sim.criarCliente();
+  assert.ok(sim.clientes[0].aparencia >= 0 && sim.clientes[0].aparencia < 144);
+  assert.notEqual(sim.clientes[0].aparencia, sorteadas.at(-1));
+});
+
+test('mulheres e homens têm penteados, roupas e acessórios próprios', () => {
+  const estilos = {
+    mulher: {
+      cabelos: new Set(['chanel', 'afro_longo', 'coque', 'liso', 'rabo', 'ondas', 'afro_curto_feminino', 'afro_alto_feminino', 'coque_afro']),
+      roupas: new Set(['vestido', 'blusa_saia']),
+      acessorios: new Set(['nenhum', 'brincos', 'lenco', 'colar'])
+    },
+    homem: {
+      cabelos: new Set(['raspado', 'curto', 'afro_curto', 'afro_alto', 'degrade', 'topete', 'cacheado']),
+      roupas: new Set(['camisa', 'jaqueta']),
+      acessorios: new Set(['nenhum', 'gravata', 'bolso'])
+    }
+  };
+  for (const genero of ['mulher', 'homem']) {
+    const perfis = APARENCIAS_CLIENTES.filter(a => a.genero === genero);
+    assert.equal(perfis.length, 72);
+    for (const visual of perfis) {
+      assert.ok(estilos[genero].cabelos.has(visual.cabelo));
+      assert.ok(estilos[genero].roupas.has(visual.roupa));
+      assert.ok(estilos[genero].acessorios.has(visual.acessorio));
+    }
+    assert.equal(new Set(perfis.map(a => a.pele)).size, 6);
+    assert.ok(perfis.some(a => a.oculos));
+  }
+  assert.equal(APARENCIAS_CLIENTES.some(a => a.cabelo === 'trancas'), false);
+  const pelesNegras = new Set([0x75472f, 0x4c2f25]);
+  const clientesNegros = APARENCIAS_CLIENTES.filter(a => pelesNegras.has(a.pele));
+  assert.ok(clientesNegros.filter(a => a.cabelo.includes('afro') || a.cabelo === 'cacheado').length >= clientesNegros.length / 2);
+});
+
+test('cabelos usam cores naturais compatíveis com a pele e grisalhos representam idosos', () => {
+  const coresNaturais = new Set([0x211d1b, 0x3e2c25, 0x6b452f, 0xa6532f, 0xc9a76b, 0x999a98]);
+  const peles = [...new Set(APARENCIAS_CLIENTES.map(a => a.pele))];
+  for (const visual of APARENCIAS_CLIENTES) {
+    const tom = peles.indexOf(visual.pele);
+    assert.ok(coresNaturais.has(visual.corCabelo));
+    assert.equal(visual.idoso, visual.tomCabelo === 'grisalho');
+    if (tom >= 2) assert.ok(!['loiro', 'ruivo'].includes(visual.tomCabelo));
+    if (tom >= 4) assert.ok(['preto', 'castanho_escuro', 'grisalho'].includes(visual.tomCabelo));
+  }
+  for (const genero of ['mulher', 'homem']) {
+    const perfis = APARENCIAS_CLIENTES.filter(a => a.genero === genero);
+    for (const tom of ['preto', 'castanho_escuro', 'castanho', 'ruivo', 'loiro', 'grisalho']) {
+      assert.ok(perfis.some(a => a.tomCabelo === tom), `${genero} precisa incluir cabelo ${tom}`);
+    }
+    for (const pele of peles) assert.ok(perfis.some(a => a.pele === pele && a.idoso));
+  }
+  const visual = APARENCIAS_CLIENTES.find(a => a.idoso);
+  const modelo = personagem(visual.corRoupa, visual.pele, false, [], visual);
+  const sobrancelhas = modelo.userData.corpo.children.filter(m => m.isMesh
+    && m.material.color.getHex() === visual.corCabelo && Math.abs(m.position.y - 1.25) < 0.001);
+  assert.equal(sobrancelhas.length, 2);
+});
+
+test('poucos clientes têm porte corpulento, distribuído entre gêneros e tons de pele', () => {
+  const corpulentos = APARENCIAS_CLIENTES.filter(a => a.porte === 'corpulento');
+  assert.equal(corpulentos.length, 18);
+  assert.equal(corpulentos.filter(a => a.genero === 'mulher').length, 9);
+  assert.equal(corpulentos.filter(a => a.genero === 'homem').length, 9);
+  assert.equal(new Set(corpulentos.map(a => a.pele)).size, 6);
+
+  const grande = corpulentos[0];
+  const regular = APARENCIAS_CLIENTES.find(a => a.genero === grande.genero && a.porte === 'regular');
+  const modeloGrande = personagem(grande.corRoupa, grande.pele, false, [], grande);
+  const modeloRegular = personagem(regular.corRoupa, regular.pele, false, [], regular);
+  assert.ok(modeloGrande.userData.torso.scale.x > modeloRegular.userData.torso.scale.x * 1.9);
+  assert.ok(modeloGrande.userData.torso.scale.z > modeloRegular.userData.torso.scale.z * 1.5);
+  assert.ok(modeloGrande.userData.barriga);
+  assert.equal(modeloRegular.userData.barriga, null);
+  assert.ok(modeloGrande.userData.cesta.position.z > modeloRegular.userData.cesta.position.z);
+  Cena.prototype.animarPersonagem(modeloGrande, { x: 0, z: 0, andando: true }, 1 / 60, 1, []);
+  assert.ok(Number.isFinite(modeloGrande.userData.pernaE.rotation.x));
+});
+
+test('penteados, roupas e óculos geram malhas visíveis sem alterar a animação', () => {
+  for (const visual of [
+    APARENCIAS_CLIENTES.find(a => a.cabelo === 'afro_longo' && a.roupa === 'vestido' && a.oculos),
+    APARENCIAS_CLIENTES.find(a => a.cabelo === 'liso' && a.roupa === 'blusa_saia'),
+    APARENCIAS_CLIENTES.find(a => a.cabelo === 'raspado' && a.roupa === 'jaqueta'),
+    APARENCIAS_CLIENTES.find(a => a.cabelo === 'afro_curto' && a.roupa === 'camisa' && a.oculos)
+  ]) {
+    assert.ok(visual);
+    const modelo = personagem(visual.corRoupa, visual.pele, false, [], visual);
+    assert.ok(modelo.userData.corpo.children.length > 10);
+    assert.equal(modelo.userData.bracoE.userData.mao.material.color.getHex(), visual.pele);
+    assert.equal(modelo.userData.pernaE.material.color.getHex(), visual.genero === 'mulher' ? visual.pele : visual.corCalca);
+    Cena.prototype.animarPersonagem(modelo, { x: 0, z: 0, andando: true }, 1 / 60, 1, []);
+    assert.ok(Number.isFinite(modelo.userData.pernaE.rotation.x));
+  }
+});
+
+test('cliente sem cesta nasce com os braços relaxados e ganha a pose de carga ao pegá-la', () => {
+  const visual = APARENCIAS_CLIENTES.find(a => a.porte === 'regular');
+  const modelo = personagem(visual.corRoupa, visual.pele, false, [], visual);
+  const ator = { x: 0, z: 0, andando: true, temCesta: false, levaSacolas: false };
+  Cena.prototype.animarPersonagem(modelo, ator, 1 / 60, 0.12, []);
+  const d = modelo.userData;
+  const pega = d.cesta.userData.pega.clone().add(d.cesta.position);
+  assert.ok(d.bracoE.userData.mao.position.y < 0.5);
+  assert.ok(d.bracoD.userData.mao.position.y < 0.5);
+  assert.ok(d.bracoE.userData.mao.position.distanceTo(pega) > 0.3);
+  assert.ok(d.bracoE.userData.mao.position.z * d.bracoD.userData.mao.position.z <= 0);
+
+  ator.temCesta = true;
+  Cena.prototype.animarPersonagem(modelo, ator, 1 / 60, 0.12, []);
+  assert.ok(d.bracoE.userData.mao.position.distanceTo(pega) < 1e-8);
+});
 
 function preparar(origem = 'horta', duracao = 0.26) {
   const modelo = personagem(0x72a9bb);

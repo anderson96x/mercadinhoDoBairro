@@ -24,6 +24,13 @@ export const MOBILIARIO_LOJA = [
   { x: 7.65, z: 0.1, w: 1.5, d: 1.2 }
 ];
 
+// Objetos baixos ou estreitos da calçada também precisam participar da
+// navegação dos clientes, mesmo sem formarem paredes da loja.
+export const MOBILIARIO_CALCADA = [
+  ...[-7.8, 10.8].map(x => ({ x, z: 8.4, w: 0.18, d: 0.18 })),
+  ...[1.4, 6.2, 10.5].map(x => ({ x, z: 7.4, w: 1.1, d: 0.55 }))
+];
+
 export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   const grupo = new THREE.Group(); cena.add(grupo);
   let destino = grupo;
@@ -40,7 +47,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   chao(3, 24, 0.18, 2.5, 0xdacbb4, 0, 0.04, 7.95);
   bloco(24, 0.22, 0.16, 0xf3e5ce, 0, 0.07, 9.18);
   for (let x = -11; x < 12; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
-  for (let z = 9.5; z < 11; z += 0.35) chao(4, 2.2, 0.012, 0.18, 0xf7eddb, -1.3, 0.052, z);
+  // A faixa atravessa a rua inteira, de uma calçada à outra.
+  for (let z = 9.5; z < 13.5; z += 0.35) chao(4, 2.2, 0.012, 0.18, 0xf7eddb, -1.3, 0.052, z);
   for (let x = -11.5; x < 12; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
   for (const z of [7.25, 7.95, 8.65]) chao(4, 24, 0.01, 0.015, 0xbeb19a, 0, 0.136, z);
   chao(3, 12.4, 0.2, 12.7, 0xc4b9a5, 3, 0.06, 0.35);

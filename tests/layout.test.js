@@ -29,3 +29,20 @@ test('cliente entra pelo novo vão frontal antes de chegar à ilha central', () 
   assert.equal(cliente.fase, 'comprando');
   assert.ok(Math.hypot(cliente.x - PRODUTOS.tomate.cliente.x, cliente.z - PRODUTOS.tomate.cliente.z) < 0.025);
 });
+
+test('clientes chegam e vão embora pelas duas direções da calçada', () => {
+  const sim = new Simulacao(); sim.proximoCliente = Infinity;
+  assert.equal(sim.criarCliente(), true);
+  assert.equal(sim.criarCliente(), true);
+  assert.deepEqual(new Set(sim.clientes.map(c => c.ladoEntrada)), new Set([0, 1]));
+  assert.deepEqual(new Set(sim.clientes.map(c => c.ladoSaida)), new Set([0, 1]));
+
+  for (const ladoSaida of [0, 1]) {
+    const teste = new Simulacao(); teste.proximoCliente = Infinity;
+    const cliente = { id: 1, ...CONFIG.clienteCaixa, produto: 'tomate', quantidade: 1, fase: 'saindo', etapa: 0, ladoSaida, andando: false, levaSacolas: true };
+    teste.clientes.push(cliente);
+    for (let i = 0; i < 1800 && cliente.fase !== 'fim'; i++) teste.atualizarClientes(1 / 60);
+    assert.equal(cliente.fase, 'fim');
+    assert.ok(Math.hypot(cliente.x - CONFIG.extremosCalcada[ladoSaida].x, cliente.z - CONFIG.extremosCalcada[ladoSaida].z) < 0.025);
+  }
+});

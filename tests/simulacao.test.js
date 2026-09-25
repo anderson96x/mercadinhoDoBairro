@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
+import { MOBILIARIO_CALCADA } from '../src/jogo/bairro.js';
 
 function avancar(sim, segundos, entrada) {
   for (let i = 0; i < segundos * 60; i++) sim.atualizar(1 / 60, entrada);
@@ -13,6 +14,8 @@ test('cinco clientes formam fila espaçada e são atendidos na ordem sem se atra
   aproximar(sim, { x: -9, z: 8 });
   const verificarEspaco = () => {
     for (let i = 0; i < sim.clientes.length; i++) for (let j = i + 1; j < sim.clientes.length; j++) {
+      const emFila = c => c.fase === 'fila';
+      if (!emFila(sim.clientes[i]) || !emFila(sim.clientes[j])) continue;
       assert.ok(distancia(sim.clientes[i], sim.clientes[j]) >= CONFIG.distanciaClientes - 1e-5, 'clientes não podem se sobrepor');
     }
   };
@@ -54,11 +57,75 @@ test('clientes não passam pelo espaço reservado atrás do caixa', () => {
   assert.equal(sim.clientes.filter(c => c.fase === 'fila').length, CONFIG.maxClientes);
 });
 
-test('entrada ocupada não cria clientes sobrepostos', () => {
+test('clientes usam as duas pontas da calçada sem nascer sobrepostos', () => {
   const sim = new Simulacao();
   assert.equal(sim.criarCliente(), true);
+  assert.equal(sim.criarCliente(), true);
   assert.equal(sim.criarCliente(), false);
-  assert.equal(sim.clientes.length, 1);
+  assert.equal(sim.clientes.length, 2);
+  assert.deepEqual(new Set(sim.clientes.map(c => c.ladoEntrada)), new Set([0, 1]));
+  for (const cliente of sim.clientes) assert.equal(distancia(cliente, CONFIG.extremosCalcada[cliente.ladoEntrada]), 0);
+});
+
+test('clientes na calçada podem atravessar uns aos outros sem desviar', () => {
+  const sim = new Simulacao(); sim.proximoCliente = Infinity;
+  const a = { id: 1, x: -2, z: 8.4, fase: 'chegando', etapa: 0, andando: false };
+  const b = { id: 2, x: 2, z: 8.4, fase: 'saindo', etapa: 1, andando: false };
+  sim.clientes.push(a, b);
+  let distanciaMinima = Infinity;
+  for (let i = 0; i < 50; i++) {
+    sim.caminharCliente(a, { x: 2, z: 8.4 }, 0.05);
+    sim.caminharCliente(b, { x: -2, z: 8.4 }, 0.05);
+    distanciaMinima = Math.min(distanciaMinima, distancia(a, b));
+  }
+  assert.ok(distanciaMinima < 0.2);
+  assert.ok(a.x > 1.9 && b.x < -1.9);
+});
+
+test('clientes desviam dos objetos da calçada', () => {
+  const sim = new Simulacao(); sim.proximoCliente = Infinity;
+  const cliente = { id: 1, ...CONFIG.extremosCalcada[0], fase: 'chegando', etapa: 0, andando: false };
+  sim.clientes.push(cliente);
+  let desviou = false;
+
+  for (let i = 0; i < 600 && distancia(cliente, CONFIG.entrada) > 0.025; i++) {
+    sim.caminharCliente(cliente, CONFIG.entrada, 1 / 60);
+    desviou ||= Math.abs(cliente.z - CONFIG.extremosCalcada[0].z) > 0.1;
+    for (const objeto of MOBILIARIO_CALCADA) {
+      const dentro = Math.abs(cliente.x - objeto.x) < objeto.w / 2 + 0.27
+        && Math.abs(cliente.z - objeto.z) < objeto.d / 2 + 0.27;
+      assert.equal(dentro, false, 'cliente não pode atravessar mobiliário da calçada');
+    }
+  }
+
+  assert.equal(distancia(cliente, CONFIG.entrada) < 0.025, true);
+  assert.equal(desviou, true);
+});
+
+test('clientes pegam produtos ao mesmo tempo e fazem fila apenas no caixa', () => {
+  const sim = new Simulacao(); sim.proximoCliente = Infinity;
+  const produto = PRODUTOS.tomate;
+  sim.estado.produtos.tomate.prateleira = CONFIG.maxClientes;
+  sim.clientes = produto.pontosCompra.map((ponto, indice) => ({
+    id: indice + 1,
+    ...ponto,
+    produto: 'tomate',
+    pontoCompra: indice,
+    quantidade: 0,
+    desejado: 2,
+    fase: 'chegando',
+    etapa: 1,
+    espera: 0,
+    andando: false
+  }));
+
+  sim.atualizarClientes(0);
+  assert.equal(sim.clientes.filter(c => c.fase === 'comprando').length, CONFIG.maxClientes);
+
+  sim.atualizarClientes(0.66);
+  assert.deepEqual(sim.clientes.map(c => c.quantidade), Array(CONFIG.maxClientes).fill(1));
+  assert.equal(sim.estado.produtos.tomate.prateleira, 0);
+  assert.equal(sim.clientes.some(c => c.fase === 'fila' || c.fase === 'indoCaixa'), false);
 });
 
 test('jogador senta na cadeira, atende e levanta ao andar sem perder produtos', () => {

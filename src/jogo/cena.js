@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { CONFIG, PRODUTOS } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
+import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 
 const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
 const materiais = new Map();
@@ -174,37 +175,152 @@ function posicaoProdutoSacola(indice) {
   return new THREE.Vector3(indice % 2 ? 0.16 : -0.16, 0.69 + Math.floor(indice / 2) * 0.08, indice % 2 ? 0.09 : -0.09);
 }
 
-export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = []) {
+function cabeloCliente(corpo, visual) {
+  const cor = visual.corCabelo;
+  if (visual.cabelo === 'raspado') {
+    esfera(corpo, 0.285, cor, 0, 1.28, -0.035, 1, 0.34, 0.95);
+    return;
+  }
+  esfera(corpo, 0.285, cor, 0, 1.34, -0.04, 1, visual.genero === 'mulher' ? 0.6 : 0.48, 0.97);
+  if (visual.genero === 'mulher') {
+    if (visual.cabelo === 'chanel') {
+      esfera(corpo, 0.24, cor, 0, 1.17, -0.14, 1.08, 1.2, 0.72);
+    } else if (visual.cabelo === 'ondas') {
+      esfera(corpo, 0.23, cor, 0, 1.13, -0.16, 1.08, 1.4, 0.65);
+      for (const [x, y] of [[-0.18, 1.03], [-0.09, 0.98], [0, 1.02], [0.09, 0.98], [0.18, 1.03]]) {
+        esfera(corpo, 0.1, cor, x, y, -0.17);
+      }
+    } else if (visual.cabelo === 'afro_longo') {
+      esfera(corpo, 0.3, cor, 0, 1.31, -0.12, 1.22, 1.3, 0.98);
+      for (const [x, y, z] of [[-0.21, 1.48, -0.05], [0, 1.57, -0.08], [0.21, 1.48, -0.05], [0, 1.36, -0.3]]) {
+        esfera(corpo, 0.16, cor, x, y, z);
+      }
+    } else if (visual.cabelo === 'afro_curto_feminino' || visual.cabelo === 'afro_alto_feminino') {
+      const alto = visual.cabelo === 'afro_alto_feminino';
+      for (const [x, y, z] of [[-0.2, 1.42, 0], [0, 1.5, 0.04], [0.2, 1.42, 0], [-0.22, 1.29, -0.12], [0.22, 1.29, -0.12], [0, 1.42, -0.22]]) {
+        esfera(corpo, alto ? 0.145 : 0.12, cor, x, y + (alto ? 0.07 : 0), z);
+      }
+    } else if (visual.cabelo === 'coque') {
+      esfera(corpo, 0.18, cor, 0, 1.51, -0.16);
+    } else if (visual.cabelo === 'coque_afro') {
+      esfera(corpo, 0.24, cor, 0, 1.55, -0.13);
+      for (const [x, y] of [[-0.12, 1.58], [0.12, 1.58], [0, 1.7]]) esfera(corpo, 0.13, cor, x, y, -0.13);
+    } else if (visual.cabelo === 'liso') {
+      esfera(corpo, 0.25, cor, 0, 1.12, -0.16, 1.06, 1.48, 0.62);
+    } else if (visual.cabelo === 'rabo') {
+      for (let i = 0; i < 4; i++) esfera(corpo, 0.11, cor, 0, 1.34 - i * 0.12, -0.29);
+      esfera(corpo, 0.055, 0xe5b85e, 0, 1.36, -0.29);
+    }
+  } else {
+    if (visual.cabelo === 'curto') {
+      esfera(corpo, 0.16, cor, -0.11, 1.41, 0.12, 1, 0.45, 0.75);
+    } else if (visual.cabelo === 'afro_curto' || visual.cabelo === 'afro_alto' || visual.cabelo === 'cacheado') {
+      const volume = visual.cabelo === 'cacheado' ? 0.09 : visual.cabelo === 'afro_alto' ? 0.145 : 0.115;
+      const altura = visual.cabelo === 'afro_alto' ? 0.08 : 0;
+      for (const [x, y, z] of [[-0.17, 1.43, 0.05], [0, 1.48, 0.1], [0.17, 1.43, 0.05], [-0.19, 1.33, -0.12], [0.19, 1.33, -0.12]]) {
+        esfera(corpo, volume, cor, x, y + altura, z);
+      }
+    } else if (visual.cabelo === 'degrade') {
+      caixa(corpo, 0.32, 0.07, 0.3, cor, 0, 1.47, 0.04);
+    } else if (visual.cabelo === 'topete') {
+      esfera(corpo, 0.19, cor, 0, 1.48, 0.12, 1.15, 0.5, 0.8);
+    }
+  }
+}
+
+function detalhesCliente(corpo, visual) {
+  const tecido = visual.corRoupa;
+  const detalhe = 0xf7e9d0;
+  const largura = visual.porte === 'corpulento' ? 1.55 : 1;
+  if (visual.roupa === 'camisa') {
+    caixa(corpo, 0.12, 0.035, 0.025, detalhe, 0, 0.96, 0.25);
+    caixa(corpo, 0.035, 0.32, 0.025, detalhe, 0, 0.76, 0.255);
+    for (const y of [0.85, 0.73, 0.61]) esfera(corpo, 0.018, 0x374449, 0, y, 0.28);
+  } else if (visual.roupa === 'jaqueta') {
+    caixa(corpo, 0.035, 0.38, 0.025, detalhe, 0, 0.72, 0.27);
+    for (const lado of [-1, 1]) caixa(corpo, 0.1, 0.05, 0.03, 0x374449, lado * 0.15, 0.73, 0.27);
+    caixa(corpo, 0.38 * largura, 0.06, 0.23, 0x374449, 0, 0.52, 0);
+  } else if (visual.roupa === 'vestido') {
+    cilindro(corpo, 0.23 * largura, 0.35 * largura, 0.36, tecido, 0, 0.51, 0, 12);
+    caixa(corpo, 0.45 * largura, 0.055, 0.31, detalhe, 0, 0.69, 0);
+  } else if (visual.roupa === 'blusa_saia') {
+    cilindro(corpo, 0.22 * largura, 0.37 * largura, 0.28, visual.corCalca, 0, 0.46, 0, 12);
+    caixa(corpo, 0.42 * largura, 0.05, 0.31, detalhe, 0, 0.66, 0);
+    caixa(corpo, 0.2, 0.055, 0.025, detalhe, 0, 0.93, 0.25);
+  }
+  if (visual.oculos) {
+    const armacao = visual.oculos === 'sol' ? 0x242a30 : 0xc7ae79;
+    for (const lado of [-1, 1]) {
+      const aro = objeto(new THREE.TorusGeometry(0.069, 0.012, 5, 12), armacao, lado * 0.095, 1.19, 0.268);
+      corpo.add(aro);
+      if (visual.oculos === 'sol') esfera(corpo, 0.062, 0x3d4c52, lado * 0.095, 1.19, 0.267, 1, 0.7, 0.12);
+    }
+    caixa(corpo, 0.055, 0.016, 0.02, armacao, 0, 1.2, 0.267);
+  }
+  if (visual.acessorio === 'brincos') {
+    for (const lado of [-1, 1]) esfera(corpo, 0.04, 0xe9bd69, lado * 0.275, 1.05, 0.01);
+  } else if (visual.acessorio === 'lenco') {
+    cilindro(corpo, 0.185, 0.205, 0.075, 0xeac77b, 0, 1.015, 0);
+    caixa(corpo, 0.075, 0.2, 0.04, 0xeac77b, 0.13, 0.9, 0.19);
+  } else if (visual.acessorio === 'colar') {
+    esfera(corpo, 0.045, 0xe9bd69, 0, 0.97, 0.24);
+  } else if (visual.acessorio === 'gravata') {
+    caixa(corpo, 0.065, 0.2, 0.03, 0x9b4045, 0, 0.86, 0.27);
+  } else if (visual.acessorio === 'bolso') {
+    caixa(corpo, 0.12, 0.08, 0.025, detalhe, -0.12, 0.78, 0.26);
+  }
+}
+
+export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [], visual = null) {
   const g = new THREE.Group();
   const corpo = new THREE.Group(); g.add(corpo);
+  const corpulento = visual?.porte === 'corpulento';
   const sombra = new THREE.Mesh(new THREE.CircleGeometry(0.38, 20), new THREE.MeshBasicMaterial({ color: 0x204c31, transparent: true, opacity: 0.13, depthWrite: false }));
-  sombra.rotation.x = -Math.PI / 2; sombra.position.y = 0.014; g.add(sombra);
-  const pernaE = caixa(corpo, 0.19, 0.36, 0.22, 0x344b58, -0.15, 0.28, 0);
-  const pernaD = caixa(corpo, 0.19, 0.36, 0.22, 0x344b58, 0.15, 0.28, 0);
-  const peE = caixa(corpo, 0.22, 0.12, 0.32, 0xf8f0dc, -0.15, 0.09, 0.06);
-  const peD = caixa(corpo, 0.22, 0.12, 0.32, 0xf8f0dc, 0.15, 0.09, 0.06);
-  const coxas = [-0.15, 0.15].map(x => caixa(corpo, 0.19, 0.19, 0.34, 0x344b58, x, 0.43, 0.13));
+  sombra.rotation.x = -Math.PI / 2; sombra.position.y = 0.014; sombra.scale.setScalar(corpulento ? 1.5 : 1); g.add(sombra);
+  const corCalca = visual?.genero === 'mulher' ? pele : (visual?.corCalca ?? 0x344b58);
+  const corSapato = visual?.corSapato ?? 0xf8f0dc;
+  const afastamentoPernas = corpulento ? 0.24 : 0.15;
+  const larguraPerna = corpulento ? 0.27 : 0.19;
+  const pernaE = caixa(corpo, larguraPerna, 0.36, 0.22, corCalca, -afastamentoPernas, 0.28, 0);
+  const pernaD = caixa(corpo, larguraPerna, 0.36, 0.22, corCalca, afastamentoPernas, 0.28, 0);
+  const peE = caixa(corpo, 0.22, 0.12, 0.32, corSapato, -afastamentoPernas, 0.09, 0.06);
+  const peD = caixa(corpo, 0.22, 0.12, 0.32, corSapato, afastamentoPernas, 0.09, 0.06);
+  const coxas = [-afastamentoPernas, afastamentoPernas].map(x => caixa(corpo, larguraPerna, 0.19, 0.34, corCalca, x, 0.43, 0.13));
   coxas.forEach(coxa => { coxa.visible = false; });
-  const torso = objeto(new THREE.CapsuleGeometry(0.24, 0.22, 3, 8), cor, 0, 0.73, 0); torso.scale.x = 1.13; corpo.add(torso);
-  const bracoE = braco(jogador ? 0xf9efda : cor, pele, -0.34);
-  const bracoD = braco(jogador ? 0xf9efda : cor, pele, 0.34);
+  const torso = objeto(new THREE.CapsuleGeometry(0.24, 0.22, 3, 8), cor, 0, 0.73, 0);
+  torso.scale.x = corpulento ? (visual.genero === 'mulher' ? 2.25 : 2.35) : (visual?.genero === 'mulher' ? 1.03 : 1.13);
+  torso.scale.z = corpulento ? 1.55 : 1;
+  corpo.add(torso);
+  const barriga = corpulento ? esfera(corpo, 0.37, cor, 0, 0.66, 0.09, 1.55, 1.08, 1.35) : null;
+  const ombro = corpulento ? 0.59 : 0.34;
+  const bracoE = braco(jogador ? 0xf9efda : cor, pele, -ombro);
+  const bracoD = braco(jogador ? 0xf9efda : cor, pele, ombro);
   corpo.add(bracoE, bracoD);
-  esfera(corpo, 0.28, pele, 0, 1.16, 0, 1, 1.05, 0.92);
-  esfera(corpo, 0.285, 0x49362d, 0, 1.29, -0.04, 1, 0.64, 0.95);
+  esfera(corpo, 0.28, pele, 0, 1.16, 0, corpulento ? 1.22 : 1, 1.05, corpulento ? 1.08 : 0.92);
+  if (visual) cabeloCliente(corpo, visual);
+  else esfera(corpo, 0.285, 0x49362d, 0, 1.29, -0.04, 1, 0.64, 0.95);
   esfera(corpo, 0.025, 0x3e352c, -0.09, 1.17, 0.235);
   esfera(corpo, 0.025, 0x3e352c, 0.09, 1.17, 0.235);
+  if (visual?.idoso) {
+    const corLinha = new THREE.Color(pele).multiplyScalar(0.7).getHex();
+    for (const lado of [-1, 1]) {
+      caixa(corpo, 0.07, 0.014, 0.016, visual.corCabelo, lado * 0.09, 1.25, 0.242);
+      caixa(corpo, 0.045, 0.008, 0.012, corLinha, lado * 0.215, 1.13, 0.15);
+    }
+  }
   if (jogador) {
     caixa(corpo, 0.42, 0.48, 0.09, 0xd85c40, 0, 0.64, 0.24);
     caixa(corpo, 0.23, 0.13, 0.025, 0xf4af65, 0, 0.6, 0.3);
     cilindro(corpo, 0.29, 0.3, 0.12, 0x1e7155, 0, 1.46, 0);
     caixa(corpo, 0.45, 0.05, 0.27, 0x1e7155, 0, 1.45, 0.18);
   }
+  if (visual) detalhesCliente(corpo, visual);
   const cesta = jogador ? new THREE.Group() : criarCesta(...coresCesta);
-  cesta.position.set(0, jogador ? 0.42 : 0.26, jogador ? 0.5 : 0.58); corpo.add(cesta);
+  cesta.position.set(0, jogador ? 0.42 : corpulento ? 0.2 : 0.26, jogador ? 0.5 : corpulento ? 0.72 : 0.58); corpo.add(cesta);
   cesta.userData.pega ??= new THREE.Vector3(0, 0.89, 0);
   const carga = new THREE.Group(); cesta.add(carga);
   const produtoNaMao = new THREE.Group(); corpo.add(produtoNaMao);
-  g.userData = { corpo, pernaE, pernaD, peE, peD, coxas, bracoE, bracoD, cesta, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0, jogador };
+  g.userData = { corpo, torso, barriga, corpulento, pernaE, pernaD, peE, peD, coxas, bracoE, bracoD, cesta, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0, jogador };
   posicionarBraco(bracoE, cesta.userData.pega.clone().add(cesta.position));
   posicionarBraco(bracoD, new THREE.Vector3(0.4, 0.65, 0.32));
   return g;
@@ -432,7 +548,7 @@ export class Cena {
     for (const pe of [d.peE, d.peD]) { pe.position.y = 0.09 - 0.06 * sentado; pe.position.z = 0.06 + 0.3 * sentado; }
     d.coxas.forEach(coxa => { coxa.visible = sentado > 0; coxa.scale.z = sentado; });
     if (d.jogador) d.cesta.position.set(0, 0.42, 0.5);
-    else d.cesta.position.set(0, 0.26, 0.58).lerp(new THREE.Vector3(-1, -d.corpo.position.y, 0), sentado);
+    else d.cesta.position.set(0, d.corpulento ? 0.2 : 0.26, d.corpulento ? 0.72 : 0.58).lerp(new THREE.Vector3(-1, -d.corpo.position.y, 0), sentado);
     const repouso = new THREE.Vector3(0.4, 0.65, 0.32);
     const mao = repouso.clone();
     d.produtoNaMao.visible = false;
@@ -473,6 +589,15 @@ export class Cena {
       d.produtoNaMao.position.copy(t < 0.22 ? reposicao.inicio : mao);
       d.produtoNaMao.children[0].scale.setScalar(0.75 + 0.95 * suave(Math.max(0, Math.min(1, (t - 0.22) / 0.63))));
       if (t >= 1) d.reposicao = null;
+    }
+    const semCarga = ator.temCesta === false && !ator.levaSacolas && inventario.length === 0;
+    if (semCarga) {
+      const oscilacaoBraco = balanco * 0.16;
+      const maoLivreE = new THREE.Vector3(d.bracoE.userData.ombro.x, 0.46, oscilacaoBraco);
+      const maoLivreD = new THREE.Vector3(d.bracoD.userData.ombro.x, 0.46, -oscilacaoBraco);
+      posicionarBraco(d.bracoE, maoLivreE);
+      posicionarBraco(d.bracoD, maoLivreD);
+      return;
     }
     const carregandoNasMaos = d.jogador && inventario.length > 0;
     const maoE = carregandoNasMaos ? new THREE.Vector3(-0.3, 0.62, 0.5) : d.cesta.userData.pega.clone().add(d.cesta.position);
@@ -536,11 +661,11 @@ export class Cena {
     const progressoCaixa = sim.progressoCaixa / CONFIG.tempoCaixa;
     this.animarAtendimento(this.jogador, tempo, atendendoNoCaixa && !e.melhorias.caixa && e.jogador.sentado, progressoCaixa);
     const embalagem = this.atualizarEmbalagem(sim);
-    const cores = [0x72a9bb, 0xd7a35d, 0xa995c6, 0xd77c73, 0x6a9c7d];
     const paletaCesta = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
     for (const c of sim.clientes) {
       if (!this.clientes.has(c.id)) {
-        const m = personagem(cores[c.cor], c.id % 2 ? 0xebbe92 : 0x9a674b, false, [0x1d654b, 0x3d8a65, 0x254233]);
+        const visual = APARENCIAS_CLIENTES[c.aparencia] ?? APARENCIAS_CLIENTES[0];
+        const m = personagem(visual.corRoupa, visual.pele, false, [0x1d654b, 0x3d8a65, 0x254233], visual);
         m.userData.sacolas = new THREE.Group(); m.userData.corpo.add(m.userData.sacolas);
         const sacola = criarSacola(); sacola.position.set(0, 0.18, 0.58); sacola.visible = false; m.userData.sacolas.add(sacola);
         this.clientes.set(c.id, m); this.cena.add(m);

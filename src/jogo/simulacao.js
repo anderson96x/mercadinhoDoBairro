@@ -1,7 +1,8 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
-import { PAREDES_LOJA, MOBILIARIO_LOJA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
+import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES } from './configuracao.js';
 import { buscarCaminho } from './navegacao.js';
+import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
@@ -57,6 +58,8 @@ export class Simulacao {
   constructor(salvo) {
     this.estado = validarEstado(salvo);
     this.clientes = [];
+    this.aparenciasDisponiveis = [];
+    this.ultimaAparenciaCliente = null;
     this.eventos = [];
     this.reposicoes = new WeakMap();
     this.caminhosClientes = new WeakMap();
@@ -65,6 +68,8 @@ export class Simulacao {
     this.proximaInteracao = 0;
     this.proximaId = 1;
     this.proximaOrdemFila = 1;
+    this.proximoLadoEntrada = Math.random() < 0.5 ? 0 : 1;
+    this.proximoLadoSaida = Math.random() < 0.5 ? 0 : 1;
     this.aberturaPortaEscritorio = 0;
     this.progressoCaixa = 0;
     this.atividade = '';
@@ -114,7 +119,7 @@ export class Simulacao {
     return caixas;
   }
   obstaculosCliente(ator) {
-    const caixas = this.obstaculos();
+    const caixas = [...this.obstaculos(), ...MOBILIARIO_CALCADA];
     // O corredor imediatamente atrás da cadeira é reservado ao caixa.
     // Outros atores ainda podem acessá-lo, mas clientes devem passar
     // pela frente ou pelas laterais do atendente.
@@ -145,7 +150,11 @@ export class Simulacao {
     const livre = (inicio, fim) => {
       const dx = fim.x - inicio.x, dz = fim.z - inicio.z, comprimento = dx * dx + dz * dz;
       if (this.clientes.some(outro => {
-        if (outro === ator || !(['fila', 'comprando'].includes(outro.fase) || outro.aguardandoProduto)) return false;
+        if (outro === ator) return false;
+        const emFila = pessoa => pessoa.fase === 'fila';
+        // Fora das filas os clientes podem se atravessar, evitando desvios
+        // artificiais. Ao chegar ao ponto do caixa, voltam a manter espaço.
+        if (!emFila(ator) || !emFila(outro)) return false;
         // Quem estava sobreposto em movimento pode sair sem ficar preso ao parar o outro.
         if (distancia(inicio, outro) < CONFIG.distanciaClientes && distancia(fim, outro) > distancia(inicio, outro)) return false;
         const t = comprimento ? limitar(((outro.x - inicio.x) * dx + (outro.z - inicio.z) * dz) / comprimento, 0, 1) : 0;
@@ -246,7 +255,30 @@ export class Simulacao {
   criarCliente() {
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
     const produto = disponiveis[(this.proximaId - 1) % disponiveis.length];
-    this.clientes.push({ id: this.proximaId++, ...CONFIG.entrada, produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, cor: this.proximaId % 5, andando: false, temCesta: false, levaSacolas: false });
+    const ordemEntradas = [this.proximoLadoEntrada, 1 - this.proximoLadoEntrada];
+    const ladoEntrada = ordemEntradas.find(indice => !this.clientes.some(c => distancia(c, CONFIG.extremosCalcada[indice]) < CONFIG.distanciaClientes));
+    if (ladoEntrada === undefined) return false;
+    this.proximoLadoEntrada = 1 - ladoEntrada;
+    const ladoSaida = this.proximoLadoSaida;
+    this.proximoLadoSaida = 1 - this.proximoLadoSaida;
+    const pontosOcupados = new Set(this.clientes
+      .filter(c => c.produto === produto && !['indoCaixa', 'fila', 'saindo', 'fim'].includes(c.fase))
+      .map(c => c.pontoCompra));
+    const pontoCompra = PRODUTOS[produto].pontosCompra.findIndex((_, indice) => !pontosOcupados.has(indice));
+    if (!this.aparenciasDisponiveis.length) {
+      this.aparenciasDisponiveis = Array.from(APARENCIAS_CLIENTES.keys());
+      for (let i = this.aparenciasDisponiveis.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [this.aparenciasDisponiveis[i], this.aparenciasDisponiveis[j]] = [this.aparenciasDisponiveis[j], this.aparenciasDisponiveis[i]];
+      }
+      const ultimo = this.aparenciasDisponiveis.length - 1;
+      if (this.aparenciasDisponiveis[ultimo] === this.ultimaAparenciaCliente) {
+        [this.aparenciasDisponiveis[0], this.aparenciasDisponiveis[ultimo]] = [this.aparenciasDisponiveis[ultimo], this.aparenciasDisponiveis[0]];
+      }
+    }
+    const aparencia = this.aparenciasDisponiveis.pop();
+    this.ultimaAparenciaCliente = aparencia;
+    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, temCesta: false, levaSacolas: false });
     return true;
   }
   atualizarClientes(dt) {
@@ -256,15 +288,15 @@ export class Simulacao {
     for (const c of this.clientes) {
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
       if (c.fase === 'chegando') {
+        if (c.etapa === 0) {
+          if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;
+          continue;
+        }
         if (c.z < 6.3) c.temCesta = true;
-        const espera = this.clientes.filter(outro => outro.produto === c.produto && ['chegando', 'comprando'].includes(outro.fase));
-        const indice = espera.indexOf(c);
-        const destino = p.espera[indice];
-        c.aguardandoProduto = false;
+        const destino = p.pontosCompra[c.pontoCompra] ?? p.cliente;
         const chegou = this.caminharCliente(c, destino, dt);
-        c.aguardandoProduto = chegou;
-        if (chegou) { c.andando = false; c.angulo = Math.PI; }
-        if (chegou && indice === 0) {
+        if (chegou) {
+          c.angulo = Math.atan2(p.prateleira.x - c.x, p.prateleira.z - c.z);
           c.fase = 'comprando'; c.espera = 0; c.andando = false;
         }
       } else if (c.fase === 'comprando') {
@@ -273,7 +305,7 @@ export class Simulacao {
           e.prateleira--; c.quantidade++; c.espera = 0;
           this.emitir('pegou', { id: c.produto });
         }
-        if (c.quantidade >= c.desejado || (c.quantidade > 0 && c.espera > 2.5)) { c.aguardandoProduto = false; c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++; }
+        if (c.quantidade >= c.desejado || (c.quantidade > 0 && c.espera > 2.5)) { c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++; }
       } else if (c.fase === 'indoCaixa') {
         const indice = fila.indexOf(c), x = CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes;
         if (this.caminharCliente(c, { x, z: CONFIG.clienteCaixa.z }, dt)) c.fase = 'fila';
@@ -281,7 +313,9 @@ export class Simulacao {
         const indice = Math.max(0, fila.indexOf(c));
         if (this.caminharCliente(c, { x: CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes, z: CONFIG.clienteCaixa.z }, dt)) { c.andando = false; c.angulo = CONFIG.anguloCaixa + Math.PI; }
       } else if (c.fase === 'saindo') {
-        if (this.caminharCliente(c, { x: 10.3, z: 9 }, dt)) c.fase = 'fim';
+        if (c.etapa === 0) {
+          if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;
+        } else if (this.caminharCliente(c, CONFIG.extremosCalcada[c.ladoSaida ?? 1], dt)) c.fase = 'fim';
       }
     }
     this.clientes = this.clientes.filter(c => c.fase !== 'fim');

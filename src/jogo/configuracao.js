@@ -21,6 +21,7 @@ export const CONFIG = {
   areaFuncionarioCaixa: { x: 1.5, z: 5.7, w: 0.8, d: 1.9 },
   anguloCaixa: Math.PI,
   entrada: { x: -1.3, z: 8.4 },
+  extremosCalcada: [{ x: -10.3, z: 8.4 }, { x: 10.3, z: 8.4 }],
   anguloCamera: Math.PI / 4,
   cameraIsometrica: { x: 18, y: 18, z: 18 }
 };
@@ -32,7 +33,7 @@ export const PRODUTOS = {
     horta: { x: -6.6, z: -2.8 }, coleta: { x: -5.0, z: -1.7 },
     prateleira: { x: 3, z: -0.5 }, reposicao: { x: 2, z: 1.2 },
     cliente: { x: 4, z: 1.2 },
-    espera: [{ x: 4, z: 1.2 }, { x: 5.15, z: 1.2 }, { x: 6.3, z: 1.2 }, { x: 7.45, z: 1.2 }, { x: 8.6, z: 1.2 }], liberado: true
+    pontosCompra: [{ x: 4, z: 1.2 }, { x: 3, z: 1.2 }, { x: 2, z: 1.2 }, { x: 4.6, z: -0.5 }, { x: 1.4, z: -0.5 }], liberado: true
   },
   milho: {
     nome: 'Milho', plural: 'Milhos', cor: 0xf6c844, preco: 14,
@@ -40,7 +41,7 @@ export const PRODUTOS = {
     horta: { x: -6.6, z: 3.4 }, coleta: { x: -5.0, z: 3.4 },
     prateleira: { x: 4.5, z: -3.8 }, reposicao: { x: 3.5, z: -2.1 },
     cliente: { x: 5.5, z: -2.1 },
-    espera: [{ x: 5.5, z: -2.1 }, { x: 4.35, z: -2.1 }, { x: 3.2, z: -2.1 }, { x: 2.05, z: -2.1 }, { x: 2.05, z: -3.25 }], liberado: false
+    pontosCompra: [{ x: 5.5, z: -2.1 }, { x: 4.5, z: -2.1 }, { x: 3.5, z: -2.1 }, { x: 6, z: -3.8 }, { x: 3, z: -3.8 }], liberado: false
   }
 };
 
