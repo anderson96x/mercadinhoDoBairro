@@ -25,7 +25,7 @@ export function estadoInicial() {
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0
     }])),
-    estatisticas: { colhidos: 0, repostos: 0, clientes: 0, faturamento: 0 },
+    estatisticas: { colhidos: 0, repostos: 0, clientes: 0, faturamento: 0, satisfacao: 0, clientesFelizes: 0, clientesNeutros: 0, clientesIrritados: 0 },
     som: false
   };
 }
@@ -49,6 +49,12 @@ export function validarEstado(dados) {
     };
   }
   for (const id of Object.keys(base.estatisticas)) base.estatisticas[id] = numero(dados.estatisticas?.[id]);
+  // Salvamentos anteriores não tinham satisfação. Considerar os clientes
+  // atendidos como felizes preserva o nível que o jogador já conquistou.
+  if (dados.estatisticas?.satisfacao === undefined) {
+    base.estatisticas.satisfacao = base.estatisticas.clientes;
+    base.estatisticas.clientesFelizes = base.estatisticas.clientes;
+  }
   base.jogador.inventario = Array.isArray(dados.jogador?.inventario)
     ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + 4 * base.melhorias.mochila) : [];
   // Retomar em um ponto livre evita que mudanças futuras no mapa prendam o jogador.
@@ -81,7 +87,8 @@ export class Simulacao {
   }
   get capacidade() { return CONFIG.capacidadeInicial + this.estado.melhorias.mochila * 4; }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
-  get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / 100); }
+  get nivel() { return 1 + Math.floor(this.estado.estatisticas.satisfacao / CONFIG.pontosPorNivel); }
+  get progressoSatisfacao() { return this.estado.estatisticas.satisfacao % CONFIG.pontosPorNivel; }
   get cestasEmUso() { return this.clientes.filter(c => c.cestaReservada).length; }
   get cestasDisponiveis() { return Math.max(0, CONFIG.quantidadeCestas - this.cestasEmUso); }
   get cestasNoSuporte() { return Math.max(0, CONFIG.quantidadeCestas - this.clientes.filter(c => c.temCesta).length); }
@@ -341,8 +348,26 @@ export class Simulacao {
     if (c.quantidade > 0) {
       c.fase = 'indoCaixa'; c.etapa = 0; c.ordemFila = this.proximaOrdemFila++;
     } else {
+      this.registrarSatisfacao(c);
       c.fase = 'saindo'; c.etapa = 0; c.temCesta = false; c.cestaReservada = false;
     }
+  }
+  avaliarSatisfacao(c) {
+    this.normalizarComprasCliente(c);
+    const desejado = c.compras.reduce((total, compra) => total + compra.desejado, 0);
+    const encontrado = c.compras.reduce((total, compra) => total + compra.quantidade, 0);
+    if (encontrado === 0) return 'irritado';
+    return encontrado >= desejado ? 'feliz' : 'neutro';
+  }
+  registrarSatisfacao(c) {
+    if (c.satisfacaoRegistrada) return c.satisfacao;
+    c.satisfacao = this.avaliarSatisfacao(c);
+    c.satisfacaoRegistrada = true;
+    const pontos = CONFIG.pontosSatisfacao[c.satisfacao];
+    const contador = { feliz: 'clientesFelizes', neutro: 'clientesNeutros', irritado: 'clientesIrritados' }[c.satisfacao];
+    this.estado.estatisticas.satisfacao += pontos;
+    this.estado.estatisticas[contador]++;
+    return c.satisfacao;
   }
   portaEntradaDeveAbrir() {
     return this.clientes.some(c => {
@@ -420,6 +445,7 @@ export class Simulacao {
         this.normalizarComprasCliente(primeiro);
         const valor = primeiro.itens.reduce((total, id) => total + PRODUTOS[id].preco, 0);
         this.estado.dinheiro += valor; this.estado.estatisticas.faturamento += valor; this.estado.estatisticas.clientes++;
+        this.registrarSatisfacao(primeiro);
         primeiro.embalado = true; primeiro.temCesta = false; primeiro.cestaReservada = false; primeiro.levaSacolas = true;
         primeiro.fase = 'saindo'; primeiro.etapa = 0;
         this.progressoCaixa = 0;
@@ -454,6 +480,8 @@ export class Simulacao {
   }
   resumo() {
     return { dinheiro: this.estado.dinheiro, capacidade: this.capacidade, nivel: this.nivel,
+      satisfacao: this.estado.estatisticas.satisfacao,
+      clientesPorSatisfacao: { felizes: this.estado.estatisticas.clientesFelizes, neutros: this.estado.estatisticas.clientesNeutros, irritados: this.estado.estatisticas.clientesIrritados },
       lojaAberta: this.estado.lojaAberta,
       inventario: [...this.estado.jogador.inventario], melhorias: { ...this.estado.melhorias },
       produtos: structuredClone(this.estado.produtos), clientesAtendidos: this.estado.estatisticas.clientes,

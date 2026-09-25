@@ -1,6 +1,6 @@
 import { icone } from './icones.js';
 import { PALETAS } from '../jogo/personalizacao.js';
-import { MELHORIAS, PRODUTOS, MISSOES } from '../jogo/configuracao.js';
+import { CONFIG, MELHORIAS, PRODUTOS, MISSOES } from '../jogo/configuracao.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
   { id: 'mercado', titulo: 'Mercado' },
@@ -16,7 +16,7 @@ export class Interface {
         <div id="mundo"></div><div id="etiquetas" aria-hidden="true"></div>
         <header class="cabecalho">
           <div class="marca"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div><span class="nivel" id="nivel">NÍVEL 1</span></div>
-          <div class="saldo" aria-label="Resumo do mercado"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes felizes</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div></div>
+          <div class="saldo" aria-label="Resumo do mercado"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div><div class="satisfacao-topo" aria-label="Pontos de satisfação"><span class="satisfacao-resumo">${icone('sorriso')}<b id="satisfacao-pontos">0 pts</b></span><progress id="satisfacao-progresso" value="0" max="100" aria-label="Progresso de satisfação para o próximo nível"></progress><small id="satisfacao-meta">0 / 100</small></div></div>
           <nav class="ferramentas" aria-label="Opções do jogo">
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
             <button class="botao-icone" id="ajuda" title="Como jogar" aria-label="Como jogar">${icone('ajuda')}</button>
@@ -77,6 +77,11 @@ export class Interface {
     this.el('saldo').textContent = reais(e.dinheiro);
     this.el('clientes').textContent = e.estatisticas.clientes;
     this.el('cestas').textContent = s.cestasNoSuporte;
+    this.el('satisfacao-pontos').textContent = `${e.estatisticas.satisfacao} pts`;
+    this.el('satisfacao-progresso').max = CONFIG.pontosPorNivel;
+    this.el('satisfacao-progresso').value = s.progressoSatisfacao;
+    this.el('satisfacao-meta').textContent = `${s.progressoSatisfacao} / ${CONFIG.pontosPorNivel}`;
+    this.el('satisfacao-progresso').setAttribute('aria-valuetext', `${s.progressoSatisfacao} de ${CONFIG.pontosPorNivel} pontos para o próximo nível`);
     this.el('nivel').textContent = `NÍVEL ${s.nivel}`;
     this.el('objetivo-titulo').textContent = m.titulo;
     this.el('objetivo-texto').textContent = m.texto;
@@ -132,10 +137,10 @@ export class Interface {
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p></div></div>
-        <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento.</p></div></li><li><span>4</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
+        <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento.</p></div></li><li><span>4</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0. Cada 100 pontos aumenta o nível.</p></div></li><li><span>5</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'pausa') {
-      conteudo = `<p class="painel-subtitulo">A loja espera por você.</p><div class="resumo-pausa"><div><strong>${reais(this.sim.estado.dinheiro)}</strong><span>em caixa</span></div><div><strong>${this.sim.estado.estatisticas.clientes}</strong><span>clientes atendidos</span></div></div><button class="botao-principal" data-fechar>${icone('jogar')} Continuar jogando</button><button class="botao-secundario" id="como-jogar">${icone('ajuda')} Como jogar</button><button class="botao-secundario" id="tela-cheia">${icone('tela')} ${document.fullscreenElement ? 'Sair da tela cheia' : 'Jogar em tela cheia'}</button><button class="botao-texto" id="reiniciar">Começar um novo jogo</button><p class="nota central">O progresso fica salvo neste navegador.</p>`;
+      conteudo = `<p class="painel-subtitulo">A loja espera por você.</p><div class="resumo-pausa"><div><strong>${reais(this.sim.estado.dinheiro)}</strong><span>em caixa</span></div><div><strong>${this.sim.estado.estatisticas.satisfacao}</strong><span>pontos de satisfação</span></div></div><button class="botao-principal" data-fechar>${icone('jogar')} Continuar jogando</button><button class="botao-secundario" id="como-jogar">${icone('ajuda')} Como jogar</button><button class="botao-secundario" id="tela-cheia">${icone('tela')} ${document.fullscreenElement ? 'Sair da tela cheia' : 'Jogar em tela cheia'}</button><button class="botao-texto" id="reiniciar">Começar um novo jogo</button><p class="nota central">O progresso fica salvo neste navegador.</p>`;
     } else if (tipo === 'dev') {
       conteudo = `<p class="painel-subtitulo">Ferramentas para ajustar esta sessão de desenvolvimento.</p><div class="saldo-painel">${icone('moeda')} Saldo atual <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="dev-saldo-controles"><button class="botao-secundario" id="dev-remover" ${this.sim.estado.dinheiro < 100 ? 'disabled' : ''}>− R$ 100</button><button class="botao-secundario" id="dev-adicionar">+ R$ 100</button></div><button class="botao-principal perigo" id="dev-reset">${icone('reiniciar')} Zerar todo o progresso</button>`;
     } else {

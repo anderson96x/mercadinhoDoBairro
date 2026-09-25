@@ -85,6 +85,8 @@ test('cliente compra diferentes produtos em sequencia sem ultrapassar cinco iten
   sim.estado.melhorias.caixa = 1;
   sim.atualizarCaixa(CONFIG.tempoCaixa);
   assert.equal(sim.estado.dinheiro, 52);
+  assert.equal(cliente.satisfacao, 'feliz');
+  assert.equal(sim.estado.estatisticas.satisfacao, 10);
 });
 
 test('cliente espera dez segundos por uma prateleira vazia antes de desistir', () => {
@@ -101,4 +103,7 @@ test('cliente espera dez segundos por uma prateleira vazia antes de desistir', (
   assert.equal(cliente.esperaSemEstoque, CONFIG.tempoEsperaCliente - 0.1);
   sim.atualizarClientes(0.1);
   assert.equal(cliente.fase, 'saindo');
+  assert.equal(cliente.satisfacao, 'irritado');
+  assert.equal(sim.estado.estatisticas.satisfacao, 0);
+  assert.equal(sim.estado.estatisticas.clientesIrritados, 1);
 });

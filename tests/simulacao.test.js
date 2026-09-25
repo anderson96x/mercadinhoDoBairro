@@ -4,13 +4,42 @@ import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { MOBILIARIO_CALCADA } from '../src/jogo/bairro.js';
 
-test('o nivel aumenta a cada 100 clientes atendidos', () => {
+test('o nível aumenta a cada 100 pontos de satisfação', () => {
   const sim = new Simulacao();
-  for (const [clientes, nivel] of [[0, 1], [99, 1], [100, 2], [199, 2], [200, 3]]) {
-    sim.estado.estatisticas.clientes = clientes;
+  for (const [pontos, nivel] of [[0, 1], [99, 1], [100, 2], [199, 2], [200, 3]]) {
+    sim.estado.estatisticas.satisfacao = pontos;
     assert.equal(sim.nivel, nivel);
     assert.equal(sim.missao().alvo, nivel * 100);
   }
+});
+
+test('clientes felizes, neutros e irritados rendem 10, 5 e 0 pontos', () => {
+  const sim = new Simulacao();
+  const clientes = [
+    { compras: [{ produto: 'tomate', desejado: 2, quantidade: 2 }] },
+    { compras: [{ produto: 'tomate', desejado: 2, quantidade: 1 }] },
+    { compras: [{ produto: 'tomate', desejado: 2, quantidade: 0 }] }
+  ];
+  assert.deepEqual(clientes.map(cliente => sim.registrarSatisfacao(cliente)), ['feliz', 'neutro', 'irritado']);
+  assert.equal(sim.estado.estatisticas.satisfacao, 15);
+  assert.deepEqual(
+    [sim.estado.estatisticas.clientesFelizes, sim.estado.estatisticas.clientesNeutros, sim.estado.estatisticas.clientesIrritados],
+    [1, 1, 1]
+  );
+  sim.registrarSatisfacao(clientes[0]);
+  assert.equal(sim.estado.estatisticas.satisfacao, 15, 'cada visita deve pontuar apenas uma vez');
+});
+
+test('salvamento antigo mantém o nível conquistado ao receber satisfação', () => {
+  const antigo = new Simulacao().estado;
+  antigo.estatisticas.clientes = 205;
+  delete antigo.estatisticas.satisfacao;
+  delete antigo.estatisticas.clientesFelizes;
+  delete antigo.estatisticas.clientesNeutros;
+  delete antigo.estatisticas.clientesIrritados;
+  const sim = new Simulacao(antigo);
+  assert.equal(sim.estado.estatisticas.satisfacao, 205);
+  assert.equal(sim.nivel, 3);
 });
 
 test('jogador senta no escritorio e aciona o computador uma vez por visita', () => {

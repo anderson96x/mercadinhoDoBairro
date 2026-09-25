@@ -12,6 +12,8 @@ export const CONFIG = {
   quantidadeCestas: 5,
   capacidadeCestaCliente: 5,
   tempoEsperaCliente: 10,
+  pontosPorNivel: 100,
+  pontosSatisfacao: { feliz: 10, neutro: 5, irritado: 0 },
   tempoAnimacaoCesta: 0.75,
   maxClientes: 5,
   espacoClientes: 1.15,
@@ -65,5 +67,5 @@ export const MELHORIAS = [
 ];
 
 export const MISSOES = [
-  { titulo: 'Suba de nível', texto: 'A cada 100 clientes atendidos, seu mercadinho sobe um nível.', chave: 'clientes', intervalo: 100, destino: 'caixa' }
+  { titulo: 'Encante seus clientes', texto: 'Ganhe 100 pontos de satisfação para subir de nível.', chave: 'satisfacao', intervalo: CONFIG.pontosPorNivel, destino: 'caixa' }
 ];
