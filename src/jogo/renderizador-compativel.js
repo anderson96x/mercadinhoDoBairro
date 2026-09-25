@@ -29,7 +29,7 @@ export class RenderizadorCompativel {
   }
   render(cena, camera) {
     const ctx = this.ctx;
-    ctx.fillStyle = '#a9cb76'; ctx.fillRect(0, 0, this.w, this.h);
+    ctx.fillStyle = '#78c85a'; ctx.fillRect(0, 0, this.w, this.h);
     cena.updateMatrixWorld(); camera.updateMatrixWorld();
     const matriz = new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
     const formas = [];

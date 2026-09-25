@@ -12,7 +12,7 @@ const pertoDaEstacao = (ator, centro, largura, profundidade) => Math.hypot(
   Math.max(0, Math.abs(ator.z - centro.z) - profundidade / 2)
 ) < CONFIG.raioInteracao;
 function material(cor) {
-  if (!materiais.has(cor)) materiais.set(cor, new THREE.MeshStandardMaterial({ color: cor, roughness: 0.92, metalness: 0 }));
+  if (!materiais.has(cor)) materiais.set(cor, new THREE.MeshStandardMaterial({ color: cor, roughness: 0.8, metalness: 0 }));
   return materiais.get(cor);
 }
 function objeto(geometria, cor, x = 0, y = 0, z = 0) {
@@ -46,12 +46,12 @@ function liberarGeometrias(grupo) {
 export function criarProduto(id, escala = 1) {
   const grupo = new THREE.Group();
   if (id === 'tomate') {
-    esfera(grupo, 0.16, 0xef5943, 0, 0, 0, 1, 0.86, 1);
-    const folha = caixa(grupo, 0.2, 0.04, 0.09, 0x397a3a, 0, 0.14, 0); folha.rotation.y = 0.7;
-    caixa(grupo, 0.04, 0.09, 0.04, 0x397a3a, 0, 0.18, 0);
+    esfera(grupo, 0.16, 0xff3f32, 0, 0, 0, 1, 0.86, 1);
+    const folha = caixa(grupo, 0.2, 0.04, 0.09, 0x2a9b40, 0, 0.14, 0); folha.rotation.y = 0.7;
+    caixa(grupo, 0.04, 0.09, 0.04, 0x2a9b40, 0, 0.18, 0);
   } else {
-    esfera(grupo, 0.14, 0xf7c843, 0, 0, 0, 0.7, 1.5, 0.7);
-    const folha = esfera(grupo, 0.12, 0x589547, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;
+    esfera(grupo, 0.14, 0xffd22e, 0, 0, 0, 0.7, 1.5, 0.7);
+    const folha = esfera(grupo, 0.12, 0x38a447, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;
   }
   grupo.scale.setScalar(escala); return grupo;
 }
@@ -382,7 +382,7 @@ export class Cena {
   constructor(container, simulacao) {
     this.sim = simulacao; this.container = container;
     this.tempoVisual = 0;
-    this.cena = new THREE.Scene(); this.cena.background = new THREE.Color(0xa9cb76);
+    this.cena = new THREE.Scene(); this.cena.background = new THREE.Color(0x78c85a);
     this.camera = new THREE.OrthographicCamera(-18, 18, 12, -12, 0.1, 100);
     const superficie = document.createElement('canvas');
     const contexto = superficie.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
@@ -393,11 +393,11 @@ export class Cena {
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.25;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.5;
     this.renderer.domElement.setAttribute('aria-label', 'Mercadinho em 3D. Arraste para andar ou use as setas e as teclas W, A, S e D.');
     container.prepend(this.renderer.domElement);
-    this.cena.add(new THREE.HemisphereLight(0xfff5d9, 0x8ea86d, 2.7));
-    const sol = new THREE.DirectionalLight(0xffebcf, 3); sol.position.set(-8, 22, 13); sol.castShadow = true;
+    this.cena.add(new THREE.HemisphereLight(0xfff4dc, 0x70a85d, 2.55));
+    const sol = new THREE.DirectionalLight(0xffebc9, 2.8); sol.position.set(-8, 22, 13); sol.castShadow = true;
     sol.shadow.mapSize.set(1024, 1024); sol.shadow.camera.left = -18; sol.shadow.camera.right = 18;
     sol.shadow.camera.top = 18; sol.shadow.camera.bottom = -18; sol.shadow.normalBias = 0.035; sol.shadow.bias = -0.0002;
     this.cena.add(sol);
@@ -494,32 +494,32 @@ export class Cena {
   construirEstacao(id, p) {
     const grupo = new THREE.Group(); this.cena.add(grupo);
     const h = p.horta;
-    caixa(grupo, 2.5, 0.35, 3.6, 0xb58a58, h.x, 0.22, h.z);
-    caixa(grupo, 2.23, 0.05, 3.32, 0x79593c, h.x, 0.42, h.z);
+    caixa(grupo, 2.5, 0.35, 3.6, 0xbd7545, h.x, 0.22, h.z);
+    caixa(grupo, 2.23, 0.05, 3.32, 0x70401f, h.x, 0.42, h.z);
     const frutos = [];
     for (let i = 0; i < 8; i++) {
       const x = h.x - 0.65 + i % 2 * 1.25, z = h.z - 1.18 + Math.floor(i / 2) * 0.78;
-      cilindro(grupo, 0.035, 0.035, 0.6, 0x579340, x, 0.72, z, 6);
-      const f1 = esfera(grupo, 0.22, 0x689e43, x - 0.12, 0.67, z, 1.5, 0.35, 0.8); f1.rotation.z = -0.25;
-      const f2 = esfera(grupo, 0.22, 0x488b40, x + 0.12, 0.83, z, 1.5, 0.35, 0.8); f2.rotation.z = 0.3;
+      cilindro(grupo, 0.035, 0.035, 0.6, 0x35a84a, x, 0.72, z, 6);
+      const f1 = esfera(grupo, 0.22, 0x65c158, x - 0.12, 0.67, z, 1.5, 0.35, 0.8); f1.rotation.z = -0.25;
+      const f2 = esfera(grupo, 0.22, 0x3cad4b, x + 0.12, 0.83, z, 1.5, 0.35, 0.8); f2.rotation.z = 0.3;
       const fruto = criarProduto(id, 1.6); fruto.position.set(x, 1, z); grupo.add(fruto); frutos.push(fruto);
     }
     const s = p.prateleira;
-    caixa(grupo, 2.3, 0.65, 1.65, 0xd4a46c, s.x, 0.53, s.z);
-    caixa(grupo, 2.45, 0.13, 1.8, 0xf4d59a, s.x, 0.91, s.z);
-    caixa(grupo, 2.42, 0.23, 0.14, 0xb58750, s.x, 1.07, s.z + 0.8);
-    caixa(grupo, 2.42, 0.23, 0.14, 0xb58750, s.x, 1.07, s.z - 0.8);
-    for (const x of [-1.15, 1.15]) caixa(grupo, 0.14, 0.23, 1.65, 0xb58750, s.x + x, 1.07, s.z);
+    caixa(grupo, 2.3, 0.65, 1.65, 0xd98b43, s.x, 0.53, s.z);
+    caixa(grupo, 2.45, 0.13, 1.8, 0xffc96f, s.x, 0.91, s.z);
+    caixa(grupo, 2.42, 0.23, 0.14, 0xb96a32, s.x, 1.07, s.z + 0.8);
+    caixa(grupo, 2.42, 0.23, 0.14, 0xb96a32, s.x, 1.07, s.z - 0.8);
+    for (const x of [-1.15, 1.15]) caixa(grupo, 0.14, 0.23, 1.65, 0xb96a32, s.x + x, 1.07, s.z);
     const frutas = [];
     for (let i = 0; i < 12; i++) {
       const f = criarProduto(id, 1.7); f.position.set(s.x - 0.83 + i % 4 * 0.56, 1.11, s.z - 0.5 + Math.floor(i / 4) * 0.49); grupo.add(f); frutas.push(f);
     }
     const preco = placa(`R$ ${p.preco}`, '#fff5d8', '#2d6243', 0.85, 0.32); preco.position.set(s.x, 0.6, s.z + 0.835); grupo.add(preco);
     const bloqueio = new THREE.Group(); this.cena.add(bloqueio);
-    caixa(bloqueio, 2.55, 0.03, 3.65, 0x8fb46a, h.x, 0.065, h.z);
+    caixa(bloqueio, 2.55, 0.03, 3.65, 0x70b74b, h.x, 0.065, h.z);
     for (const d of [-1,1]) {
-      caixa(bloqueio, 2.55, 0.035, 0.055, 0xd3e5a3, h.x, 0.09, h.z + d * 1.8);
-      caixa(bloqueio, 0.055, 0.035, 3.65, 0xd3e5a3, h.x + d * 1.26, 0.09, h.z);
+      caixa(bloqueio, 2.55, 0.035, 0.055, 0xb8df65, h.x, 0.09, h.z + d * 1.8);
+      caixa(bloqueio, 0.055, 0.035, 3.65, 0xb8df65, h.x + d * 1.26, 0.09, h.z);
     }
     this.produtos[id] = { grupo, bloqueio, frutos, frutas };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);

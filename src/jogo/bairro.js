@@ -59,10 +59,10 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
     return m;
   };
   const chao = (camada, ...args) => { const m = bloco(...args); m.userData.fundo = camada; return m; };
-  chao(0, 120, 0.3, 120, 0xe4e7de, 0, -0.5, 0);
-  chao(1, 24, 0.3, 25, 0xabbf89, 0, -0.2, 2);
-  chao(2, 24, 0.08, 4.4, 0x59616b, 0, 0, 11.3);
-  chao(3, 24, 0.18, 2.5, 0xdacbb4, 0, 0.04, 7.95);
+  chao(0, 120, 0.3, 120, 0x78c85a, 0, -0.5, 0);
+  chao(1, 24, 0.3, 25, 0x62b94b, 0, -0.2, 2);
+  chao(2, 24, 0.08, 4.4, 0x48525e, 0, 0, 11.3);
+  chao(3, 24, 0.18, 2.5, 0xe0bc8c, 0, 0.04, 7.95);
   bloco(24, 0.22, 0.16, 0xf3e5ce, 0, 0.07, 9.18);
   for (let x = -11; x < 12; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
   // A faixa atravessa a rua inteira, de uma calçada à outra.
@@ -113,8 +113,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   for (const x of [6.97, 8.33]) bloco(0.12, 1.6, 1.2, 0xa97845, x, 1.03, 0.1);
   for (const y of [0.35, 0.99, 1.65]) bloco(1.5, 0.1, 1.2, 0xd5a96b, 7.65, y, 0.1);
   for (const [x,z] of [[-2.3,-2.3],[0.2,-4.6],[8.2,-2.8]]) {
-    cilindro(grupo, 0.15, 0.11, 0.25, 0xbb8356, x, z === -4.6 ? 1.22 : 0.36, z);
-    esfera(grupo, 0.25, 0x72965a, x, z === -4.6 ? 1.5 : 0.65, z, 0.8, 1.3, 0.8);
+    cilindro(grupo, 0.15, 0.11, 0.25, 0xc07a42, x, z === -4.6 ? 1.22 : 0.36, z);
+    esfera(grupo, 0.25, 0x4bb356, x, z === -4.6 ? 1.5 : 0.65, z, 0.8, 1.3, 0.8);
   }
   // Vitrine e portas duplas que abrem quando um cliente atravessa o vão.
   const entrada = new THREE.Group(); entrada.position.x = -8.82; grupo.add(entrada); destino = entrada;
@@ -150,19 +150,19 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   for (const x of [1.4, 6.2, 10.5]) {
     bloco(1.1, 0.45, 0.55, 0x286750, x, 0.36, 7.4, 'principal');
     for (let i = 0; i < 3; i++) {
-      esfera(grupo, 0.24, 0x66864e, x - 0.32 + i * 0.32, 0.68, 7.4);
-      esfera(grupo, 0.085, 0xf0be6c, x - 0.32 + i * 0.32, 0.89, 7.4);
+      esfera(grupo, 0.24, 0x47b452, x - 0.32 + i * 0.32, 0.68, 7.4);
+      esfera(grupo, 0.085, 0xffbd35, x - 0.32 + i * 0.32, 0.89, 7.4);
     }
   }
   // Cerca e árvores enquadram a área de cultivo.
   for (let z = -7; z <= 6; z += 1.3) {
-    bloco(0.13, 0.9, 0.13, 0xb3966b, -9.2, 0.5, z);
-    bloco(0.1, 0.12, 1.35, 0xd4bd94, -9.2, 0.7, z + 0.62);
+    bloco(0.13, 0.9, 0.13, 0xa8733f, -9.2, 0.5, z);
+    bloco(0.1, 0.12, 1.35, 0xd29a5b, -9.2, 0.7, z + 0.62);
   }
   for (const [x,z] of [[-10,-6.2],[-10,4.7],[10.6,-5.4]]) {
-    cilindro(grupo, 0.13, 0.2, 1.8, 0x9a7950, x, 0.9, z);
-    esfera(grupo, 1, 0x648859, x, 2.15, z, 1, 1.2, 1);
-    esfera(grupo, 0.65, 0x87a567, x - 0.45, 2.5, z + 0.25);
+    cilindro(grupo, 0.13, 0.2, 1.8, 0x8f5b32, x, 0.9, z);
+    esfera(grupo, 1, 0x3ca34b, x, 2.15, z, 1, 1.2, 1);
+    esfera(grupo, 0.65, 0x66c05a, x - 0.45, 2.5, z + 0.25);
   }
   for (const x of [-7.8, 10.8]) {
     cilindro(grupo, 0.055, 0.075, 2.8, 0x45544e, x, 1.55, 8.4);
