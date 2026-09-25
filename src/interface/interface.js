@@ -123,10 +123,13 @@ export class Interface {
       const melhorias = MELHORIAS.filter(m => m.categoria === abaAtiva.id);
       const abas = `<div class="abas-melhorias" role="tablist" aria-label="Tipo de melhoria">${ABAS_MELHORIAS.map(aba => `<button class="aba-melhoria ${aba.id === abaAtiva.id ? 'ativa' : ''}" id="aba-${aba.id}" role="tab" aria-selected="${aba.id === abaAtiva.id}" aria-controls="lista-melhorias" tabindex="${aba.id === abaAtiva.id ? 0 : -1}" data-aba-melhoria="${aba.id}">${aba.titulo}</button>`).join('')}</div>`;
       conteudo = `<p class="painel-subtitulo">Cada venda abre novas possibilidades.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div>${abas}<div class="lista-melhorias" id="lista-melhorias" role="tabpanel" aria-labelledby="aba-${abaAtiva.id}">${melhorias.map(m => {
-        const nivel = this.sim.estado.melhorias[m.id], completa = nivel >= m.max, custo = this.sim.custoMelhoria(m.id), pode = this.sim.estado.dinheiro >= custo;
+        const nivel = this.sim.estado.melhorias[m.id], completa = nivel >= m.max, custo = this.sim.custoMelhoria(m.id);
+        const disponibilidade = this.sim.disponibilidadeMelhoria(m.id), pode = disponibilidade.disponivel && this.sim.estado.dinheiro >= custo;
         const nivelExibido = m.id === 'mochila' ? nivel + 1 : nivel;
         const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
-        return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.max > 1 ? `<span class="nivel-melhoria">Nível ${nivel} de ${m.max}</span>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${completa ? m.titulo + ' concluída' : 'Comprar ' + m.titulo + ' por ' + reais(custo)}">${completa ? icone('certo') + ' Pronto' : reais(custo)}</button></div>`;
+        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
+        const aria = completa ? `${m.titulo} concluída` : !disponibilidade.disponivel ? disponibilidade.motivo : `Comprar ${m.titulo} por ${reais(custo)}`;
+        return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.max > 1 ? `<span class="nivel-melhoria">Nível ${nivelExibido} de ${maxExibido}</span>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${aria}">${rotulo}</button></div>`;
       }).join('')}</div><button class="botao-secundario" id="voltar-escritorio">Voltar ao gerenciamento</button>`;
     } else if (tipo === 'personalizacao') {
       titulos.personalizacao = 'Sua loja, do seu jeito';

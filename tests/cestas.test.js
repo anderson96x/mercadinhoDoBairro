@@ -86,7 +86,7 @@ test('cliente compra diferentes produtos em sequencia sem ultrapassar cinco iten
   Object.assign(cliente, CONFIG.clienteCaixa, { fase: 'fila' });
   sim.estado.melhorias.caixa = 1;
   sim.atualizarCaixa(CONFIG.tempoCaixa);
-  assert.equal(sim.estado.dinheiro, 52);
+  assert.equal(sim.estado.dinheiro, 3 * PRODUTOS.tomate.preco + 2 * PRODUTOS.milho.preco);
   assert.equal(cliente.satisfacao, 'feliz');
   assert.equal(sim.estado.estatisticas.satisfacao, 10);
 });

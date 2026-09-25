@@ -40,7 +40,7 @@ export function validarEstado(dados) {
   base.dinheiro = numero(dados.dinheiro);
   base.lojaAberta = dados.lojaAberta !== false;
   base.personalizacao = validarPersonalizacao(dados.personalizacao);
-  for (const m of MELHORIAS) base.melhorias[m.id] = numero(dados.melhorias?.[m.id], m.max);
+  for (const m of MELHORIAS) base.melhorias[m.id] = numero(dados.melhorias?.[m.id], m.ativa === false ? 0 : m.max);
   for (const [id, p] of Object.entries(PRODUTOS)) {
     const salvo = dados.produtos?.[id];
     const liberado = p.liberado || base.melhorias[id] > 0;
@@ -117,9 +117,19 @@ export class Simulacao {
     const m = MELHORIAS.find(m => m.id === id);
     return m ? Math.round(m.custo * Math.pow(m.multiplicador || 1, this.estado.melhorias[id])) : Infinity;
   }
+  disponibilidadeMelhoria(id) {
+    const m = MELHORIAS.find(m => m.id === id);
+    if (!m) return { disponivel: false, motivo: 'Melhoria desconhecida.' };
+    if (m.ativa === false) return { disponivel: false, motivo: 'Essa melhoria estará disponível em breve.' };
+    const nivelMinimo = m.nivelMinimo || 1;
+    if (this.nivel < nivelMinimo) return { disponivel: false, motivo: `Essa melhoria é liberada no nível ${nivelMinimo}.`, nivelMinimo };
+    return { disponivel: true };
+  }
   comprarMelhoria(id) {
     const m = MELHORIAS.find(m => m.id === id);
     if (!m) return { sucesso: false, motivo: 'Melhoria desconhecida.' };
+    const disponibilidade = this.disponibilidadeMelhoria(id);
+    if (!disponibilidade.disponivel) return { sucesso: false, motivo: disponibilidade.motivo };
     if (this.estado.melhorias[id] >= m.max) return { sucesso: false, motivo: 'Essa melhoria já está completa.' };
     const custo = this.custoMelhoria(id);
     if (this.estado.dinheiro < custo) return { sucesso: false, motivo: 'Você ainda não tem dinheiro suficiente.' };
@@ -136,7 +146,11 @@ export class Simulacao {
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
-      return { ...recorrente, indice: 0, valor, alvo: this.nivel * recorrente.intervalo };
+      const orientacaoNivel = this.nivel === 2 ? {
+        titulo: 'Seu mercadinho pode crescer',
+        texto: 'Vá ao escritório para contratar um caixa ou aumentar sua capacidade em 4 produtos.'
+      } : {};
+      return { ...recorrente, ...orientacaoNivel, indice: 0, valor, alvo: this.nivel * recorrente.intervalo };
     }
     const indice = MISSOES.findIndex(m => (this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) < m.alvo);
     if (indice === -1) return { indice: MISSOES.length, completa: true, titulo: 'O bairro é seu!', texto: 'Continue cuidando da loja e descubra todas as melhorias.', valor: 1, alvo: 1 };

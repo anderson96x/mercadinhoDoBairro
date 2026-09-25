@@ -16,6 +16,16 @@ test('o nível aumenta a cada 25 clientes atendidos', () => {
   assert.equal(sim.nivel, 1, 'satisfação não deve mais alterar o nível');
 });
 
+test('ao chegar ao nível 2, o próximo passo apresenta as melhorias do escritório', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel;
+  const missao = sim.missao();
+  assert.equal(missao.titulo, 'Seu mercadinho pode crescer');
+  assert.match(missao.texto, /escritório/);
+  assert.match(missao.texto, /contratar um caixa/);
+  assert.match(missao.texto, /4 produtos/);
+});
+
 test('checkout do vigésimo quinto cliente emite o evento de novo nível uma única vez', () => {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 24;
@@ -309,7 +319,7 @@ test('jogador senta na cadeira, atende e levanta ao andar sem perder produtos', 
   assert.equal(sim.estado.jogador.sentado, true);
   assert.equal(sim.estado.jogador.angulo, CONFIG.anguloCaixa);
   sim.atualizarCaixa(CONFIG.tempoCaixa);
-  assert.equal(sim.estado.dinheiro, 16);
+  assert.equal(sim.estado.dinheiro, 2 * PRODUTOS.tomate.preco);
   sim.atualizar(0.05, { x: -1, y: 0 });
   assert.equal(sim.estado.jogador.sentado, false);
   assert.deepEqual(sim.estado.jogador.inventario, ['tomate']);
@@ -348,24 +358,25 @@ test('jogador só atende o caixa sentado na cadeira', () => {
   sim.atualizar(0.05);
   assert.equal(sim.estado.jogador.sentado, true);
   sim.atualizarCaixa(CONFIG.tempoCaixa);
-  assert.equal(sim.estado.dinheiro, 16);
+  assert.equal(sim.estado.dinheiro, 2 * PRODUTOS.tomate.preco);
 });
 
-test('os quatro níveis da cesta comportam 4, 8, 12 e 16 produtos', () => {
+test('a melhoria única da cesta aumenta a capacidade de 4 para 8 produtos', () => {
   const sim = new Simulacao();
   sim.estado.dinheiro = 1000;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel;
   aproximar(sim, PRODUTOS.tomate.coleta);
-  for (const capacidade of [4, 8, 12, 16]) {
+  for (const capacidade of [4, 8]) {
     assert.equal(sim.capacidade, capacidade);
     avancar(sim, 40);
     assert.equal(sim.estado.jogador.inventario.length, capacidade);
     const salvo = structuredClone(sim.estado);
     salvo.jogador.inventario = Array(30).fill('tomate');
     assert.equal(validarEstado(salvo).jogador.inventario.length, capacidade);
-    if (capacidade < 16) assert.equal(sim.comprarMelhoria('mochila').sucesso, true);
+    if (capacidade < 8) assert.equal(sim.comprarMelhoria('mochila').sucesso, true);
   }
   assert.equal(sim.comprarMelhoria('mochila').sucesso, false);
-  assert.equal(sim.capacidade, 16);
+  assert.equal(sim.capacidade, 8);
 });
 
 test('colher, repor, atender e receber o valor exato da compra', () => {
@@ -399,26 +410,33 @@ test('a cesta tem limite, e uma prateleira cheia não consome produtos', () => {
   assert.equal(sim.estado.produtos.tomate.prateleira, 12);
 });
 
-test('melhorias respeitam o saldo, o limite e o desbloqueio de produtos', () => {
+test('melhorias ficam bloqueadas até o nível 2 e as desativadas não podem ser compradas', () => {
   const sim = new Simulacao();
-  assert.equal(sim.comprarMelhoria('milho').sucesso, false);
-  assert.equal(sim.comprarMelhoria('inexistente').sucesso, false);
-  assert.equal(sim.estado.dinheiro, 0);
   sim.estado.dinheiro = 500;
-  assert.equal(sim.comprarMelhoria('milho').sucesso, true);
-  assert.equal(sim.estado.dinheiro, 420);
-  assert.equal(sim.estado.produtos.milho.liberado, true);
-  assert.equal(sim.comprarMelhoria('milho').sucesso, false);
-  assert.equal(sim.estado.dinheiro, 420);
+  assert.match(sim.comprarMelhoria('mochila').motivo, /nível 2/);
+  assert.match(sim.comprarMelhoria('caixa').motivo, /nível 2/);
+  assert.match(sim.comprarMelhoria('milho').motivo, /em breve/);
+  assert.match(sim.comprarMelhoria('velocidade').motivo, /em breve/);
+  assert.match(sim.comprarMelhoria('ajudante').motivo, /em breve/);
+  assert.equal(sim.comprarMelhoria('inexistente').sucesso, false);
+  assert.equal(sim.estado.dinheiro, 500);
+
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel;
   assert.equal(sim.comprarMelhoria('mochila').sucesso, true);
   assert.equal(sim.capacidade, 8);
-  assert.equal(sim.custoMelhoria('mochila'), 105);
+  assert.equal(sim.estado.dinheiro, 440);
+  assert.equal(sim.comprarMelhoria('mochila').sucesso, false);
+  assert.equal(sim.comprarMelhoria('caixa').sucesso, true);
+  assert.equal(sim.estado.dinheiro, 300);
 });
 
 test('funcionários conseguem produzir e vender com o jogador distante', () => {
   const sim = new Simulacao();
-  sim.estado.dinheiro = 440;
-  sim.comprarMelhoria('milho'); sim.comprarMelhoria('caixa'); sim.comprarMelhoria('ajudante');
+  sim.estado.melhorias.caixa = 1;
+  sim.estado.melhorias.ajudante = 1;
+  sim.estado.melhorias.milho = 1;
+  sim.estado.produtos.milho.liberado = true;
+  sim.estado.produtos.milho.horta = PRODUTOS.milho.capacidadeHorta;
   aproximar(sim, { x: -9, z: 8 });
   avancar(sim, 240);
   assert.ok(sim.estado.estatisticas.clientes >= 5);
@@ -444,8 +462,8 @@ test('movimento respeita obstáculos e limites do mapa; pausa congela o mundo', 
 test('salvamento incompleto ou adulterado não gera dinheiro negativo nem estoques inválidos', () => {
   assert.equal(validarEstado(null).dinheiro, 0);
   const estado = validarEstado({ versao: 1, dinheiro: -10, melhorias: { mochila: 99, milho: 1 }, produtos: { tomate: { horta: 999, prateleira: -2 }, milho: { horta: 7, prateleira: 4 } }, jogador: { inventario: ['tomate','milho','desconhecido'] }, estatisticas: { clientes: NaN } });
-  assert.equal(estado.dinheiro, 0); assert.equal(estado.melhorias.mochila, 3);
+  assert.equal(estado.dinheiro, 0); assert.equal(estado.melhorias.mochila, 1); assert.equal(estado.melhorias.milho, 0);
   assert.equal(estado.produtos.tomate.horta, 8); assert.equal(estado.produtos.tomate.prateleira, 0);
-  assert.deepEqual(estado.jogador.inventario, ['tomate','milho']);
+  assert.deepEqual(estado.jogador.inventario, ['tomate']);
   assert.equal(estado.estatisticas.clientes, 0);
 });
