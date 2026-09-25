@@ -1,4 +1,4 @@
-:root{font-family:'DM Sans',sans-serif;color:#253e31;background:#a9cb76;font-synthesis:none;--verde:#1d654b;--escuro:#254233;--creme:#fffcef;--sombra:0 8px 28px #25452b16}
+:root{font-family:'DM Sans',sans-serif;color:#253e31;background:#a9cb76;font-synthesis:none;--verde:#286750;--paleta-principal:#286750;--paleta-destaque:#e7b65a;--paleta-parede:#f1ead7;--paleta-piso:#e3dcc8;--escuro:#254233;--creme:#fffcef;--sombra:0 8px 28px #25452b16}
 *{box-sizing:border-box}html,body,#app,.jogo{margin:0;width:100%;height:100%;overflow:hidden}body{height:100dvh;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}button{font:inherit;cursor:pointer}button:disabled{cursor:default}button:focus-visible{outline:3px solid #f1aa32;outline-offset:4px}button:active:not(:disabled){transform:translateY(1px)}button[hidden],[hidden]{display:none!important}.icone{width:24px;height:24px;flex-shrink:0;vertical-align:middle}h1,h2,h3,p{margin:0}h1,h2,h3,strong,.botao-melhorias{font-family:'Outfit',sans-serif}#mundo{position:absolute;inset:0;touch-action:none;user-select:none}#mundo canvas{display:block;width:100%;height:100%;touch-action:none}#etiquetas,#efeitos{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .cabecalho{position:absolute;top:max(24px,env(safe-area-inset-top));left:max(28px,env(safe-area-inset-left));right:max(28px,env(safe-area-inset-right));display:flex;align-items:center;justify-content:space-between;gap:22px;pointer-events:none}.cabecalho>*{pointer-events:auto}.marca{display:flex;align-items:center;gap:12px}.marca-icone{display:grid;place-items:center;width:54px;height:54px;border-radius:17px;background:var(--verde);color:#fff2b6;box-shadow:0 5px 0 #155039}.marca-icone .icone{width:31px;height:31px}.marca h1{font-size:24px;line-height:1.02;letter-spacing:-.7px;font-weight:800}.marca h1 span{display:block;font-size:16px;letter-spacing:1px;font-weight:500;margin-top:4px}.nivel{align-self:flex-start;margin-top:4px;margin-left:8px;font-size:10px;letter-spacing:1.2px;font-weight:800;background:#ffffff60;padding:6px 9px;border-radius:6px;white-space:nowrap}.saldo{display:flex;align-items:center;gap:12px;border:1px solid #fff9;background:var(--creme);border-radius:19px;padding:12px 20px 12px 13px;box-shadow:var(--sombra)}.moeda{color:#9e6c20;display:grid;place-items:center;background:#f8d86f;width:43px;height:43px;border-radius:50%;box-shadow:inset 0 0 0 4px #fce496}.moeda .icone{width:30px;height:30px}.saldo small{font-size:10px;letter-spacing:1.5px;font-weight:700;display:block;color:#6c7865}.saldo strong{display:block;font-size:26px;line-height:1.2;letter-spacing:-.5px;min-width:95px}.vendas{border-left:1px solid #d9decc;padding-left:19px;margin-left:3px}.vendas>span{display:flex;gap:7px;align-items:center}.vendas .icone{width:18px;height:18px;color:#6c896d}.vendas b{font-size:17px;font-weight:700}.vendas small{font-size:10px;letter-spacing:0;font-weight:500;margin-top:3px}.ferramentas{display:flex;gap:8px}.botao-icone{display:grid;place-items:center;background:#fffcf0e8;border:1px solid #ffffff70;color:var(--escuro);width:43px;height:43px;border-radius:13px;box-shadow:0 4px 10px #33582b0a}.botao-icone:hover{background:#fff}.botao-icone .icone{width:21px;height:21px}
 .objetivo{position:absolute;left:28px;top:121px;width:275px;background:#fffceeeb;border:1px solid #ffffff90;border-radius:19px;padding:19px 20px 16px;box-shadow:var(--sombra);pointer-events:none}.objetivo-topo{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:13px;color:#5f7d60;font-size:10px;letter-spacing:1.25px;font-weight:800}.objetivo-topo>span:first-child{display:flex;align-items:center;gap:6px}.objetivo-topo .icone{width:16px;height:16px}.objetivo-topo>span:last-child{font-size:10px;letter-spacing:.5px;white-space:nowrap;color:#8a927a}.objetivo h2{font-size:21px;line-height:1.16;letter-spacing:-.4px;margin-bottom:7px;font-weight:600}.objetivo p{font-size:13px;line-height:1.55;color:#72806a}.progresso-linha{display:flex;align-items:center;gap:10px;margin-top:15px}.progresso-linha progress{flex:1;width:100%;height:5px;border:0;border-radius:6px;overflow:hidden;background:#e4e8d5}.progresso-linha progress::-webkit-progress-bar{background:#e4e8d5;border-radius:6px}.progresso-linha progress::-webkit-progress-value{background:#79a15e;border-radius:6px;transition:width .3s}.progresso-linha progress::-moz-progress-bar{background:#79a15e;border-radius:6px}.progresso-linha span{font-size:11px;white-space:nowrap;font-weight:700;color:#658154}
@@ -13,10 +13,82 @@ dialog{border:1px solid #fff;border-radius:26px;padding:28px 32px 30px;backgroun
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .botao-icone.reset-dev{position:relative;background:#f8e2cc;color:#a34230}.reset-dev small{position:absolute;bottom:1px;font-size:8px;font-weight:800;letter-spacing:.4px}.reset-dev .icone{transform:translateY(-3px)}
 .dev-saldo-controles{display:grid;grid-template-columns:1fr 1fr;gap:12px}.dev-saldo-controles .botao-secundario{margin-top:0}.dev-saldo-controles button:disabled{opacity:.5;cursor:default}
-
 .abas-melhorias{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;padding:5px;margin-bottom:15px;border-radius:13px;background:#eff1e3}.aba-melhoria{min-width:0;padding:11px 8px;border:0;border-radius:9px;background:transparent;color:#75816a;font-size:13px;font-weight:600;transition:background .18s,color .18s,box-shadow .18s}.aba-melhoria:hover{color:#356b4c}.aba-melhoria.ativa{background:#fffdf3;color:#356b4c;box-shadow:0 2px 7px #314b241c}@media(max-width:700px){.abas-melhorias{margin-bottom:12px}.aba-melhoria{padding:10px 4px;font-size:12px}}
 
 /* Identidade do mercadinho */
 .marca h1{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.marca h1 span{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;letter-spacing:.3px}
 .form-personalizacao{display:grid;gap:10px}.form-personalizacao>label,.form-personalizacao legend{font-size:13px;font-weight:700;color:#59654d}.form-personalizacao>input{width:100%;min-width:0;border:1px solid #d7ddc9;border-radius:10px;padding:12px;background:#fffefa;color:#344e3f;font:inherit}.form-personalizacao>input:focus-visible{outline:3px solid #dfb96d;outline-offset:2px}.form-personalizacao fieldset{border:0;padding:0;margin:12px 0 0;min-width:0}.form-personalizacao legend{margin-bottom:12px}.paletas-loja{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.paleta-loja{position:relative;display:grid;gap:8px;border:2px solid #e3e5d7;border-radius:12px;padding:12px;cursor:pointer;font-size:12px;color:#4b5944}.paleta-loja:has(input:checked){border-color:var(--verde);background:#eef2e5}.paleta-loja:has(input:focus-visible){outline:3px solid #dfb96d;outline-offset:2px}.paleta-loja input{position:absolute;right:9px;bottom:10px;accent-color:var(--verde)}.paleta-cores{display:flex;height:23px;overflow:hidden;border-radius:6px}.paleta-cores i{flex:1}.previa-loja{position:relative;padding:23px 15px 32px;border-radius:14px;overflow:hidden;text-align:center;background:var(--cor-loja);color:#fff5df;display:grid;gap:8px;margin-bottom:10px}.previa-loja small{font-size:9px;letter-spacing:2px}.previa-loja strong{font-size:24px;overflow-wrap:anywhere}.previa-loja>span{font-size:12px;overflow-wrap:anywhere}.previa-toldo{position:absolute;bottom:0;left:0;right:0;height:14px;background:repeating-linear-gradient(90deg,var(--cor-toldo) 0 22px,#fff5df 22px 44px)}
 @media(max-width:700px){.marca h1,.marca h1 span{max-width:140px}.marca h1 span{font-size:9px}.paleta-loja{padding:9px;font-size:11px}.previa-loja strong{font-size:21px}}
+
+/* O painel acompanha a identidade escolhida para o mercadinho. */
+dialog{background:color-mix(in srgb,var(--paleta-parede) 42%,#fff 58%);color:color-mix(in srgb,var(--paleta-principal) 68%,#252a27);border-color:color-mix(in srgb,var(--paleta-parede) 72%,#fff)}
+dialog::backdrop{background:color-mix(in srgb,var(--paleta-principal) 48%,transparent);backdrop-filter:blur(5px)}
+.painel-simbolo{color:var(--paleta-principal);background:color-mix(in srgb,var(--paleta-principal) 13%,var(--paleta-parede))}
+.painel-cabecalho .botao-icone{color:var(--paleta-principal);background:color-mix(in srgb,var(--paleta-principal) 9%,var(--paleta-parede))}
+.painel-subtitulo,.nota,.melhoria p,.nivel-melhoria,.guia-controles p,.guia-passos p,.resumo-pausa span{color:color-mix(in srgb,var(--paleta-principal) 33%,#777)}
+.saldo-painel{color:color-mix(in srgb,var(--paleta-destaque) 58%,#5b4930);background:color-mix(in srgb,var(--paleta-destaque) 28%,var(--paleta-parede))}
+.saldo-painel b{color:color-mix(in srgb,var(--paleta-principal) 58%,#343a36)}
+.botao-principal{background:var(--paleta-principal);color:#fffaf0}
+.botao-secundario{background:color-mix(in srgb,var(--paleta-principal) 11%,var(--paleta-parede));color:color-mix(in srgb,var(--paleta-principal) 78%,#343a36)}
+.botao-texto{color:color-mix(in srgb,var(--paleta-principal) 50%,#766c68)}
+.melhoria{border-color:color-mix(in srgb,var(--paleta-principal) 12%,var(--paleta-parede))}
+.melhoria-icone{color:var(--paleta-principal);background:color-mix(in srgb,var(--paleta-principal) 12%,var(--paleta-parede))}
+.comprar{background:var(--paleta-principal)}
+.comprar:disabled{color:color-mix(in srgb,var(--paleta-principal) 34%,#888);background:color-mix(in srgb,var(--paleta-principal) 8%,var(--paleta-parede))}
+.concluida .comprar{color:var(--paleta-principal);background:color-mix(in srgb,var(--paleta-principal) 14%,var(--paleta-parede))}
+.guia-controles{background:color-mix(in srgb,var(--paleta-principal) 9%,var(--paleta-parede))}
+.guia-controles>.icone{color:var(--paleta-principal)}
+.guia-passos li>span{color:color-mix(in srgb,var(--paleta-destaque) 62%,#5b4930);background:color-mix(in srgb,var(--paleta-destaque) 30%,var(--paleta-parede))}
+.resumo-pausa strong{color:var(--paleta-principal)}
+.abas-melhorias{background:color-mix(in srgb,var(--paleta-principal) 8%,var(--paleta-piso))}
+.aba-melhoria{color:color-mix(in srgb,var(--paleta-principal) 40%,#777)}
+.aba-melhoria:hover{color:var(--paleta-principal)}
+.aba-melhoria.ativa{color:var(--paleta-principal);background:color-mix(in srgb,var(--paleta-parede) 36%,#fff);box-shadow:0 2px 7px color-mix(in srgb,var(--paleta-principal) 12%,transparent)}
+.form-personalizacao>label,.form-personalizacao legend{color:color-mix(in srgb,var(--paleta-principal) 58%,#4e554f)}
+.form-personalizacao>input{color:color-mix(in srgb,var(--paleta-principal) 64%,#303632);border-color:color-mix(in srgb,var(--paleta-principal) 17%,var(--paleta-parede));background:color-mix(in srgb,var(--paleta-parede) 22%,#fff)}
+.form-personalizacao>input:focus-visible,.paleta-loja:has(input:focus-visible){outline-color:var(--paleta-destaque)}
+.paleta-loja{color:color-mix(in srgb,var(--paleta-principal) 47%,#505550);border-color:color-mix(in srgb,var(--paleta-principal) 12%,var(--paleta-parede))}
+.paleta-loja:has(input:checked){border-color:var(--paleta-principal);background:color-mix(in srgb,var(--paleta-principal) 10%,var(--paleta-parede))}
+.perigo{background:#b3543e}
+.acao-loja.abrir{background:#3f8f57}.acao-loja.fechar{background:#b3543e}
+
+/* O HUD inteiro compartilha a identidade visual do mercadinho. */
+:root{--ui-texto:color-mix(in srgb,var(--paleta-principal) 68%,#252a27);--ui-texto-suave:color-mix(in srgb,var(--paleta-principal) 32%,#747873);--ui-superficie:color-mix(in srgb,var(--paleta-parede) 35%,#fff 65%);--ui-suave:color-mix(in srgb,var(--paleta-principal) 10%,var(--paleta-parede));--ui-borda:color-mix(in srgb,var(--paleta-principal) 14%,transparent);--ui-sombra:color-mix(in srgb,var(--paleta-principal) 18%,transparent);color:var(--ui-texto)}
+button:focus-visible{outline-color:var(--paleta-destaque)}
+.marca-icone{background:var(--paleta-principal);color:color-mix(in srgb,var(--paleta-destaque) 42%,#fff);box-shadow:0 5px 0 color-mix(in srgb,var(--paleta-principal) 78%,#171d1a)}
+.saldo{background:var(--ui-superficie);box-shadow:0 8px 28px var(--ui-sombra)}
+.moeda{color:color-mix(in srgb,var(--paleta-destaque) 60%,#5e4828);background:color-mix(in srgb,var(--paleta-destaque) 72%,#fff);box-shadow:inset 0 0 0 4px color-mix(in srgb,var(--paleta-destaque) 42%,#fff)}
+.saldo small,.inventario-titulo>span{color:var(--ui-texto-suave)}
+.vendas{border-color:var(--ui-borda)}
+.vendas .icone{color:var(--paleta-principal)}
+.botao-icone{color:var(--ui-texto);background:color-mix(in srgb,var(--paleta-parede) 28%,#fff 72%);box-shadow:0 4px 10px var(--ui-sombra)}
+.botao-icone:hover{background:var(--ui-superficie)}
+.objetivo{background:color-mix(in srgb,var(--paleta-parede) 30%,#fff 70%);border-color:color-mix(in srgb,var(--paleta-parede) 64%,#fff);box-shadow:0 8px 28px var(--ui-sombra)}
+.objetivo-topo,.objetivo-topo>span:last-child,.objetivo p,.progresso-linha span{color:var(--ui-texto-suave)}
+.objetivo-topo>span:first-child{color:var(--paleta-principal)}
+.progresso-linha progress,.progresso-linha progress::-webkit-progress-bar{background:var(--ui-suave)}
+.progresso-linha progress::-webkit-progress-value{background:var(--paleta-principal)}
+.progresso-linha progress::-moz-progress-bar{background:var(--paleta-principal)}
+.inventario{background:color-mix(in srgb,var(--paleta-parede) 28%,#fff 72%);border-color:color-mix(in srgb,var(--paleta-parede) 62%,#fff);box-shadow:0 8px 28px var(--ui-sombra)}
+.cesta-icone{color:var(--paleta-principal)}
+.item{background:var(--ui-suave)}
+.item i{background:color-mix(in srgb,var(--paleta-principal) 22%,var(--paleta-piso))}
+.botao-melhorias{background:var(--paleta-principal);box-shadow:0 5px 0 color-mix(in srgb,var(--paleta-principal) 78%,#171d1a),0 12px 25px var(--ui-sombra)}
+.botao-melhorias:hover{background:color-mix(in srgb,var(--paleta-principal) 88%,#fff)}
+.botao-melhorias>.icone:first-child{color:var(--paleta-destaque)}
+.aviso-melhoria{background:var(--paleta-destaque)}
+.botao-melhorias>.icone:last-child,.botao-melhorias small{color:color-mix(in srgb,var(--paleta-parede) 62%,#fff)}
+.controles-dica,.controles-dica>span:last-child>span{color:var(--ui-texto)}
+kbd{color:var(--paleta-principal);border-color:color-mix(in srgb,var(--paleta-principal) 28%,transparent);background:color-mix(in srgb,var(--paleta-parede) 20%,transparent);box-shadow:0 2px 0 var(--ui-borda)}
+.etiqueta{color:var(--ui-texto);background:color-mix(in srgb,var(--paleta-parede) 30%,#fff 70%);box-shadow:0 2px 8px var(--ui-sombra)}
+.etiqueta span,.etiqueta-verde span{color:var(--ui-texto-suave)}
+.etiqueta-verde,.etiqueta-verde b{color:var(--paleta-principal)}
+.contador-carga{color:var(--paleta-principal);background:var(--ui-superficie);box-shadow:0 4px 12px var(--ui-sombra)}
+.contador-carga::after{border-top-color:var(--ui-superficie)}
+#atividade,#mensagens{color:#fffaf0;background:color-mix(in srgb,var(--paleta-principal) 92%,transparent);box-shadow:0 8px 28px var(--ui-sombra)}
+#joystick{border-color:color-mix(in srgb,var(--paleta-parede) 55%,#fff);background:color-mix(in srgb,var(--paleta-principal) 20%,transparent)}
+#joystick>span{background:color-mix(in srgb,var(--paleta-parede) 58%,#fff);box-shadow:0 3px 10px var(--ui-sombra)}
+.dinheiro-flutuante{color:#168044}
+.perigo{background:#b3543e}
+.acao-loja.abrir{background:#3f8f57}.acao-loja.fechar{background:#b3543e}
+@media(max-width:700px){.marca-icone{box-shadow:0 3px 0 color-mix(in srgb,var(--paleta-principal) 78%,#171d1a)}.botao-melhorias{box-shadow:0 3px 0 color-mix(in srgb,var(--paleta-principal) 78%,#171d1a)}}

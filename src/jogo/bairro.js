@@ -98,9 +98,9 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   telaComputador.material = telaComputador.material.clone();
   bloco(0.1, 0.2, 0.12, 0x414846, -0.7, 1.16, -4.72);
   bloco(0.6, 0.035, 0.2, 0x606b67, -0.7, 1.11, -4.34);
-  bloco(0.55, 0.12, 0.55, 0x779c96, -0.9, 0.63, -3.5);
-  bloco(0.55, 0.55, 0.1, 0x779c96, -0.9, 0.95, -3.24);
-  cilindro(grupo, 0.07, 0.12, 0.4, 0x56645e, -0.9, 0.42, -3.5);
+  bloco(0.55, 0.12, 0.55, 0x777d82, -0.9, 0.63, -3.5);
+  bloco(0.55, 0.55, 0.1, 0x777d82, -0.9, 0.95, -3.24);
+  cilindro(grupo, 0.07, 0.12, 0.4, 0x555b60, -0.9, 0.42, -3.5);
   bloco(0.45, 1.6, 1.7, 0x8c613d, -2.65, 1.03, -4.4);
   for (let i = 0; i < 3; i++) {
     bloco(0.045, 0.07, 1.6, 0xc79765, -2.4, 0.55 + i * 0.49, -4.4);

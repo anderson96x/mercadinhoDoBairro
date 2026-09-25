@@ -21,6 +21,8 @@ const caminhos = {
   folha: '<path d="M20 3C5 1 1 13 8 17c6 5 15-1 12-14ZM4 21 16 8"/>',
   reiniciar: '<path d="M4 10a8 8 0 1 1 1 8M4 3v7h7"/>',
   tela: '<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>'
+  ,abrirLoja: '<path d="M4 21h11V3H4v18Zm7-9H7m11-4 3 4-3 4m3-4h-8"/>'
+  ,fecharLoja: '<path d="M4 21h11V3H4v18Zm7-9H7m7-4 7 7m0-7-7 7"/>'
   ,dev: '<path d="m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 14"/>'
 };
 export const icone = (nome, classe = '') => `<svg class="icone ${classe}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${caminhos[nome] || caminhos.loja}</svg>`;

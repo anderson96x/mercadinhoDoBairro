@@ -404,7 +404,7 @@ export class Cena {
     this.alvoCamera = new THREE.Vector3(-0.5, 0, 0.8);
     this.construirMundo();
     this.aberturaLojaVisual = 0;
-    this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, 0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
+    this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, -0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
     this.jogador = personagem(0xf8ecd1, 0xe9b489, true); this.cena.add(this.jogador);
     this.clientes = new Map(); this.labels = [];
@@ -423,25 +423,25 @@ export class Cena {
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera, placa });
     this.bairro.aplicar(this.sim.estado.personalizacao);
     // Caixa e esteira, com produtos e recibo visíveis de perto.
-    this.bairro.vincular(caixa(c, 1.35, 0.95, 2.7, 0x297b61, 5.5, 0.65, 4.1), 'principal');
-    caixa(c, 1.53, 0.17, 2.9, 0xfaf3d7, 5.5, 1.2, 4.1);
-    caixa(c, 1.0, 0.025, 1.5, 0x384d46, 5.5, 1.31, 4.5);
+    caixa(c, 1.35, 0.95, 2.7, 0x747b80, 5.5, 0.65, 4.1);
+    caixa(c, 1.53, 0.17, 2.9, 0xc9cdcf, 5.5, 1.2, 4.1);
+    caixa(c, 1.0, 0.025, 1.5, 0x454b4f, 5.5, 1.31, 4.5);
     // Computador do caixa: base, coluna, monitor e tela.
-    caixa(c, 0.5, 0.13, 0.42, 0x274839, 5.12, 1.38, 4.1);
-    caixa(c, 0.08, 0.13, 0.08, 0x354d42, 5.12, 1.5, 4.1);
-    const monitor = caixa(c, 0.47, 0.4, 0.1, 0x354d42, 5.12, 1.63, 4.1); monitor.rotation.x = -0.25; monitor.rotation.y = -Math.PI / 2;
-    const tela = caixa(c, 0.36, 0.25, 0.02, 0xc4e4a5, 5.06, 1.65, 4.1); tela.rotation.y = -Math.PI / 2;
+    caixa(c, 0.62, 0.13, 0.48, 0x4b5155, 5.12, 1.38, 4.1);
+    caixa(c, 0.1, 0.18, 0.1, 0x5b6267, 5.12, 1.52, 4.1);
+    const monitor = caixa(c, 0.68, 0.58, 0.12, 0x555c61, 5.12, 1.72, 4.1); monitor.rotation.x = -0.25; monitor.rotation.y = -Math.PI / 2;
+    const tela = caixa(c, 0.56, 0.44, 0.02, 0x94aeb5, 5.05, 1.73, 4.1); tela.rotation.y = -Math.PI / 2;
     // Teclado compacto na frente do monitor.
-    const teclado = caixa(c, 0.52, 0.035, 0.2, 0x354d42, 4.83, 1.315, 4.1); teclado.rotation.y = Math.PI / 2;
+    const teclado = caixa(c, 0.52, 0.035, 0.2, 0x555c61, 4.83, 1.315, 4.1); teclado.rotation.y = Math.PI / 2;
     for (let linha = 0; linha < 2; linha++) for (let tecla = 0; tecla < 6; tecla++) {
-      const teclaMesh = caixa(c, 0.045, 0.012, 0.035, 0xb6c7a0, 4.78 + linha * 0.07, 1.339, 3.89 + tecla * 0.084); teclaMesh.rotation.y = Math.PI / 2;
+      const teclaMesh = caixa(c, 0.045, 0.012, 0.035, 0xaeb4b7, 4.78 + linha * 0.07, 1.339, 3.89 + tecla * 0.084); teclaMesh.rotation.y = Math.PI / 2;
     }
     // Leitor de código de barras com janela vermelha.
-    caixa(c, 0.3, 0.065, 0.24, 0x354d42, 5.05, 1.34, 4.0);
+    caixa(c, 0.3, 0.065, 0.24, 0x555c61, 5.05, 1.34, 4.0);
     caixa(c, 0.2, 0.012, 0.11, 0xe86b55, 5.05, 1.379, 4.0);
     // Maquininha de cartão com tela e teclas.
     caixa(c, 0.27, 0.09, 0.3, 0x344b58, 5.96, 1.36, 3.75);
-    caixa(c, 0.19, 0.018, 0.1, 0xb9d9a2, 5.96, 1.414, 3.68);
+    caixa(c, 0.19, 0.018, 0.1, 0x9eacb0, 5.96, 1.414, 3.68);
     for (let linha = 0; linha < 2; linha++) for (let tecla = 0; tecla < 3; tecla++) {
       caixa(c, 0.035, 0.012, 0.03, 0xe8d9b6, 5.91 + tecla * 0.05, 1.414, 3.75 + linha * 0.045);
     }
@@ -450,9 +450,9 @@ export class Cena {
     caixa(c, 0.24, 0.012, 0.035, 0x263b37, 5.85, 1.482, 3.03);
     caixa(c, 0.16, 0.012, 0.2, 0xffffff, 5.85, 1.49, 2.91);
     // Gaveta de dinheiro na face voltada para o caixa.
-    caixa(c, 0.45, 0.16, 0.62, 0x354d42, 4.94, 1.04, 4.95);
+    caixa(c, 0.45, 0.16, 0.62, 0x555c61, 4.94, 1.04, 4.95);
     caixa(c, 0.025, 0.1, 0.56, 0x52616b, 4.70, 1.07, 4.95);
-    caixa(c, 0.03, 0.025, 0.13, 0xb6c7a0, 4.68, 1.08, 4.95);
+    caixa(c, 0.03, 0.025, 0.13, 0xaeb4b7, 4.68, 1.08, 4.95);
     // Papel extra e pequeno suporte para sacolas.
     caixa(c, 0.17, 0.018, 0.36, 0xffffff, 5.12, 1.3, 3.48);
     caixa(c, 0.09, 0.018, 0.14, 0xd9d2b9, 5.5, 1.3, 3.98);

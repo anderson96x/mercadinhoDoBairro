@@ -68,6 +68,10 @@ export class Interface {
       marca.title = `${e.personalizacao.nome} · ${e.personalizacao.slogan}`;
       const paleta = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
       document.documentElement.style.setProperty('--verde', paleta.principal);
+      document.documentElement.style.setProperty('--paleta-principal', paleta.principal);
+      document.documentElement.style.setProperty('--paleta-destaque', paleta.destaque);
+      document.documentElement.style.setProperty('--paleta-parede', paleta.parede);
+      document.documentElement.style.setProperty('--paleta-piso', paleta.piso);
       this.ultimaIdentidade = identidade;
     }
     this.el('saldo').textContent = reais(e.dinheiro);
@@ -103,7 +107,7 @@ export class Interface {
     let conteudo = '';
     if (tipo === 'escritorio') {
       const aberta = this.sim.estado.lojaAberta;
-      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho sem sair do escritório.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-principal" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="${aberta ? 'botao-principal perigo' : 'botao-secundario'}" id="alternar-loja">${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
+      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho sem sair do escritório.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
     } else if (tipo === 'melhorias') {
       const abaAtiva = ABAS_MELHORIAS.find(aba => aba.id === this.abaMelhorias) ?? ABAS_MELHORIAS[0];
       const melhorias = MELHORIAS.filter(m => m.categoria === abaAtiva.id);
