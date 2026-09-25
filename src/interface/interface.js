@@ -33,7 +33,6 @@ export class Interface {
         <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Use as setas ou arraste para andar</span></span></div>
         <footer class="rodape">
           <div class="inventario" id="inventario" hidden><div class="inventario-conteudo"><div class="inventario-titulo"><b id="nivel-inventario">Inventário · Nível ${this.sim.estado.melhorias.mochila + 1}</b><span id="capacidade">${this.sim.estado.jogador.inventario.length} / ${this.sim.capacidade}</span></div><div id="itens"></div></div></div>
-          <button class="botao-melhorias" id="melhorias">${icone('melhorar')}<span>Melhorias<small id="melhorias-dica">Faça sua loja crescer</small></span><span class="aviso-melhoria" id="aviso-melhoria" hidden></span>${icone('seta')}</button>
         </footer>
         <div id="joystick" aria-hidden="true"><span></span></div>
         <div id="mensagens" aria-live="polite" aria-atomic="true"></div>
@@ -45,7 +44,6 @@ export class Interface {
     this.el('ajuda').onclick = () => this.abrir('ajuda');
     this.el('pausa').onclick = () => this.abrir('pausa');
     if (import.meta.env.DEV) this.el('dev-menu').onclick = () => this.abrir('dev');
-    this.el('melhorias').onclick = () => this.abrir('melhorias');
     this.el('painel').addEventListener('cancel', e => { e.preventDefault(); this.fechar(); });
     this.el('painel').addEventListener('click', e => { if (e.target === this.el('painel')) this.fechar(); });
     window.addEventListener('keydown', e => {
@@ -91,9 +89,6 @@ export class Interface {
       this.el('itens').setAttribute('aria-label', `${inv.filter(i => i === 'tomate').length} tomates e ${inv.filter(i => i === 'milho').length} milhos.`);
       this.ultimoInventario = chave;
     }
-    const disponiveis = MELHORIAS.filter(m => e.melhorias[m.id] < m.max && e.dinheiro >= s.custoMelhoria(m.id));
-    this.el('aviso-melhoria').hidden = !disponiveis.length;
-    this.el('melhorias-dica').textContent = disponiveis.length ? `${disponiveis.length} ${disponiveis.length === 1 ? 'melhoria disponível' : 'melhorias disponíveis'}` : 'Faça sua loja crescer';
     this.el('atividade').textContent = s.atividade;
     this.el('atividade').classList.toggle('visivel', !!s.atividade);
   }
@@ -104,9 +99,12 @@ export class Interface {
   fechar() { this.el('painel').close(); this.tipoPainel = null; this.acoes.pausar(false); }
   renderizarPainel() {
     const tipo = this.tipoPainel;
-    const titulos = { melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', pausa: 'Uma pausa para respirar', reiniciar: 'Começar do zero?', dev: 'Menu de desenvolvimento' };
+    const titulos = { escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', pausa: 'Uma pausa para respirar', reiniciar: 'Começar do zero?', dev: 'Menu de desenvolvimento' };
     let conteudo = '';
-    if (tipo === 'melhorias') {
+    if (tipo === 'escritorio') {
+      const aberta = this.sim.estado.lojaAberta;
+      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho sem sair do escritório.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-principal" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="${aberta ? 'botao-principal perigo' : 'botao-secundario'}" id="alternar-loja">${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
+    } else if (tipo === 'melhorias') {
       const abaAtiva = ABAS_MELHORIAS.find(aba => aba.id === this.abaMelhorias) ?? ABAS_MELHORIAS[0];
       const melhorias = MELHORIAS.filter(m => m.categoria === abaAtiva.id);
       const abas = `<div class="abas-melhorias" role="tablist" aria-label="Tipo de melhoria">${ABAS_MELHORIAS.map(aba => `<button class="aba-melhoria ${aba.id === abaAtiva.id ? 'ativa' : ''}" id="aba-${aba.id}" role="tab" aria-selected="${aba.id === abaAtiva.id}" aria-controls="lista-melhorias" tabindex="${aba.id === abaAtiva.id ? 0 : -1}" data-aba-melhoria="${aba.id}">${aba.titulo}</button>`).join('')}</div>`;
@@ -115,7 +113,7 @@ export class Interface {
         const nivelExibido = m.id === 'mochila' ? nivel + 1 : nivel;
         const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
         return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.max > 1 ? `<span class="nivel-melhoria">Nível ${nivel} de ${m.max}</span>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${completa ? m.titulo + ' concluída' : 'Comprar ' + m.titulo + ' por ' + reais(custo)}">${completa ? icone('certo') + ' Pronto' : reais(custo)}</button></div>`;
-      }).join('')}</div>`;
+      }).join('')}</div><button class="botao-secundario" id="voltar-escritorio">Voltar ao gerenciamento</button>`;
     } else if (tipo === 'personalizacao') {
       titulos.personalizacao = 'Sua loja, do seu jeito';
       conteudo = `<p class="painel-subtitulo">Dê personalidade ao seu cantinho do bairro.</p>
@@ -124,12 +122,12 @@ export class Interface {
           <label for="nome-loja">Nome do mercadinho</label><input id="nome-loja" name="nome" maxlength="32" required autocomplete="off">
           <label for="slogan-loja">Slogan</label><input id="slogan-loja" name="slogan" maxlength="60" required autocomplete="off">
           <fieldset><legend>Paleta de cores</legend><div class="paletas-loja">${PALETAS.map(p => `<label class="paleta-loja"><input type="radio" name="paleta" value="${p.id}" ${p.id === this.sim.estado.personalizacao.paleta ? 'checked' : ''}><span class="paleta-cores" aria-hidden="true">${[p.principal,p.destaque,p.parede,p.piso].map(cor => `<i style="background:${cor}"></i>`).join('')}</span><span>${p.nome}</span></label>`).join('')}</div></fieldset>
-          <button type="submit" class="botao-principal">Salvar personalização</button><button type="button" class="botao-secundario" id="voltar-personalizacao">Voltar ao menu</button>
+          <button type="submit" class="botao-principal">Salvar personalização</button><button type="button" class="botao-secundario" id="voltar-personalizacao">Voltar ao gerenciamento</button>
         </form>`;
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p></div></div>
-        <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento.</p></div></li><li><span>4</span><div><b>Invista no mercadinho</b><p>Abra Melhorias para liberar produtos e contratar ajuda.</p></div></li></ol>
+        <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento.</p></div></li><li><span>4</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'pausa') {
       conteudo = `<p class="painel-subtitulo">A loja espera por você.</p><div class="resumo-pausa"><div><strong>${reais(this.sim.estado.dinheiro)}</strong><span>em caixa</span></div><div><strong>${this.sim.estado.estatisticas.clientes}</strong><span>clientes atendidos</span></div></div><button class="botao-principal" data-fechar>${icone('jogar')} Continuar jogando</button><button class="botao-secundario" id="como-jogar">${icone('ajuda')} Como jogar</button><button class="botao-secundario" id="tela-cheia">${icone('tela')} ${document.fullscreenElement ? 'Sair da tela cheia' : 'Jogar em tela cheia'}</button><button class="botao-texto" id="reiniciar">Começar um novo jogo</button><p class="nota central">O progresso fica salvo neste navegador.</p>`;
@@ -149,11 +147,17 @@ export class Interface {
       if (resultado.sucesso) this.renderizarPainel(); else this.mensagem(resultado.motivo);
       this.atualizar();
     });
+    if (tipo === 'escritorio') {
+      this.el('abrir-melhorias').onclick = () => this.abrir('melhorias');
+      this.el('abrir-personalizacao').onclick = () => this.abrir('personalizacao');
+      this.el('alternar-loja').onclick = () => {
+        const aberta = this.acoes.alternarLoja();
+        this.renderizarPainel();
+        this.mensagem(aberta ? 'Mercado aberto!' : 'Mercado fechado para novos clientes.');
+      };
+    }
+    if (tipo === 'melhorias') this.el('voltar-escritorio').onclick = () => this.abrir('escritorio');
     if (tipo === 'pausa') {
-      const personalizar = document.createElement('button'); personalizar.className = 'botao-secundario';
-      personalizar.textContent = 'Personalizar mercadinho';
-      personalizar.onclick = () => this.abrir('personalizacao');
-      this.el('como-jogar').before(personalizar);
       const somBotao = document.createElement('button'); somBotao.className = 'botao-secundario';
       somBotao.innerHTML = `${icone(this.sim.estado.som ? 'som' : 'mudo')} ${this.sim.estado.som ? 'Desativar sons' : 'Ativar sons'}`;
       somBotao.onclick = () => { this.acoes.som(); this.atualizarSom(); this.renderizarPainel(); };
@@ -193,7 +197,7 @@ export class Interface {
         const salvo = this.acoes.personalizar(Object.fromEntries(new FormData(form)));
         if (salvo) this.mensagem('Seu mercadinho ganhou uma nova identidade!');
       };
-      this.el('voltar-personalizacao').onclick = () => this.abrir('pausa');
+      this.el('voltar-personalizacao').onclick = () => this.abrir('escritorio');
     }
   }
   mensagem(texto) {

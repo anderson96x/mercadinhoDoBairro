@@ -11,11 +11,29 @@ export const PAREDES_LOJA = [
 ];
 
 export const PAREDES_ESCRITORIO = [
-  { x: 1.1, z: -4, w: 0.18, d: 4, h: 2.8 },
-  { x: -2.25, z: -2, w: 1.7, d: 0.18, h: 2.8 },
-  { x: 0.55, z: -2, w: 1.1, d: 0.18, h: 2.8 }
+  { x: 1.1, z: -4, w: 0.18, d: 4, h: 1.45 },
+  { x: -2.25, z: -2, w: 1.7, d: 0.18, h: 1.45 },
+  { x: 0.55, z: -2, w: 1.1, d: 0.18, h: 1.45 }
 ];
 export const PORTA_ESCRITORIO = { x: -0.7, z: -2, w: 1.4, d: 0.12 };
+export const POSICAO_PORTA_ESCRITORIO = { fechada: -1.4, aberta: -2.75 };
+export const ANGULOS_PORTAS_ENTRADA = {
+  fechadas: { esquerda: 0, direita: 0 },
+  abertas: { esquerda: -Math.PI / 2, direita: Math.PI / 2 }
+};
+
+export function posicaoPortaEscritorio(abertura) {
+  const t = THREE.MathUtils.smoothstep(abertura, 0, 1);
+  return THREE.MathUtils.lerp(POSICAO_PORTA_ESCRITORIO.fechada, POSICAO_PORTA_ESCRITORIO.aberta, t);
+}
+
+export function angulosPortasEntrada(abertura) {
+  const t = THREE.MathUtils.smoothstep(abertura, 0, 1);
+  return {
+    esquerda: THREE.MathUtils.lerp(ANGULOS_PORTAS_ENTRADA.fechadas.esquerda, ANGULOS_PORTAS_ENTRADA.abertas.esquerda, t),
+    direita: THREE.MathUtils.lerp(ANGULOS_PORTAS_ENTRADA.fechadas.direita, ANGULOS_PORTAS_ENTRADA.abertas.direita, t)
+  };
+}
 
 export const MOBILIARIO_LOJA = [
   { x: -0.8, z: -4.6, w: 2.7, d: 0.85 },
@@ -64,25 +82,20 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   for (const z of [-0.8, 2.2]) bloco(0.34, 2.9, 0.14, 0x286750, -3.1, 1.68, z, 'principal');
   bloco(0.34, 0.22, 3.15, 0x286750, -3.1, 3.02, 0.7, 'principal');
   for (let x = -5; x < -3.3; x += 0.55) chao(3, 0.43, 0.06, 1.6, 0xd6c7ac, x, 0.16, 0.7);
-  const acesso = placa('HORTA · EQUIPE', '#286750', '#fff5df', 1.8, 0.32);
-  acesso.rotation.y = Math.PI / 2; acesso.position.set(-2.89, 2.83, 0.7); grupo.add(acesso);
-  // Escritório no canto esquerdo, separado do salão por uma divisória baixa.
+  // Escritório no canto esquerdo, com paredes e porta à meia altura para manter o interior visível.
   chao(6, 3.85, 0.012, 3.8, 0xd5c2d5, -1, 0.241, -3.95);
-  for (const x of [-1.4, 0]) bloco(0.09, 2.5, 0.23, 0x286750, x, 1.48, -2, 'principal');
-  bloco(1.5, 0.35, 0.2, 0xf1ead7, -0.7, 2.86, -2, 'parede');
-  bloco(1.5, 0.12, 0.23, 0x286750, -0.7, 2.67, -2, 'principal');
-  const porta = new THREE.Group(); porta.position.set(-1.4, 0.23, -2); grupo.add(porta); destino = porta;
-  bloco(1.32, 2.37, 0.09, 0x286750, 0.7, 1.2, 0, 'principal');
-  bloco(1.1, 0.98, 0.015, 0xa8c7c9, 0.7, 1.57, 0.053);
-  bloco(1.1, 0.98, 0.015, 0xa8c7c9, 0.7, 1.57, -0.053);
-  for (const z of [-0.1, 0.1]) bloco(0.18, 0.045, 0.08, 0xe7b65a, 1.14, 1.05, z, 'destaque');
+  for (const x of [-1.4, 0]) bloco(0.09, 1.25, 0.23, 0x286750, x, 0.855, -2, 'principal');
+  const porta = new THREE.Group(); porta.position.set(POSICAO_PORTA_ESCRITORIO.fechada, 0.23, -2); grupo.add(porta); destino = porta;
+  bloco(1.32, 1.22, 0.09, 0x286750, 0.7, 0.61, 0, 'principal');
+  bloco(1.1, 0.72, 0.015, 0xa8c7c9, 0.7, 0.72, 0.053);
+  bloco(1.1, 0.72, 0.015, 0xa8c7c9, 0.7, 0.72, -0.053);
+  for (const z of [-0.1, 0.1]) bloco(0.18, 0.045, 0.08, 0xe7b65a, 1.14, 0.55, z, 'destaque');
   destino = grupo;
-  const nomeEscritorio = placa('ESCRIT?RIO', '#286750', '#fff5df', 1.15, 0.19);
-  nomeEscritorio.position.set(-0.7, 2.87, -1.885); grupo.add(nomeEscritorio);
   bloco(2.7, 0.14, 0.85, 0xbc8752, -0.8, 1.02, -4.6);
   for (const x of [-1.9, 0.3]) bloco(0.35, 0.72, 0.65, 0xa87244, x, 0.6, -4.6);
-  bloco(0.68, 0.5, 0.07, 0x414846, -0.7, 1.4, -4.72);
-  bloco(0.57, 0.37, 0.015, 0x94b7b5, -0.7, 1.42, -4.675);
+  bloco(1.02, 0.72, 0.08, 0x414846, -0.7, 1.48, -4.72);
+  const telaComputador = bloco(0.88, 0.57, 0.015, 0x94b7b5, -0.7, 1.5, -4.675);
+  telaComputador.material = telaComputador.material.clone();
   bloco(0.1, 0.2, 0.12, 0x414846, -0.7, 1.16, -4.72);
   bloco(0.6, 0.035, 0.2, 0x606b67, -0.7, 1.11, -4.34);
   bloco(0.55, 0.12, 0.55, 0x779c96, -0.9, 0.63, -3.5);
@@ -103,12 +116,27 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
     cilindro(grupo, 0.15, 0.11, 0.25, 0xbb8356, x, z === -4.6 ? 1.22 : 0.36, z);
     esfera(grupo, 0.25, 0x72965a, x, z === -4.6 ? 1.5 : 0.65, z, 0.8, 1.3, 0.8);
   }
-  // Vitrine e portas de correr recolhidas nas laterais do vão.
+  // Vitrine e portas duplas que abrem quando um cliente atravessa o vão.
   const entrada = new THREE.Group(); entrada.position.x = -8.82; grupo.add(entrada); destino = entrada;
   for (const x of [6, 9.05]) {
     bloco(0.12, 2.6, 0.18, 0x286750, x, 1.53, 6.7, 'principal');
     bloco(0.45, 2.2, 0.055, 0xb5d6d9, x + (x === 6 ? 0.28 : -0.28), 1.43, 6.72);
     bloco(0.03, 0.7, 0.06, 0xf5eddc, x + (x === 6 ? 0.48 : -0.48), 1.4, 6.77);
+  }
+  const criarPortaEntrada = (x, direcao) => {
+    const folha = new THREE.Group(); folha.position.set(x, 0, 6.71); entrada.add(folha); destino = folha;
+    const centro = direcao * 0.715;
+    bloco(1.38, 2.3, 0.035, 0xa8c7c9, centro, 1.43, 0);
+    for (const borda of [0, direcao * 1.43]) bloco(0.07, 2.4, 0.08, 0x286750, borda, 1.43, 0, 'principal');
+    for (const y of [0.25, 2.61]) bloco(1.45, 0.08, 0.08, 0x286750, centro, y, 0, 'principal');
+    destino = entrada; return folha;
+  };
+  const portaEntradaEsquerda = criarPortaEntrada(6.08, 1);
+  const portaEntradaDireita = criarPortaEntrada(8.97, -1);
+  const placaAberto = placa('ABERTO', '#286750', '#fff5df', 0.9, 0.28);
+  const placaFechado = placa('FECHADO', '#934856', '#fff5df', 0.9, 0.28);
+  for (const sinal of [placaAberto, placaFechado]) {
+    sinal.position.set(-0.715, 1.55, 0.06); portaEntradaDireita.add(sinal);
   }
   bloco(3.22, 0.2, 0.3, 0x286750, 7.52, 2.9, 6.7, 'principal');
   bloco(3.35, 0.68, 0.22, 0x286750, 7.52, 3.42, 6.7, 'principal');
@@ -141,26 +169,29 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
     bloco(0.35, 0.3, 0.35, 0xffe1a0, x, 3, 8.4);
     bloco(0.45, 0.09, 0.45, 0x45544e, x, 3.2, 8.4);
   }
-  const letreiros = new THREE.Group(); grupo.add(letreiros);
   let anterior;
   return {
     animarPorta(abertura) {
-      const t = THREE.MathUtils.smoothstep(abertura, 0, 1);
-      porta.rotation.y = t * Math.PI / 2;
+      porta.position.x = posicaoPortaEscritorio(abertura);
+    },
+    animarEntrada(abertura, lojaAberta) {
+      const angulos = angulosPortasEntrada(abertura);
+      portaEntradaEsquerda.rotation.y = angulos.esquerda;
+      portaEntradaDireita.rotation.y = angulos.direita;
+      placaAberto.visible = lojaAberta;
+      placaFechado.visible = !lojaAberta;
+    },
+    animarComputador(ativo, tempo) {
+      telaComputador.material.emissive.set(ativo ? 0x5c9d91 : 0x000000);
+      telaComputador.material.emissiveIntensity = ativo ? 0.45 + Math.sin(tempo * 3) * 0.08 : 0;
     },
     vincular(mesh, papel) {
       mesh.material = mesh.material.clone(); materiais.push({ material: mesh.material, papel }); anterior = undefined;
     },
     aplicar(dados) {
-      const chave = JSON.stringify(dados); if (chave === anterior) return; anterior = chave;
+      const chave = dados.paleta; if (chave === anterior) return; anterior = chave;
       const paleta = PALETAS.find(p => p.id === dados.paleta) || PALETAS[0];
       for (const { material, papel } of materiais) material.color.set(paleta[papel]);
-      letreiros.traverse(m => { if (m.isMesh) { m.geometry.dispose(); m.material.map?.dispose(); m.material.dispose(); } });
-      letreiros.clear();
-      const nome = placa(dados.nome, paleta.principal, '#fff5df', 5.5, 0.72); nome.position.set(2.8, 2.25, -5.82); letreiros.add(nome);
-      const slogan = placa(dados.slogan, paleta.parede, paleta.principal, 5.5, 0.38); slogan.position.set(2.8, 1.61, -5.82); letreiros.add(slogan);
-      const fachada = placa(dados.nome, paleta.principal, '#fff5df', 3.15, 0.4); fachada.position.set(-1.3, 3.55, 6.83); letreiros.add(fachada);
-      const lema = placa(dados.slogan, paleta.principal, '#fff5df', 3.15, 0.2); lema.position.set(-1.3, 3.22, 6.83); letreiros.add(lema);
     }
   };
 }

@@ -47,6 +47,10 @@ function reiniciar() {
 }
 const ui = new Interface(sim, {
   pausar, comprar, alterarSaldo,
+  alternarLoja: () => {
+    sim.estado.lojaAberta = !sim.estado.lojaAberta;
+    gravar(); return sim.estado.lojaAberta;
+  },
   personalizar: dados => {
     sim.estado.personalizacao = validarPersonalizacao(dados);
     const salvo = gravar(); ui.atualizar();
@@ -72,6 +76,7 @@ try {
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
         if (evento.tipo === 'melhoria') ui.mensagem(`${evento.texto} · melhoria adquirida!`);
         if (evento.tipo === 'missao') ui.mensagem(evento.texto);
+        if (evento.tipo === 'escritorio') ui.abrir('escritorio');
       }
       if (agora >= proximaUI) { ui.atualizar(); proximaUI = agora + 100; }
     } else acumulado = 0;

@@ -18,6 +18,7 @@ function pertoEstacao(ator, centro, largura, profundidade) {
 export function estadoInicial() {
   return {
     versao: CONFIG.versaoSalvamento, dinheiro: CONFIG.dinheiroInicial,
+    lojaAberta: true,
     jogador: { ...CONFIG.inicio, inventario: [] },
     personalizacao: { ...PERSONALIZACAO_PADRAO },
     melhorias: Object.fromEntries(MELHORIAS.map(m => [m.id, 0])),
@@ -36,6 +37,7 @@ export function validarEstado(dados) {
   if (!dados || dados.versao !== CONFIG.versaoSalvamento) return base;
   const numero = (v, max = 1e9) => Number.isFinite(v) ? limitar(Math.floor(v), 0, max) : 0;
   base.dinheiro = numero(dados.dinheiro);
+  base.lojaAberta = dados.lojaAberta !== false;
   base.personalizacao = validarPersonalizacao(dados.personalizacao);
   for (const m of MELHORIAS) base.melhorias[m.id] = numero(dados.melhorias?.[m.id], m.max);
   for (const [id, p] of Object.entries(PRODUTOS)) {
@@ -208,8 +210,16 @@ export class Simulacao {
     const a = CONFIG.anguloCamera;
     this.mover(this.estado.jogador, entrada.x * Math.cos(a) + entrada.y * Math.sin(a), -entrada.x * Math.sin(a) + entrada.y * Math.cos(a), dt, this.velocidade);
     const jogador = this.estado.jogador;
-    jogador.sentado = !this.estado.melhorias.caixa && !jogador.andando && distancia(jogador, CONFIG.cadeiraCaixa) < 0.65;
-    if (jogador.sentado) {
+    const estavaNoEscritorio = !!jogador.sentadoEscritorio;
+    jogador.sentadoEscritorio = !jogador.andando && distancia(jogador, CONFIG.cadeiraEscritorio) < 0.65;
+    jogador.sentadoCaixa = !jogador.sentadoEscritorio && !this.estado.melhorias.caixa && !jogador.andando && distancia(jogador, CONFIG.cadeiraCaixa) < 0.65;
+    jogador.sentado = jogador.sentadoEscritorio || jogador.sentadoCaixa;
+    if (jogador.sentadoEscritorio) {
+      jogador.x = CONFIG.cadeiraEscritorio.x; jogador.z = CONFIG.cadeiraEscritorio.z;
+      jogador.angulo = CONFIG.anguloEscritorio;
+      this.atividade = 'Usando o computador…';
+      if (!estavaNoEscritorio) this.emitir('escritorio');
+    } else if (jogador.sentadoCaixa) {
       jogador.x = CONFIG.cadeiraCaixa.x; jogador.z = CONFIG.cadeiraCaixa.z;
       jogador.angulo = CONFIG.anguloCaixa;
     }
@@ -228,8 +238,8 @@ export class Simulacao {
     if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: 'Objetivo concluído!' }); this.missaoAnterior = missao.indice; }
   }
   interagir() {
-    this.atividade = '';
     const jogador = this.estado.jogador;
+    this.atividade = jogador.sentadoEscritorio ? 'Usando o computador…' : '';
     for (const [id, p] of Object.entries(PRODUTOS)) {
       const e = this.estado.produtos[id];
       if (!e.liberado) continue;
@@ -286,12 +296,22 @@ export class Simulacao {
     this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: 2 + this.proximaId % 2, fase: 'chegando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, temCesta: false, levaSacolas: false });
     return true;
   }
+  portaEntradaDeveAbrir() {
+    return this.clientes.some(c => {
+      if (c.recusado || !['chegando', 'saindo'].includes(c.fase)) return false;
+      if (c.fase === 'chegando' && !this.estado.lojaAberta) return false;
+      return distancia(c, CONFIG.portaEntrada) < 2.35;
+    });
+  }
   atualizarClientes(dt) {
     this.proximoCliente -= dt;
     if (this.proximoCliente <= 0 && this.clientes.length < CONFIG.maxClientes && this.criarCliente()) this.proximoCliente = CONFIG.intervaloClientes;
     const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));
     for (const c of this.clientes) {
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
+      if (!this.estado.lojaAberta && c.fase === 'chegando' && c.etapa > 0 && c.z >= 6.7) {
+        c.fase = 'saindo'; c.etapa = 1; c.temCesta = false; c.ladoSaida = c.ladoEntrada; c.recusado = true;
+      }
       if (c.fase === 'chegando') {
         if (c.etapa === 0) {
           if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;
@@ -327,7 +347,7 @@ export class Simulacao {
   }
   atualizarCaixa(dt) {
     const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
-    const jogadorNoCaixa = this.estado.jogador.sentado
+    const jogadorNoCaixa = this.estado.jogador.sentadoCaixa
       && distancia(this.estado.jogador, CONFIG.cadeiraCaixa) < 0.01;
     const atendendo = this.estado.melhorias.caixa || jogadorNoCaixa;
     if (primeiro?.fase === 'fila' && atendendo && distancia(primeiro, CONFIG.clienteCaixa) < 0.2) {
@@ -370,6 +390,7 @@ export class Simulacao {
   }
   resumo() {
     return { dinheiro: this.estado.dinheiro, capacidade: this.capacidade, nivel: this.nivel,
+      lojaAberta: this.estado.lojaAberta,
       inventario: [...this.estado.jogador.inventario], melhorias: { ...this.estado.melhorias },
       produtos: structuredClone(this.estado.produtos), clientesAtendidos: this.estado.estatisticas.clientes,
       objetivo: this.missao().titulo, pausado: this.pausado };

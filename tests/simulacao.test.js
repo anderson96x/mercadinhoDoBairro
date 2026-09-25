@@ -13,6 +13,45 @@ test('o nivel aumenta a cada 100 clientes atendidos', () => {
   }
 });
 
+test('jogador senta no escritorio e aciona o computador uma vez por visita', () => {
+  const sim = new Simulacao();
+  aproximar(sim, CONFIG.cadeiraEscritorio);
+  sim.atualizar(0.05);
+  assert.equal(sim.estado.jogador.sentado, true);
+  assert.equal(sim.estado.jogador.sentadoEscritorio, true);
+  assert.equal(sim.estado.jogador.sentadoCaixa, false);
+  assert.equal(sim.estado.jogador.angulo, CONFIG.anguloEscritorio);
+  assert.equal(sim.consumirEventos().filter(e => e.tipo === 'escritorio').length, 1);
+  sim.atualizar(0.05);
+  assert.equal(sim.consumirEventos().filter(e => e.tipo === 'escritorio').length, 0);
+  sim.atualizar(0.05, { x: 1, y: 0 });
+  assert.equal(sim.estado.jogador.sentadoEscritorio, false);
+});
+
+test('mercado fechado mantém clientes internos e manda os externos embora', () => {
+  const sim = new Simulacao(); sim.estado.lojaAberta = false; sim.proximoCliente = Infinity;
+  sim.estado.produtos.tomate.prateleira = 1;
+  const externo = { id: 1, ...CONFIG.entrada, produto: 'tomate', quantidade: 0, desejado: 1, fase: 'chegando', etapa: 1, ladoEntrada: 0, ladoSaida: 1, pontoCompra: 0, andando: false };
+  const interno = { id: 2, ...PRODUTOS.tomate.cliente, produto: 'tomate', quantidade: 0, desejado: 1, fase: 'comprando', etapa: 1, espera: 0, ladoEntrada: 1, ladoSaida: 0, pontoCompra: 0, andando: false };
+  sim.clientes.push(externo, interno);
+  sim.atualizarClientes(0.66);
+  assert.equal(externo.fase, 'saindo');
+  assert.equal(externo.ladoSaida, externo.ladoEntrada);
+  assert.equal(externo.temCesta, false);
+  assert.equal(interno.quantidade, 1);
+  assert.equal(interno.fase, 'indoCaixa');
+});
+
+test('cliente criado com o mercado fechado dá meia-volta', () => {
+  const sim = new Simulacao(); sim.estado.lojaAberta = false; sim.proximoCliente = 0;
+  let virou = false;
+  for (let i = 0; i < 600 && !virou; i++) {
+    sim.atualizarClientes(1 / 60);
+    virou = sim.clientes.some(c => c.fase === 'saindo' && c.ladoSaida === c.ladoEntrada);
+  }
+  assert.equal(virou, true);
+});
+
 function avancar(sim, segundos, entrada) {
   for (let i = 0; i < segundos * 60; i++) sim.atualizar(1 / 60, entrada);
 }

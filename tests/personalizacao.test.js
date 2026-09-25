@@ -10,6 +10,13 @@ test('jogos antigos recebem identidade padrão sem perder progresso', () => {
   assert.equal(carregado.dinheiro, 456);
 });
 
+test('estado aberto ou fechado do mercado é preservado', () => {
+  const estado = estadoInicial(); estado.lojaAberta = false;
+  assert.equal(validarEstado(JSON.parse(JSON.stringify(estado))).lojaAberta, false);
+  delete estado.lojaAberta;
+  assert.equal(validarEstado(JSON.parse(JSON.stringify(estado))).lojaAberta, true);
+});
+
 test('nome, slogan e as oito paletas sobrevivem ao salvamento', () => {
   assert.equal(PALETAS.length, 8);
   assert.equal(new Set(PALETAS.map(p => p.id)).size, 8);

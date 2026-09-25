@@ -32,6 +32,20 @@ test('jogador sem produtos mantém os braços livres ao andar', () => {
   assert.ok(bracoE.userData.mao.position.z * bracoD.userData.mao.position.z <= 0);
 });
 
+test('jogador sentado no escritorio digita no computador', () => {
+  const modelo = personagem(0xffffff, 0xf2c49c, true);
+  const ator = { x: 0, z: 0, andando: false, sentado: true, sentadoEscritorio: true };
+  Cena.prototype.animarPersonagem(modelo, ator, 1 / 60, 0, []);
+  Cena.prototype.animarComputador(modelo, 0, true);
+  const maoE = modelo.userData.bracoE.userData.mao.position.clone();
+  const maoD = modelo.userData.bracoD.userData.mao.position.clone();
+  assert.ok(maoE.z > 0.7 && maoD.z > 0.7);
+  assert.ok(modelo.userData.corpo.rotation.x < 0);
+  Cena.prototype.animarComputador(modelo, Math.PI / 24, true);
+  assert.ok(!maoE.equals(modelo.userData.bracoE.userData.mao.position)
+    || !maoD.equals(modelo.userData.bracoD.userData.mao.position));
+});
+
 test('ajudante usa caixa de madeira apenas quando carrega produtos da horta', () => {
   const modelo = personagem(0xffffff, 0xf2c49c, false, [], null, 'ajudante');
   const ajudante = { x: 0, z: 0, andando: false, destino: 'horta', inventario: [] };

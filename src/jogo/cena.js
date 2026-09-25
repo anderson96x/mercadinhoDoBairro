@@ -381,6 +381,7 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
 export class Cena {
   constructor(container, simulacao) {
     this.sim = simulacao; this.container = container;
+    this.tempoVisual = 0;
     this.cena = new THREE.Scene(); this.cena.background = new THREE.Color(0xa9cb76);
     this.camera = new THREE.OrthographicCamera(-18, 18, 12, -12, 0.1, 100);
     const superficie = document.createElement('canvas');
@@ -402,6 +403,7 @@ export class Cena {
     this.cena.add(sol);
     this.alvoCamera = new THREE.Vector3(-0.5, 0, 0.8);
     this.construirMundo();
+    this.aberturaLojaVisual = 0;
     this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, 0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
     this.jogador = personagem(0xf8ecd1, 0xe9b489, true); this.cena.add(this.jogador);
@@ -519,8 +521,6 @@ export class Cena {
       caixa(bloqueio, 2.55, 0.035, 0.055, 0xd3e5a3, h.x, 0.09, h.z + d * 1.8);
       caixa(bloqueio, 0.055, 0.035, 3.65, 0xd3e5a3, h.x + d * 1.26, 0.09, h.z);
     }
-    const placaFutura = placa('EM BREVE', '#639653', '#eaf2cc', 1.9, 0.45); placaFutura.position.set(h.x, 0.85, h.z); bloqueio.add(placaFutura);
-    caixa(bloqueio, 0.1, 0.65, 0.1, 0x8f754a, h.x, 0.36, h.z);
     this.produtos[id] = { grupo, bloqueio, frutos, frutas };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
@@ -591,7 +591,8 @@ export class Cena {
     const delta = Math.atan2(Math.sin(alvo - modelo.rotation.y), Math.cos(alvo - modelo.rotation.y));
     modelo.rotation.y += delta * Math.min(1, dt * 12);
     const balanco = ator.andando ? Math.sin(tempo * 13) : 0;
-    d.sentar = THREE.MathUtils.clamp(d.sentar + (ator.sentado ? 1 : -1) * dt * 3, 0, 1);
+    const dtPose = ator.sentadoEscritorio && dt === 0 ? 1 / 60 : dt;
+    d.sentar = THREE.MathUtils.clamp(d.sentar + (ator.sentado ? 1 : -1) * dtPose * 3, 0, 1);
     const sentado = d.sentar * d.sentar * (3 - 2 * d.sentar);
     d.corpo.position.y = (ator.andando ? Math.abs(balanco) * 0.05 : Math.sin(tempo * 2) * 0.012) * (1 - sentado) + 0.08 * sentado;
     d.pernaE.rotation.x = balanco * 0.55 * (1 - sentado); d.pernaD.rotation.x = -balanco * 0.55 * (1 - sentado);
@@ -670,6 +671,15 @@ export class Cena {
     posicionarBraco(d.bracoE, maoE);
     posicionarBraco(d.bracoD, mao);
   }
+  animarComputador(modelo, tempo, ativo) {
+    const d = modelo.userData;
+    d.corpo.rotation.x = ativo ? -0.06 : 0;
+    if (!ativo) return;
+    const teclaE = Math.max(0, Math.sin(tempo * 12)) * 0.055;
+    const teclaD = Math.max(0, Math.sin(tempo * 12 + Math.PI)) * 0.055;
+    posicionarBraco(d.bracoE, new THREE.Vector3(-0.25, 0.69 - teclaE, 0.76 + teclaE));
+    posicionarBraco(d.bracoD, new THREE.Vector3(0.25, 0.69 - teclaD, 0.76 + teclaD));
+  }
   animarAtendimento(modelo, tempo, ativo, progresso = 0) {
     if (!ativo) return;
     const fase = tempo * 8;
@@ -712,9 +722,19 @@ export class Cena {
     return { cliente, progresso };
   }
   atualizar(dt) {
-    const sim = this.sim, e = sim.estado, tempo = sim.tempo;
+    const sim = this.sim, e = sim.estado;
+    const dtVisual = dt || (e.jogador.sentadoEscritorio ? 1 / 60 : 0);
+    this.tempoVisual += dtVisual;
+    const tempo = this.tempoVisual;
     this.bairro.aplicar(e.personalizacao);
     this.bairro.animarPorta(sim.aberturaPortaEscritorio);
+    const aberturaAlvo = sim.portaEntradaDeveAbrir() ? 1 : 0;
+    this.aberturaLojaVisual = THREE.MathUtils.clamp(
+      this.aberturaLojaVisual + Math.sign(aberturaAlvo - this.aberturaLojaVisual) * dtVisual * 1.8,
+      Math.min(this.aberturaLojaVisual, aberturaAlvo), Math.max(this.aberturaLojaVisual, aberturaAlvo)
+    );
+    this.bairro.animarEntrada(this.aberturaLojaVisual, e.lojaAberta);
+    this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
     const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(-0.7, 0, 0.5);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
@@ -722,6 +742,7 @@ export class Cena {
     const atendendoNoCaixa = sim.progressoCaixa > 0;
     const progressoCaixa = sim.progressoCaixa / CONFIG.tempoCaixa;
     this.animarAtendimento(this.jogador, tempo, atendendoNoCaixa && !e.melhorias.caixa && e.jogador.sentado, progressoCaixa);
+    this.animarComputador(this.jogador, tempo, !!e.jogador.sentadoEscritorio);
     const embalagem = this.atualizarEmbalagem(sim);
     const paletaAtual = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
     aplicarPaletaFuncionario(this.jogador, paletaAtual);

@@ -18,9 +18,12 @@ export const CONFIG = {
   balcao: { x: 1.5, z: 4.1 },
   clienteCaixa: { x: 1.5, z: 2.5 },
   cadeiraCaixa: { x: 1.5, z: 5.7 },
+  cadeiraEscritorio: { x: -0.9, z: -3.5 },
   areaFuncionarioCaixa: { x: 1.5, z: 5.7, w: 0.8, d: 1.9 },
   anguloCaixa: Math.PI,
+  anguloEscritorio: Math.PI,
   entrada: { x: -1.3, z: 8.4 },
+  portaEntrada: { x: -1.3, z: 6.7 },
   extremosCalcada: [{ x: -10.3, z: 8.4 }, { x: 10.3, z: 8.4 }],
   anguloCamera: Math.PI / 4,
   cameraIsometrica: { x: 18, y: 18, z: 18 }
