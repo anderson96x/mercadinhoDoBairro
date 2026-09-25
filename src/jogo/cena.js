@@ -276,7 +276,7 @@ function cabeloCliente(corpo, visual) {
   }
 }
 
-function detalhesCliente(corpo, visual) {
+function detalhesCliente(corpo, visual, frenteRosto = 0.255) {
   const tecido = visual.corRoupa;
   const detalhe = 0xf7e9d0;
   const largura = visual.porte === 'corpulento' ? 1.55 : 1;
@@ -299,11 +299,11 @@ function detalhesCliente(corpo, visual) {
   if (visual.oculos) {
     const armacao = visual.oculos === 'sol' ? 0x242a30 : 0xc7ae79;
     for (const lado of [-1, 1]) {
-      const aro = objeto(new THREE.TorusGeometry(0.069, 0.012, 5, 12), armacao, lado * 0.095, 1.19, 0.268);
+      const aro = objeto(new THREE.TorusGeometry(0.069, 0.012, 5, 12), armacao, lado * 0.095, 1.19, frenteRosto + 0.013);
       corpo.add(aro);
-      if (visual.oculos === 'sol') esfera(corpo, 0.062, 0x3d4c52, lado * 0.095, 1.19, 0.267, 1, 0.7, 0.12);
+      if (visual.oculos === 'sol') esfera(corpo, 0.062, 0x3d4c52, lado * 0.095, 1.19, frenteRosto + 0.012, 1, 0.7, 0.12);
     }
-    caixa(corpo, 0.055, 0.016, 0.02, armacao, 0, 1.2, 0.267);
+    caixa(corpo, 0.055, 0.016, 0.02, armacao, 0, 1.2, frenteRosto + 0.012);
   }
   if (visual.acessorio === 'brincos') {
     for (const lado of [-1, 1]) esfera(corpo, 0.04, 0xe9bd69, lado * 0.275, 1.05, 0.01);
@@ -354,8 +354,17 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
     chapeu.push(cilindro(corpo, 0.22, 0.26, 0.2, cor, 0, 1.48, -0.01));
     chapeu.push(caixa(corpo, 0.52, 0.045, 0.34, cor, 0, 1.4, 0.08));
   }
-  esfera(corpo, 0.025, 0x3e352c, -0.09, 1.17, 0.235);
-  esfera(corpo, 0.025, 0x3e352c, 0.09, 1.17, 0.235);
+  const frenteRosto = corpulento ? 0.3 : 0.255;
+  esfera(corpo, 0.025, 0x3e352c, -0.09, 1.17, frenteRosto);
+  esfera(corpo, 0.025, 0x3e352c, 0.09, 1.17, frenteRosto);
+  if (visual?.barba) {
+    const corBarba = visual.corCabelo;
+    const cheia = visual.barba === 'cheia';
+    if (visual.barba !== 'cavanhaque') {
+      esfera(corpo, cheia ? 0.19 : 0.16, corBarba, 0, 1.055, frenteRosto - 0.002, 1.35, cheia ? 0.58 : 0.38, 0.13);
+    }
+    esfera(corpo, visual.barba === 'cavanhaque' ? 0.085 : 0.07, corBarba, 0, 1.005, frenteRosto + 0.008, 0.72, 1, 0.14);
+  }
   if (visual?.idoso) {
     const corLinha = new THREE.Color(pele).multiplyScalar(0.7).getHex();
     for (const lado of [-1, 1]) {
@@ -363,7 +372,7 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
       caixa(corpo, 0.045, 0.008, 0.012, corLinha, lado * 0.215, 1.13, 0.15);
     }
   }
-  if (visual) detalhesCliente(corpo, visual);
+  if (visual) detalhesCliente(corpo, visual, frenteRosto);
   const cesta = jogador ? new THREE.Group() : criarCesta(...coresCesta);
   cesta.position.set(0, jogador ? 0.42 : corpulento ? 0.2 : 0.26, jogador ? 0.5 : corpulento ? 0.72 : 0.58); corpo.add(cesta);
   cesta.userData.pega ??= new THREE.Vector3(0, 0.89, 0);

@@ -88,6 +88,10 @@ test('clientes usam 144 aparências distintas em ordem aleatória sem repetiçã
   assert.equal(new Set(APARENCIAS_CLIENTES.map(a => a.roupa)).size, 4);
   assert.ok(APARENCIAS_CLIENTES.some(a => a.oculos === 'grau'));
   assert.ok(APARENCIAS_CLIENTES.some(a => a.oculos === 'sol'));
+  const homens = APARENCIAS_CLIENTES.filter(a => a.genero === 'homem');
+  assert.ok(homens.some(a => a.barba));
+  assert.ok(homens.some(a => !a.barba));
+  assert.equal(APARENCIAS_CLIENTES.some(a => a.genero === 'mulher' && a.barba), false);
 
   const sim = new Simulacao(), sorteadas = [];
   for (let i = 0; i < 144; i++) {
@@ -171,6 +175,10 @@ test('poucos clientes têm porte corpulento, distribuído entre gêneros e tons 
   assert.ok(modeloGrande.userData.barriga);
   assert.equal(modeloRegular.userData.barriga, null);
   assert.ok(modeloGrande.userData.cesta.position.z > modeloRegular.userData.cesta.position.z);
+  const olhosGrandes = modeloGrande.userData.corpo.children.filter(m => m.isMesh
+    && m.material.color.getHex() === 0x3e352c && Math.abs(m.position.y - 1.17) < 0.001);
+  assert.equal(olhosGrandes.length, 2);
+  assert.ok(olhosGrandes.every(olho => olho.position.z >= 0.3));
   Cena.prototype.animarPersonagem(modeloGrande, { x: 0, z: 0, andando: true }, 1 / 60, 1, []);
   assert.ok(Number.isFinite(modeloGrande.userData.pernaE.rotation.x));
 });

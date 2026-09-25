@@ -44,6 +44,9 @@ export const APARENCIAS_CLIENTES = Object.freeze(Object.entries(estilos).flatMap
         porte: (grupo + tom * 3 + penteado * 2 + estilo) % 8 === 0 ? 'corpulento' : 'regular',
         corRoupa: coresRoupa[(grupo + tom * 3 + penteado + estilo * 2) % coresRoupa.length],
         corCabelo: coresCabelo[tomCabelo],
+        barba: genero === 'homem' && (tom + penteado * 2 + estilo) % 3 === 0
+          ? ['curta', 'cheia', 'cavanhaque'][(tom + penteado + estilo) % 3]
+          : null,
         idoso: tomCabelo === 'grisalho',
         corCalca: coresCalca[(tom + penteado + estilo) % coresCalca.length],
         corSapato: (tom + estilo) % 3 === 0 ? 0x292e35 : 0xf4eadc,
