@@ -20,25 +20,25 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 
 ## P1 — Build one complete expansion before the full campaign
 
-- [x] Lock new helper hires until the eggs product is unlocked. Keep helpers already purchased in older saves. Helper speed requires the helper.
-- [ ] Implement eggs so players can satisfy the helper prerequisite; the helper remains unavailable in new games until then.
-- [ ] Implement a staged store footprint shared by the scene, collision map, pathfinding, camera bounds, and save data.
+- [x] Set the helper's minimum level to the planned egg level (5). New helper hires also require eggs to be unlocked; keep helpers already purchased in older saves. Helper speed requires the helper.
+- [x] Implement eggs at level 5 through the new production wing so players can satisfy the helper prerequisite.
+- [x] Implement a staged store footprint shared by the scene, collision map, pathfinding, camera bounds, and save data.
   - A stage defines its prerequisite, price, active floor, walls, stations, paths, and unlocked products.
   - Done when buying an expansion changes the physical map and existing actors remain in reachable positions.
-- [ ] Make the next wing visible as a construction site. On purchase, reveal floor space, equipment, signs, and a useful shorter path or new service area.
-- [ ] Add one new production chain, starting with a single input and output, such as corn → feed → eggs.
+- [x] Make the next wing visible as a construction site. On purchase, reveal floor space, equipment, signs, and a useful shorter path or new service area.
+- [x] Add one new production chain, starting with a single input and output, such as corn → feed → eggs.
   - Done when the player can learn the chain, sell its output, and see why the new department matters.
-- [ ] Pair the first stocking helper with that new department so hiring staff creates a new player task instead of ending active play.
-- [ ] Introduce the new product gradually in customer orders; do not demand it from every customer before the player can stock it.
-- [ ] Add save migration for stages, recipes, and staff state. Existing saves must retain money, customers served, purchases, and unlocked products.
-- [ ] Test the complete expansion on desktop and portrait mobile: construction reveal, reachability, customer and helper routes, performance, and reload.
+- [x] Pair the first stocking helper with that new department so hiring staff creates a new player task instead of ending active play.
+- [x] Introduce the new product gradually in customer orders; do not demand it from every customer before the player can stock it.
+- [x] Add save migration for stages, recipes, and staff state. Existing saves must retain money, customers served, purchases, and unlocked products.
+- [ ] Test the complete expansion on desktop and portrait mobile: construction reveal, reachability, customer and helper routes, performance, and reload. Automated route, sale, stocking, and reload checks pass; headless desktop and narrow portrait browser captures were reviewed. Hands-on phone playtesting and frame-rate measurement remain.
 
 ## P2 — Extend to a 20-level first campaign
 
 | Levels | Store stage | Main addition | Elapsed target |
 | --- | --- | --- | ---: |
-| 1–3 | Compact produce stall | Learn the loop; tomatoes, corn, cashier | 5 min |
-| 4–7 | Produce wing | Stocker assignment; feed and eggs | 21 min |
+| 1–3 | Compact produce stall | Learn the loop; tomatoes and cashier | 5 min |
+| 4–7 | Produce wing | Corn at level 4; feed, eggs and helper at level 5 | 21 min |
 | 8–11 | Refrigerated wing | Milk, cheese, storage | 45 min |
 | 12–15 | Bakery frontage | Wheat, bread, worker specialization | 77 min |
 | 16–20 | Neighborhood supermarket | Loading area, mixed orders, final expansion | 129 min |

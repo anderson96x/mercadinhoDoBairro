@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import { PALETAS } from './personalizacao.js';
+import { ALA_PRODUCAO } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = [
-  { x: 3, z: -6, w: 12.4, d: 0.28, h: 2.8 },
+  { x: 0.55, z: -6, w: 7.5, d: 0.28, h: 2.8 },
+  { x: 7.8, z: -6, w: 2.6, d: 0.28, h: 2.8 },
   { x: 9.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75 },
   { x: -3.1, z: -3.4, w: 0.28, d: 5.2, h: 2.8 },
   { x: -3.1, z: 4.45, w: 0.28, d: 4.5, h: 2.8 },
@@ -73,6 +75,33 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   chao(4, 12.1, 0.07, 12.4, 0xe3dcc8, 3, 0.19, 0.35, 'piso');
   for (let x = -2.8; x < 9; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, 0.35);
   for (let z = -5.8; z < 6.6; z += 1.2) chao(5, 12, 0.008, 0.018, 0xc8bfae, 3, 0.23, z);
+  const obras = new THREE.Group(); grupo.add(obras); destino = obras;
+  const area = ALA_PRODUCAO.piso;
+  chao(3, area.w, 0.07, area.d, 0xc9bd9f, area.x, 0.04, area.z);
+  for (const x of [4.35, 6.35]) {
+    bloco(0.13, 0.95, 0.13, 0xc47a3a, x, 0.55, -5.8);
+    bloco(0.18, 0.9, 0.18, 0xe7b65a, x, 0.55, -8.4);
+  }
+  bloco(2.3, 0.4, 0.12, 0xe7b65a, 5.35, 1.3, -5.83);
+  const placaObras = placa('EM OBRAS · NÍVEL 5', '#9b6932', '#fff5db', 2.1, 0.45);
+  placaObras.position.set(5.35, 1.75, -5.74); obras.add(placaObras);
+  bloco(ALA_PRODUCAO.porta.w, 1.6, 0.2, 0xa88059, ALA_PRODUCAO.porta.x, 1.02, ALA_PRODUCAO.porta.z);
+  destino = grupo;
+  const ala = new THREE.Group(); grupo.add(ala); destino = ala;
+  chao(3, area.w, 0.2, area.d, 0xc4b9a5, area.x, 0.06, area.z);
+  chao(4, area.w - 0.18, 0.075, area.d - 0.18, 0xe3dcc8, area.x, 0.19, area.z, 'piso');
+  for (let x = 2.5; x < 9; x += 1.1) chao(5, 0.015, 0.008, area.d - 0.2, 0xc8bfae, x, 0.23, area.z);
+  for (const p of ALA_PRODUCAO.paredes) {
+    bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
+    bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
+  }
+  const moinho = ALA_PRODUCAO.moinho;
+  bloco(moinho.w, 1.15, moinho.d, 0x9b6743, moinho.x, 0.8, moinho.z);
+  cilindro(ala, 0.47, 0.55, 0.45, 0xe7b65a, moinho.x, 1.58, moinho.z);
+  bloco(0.72, 0.2, 0.42, 0xd6a063, moinho.x, 1.25, moinho.z + 0.65);
+  const placaMoinho = placa('MILHO → RAÇÃO', '#286750', '#fff5db', 1.45, 0.34);
+  placaMoinho.position.set(moinho.x, 2.05, moinho.z + 0.02); ala.add(placaMoinho);
+  destino = grupo;
   for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) {
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
@@ -171,6 +200,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera, placa }) {
   }
   let anterior;
   return {
+    atualizarEstagio(estagio) { obras.visible = !estagio; ala.visible = !!estagio; },
     animarPorta(abertura) {
       porta.position.x = posicaoPortaEscritorio(abertura);
     },

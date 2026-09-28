@@ -7,6 +7,7 @@ const caminhos = {
   irritado: '<circle cx="12" cy="12" r="9"/><path d="m8 9 2 1m6-1-2 1M8.5 17c1-3 6-3 7 0"/>',
   cesta: '<path d="m3 10 2 10h14l2-10H3Zm4 0 5-7 5 7m-9 4v3m4-3v3m4-3v3"/>',
   milho: '<path d="M12 21c-5-3-6-9-5-13 3 0 5 3 5 7 0-4 2-7 5-7 1 4 0 10-5 13ZM9 9V6a3 3 0 0 1 6 0v3m-3-4v7"/>',
+  ovos: '<path d="M12 3c-4 0-7 7-7 12a7 7 0 0 0 14 0c0-5-3-12-7-12Z"/>',
   tomate: '<path d="M12 7c-7-4-12 7-6 12 3 2 9 2 12-1 5-6 0-14-6-11Z"/><path d="m7 6 5 2 4-3m-4 3 1-5"/>',
   mochila: '<path d="M5 10a7 7 0 0 1 14 0v10H5V10ZM9 4V2h6v2M8 13h8v5H8v-5Z"/>',
   raio: '<path d="m13 2-9 12h7l-1 8 10-13h-8l1-7Z"/>',

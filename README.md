@@ -37,11 +37,11 @@ O joystick aparece onde você começa a arrastar. O movimento acompanha as dire�
 
 ## O que já funciona
 
-- Tomates, milho, crescimento dos produtos e estoques limitados.
+- Tomates e milho nas hortas; uma ala de produção com moinho, ração, galinheiro e ovos.
 - Cesta com capacidade, animação de pegar e guardar os produtos e melhorias.
 - Cesta cinza do jogador: capacidade inicial de 4 produtos e melhoria para 8.
 - Clientes com percurso até a prateleira, fila, compra e saída.
-- Dinheiro de jogo e contratação de caixa. A contratação do ajudante exige ovos, que serão adicionados em uma etapa futura.
+- Dinheiro de jogo e contratação de caixa. No nível 5, a ala dos ovos libera o ajudante para repor as prateleiras enquanto você abastece o moinho com milho.
 - Objetivos progressivos, níveis, efeitos sonoros e pausa.
 - Interface adaptada a celular em retrato e paisagem.
 - Salvamento automático neste navegador a cada 5 segundos e ao sair da página.
@@ -108,7 +108,7 @@ npm run preview
 
 Comece por [docs/COMO-ALTERAR.md](docs/COMO-ALTERAR.md). A simulação não importa Three.js nem elementos da página, o que permite testar a economia independentemente do visual.
 
-Esta é uma primeira versão: uma loja, dois produtos e cinco tipos de melhoria. Novos mapas, máquinas, receitas e personagens podem ser adicionados sobre a estrutura atual.
+Esta versão tem três produtos e duas etapas físicas da loja. A expansão no nível 5 custa R$ 500 depois de abrir o milho: entregue milho ao moinho, espere a ração alimentar as galinhas e leve os ovos à prateleira. Novos mapas, máquinas, receitas e personagens podem ser adicionados sobre a estrutura atual.
 
 ## Créditos e dependências
 

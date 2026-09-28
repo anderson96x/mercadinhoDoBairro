@@ -1,6 +1,6 @@
 import { construirBairro } from './bairro.js';
 import * as THREE from 'three';
-import { CONFIG, PRODUTOS } from './configuracao.js';
+import { CONFIG, PRODUTOS, ALA_PRODUCAO } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
@@ -50,6 +50,8 @@ export function criarProduto(id, escala = 1) {
     esfera(grupo, 0.16, 0xff3f32, 0, 0, 0, 1, 0.86, 1);
     const folha = caixa(grupo, 0.2, 0.04, 0.09, 0x2a9b40, 0, 0.14, 0); folha.rotation.y = 0.7;
     caixa(grupo, 0.04, 0.09, 0.04, 0x2a9b40, 0, 0.18, 0);
+  } else if (id === 'ovos') {
+    esfera(grupo, 0.16, 0xf8e6bf, 0, 0, 0, 0.82, 1.16, 0.82);
   } else {
     esfera(grupo, 0.14, 0xffd22e, 0, 0, 0, 0.7, 1.5, 0.7);
     const folha = esfera(grupo, 0.12, 0x38a447, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;
@@ -448,12 +450,14 @@ export class Cena {
     posicionarBraco(this.caixeiro.userData.bracoE, new THREE.Vector3(-0.34, 0.45, 0));
     posicionarBraco(this.caixeiro.userData.bracoD, new THREE.Vector3(0.34, 0.45, 0));
     this.ajudante = personagem(0xf2b349, 0xdba271, false, [0x858b91, 0xaeb4ba], null, 'ajudante'); this.cena.add(this.ajudante);
+    this.ultimoEstagioCamera = simulacao.estado.estagioLoja;
     this.redimensionar(); window.addEventListener('resize', () => this.redimensionar());
   }
   construirMundo() {
     const suporte = new THREE.Group(); suporte.position.set(CONFIG.balcao.x, 0, CONFIG.balcao.z); suporte.rotation.y = Math.PI / 2; this.cena.add(suporte);
     const c = new THREE.Group(); c.position.set(-5.5, 0, -4.1); suporte.add(c);
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera, placa });
+    this.bairro.atualizarEstagio(this.sim.estado.estagioLoja);
     this.bairro.aplicar(this.sim.estado.personalizacao);
     const suporteCestas = new THREE.Group();
     suporteCestas.position.set(CONFIG.cestas.x, 0, CONFIG.cestas.z); this.cena.add(suporteCestas);
@@ -539,17 +543,28 @@ export class Cena {
   construirEstacao(id, p) {
     const grupo = new THREE.Group(); this.cena.add(grupo);
     const h = p.horta;
-    caixa(grupo, 2.5, 0.35, 3.6, 0xbd7545, h.x, 0.22, h.z);
-    caixa(grupo, 2.23, 0.05, 3.32, 0x70401f, h.x, 0.42, h.z);
-    const alvoHorta = caixa(grupo, 2.5, 1.5, 3.6, 0xffffff, h.x, 0.9, h.z);
-    alvoHorta.material.transparent = true; alvoHorta.material.opacity = 0; alvoHorta.material.depthWrite = false;
-    alvoHorta.userData.produtoHorta = id; this.alvosHorta.push(alvoHorta);
+    if (id === 'ovos') {
+      caixa(grupo, 2.1, 0.65, 2.2, 0xb37a4c, h.x, 0.55, h.z);
+      caixa(grupo, 2.1, 0.12, 2.2, 0xe4bb75, h.x, 0.93, h.z);
+      const placaCoop = placa('GALINHEIRO', '#9b6932', '#fff5db', 1.7, 0.38);
+      placaCoop.position.set(h.x, 1.5, h.z - 0.85); grupo.add(placaCoop);
+    } else {
+      caixa(grupo, 2.5, 0.35, 3.6, 0xbd7545, h.x, 0.22, h.z);
+      caixa(grupo, 2.23, 0.05, 3.32, 0x70401f, h.x, 0.42, h.z);
+      const alvoHorta = caixa(grupo, 2.5, 1.5, 3.6, 0xffffff, h.x, 0.9, h.z);
+      alvoHorta.material.transparent = true; alvoHorta.material.opacity = 0; alvoHorta.material.depthWrite = false;
+      alvoHorta.userData.produtoHorta = id; this.alvosHorta.push(alvoHorta);
+    }
     const frutos = [];
     for (let i = 0; i < 8; i++) {
-      const x = h.x - 0.65 + i % 2 * 1.25, z = h.z - 1.18 + Math.floor(i / 2) * 0.78;
-      cilindro(grupo, 0.035, 0.035, 0.6, 0x35a84a, x, 0.72, z, 6);
-      const f1 = esfera(grupo, 0.22, 0x65c158, x - 0.12, 0.67, z, 1.5, 0.35, 0.8); f1.rotation.z = -0.25;
-      const f2 = esfera(grupo, 0.22, 0x3cad4b, x + 0.12, 0.83, z, 1.5, 0.35, 0.8); f2.rotation.z = 0.3;
+      const x = id === 'ovos' ? h.x - 0.58 + i % 2 * 1.16 : h.x - 0.65 + i % 2 * 1.25;
+      const z = id === 'ovos' ? h.z - 0.72 + Math.floor(i / 2) * 0.47 : h.z - 1.18 + Math.floor(i / 2) * 0.78;
+      if (id === 'ovos') cilindro(grupo, 0.27, 0.3, 0.09, 0xc29153, x, 1.02, z);
+      else {
+        cilindro(grupo, 0.035, 0.035, 0.6, 0x35a84a, x, 0.72, z, 6);
+        const f1 = esfera(grupo, 0.22, 0x65c158, x - 0.12, 0.67, z, 1.5, 0.35, 0.8); f1.rotation.z = -0.25;
+        const f2 = esfera(grupo, 0.22, 0x3cad4b, x + 0.12, 0.83, z, 1.5, 0.35, 0.8); f2.rotation.z = 0.3;
+      }
       const fruto = criarProduto(id, 1.6); fruto.position.set(x, 1, z); grupo.add(fruto); frutos.push(fruto);
     }
     const s = p.prateleira;
@@ -570,7 +585,7 @@ export class Cena {
       caixa(bloqueio, 0.055, 0.035, 3.65, 0xb8df65, h.x + d * 1.26, 0.09, h.z);
     }
     this.produtos[id] = { grupo, bloqueio, frutos, frutas };
-    this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
+    this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   criarLabel(id, ponto, titulo, detalhe, classe) {
@@ -584,7 +599,7 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const altura = this.mobile ? 18.8 : Math.max(25, 37 / proporcao);
+    const altura = this.mobile ? 18.8 : Math.max(this.sim.estado.estagioLoja ? ALA_PRODUCAO.camera.alturaDesktop : 25, 37 / proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.w, this.h);
@@ -838,8 +853,10 @@ export class Cena {
     );
     this.bairro.animarEntrada(this.aberturaLojaVisual, e.lojaAberta);
     this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
-    const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(-0.7, 0, 0.5);
+    if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
+    const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(e.estagioLoja ? ALA_PRODUCAO.camera.x : -0.7, 0, e.estagioLoja ? ALA_PRODUCAO.camera.z : 0.5);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
+    this.bairro.atualizarEstagio(e.estagioLoja);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
     this.animarPersonagem(this.jogador, e.jogador, dt, tempo, e.jogador.inventario);
     const atendendoNoCaixa = sim.progressoCaixa > 0;
@@ -964,7 +981,7 @@ export class Cena {
       this.animarPersonagem(this.ajudante, sim.ajudante, dt, tempo, sim.ajudante.inventario, 'horta', 0.44);
     }
     for (const [id, objetos] of Object.entries(this.produtos)) {
-      const estado = e.produtos[id]; objetos.grupo.visible = estado.liberado; objetos.bloqueio.visible = !estado.liberado;
+      const estado = e.produtos[id]; objetos.grupo.visible = estado.liberado; objetos.bloqueio.visible = id !== 'ovos' && !estado.liberado;
       objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = 1 + Math.sin(tempo * 2 + i) * 0.025; });
       const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
         .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);

@@ -98,6 +98,7 @@ try {
           ui.mensagem(`${evento.texto}: ${descricao} Próximo: ${sim.missao().titulo}.`);
         }
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
+        if (['expansao', 'racaoPronta', 'ovoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
         if (evento.tipo === 'missao') ui.mensagem(evento.texto);
         if (evento.tipo === 'escritorio') ui.abrir('escritorio');
       }
@@ -115,7 +116,7 @@ try {
     const opcoes = { signal: new AbortController().signal };
     for (const ferramenta of [
       { name: 'consultar_mercadinho', title: 'Consultar mercadinho', description: 'Consulta dinheiro, estoque, melhorias e o objetivo atual do jogo.', inputSchema: { type: 'object', properties: {}, additionalProperties: false }, annotations: { readOnlyHint: true }, execute: () => sim.resumo() },
-      { name: 'comprar_melhoria', title: 'Comprar melhoria', description: 'Gasta o dinheiro do jogo para comprar uma melhoria, como o botão Melhorias. Não envolve dinheiro real.', inputSchema: { type: 'object', properties: { id: { type: 'string', enum: ['milho','mochila','velocidade','caixa','ajudante','velocidadeAjudante','fertilizante'] } }, required: ['id'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: (entrada) => {
+      { name: 'comprar_melhoria', title: 'Comprar melhoria', description: 'Gasta o dinheiro do jogo para comprar uma melhoria, como o botão Melhorias. Não envolve dinheiro real.', inputSchema: { type: 'object', properties: { id: { type: 'string', enum: MELHORIAS.map(m => m.id) } }, required: ['id'], additionalProperties: false }, annotations: { readOnlyHint: false }, execute: (entrada) => {
         if (!entrada || typeof entrada.id !== 'string' || Object.keys(entrada).length !== 1) throw new Error('Informe apenas o identificador da melhoria.');
         const resultado = comprar(entrada.id);
         if (resultado.selecionarProduto) { if (ui.tipoPainel) ui.fechar(); ui.iniciarSelecaoHorta(); iniciarSelecaoHorta(); }

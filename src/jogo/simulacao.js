@@ -1,6 +1,6 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
-import { CONFIG, PRODUTOS, MELHORIAS, MISSOES } from './configuracao.js';
+import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO } from './configuracao.js';
 import { buscarCaminho } from './navegacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 
@@ -22,12 +22,15 @@ export function estadoInicial() {
     jogador: { ...CONFIG.inicio, inventario: [] },
     personalizacao: { ...PERSONALIZACAO_PADRAO },
     melhorias: Object.fromEntries(MELHORIAS.map(m => [m.id, 0])),
+    estagioLoja: 0,
+    producao: { milhoNoMoinho: 0, racao: 0, progressoRacao: 0, progressoOvo: 0, ovosProduzidos: 0 },
+    funcionarios: { ajudante: { x: -1.8, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false } },
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0, crescimentoMelhorado: false
     }])),
     melhoriaPendente: null,
     satisfacoesRecentes: [],
-    estatisticas: { colhidos: 0, repostos: 0, clientes: 0, faturamento: 0, satisfacao: 0, clientesFelizes: 0, clientesNeutros: 0, clientesIrritados: 0 },
+    estatisticas: { colhidos: 0, repostos: 0, clientes: 0, faturamento: 0, satisfacao: 0, clientesFelizes: 0, clientesNeutros: 0, clientesIrritados: 0, ovosVendidos: 0 },
     som: false
   };
 }
@@ -45,19 +48,28 @@ export function validarEstado(dados) {
   const nivelSalvo = 1 + Math.floor(base.estatisticas.clientes / CONFIG.clientesPorNivel);
   for (const m of MELHORIAS) {
     const liberada = m.ativa !== false && nivelSalvo >= (m.nivelMinimo || 1);
-    base.melhorias[m.id] = numero(dados.melhorias?.[m.id], liberada ? m.max : 0);
+    const compradaAntes = m.nivelMinimoLegado && nivelSalvo >= m.nivelMinimoLegado && dados.melhorias?.[m.id] > 0;
+    base.melhorias[m.id] = numero(dados.melhorias?.[m.id], liberada || compradaAntes ? m.max : 0);
+  }
+  base.estagioLoja = base.melhorias[ALA_PRODUCAO.id] ? ALA_PRODUCAO.indice : 0;
+  if (base.estagioLoja) {
+    base.producao.milhoNoMoinho = numero(dados.producao?.milhoNoMoinho, ALA_PRODUCAO.capacidadeMilho);
+    base.producao.racao = numero(dados.producao?.racao, ALA_PRODUCAO.capacidadeRacao);
+    base.producao.progressoRacao = Number.isFinite(dados.producao?.progressoRacao) ? limitar(dados.producao.progressoRacao, 0, ALA_PRODUCAO.tempoRacao) : 0;
+    base.producao.progressoOvo = Number.isFinite(dados.producao?.progressoOvo) ? limitar(dados.producao.progressoOvo, 0, ALA_PRODUCAO.tempoOvo) : 0;
+    base.producao.ovosProduzidos = numero(dados.producao?.ovosProduzidos);
   }
   for (const [id, p] of Object.entries(PRODUTOS)) {
     const salvo = dados.produtos?.[id];
-    const liberado = p.liberado || base.melhorias[id] > 0;
+    const liberado = p.liberado || base.melhorias[id] > 0 || (base.estagioLoja > 0 && ALA_PRODUCAO.produtos.includes(id));
     base.produtos[id] = {
-      liberado, horta: liberado ? numero(salvo?.horta ?? p.capacidadeHorta, p.capacidadeHorta) : 0,
+      liberado, horta: liberado ? numero(salvo?.horta ?? (p.origem === 'horta' ? p.capacidadeHorta : 0), p.capacidadeHorta) : 0,
       prateleira: liberado ? numero(salvo?.prateleira, p.capacidadePrateleira) : 0, crescimento: 0,
-      crescimentoMelhorado: nivelSalvo >= 5 && salvo?.crescimentoMelhorado === true
+      crescimentoMelhorado: p.origem === 'horta' && nivelSalvo >= 5 && salvo?.crescimentoMelhorado === true
     };
   }
   base.melhorias.fertilizante = Object.values(base.produtos).filter(p => p.crescimentoMelhorado).length;
-  if (nivelSalvo >= 5 && dados.melhoriaPendente === 'fertilizante' && base.melhorias.fertilizante < Object.keys(PRODUTOS).length) base.melhoriaPendente = 'fertilizante';
+  if (nivelSalvo >= 5 && dados.melhoriaPendente === 'fertilizante' && base.melhorias.fertilizante < MELHORIAS.find(m => m.id === 'fertilizante').max) base.melhoriaPendente = 'fertilizante';
   // Salvamentos anteriores não tinham satisfação. As vendas registradas
   // continuam alimentando o histórico de satisfação desses jogos.
   if (dados.estatisticas?.satisfacao === undefined) {
@@ -69,6 +81,23 @@ export function validarEstado(dados) {
     ? dados.satisfacoesRecentes.filter(item => satisfacoesValidas.includes(item)).slice(-CONFIG.tamanhoHistoricoReputacao) : [];
   base.jogador.inventario = Array.isArray(dados.jogador?.inventario)
     ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + 4 * base.melhorias.mochila) : [];
+  const ajudanteSalvo = dados.funcionarios?.ajudante;
+  if (base.melhorias.ajudante && ajudanteSalvo) {
+    const produto = base.produtos[ajudanteSalvo.produto]?.liberado ? ajudanteSalvo.produto : 'tomate';
+    const limites = base.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo;
+    const inicial = base.funcionarios.ajudante;
+    base.funcionarios.ajudante = {
+      ...inicial,
+      x: Number.isFinite(ajudanteSalvo.x) ? limitar(ajudanteSalvo.x, limites.minX, limites.maxX) : inicial.x,
+      z: Number.isFinite(ajudanteSalvo.z) ? limitar(ajudanteSalvo.z, limites.minZ, limites.maxZ) : inicial.z,
+      produto,
+      inventario: Array.isArray(ajudanteSalvo.inventario) ? ajudanteSalvo.inventario.filter(id => id === produto).slice(0, CONFIG.capacidadeAjudante) : [],
+      destino: ajudanteSalvo.destino === 'prateleira' ? 'prateleira' : 'horta',
+      temporizador: Number.isFinite(ajudanteSalvo.temporizador) ? limitar(ajudanteSalvo.temporizador, 0, 1) : 0,
+      angulo: Number.isFinite(ajudanteSalvo.angulo) ? limitar(ajudanteSalvo.angulo, -Math.PI, Math.PI) : 0
+    };
+    if (!base.funcionarios.ajudante.inventario.length) base.funcionarios.ajudante.destino = 'horta';
+  }
   // Retomar em um ponto livre evita que mudanças futuras no mapa prendam o jogador.
   base.som = dados.som === true;
   return base;
@@ -95,9 +124,10 @@ export class Simulacao {
     this.atividade = '';
     this.pausado = false;
     this.aleatorio = Math.random;
-    this.ajudante = { x: -1.8, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false };
+    this.ajudante = this.estado.funcionarios.ajudante;
     this.missaoAnterior = this.missao().indice;
   }
+  get limitesMundo() { return this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
   get capacidade() { return CONFIG.capacidadeInicial + this.estado.melhorias.mochila * 4; }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
   get velocidadeAjudante() { return 2.8 * (this.estado.melhorias.velocidadeAjudante ? CONFIG.multiplicadorVelocidadeAjudante : 1); }
@@ -144,7 +174,8 @@ export class Simulacao {
       return { disponivel: false, motivo: 'Tenha ovos antes de contratar o ajudante.', requisitoProduto: m.requisitoProduto };
     }
     if (m.requisitoMelhoria && !this.estado.melhorias[m.requisitoMelhoria]) {
-      return { disponivel: false, motivo: 'Contrate o ajudante antes de melhorar sua velocidade.', requisitoMelhoria: m.requisitoMelhoria };
+      const motivo = m.id === 'alaProducao' ? 'Abra a horta de milho antes de construir a ala dos ovos.' : 'Contrate o ajudante antes de melhorar sua velocidade.';
+      return { disponivel: false, motivo, requisitoMelhoria: m.requisitoMelhoria };
     }
     return { disponivel: true };
   }
@@ -155,7 +186,7 @@ export class Simulacao {
     if (!disponibilidade.disponivel) return { sucesso: false, motivo: disponibilidade.motivo };
     if (this.estado.melhorias[id] >= m.max) return { sucesso: false, motivo: 'Essa melhoria já está completa.' };
     if (m.tipo === 'selecaoProduto' && this.estado.melhoriaPendente) return { sucesso: false, motivo: 'Escolha primeiro a horta que receberá o produto.' };
-    if (m.tipo === 'selecaoProduto' && !Object.values(this.estado.produtos).some(p => p.liberado && !p.crescimentoMelhorado)) return { sucesso: false, motivo: 'Não há uma horta disponível para receber essa melhoria.' };
+    if (m.tipo === 'selecaoProduto' && !Object.entries(this.estado.produtos).some(([id, p]) => PRODUTOS[id].origem === 'horta' && p.liberado && !p.crescimentoMelhorado)) return { sucesso: false, motivo: 'Não há uma horta disponível para receber essa melhoria.' };
     const custo = this.custoMelhoria(id);
     if (this.estado.dinheiro < custo) return { sucesso: false, motivo: 'Você ainda não tem dinheiro suficiente.' };
     this.estado.dinheiro -= custo;
@@ -164,6 +195,11 @@ export class Simulacao {
       return { sucesso: true, dinheiro: this.estado.dinheiro, selecionarProduto: true };
     }
     this.estado.melhorias[id]++;
+    if (m.tipo === 'expansao') {
+      this.estado.estagioLoja = ALA_PRODUCAO.indice;
+      for (const produto of ALA_PRODUCAO.produtos) this.estado.produtos[produto].liberado = true;
+      this.emitir('expansao', { texto: 'Ala dos ovos aberta! Leve milho ao moinho para produzir ração.' });
+    }
     if (m.tipo === 'produto') {
       this.estado.produtos[id].liberado = true;
       this.estado.produtos[id].horta = PRODUTOS[id].capacidadeHorta;
@@ -174,7 +210,7 @@ export class Simulacao {
   aplicarFertilizante(id) {
     if (this.estado.melhoriaPendente !== 'fertilizante') return { sucesso: false, motivo: 'Compre primeiro o produto de crescimento.' };
     const produto = this.estado.produtos[id];
-    if (!produto?.liberado) return { sucesso: false, motivo: 'Essa horta ainda não está disponível.' };
+    if (!produto?.liberado || PRODUTOS[id]?.origem !== 'horta') return { sucesso: false, motivo: 'Essa horta ainda não está disponível.' };
     if (produto.crescimentoMelhorado) return { sucesso: false, motivo: 'Essa horta já recebeu o produto.' };
     produto.crescimentoMelhorado = true;
     this.estado.melhorias.fertilizante++;
@@ -189,12 +225,26 @@ export class Simulacao {
       if (s.repostos < 4) return { indice: 1, titulo: 'Abasteça a prateleira', texto: 'Leve 4 tomates da horta para a prateleira da loja.', valor: s.repostos, alvo: 4, destino: 'prateleira' };
       return { indice: 2, titulo: 'Faça a primeira venda', texto: 'Sente-se no caixa quando um cliente chegar.', valor: 0, alvo: 1, destino: 'caixa' };
     }
-    if (s.clientes && !this.estado.melhorias.mochila) {
+    if (s.clientes && !this.estado.melhorias.mochila && this.nivel === 1) {
       return { indice: 3, titulo: 'Sua primeira melhoria', texto: 'Junte R$ 25 com as vendas. Depois, compre a cesta maior no escritório.', valor: Math.min(25, this.estado.dinheiro), alvo: 25, destino: this.estado.dinheiro >= 25 ? 'escritorio' : 'caixa' };
     }
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
+      const producaoIniciada = this.estado.producao.milhoNoMoinho > 0 || this.estado.producao.racao > 0;
+      const orientacaoOvos = !this.estado.produtos.milho.liberado
+        ? { titulo: 'Abra a horta de milho', texto: 'Compre a horta de milho no escritório para preparar a próxima etapa.', destino: 'escritorio' }
+        : !this.estado.estagioLoja
+          ? { titulo: 'Construa a ala dos ovos', texto: 'No escritório, compre a ala dos ovos. O moinho e o galinheiro aparecem na nova área.', destino: 'escritorio' }
+          : this.estado.producao.ovosProduzidos < 1 && !producaoIniciada
+            ? { titulo: 'Leve milho ao moinho', texto: 'Colha milho e leve-o ao moinho para fazer ração.', destino: this.estado.jogador.inventario.includes('milho') ? 'moinho' : 'milho' }
+            : this.estado.producao.ovosProduzidos < 1
+              ? { titulo: 'Espere os primeiros ovos', texto: 'O moinho faz ração e as galinhas produzem ovos. Veja o galinheiro na nova ala.', destino: 'ovos' }
+              : this.estado.produtos.ovos.prateleira < 1
+                ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Pegue os ovos no galinheiro e leve-os à prateleira da nova ala.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos' }
+                : this.estado.melhorias.ajudante
+                  ? { titulo: 'Mantenha a ala funcionando', texto: 'O ajudante repõe os ovos. Continue levando milho ao moinho e atendendo o bairro.', destino: 'milho' }
+                  : { titulo: 'Contrate ajuda para repor', texto: 'Os ovos já estão à venda. Você pode contratar o ajudante; continue levando milho ao moinho.', destino: 'escritorio' };
       const orientacoesNivel = {
         2: {
           titulo: 'Seu mercadinho pode crescer',
@@ -202,17 +252,14 @@ export class Simulacao {
         },
         3: {
           titulo: 'Prepare a próxima etapa',
-          texto: 'Continue atendendo o bairro. O ajudante será liberado depois que você tiver ovos.',
+          texto: 'Continue atendendo o bairro. No nível 4 você poderá abrir a horta de milho.',
           destino: 'caixa'
         },
         4: {
           titulo: 'Uma nova colheita',
           texto: 'Vá ao escritório para abrir a horta e a prateleira de milho.'
         },
-        5: {
-          titulo: 'Mais velocidade para crescer',
-          texto: 'No escritório, aumente sua velocidade ou melhore o crescimento de uma horta.'
-        }
+        5: orientacaoOvos
       };
       const orientacaoNivel = orientacoesNivel[this.nivel] || {};
       return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa') };
@@ -231,6 +278,13 @@ export class Simulacao {
       ...PAREDES_LOJA, ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA
     ];
     if (this.estado.produtos.milho.liberado) caixas.push({ x: -6.6, z: 3.4, w: 2.2, d: 3.3 }, { ...PRODUTOS.milho.prateleira, w: 2.2, d: 1.7 });
+    if (this.estado.estagioLoja) caixas.push(
+      ...ALA_PRODUCAO.paredes,
+      { ...ALA_PRODUCAO.moinho },
+      { ...PRODUTOS.ovos.horta, w: 2.1, d: 2.2 },
+      { ...PRODUTOS.ovos.prateleira, w: 2.3, d: 1.65 }
+    );
+    else caixas.push({ ...ALA_PRODUCAO.piso }, ALA_PRODUCAO.porta);
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
@@ -243,7 +297,7 @@ export class Simulacao {
     return caixas;
   }
   mover(ator, dx, dz, dt, velocidade, colisao = true) {
-    const limites = CONFIG.limiteMundo;
+    const limites = this.limitesMundo;
     const testar = (x, z) => !colisao || !this.obstaculos().some(o => Math.abs(x - o.x) < o.w / 2 + 0.27 && Math.abs(z - o.z) < o.d / 2 + 0.27);
     const nx = limitar(ator.x + dx * dt * velocidade, limites.minX, limites.maxX);
     if (testar(nx, ator.z)) ator.x = nx;
@@ -294,7 +348,7 @@ export class Simulacao {
     if (!livre(ator, ponto)) {
       let rota = this.caminhosClientes.get(ator);
       if (!rota || distancia(rota.destino, ponto) > 0.1 || this.tempo >= rota.recalcular) {
-        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livre, CONFIG.limiteMundo), recalcular: this.tempo + 0.6 };
+        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livre, this.limitesMundo), recalcular: this.tempo + 0.6 };
         this.caminhosClientes.set(ator, rota);
       }
       while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) rota.pontos.shift();
@@ -334,12 +388,13 @@ export class Simulacao {
     }
     for (const [id, estoque] of Object.entries(this.estado.produtos)) {
       const p = PRODUTOS[id];
-      if (estoque.liberado && estoque.horta < p.capacidadeHorta) {
+      if (estoque.liberado && p.origem === 'horta' && estoque.horta < p.capacidadeHorta) {
         estoque.crescimento += dt;
         const tempoCrescimento = p.tempoCrescimento * (estoque.crescimentoMelhorado ? CONFIG.multiplicadorCrescimentoMelhorado : 1);
         if (estoque.crescimento >= tempoCrescimento) { estoque.horta++; estoque.crescimento = 0; }
       }
     }
+    this.atualizarProducao(dt);
     this.interagir();
     this.atualizarClientes(dt);
     this.atualizarCaixa(dt);
@@ -350,6 +405,18 @@ export class Simulacao {
   interagir() {
     const jogador = this.estado.jogador;
     this.atividade = jogador.sentadoEscritorio ? 'Usando o computador…' : '';
+    if (this.estado.estagioLoja && pertoEstacao(jogador, ALA_PRODUCAO.moinho, 1.3, 1.4)) {
+      const entrada = jogador.inventario.indexOf('milho');
+      if (entrada >= 0 && this.estado.producao.milhoNoMoinho < ALA_PRODUCAO.capacidadeMilho) {
+        this.atividade = 'Colocando milho no moinho…';
+        if (this.tempo >= this.proximaInteracao) {
+          jogador.inventario.splice(entrada, 1);
+          this.estado.producao.milhoNoMoinho++;
+          this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
+          this.emitir('racao', { texto: 'Milho entregue ao moinho.' });
+        }
+      } else this.atividade = this.estado.producao.milhoNoMoinho >= ALA_PRODUCAO.capacidadeMilho ? 'Moinho cheio · aguarde a ração' : 'Leve milho ao moinho para alimentar as galinhas';
+    }
     for (const [id, p] of Object.entries(PRODUTOS)) {
       const e = this.estado.produtos[id];
       if (!e.liberado) continue;
@@ -377,11 +444,37 @@ export class Simulacao {
       }
     }
   }
+  atualizarProducao(dt) {
+    if (!this.estado.estagioLoja) return;
+    const p = this.estado.producao;
+    if (p.milhoNoMoinho > 0 && p.racao <= ALA_PRODUCAO.capacidadeRacao - ALA_PRODUCAO.racaoPorMilho) {
+      p.progressoRacao += dt;
+      if (p.progressoRacao >= ALA_PRODUCAO.tempoRacao) {
+        const primeiraRacao = p.racao === 0 && p.ovosProduzidos === 0;
+        p.milhoNoMoinho--;
+        p.racao += ALA_PRODUCAO.racaoPorMilho;
+        p.progressoRacao = 0;
+        if (primeiraRacao) this.emitir('racaoPronta', { texto: 'Ração pronta! As galinhas estão produzindo ovos.' });
+      }
+    }
+    if (p.racao > 0 && this.estado.produtos.ovos.horta < PRODUTOS.ovos.capacidadeHorta) {
+      p.progressoOvo += dt;
+      if (p.progressoOvo >= ALA_PRODUCAO.tempoOvo) {
+        const primeiroOvo = p.ovosProduzidos === 0;
+        p.racao--;
+        p.progressoOvo = 0;
+        this.estado.produtos.ovos.horta++;
+        p.ovosProduzidos++;
+        if (primeiroOvo) this.emitir('ovoPronto', { texto: 'Ovos prontos no galinheiro!' });
+      }
+    }
+  }
   criarCliente() {
     if (this.cestasDisponiveis <= 0) return false;
-    const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
+    const pedirOvos = this.estado.producao.ovosProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.ovosVendidos >= 10 ? 3 : 4) === 0;
+    const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado && (id !== 'ovos' || pedirOvos));
     const inicioProdutos = (this.proximaId - 1) % disponiveis.length;
-    const produtosDesejados = Array.from({ length: Math.min(disponiveis.length, CONFIG.capacidadeCestaCliente) }, (_, i) => disponiveis[(inicioProdutos + i) % disponiveis.length]);
+    const produtosDesejados = pedirOvos ? ['ovos', ...disponiveis.filter(id => id !== 'ovos')] : Array.from({ length: Math.min(disponiveis.length, CONFIG.capacidadeCestaCliente) }, (_, i) => disponiveis[(inicioProdutos + i) % disponiveis.length]);
     const totalDesejado = 1 + Math.floor(this.aleatorio() * this.limitePedidoCliente);
     const compras = produtosDesejados.slice(0, totalDesejado).map((produto, indice, lista) => ({
       produto,
@@ -545,6 +638,7 @@ export class Simulacao {
         this.normalizarComprasCliente(primeiro);
         const valor = primeiro.itens.reduce((total, id) => total + PRODUTOS[id].preco, 0);
         this.estado.dinheiro += valor; this.estado.estatisticas.faturamento += valor; this.estado.estatisticas.clientes++;
+        this.estado.estatisticas.ovosVendidos += primeiro.itens.filter(id => id === 'ovos').length;
         this.registrarSatisfacao(primeiro);
         primeiro.embalado = true; primeiro.temCesta = false; primeiro.cestaReservada = false; primeiro.levaSacolas = true;
         primeiro.fase = 'saindo'; primeiro.etapa = 0;
@@ -559,15 +653,28 @@ export class Simulacao {
   }
   atualizarAjudante(dt) {
     const a = this.ajudante;
+    if (!a.inventario.length && a.destino === 'horta') {
+      const tarefas = Object.keys(PRODUTOS).filter(id => {
+        const estoque = this.estado.produtos[id], produto = PRODUTOS[id];
+        return estoque.liberado && estoque.horta > 0 && estoque.prateleira < produto.capacidadePrateleira;
+      });
+      tarefas.sort((idA, idB) => {
+        const falta = id => (PRODUTOS[id].capacidadePrateleira - this.estado.produtos[id].prateleira) / PRODUTOS[id].capacidadePrateleira + (id === 'ovos' ? 0.25 : 0);
+        return falta(idB) - falta(idA);
+      });
+      if (!tarefas.length) { a.andando = false; return; }
+      a.produto = tarefas[0];
+    }
     const p = PRODUTOS[a.produto], e = this.estado.produtos[a.produto];
     a.temporizador -= dt;
     if (a.destino === 'horta') {
       // O corredor entre a horta e a loja permanece livre.
       if (this.caminharCliente(a, p.coleta, dt, this.velocidadeAjudante)) {
-        if (e.horta && a.inventario.length < CONFIG.capacidadeAjudante && a.temporizador <= 0) {
+        const falta = p.capacidadePrateleira - e.prateleira;
+        if (e.horta && falta > a.inventario.length && a.inventario.length < CONFIG.capacidadeAjudante && a.temporizador <= 0) {
           e.horta--; a.inventario.push(a.produto); a.temporizador = 0.5;
         }
-        if (a.inventario.length >= CONFIG.capacidadeAjudante || (!e.horta && a.inventario.length)) a.destino = 'prateleira';
+        if (a.inventario.length >= Math.min(CONFIG.capacidadeAjudante, falta) || (!e.horta && a.inventario.length)) a.destino = 'prateleira';
       }
     } else if (this.caminharCliente(a, p.reposicao, dt, this.velocidadeAjudante) && a.temporizador <= 0) {
       if (a.inventario.length && e.prateleira < p.capacidadePrateleira) {
@@ -577,8 +684,6 @@ export class Simulacao {
       }
       if (!a.inventario.length) {
         a.destino = 'horta';
-        const ids = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado);
-        a.produto = ids[(ids.indexOf(a.produto) + 1) % ids.length];
       }
     }
   }
@@ -588,6 +693,8 @@ export class Simulacao {
       reputacao: this.reputacao, faixaReputacao: this.faixaReputacao,
       clientesPorSatisfacao: { felizes: this.estado.estatisticas.clientesFelizes, neutros: this.estado.estatisticas.clientesNeutros, irritados: this.estado.estatisticas.clientesIrritados },
       lojaAberta: this.estado.lojaAberta,
+      estagioLoja: this.estado.estagioLoja, producao: { ...this.estado.producao },
+      funcionarios: { ajudante: { ...this.ajudante, inventario: [...this.ajudante.inventario] } },
       inventario: [...this.estado.jogador.inventario], melhorias: { ...this.estado.melhorias },
       produtos: structuredClone(this.estado.produtos), clientesAtendidos: this.estado.estatisticas.clientes,
       objetivo: this.missao().titulo, pausado: this.pausado };

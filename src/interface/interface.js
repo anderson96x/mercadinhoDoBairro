@@ -93,8 +93,9 @@ export class Interface {
     this.el('passo').textContent = m.indice < 4 ? `${String(m.indice + 1).padStart(2, '0')} / 04` : `NÍVEL ${s.nivel}`;
     this.el('objetivo-progresso').max = m.alvo; this.el('objetivo-progresso').value = m.valor;
     this.el('objetivo-contagem').textContent = `${m.valor} / ${m.alvo}`;
-    this.el('proxima-novidade').textContent = e.produtos.milho.liberado
-      ? 'Nova área aberta: horta e prateleira de milho'
+    this.el('proxima-novidade').textContent = e.estagioLoja
+      ? `Ala dos ovos · moinho: ${e.producao.milhoNoMoinho} milho · ${e.producao.racao} rações · ovos: ${e.produtos.ovos.horta} no galinheiro, ${e.produtos.ovos.prateleira} na prateleira`
+      : e.produtos.milho.liberado ? 'Próxima área: ala dos ovos no nível 5 · R$ 500'
       : s.nivel < 4 ? 'Próxima área: milho no nível 4' : 'Próxima área: milho · junte R$ 350 no escritório';
     const inv = e.jogador.inventario;
     this.el('inventario').hidden = inv.length === 0;
@@ -104,7 +105,7 @@ export class Interface {
       this.el('nivel-inventario').textContent = `Inventário · Nível ${e.melhorias.mochila + 1}`;
       this.el('itens').style.setProperty('--colunas', Math.min(s.capacidade, 8));
       this.el('itens').innerHTML = Array.from({ length: s.capacidade }, (_, i) => `<span class="item ${inv[i] || ''}" title="${inv[i] ? PRODUTOS[inv[i]].nome : 'Espaço livre'}">${inv[i] ? icone(inv[i]) : '<i></i>'}</span>`).join('');
-      this.el('itens').setAttribute('aria-label', `${inv.filter(i => i === 'tomate').length} tomates e ${inv.filter(i => i === 'milho').length} milhos.`);
+      this.el('itens').setAttribute('aria-label', Object.keys(PRODUTOS).map(id => `${inv.filter(item => item === id).length} ${PRODUTOS[id].plural.toLocaleLowerCase('pt-BR')}`).join(', ') + '.');
       this.ultimoInventario = chave;
     }
     this.el('atividade').textContent = s.atividade;
@@ -116,7 +117,11 @@ export class Interface {
     const missao = this.sim.missao();
     const destinos = {
       horta: { ponto: PRODUTOS.tomate.coleta, nome: 'HORTA' },
+      milho: { ponto: PRODUTOS.milho.coleta, nome: 'MILHO' },
       prateleira: { ponto: PRODUTOS.tomate.reposicao, nome: 'PRATELEIRA' },
+      moinho: { ponto: { x: 5.55, z: -7.75 }, nome: 'MOINHO' },
+      ovos: { ponto: PRODUTOS.ovos.coleta, nome: 'OVOS' },
+      prateleiraOvos: { ponto: PRODUTOS.ovos.reposicao, nome: 'PRATELEIRA DE OVOS' },
       caixa: { ponto: CONFIG.cadeiraCaixa, nome: 'CAIXA' },
       escritorio: { ponto: CONFIG.cadeiraEscritorio, nome: 'ESCRITÓRIO' }
     };
@@ -155,7 +160,7 @@ export class Interface {
         const disponibilidade = this.sim.disponibilidadeMelhoria(m.id), pode = disponibilidade.disponivel && this.sim.estado.dinheiro >= custo;
         const nivelExibido = m.id === 'mochila' ? nivel + 1 : nivel;
         const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
-        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? disponibilidade.requisitoProduto ? 'Ovos' : disponibilidade.requisitoMelhoria ? 'Ajudante' : `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
+        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? disponibilidade.requisitoProduto ? 'Ovos' : disponibilidade.requisitoMelhoria ? m.id === 'alaProducao' ? 'Milho' : 'Ajudante' : `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
         const aria = completa ? `${m.titulo} concluída` : !disponibilidade.disponivel ? disponibilidade.motivo : `Comprar ${m.titulo} por ${reais(custo)}`;
         return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.max > 1 ? `<span class="nivel-melhoria">Nível ${nivelExibido} de ${maxExibido}</span>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${aria}">${rotulo}</button></div>`;
       }).join('')}</div><button class="botao-secundario" id="voltar-escritorio">Voltar ao gerenciamento</button>`;
@@ -172,7 +177,7 @@ export class Interface {
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p></div></div>
-          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>5</span><div><b>Construa sua reputação</b><p>As últimas 10 experiências formam a reputação. Uma reputação ruim traz clientes mais devagar; uma boa permite pedidos maiores e variados.</p></div></li><li><span>6</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
+          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 5, leve milho ao moinho. A ração alimenta as galinhas; leve os ovos à prateleira.</p></div></li><li><span>5</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>6</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'pausa') {
       conteudo = `<p class="painel-subtitulo">A loja espera por você.</p><div class="resumo-pausa"><div><strong>${reais(this.sim.estado.dinheiro)}</strong><span>em caixa</span></div><div><strong>${this.sim.estado.estatisticas.satisfacao}</strong><span>pontos de satisfação</span></div><div><strong>${this.sim.reputacao}</strong><span>de reputação</span></div></div><button class="botao-principal" data-fechar>${icone('jogar')} Continuar jogando</button><button class="botao-secundario" id="como-jogar">${icone('ajuda')} Como jogar</button><button class="botao-secundario" id="tela-cheia">${icone('tela')} ${document.fullscreenElement ? 'Sair da tela cheia' : 'Jogar em tela cheia'}</button><button class="botao-texto" id="reiniciar">Começar um novo jogo</button><p class="nota central">O progresso fica salvo neste navegador.</p>`;
