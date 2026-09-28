@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
-import { PAREDES_ESCRITORIO, POSICAO_PORTA_ESCRITORIO, POSICOES_PORTAS_ENTRADA, posicaoPortaEscritorio, posicoesPortasEntrada } from '../src/jogo/bairro.js';
+import { PAREDES_ESCRITORIO, POSICAO_PORTA_ESCRITORIO, ANGULOS_PORTAS_ENTRADA, posicaoPortaEscritorio, angulosPortasEntrada } from '../src/jogo/bairro.js';
 
 test('paredes do escritorio ficam a meia altura', () => {
   assert.ok(PAREDES_ESCRITORIO.every(parede => parede.h === 1.45));
@@ -15,12 +15,12 @@ test('porta do escritorio desliza para dentro da parede lateral', () => {
   assert.ok(posicaoPortaEscritorio(0.5) < POSICAO_PORTA_ESCRITORIO.fechada);
 });
 
-test('portas da entrada deslizam entre as posições aberta e fechada', () => {
-  assert.deepEqual(posicoesPortasEntrada(0), POSICOES_PORTAS_ENTRADA.fechadas);
-  assert.deepEqual(posicoesPortasEntrada(1), POSICOES_PORTAS_ENTRADA.abertas);
-  const meio = posicoesPortasEntrada(0.5);
-  assert.ok(meio.esquerda < POSICOES_PORTAS_ENTRADA.fechadas.esquerda);
-  assert.ok(meio.direita > POSICOES_PORTAS_ENTRADA.fechadas.direita);
+test('portas da entrada giram entre os ângulos aberta e fechada', () => {
+  assert.deepEqual(angulosPortasEntrada(0), ANGULOS_PORTAS_ENTRADA.fechadas);
+  assert.deepEqual(angulosPortasEntrada(1), ANGULOS_PORTAS_ENTRADA.abertas);
+  const meio = angulosPortasEntrada(0.5);
+  assert.ok(meio.esquerda < ANGULOS_PORTAS_ENTRADA.fechadas.esquerda);
+  assert.ok(meio.direita > ANGULOS_PORTAS_ENTRADA.fechadas.direita);
 });
 
 test('projeção isométrica mantém a mesma escala nos três eixos e diagonais de 30 graus', () => {

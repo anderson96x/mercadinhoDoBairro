@@ -39,9 +39,9 @@ O joystick aparece onde você começa a arrastar. O movimento acompanha as dire�
 
 - Tomates, milho, crescimento dos produtos e estoques limitados.
 - Cesta com capacidade, animação de pegar e guardar os produtos e melhorias.
-- Cesta cinza do jogador: níveis 1, 2, 3 e 4 com capacidade para 4, 8, 12 e 16 produtos.
+- Cesta cinza do jogador: capacidade inicial de 4 produtos e melhoria para 8.
 - Clientes com percurso até a prateleira, fila, compra e saída.
-- Dinheiro de jogo, contratação de caixa e ajudante de reposição.
+- Dinheiro de jogo e contratação de caixa. A contratação do ajudante exige ovos, que serão adicionados em uma etapa futura.
 - Objetivos progressivos, níveis, efeitos sonoros e pausa.
 - Interface adaptada a celular em retrato e paisagem.
 - Salvamento automático neste navegador a cada 5 segundos e ao sair da página.

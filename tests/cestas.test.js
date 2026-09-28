@@ -59,6 +59,7 @@ test('cada cesta de cliente comporta no maximo cinco itens', () => {
 test('cliente compra diferentes produtos em sequencia sem ultrapassar cinco itens', () => {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
   sim.estado.satisfacoesRecentes = Array(CONFIG.tamanhoHistoricoReputacao).fill('feliz');
+  sim.estado.estatisticas.clientes = 10;
   sim.aleatorio = () => 0.999;
   sim.estado.produtos.milho.liberado = true;
   sim.estado.produtos.tomate.prateleira = 3;

@@ -1,6 +1,6 @@
 import { icone } from './icones.js';
 import { PALETAS } from '../jogo/personalizacao.js';
-import { MELHORIAS, PRODUTOS, MISSOES } from '../jogo/configuracao.js';
+import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
   { id: 'mercado', titulo: 'Mercado' },
@@ -13,7 +13,7 @@ export class Interface {
     this.sim = sim; this.acoes = acoes; this.ultimoInventario = ''; this.ultimaAtualizacao = ''; this.abaMelhorias = 'mercado';
     document.getElementById('app').innerHTML = `
       <main class="jogo" aria-label="Mercadinho do Bairro">
-        <div id="mundo"></div><div id="etiquetas" aria-hidden="true"></div>
+        <div id="mundo"></div><div id="etiquetas" aria-hidden="true"><div id="dica-mundo" hidden></div></div>
         <header class="cabecalho">
           <div class="marca"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div><span class="nivel" id="nivel" role="status" aria-live="polite">NÍVEL 1</span></div>
           <div class="saldo" aria-label="Resumo do mercado"><div class="saldo-linha"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div></div><div class="reputacao-topo media" id="reputacao-painel" aria-label="Satisfação média, 60 de 100"><span class="satisfacao-rosto" id="satisfacao-rosto">${icone('neutro')}</span><progress id="reputacao-progresso" value="60" max="100" aria-label="Satisfação do mercadinho"></progress><small id="reputacao-meta">Média · 60 / 100</small></div></div>
@@ -24,10 +24,11 @@ export class Interface {
             ${import.meta.env.DEV ? `<button class="botao-icone reset-dev" id="dev-menu" title="Abrir menu de desenvolvimento" aria-label="Abrir menu de desenvolvimento">${icone('dev')}<small>DEV</small></button>` : ''}
           </nav>
         </header>
-        <aside class="objetivo" aria-label="Objetivo atual">
-          <div class="objetivo-topo"><span>${icone('alvo')} PRÓXIMO PASSO</span><span id="passo">01 / 06</span></div>
+        <aside class="objetivo" id="objetivo" aria-label="Objetivo atual">
+          <div class="objetivo-topo"><span>${icone('alvo')} PRÓXIMO PASSO</span><span id="passo">01 / 04</span></div>
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
           <div class="progresso-linha"><progress id="objetivo-progresso" value="0" max="3" aria-label="Progresso do objetivo"></progress><span id="objetivo-contagem">0 / 3</span></div>
+          <p class="proxima-novidade" id="proxima-novidade"></p>
         </aside>
         <div id="atividade" role="status"></div>
         <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Use as setas ou arraste para andar</span></span></div>
@@ -89,9 +90,12 @@ export class Interface {
     this.el('nivel').textContent = `NÍVEL ${s.nivel}`;
     this.el('objetivo-titulo').textContent = m.titulo;
     this.el('objetivo-texto').textContent = m.texto;
-    this.el('passo').textContent = m.completa ? 'CONCLUÍDO' : `${String(m.indice + 1).padStart(2, '0')} / ${String(MISSOES.length).padStart(2, '0')}`;
+    this.el('passo').textContent = m.indice < 4 ? `${String(m.indice + 1).padStart(2, '0')} / 04` : `NÍVEL ${s.nivel}`;
     this.el('objetivo-progresso').max = m.alvo; this.el('objetivo-progresso').value = m.valor;
     this.el('objetivo-contagem').textContent = `${m.valor} / ${m.alvo}`;
+    this.el('proxima-novidade').textContent = e.produtos.milho.liberado
+      ? 'Nova área aberta: horta e prateleira de milho'
+      : s.nivel < 4 ? 'Próxima área: milho no nível 4' : 'Próxima área: milho · junte R$ 350 no escritório';
     const inv = e.jogador.inventario;
     this.el('inventario').hidden = inv.length === 0;
     const chave = `${s.capacidade}:${inv.join(',')}`;
@@ -106,8 +110,32 @@ export class Interface {
     this.el('atividade').textContent = s.atividade;
     this.el('atividade').classList.toggle('visivel', !!s.atividade);
   }
+  atualizarDicaMundo(cena) {
+    const dica = this.el('dica-mundo');
+    if (this.el('painel').open) { dica.hidden = true; return; }
+    const missao = this.sim.missao();
+    const destinos = {
+      horta: { ponto: PRODUTOS.tomate.coleta, nome: 'HORTA' },
+      prateleira: { ponto: PRODUTOS.tomate.reposicao, nome: 'PRATELEIRA' },
+      caixa: { ponto: CONFIG.cadeiraCaixa, nome: 'CAIXA' },
+      escritorio: { ponto: CONFIG.cadeiraEscritorio, nome: 'ESCRITÓRIO' }
+    };
+    const destino = destinos[missao.destino];
+    if (!destino) { dica.hidden = true; return; }
+    const pos = cena.projetar({ ...destino.ponto, y: 2.5 });
+    const painelObjetivo = this.el('objetivo').getBoundingClientRect();
+    const margemTopo = cena.mobile ? painelObjetivo.bottom + 14 : 130;
+    const x = Math.max(65, Math.min(cena.w - 65, pos.x));
+    const minimoY = x <= painelObjetivo.right + 20 ? painelObjetivo.bottom + 14 : margemTopo;
+    const y = Math.max(minimoY, Math.min(cena.h - 115, pos.y));
+    const fora = Math.abs(x - pos.x) > 5 || Math.abs(y - pos.y) > 5;
+    const seta = pos.x < x - 5 ? '← ' : pos.x > x + 5 ? '→ ' : pos.y < y - 5 ? '↑ ' : pos.y > y + 5 ? '↓ ' : '';
+    dica.textContent = `${fora ? seta : '● '}${destino.nome}`;
+    dica.style.transform = `translate(${x}px,${y}px) translate(-50%,-100%)`;
+    dica.hidden = false;
+  }
   abrir(tipo) {
-    this.tipoPainel = tipo; this.acoes.pausar(true); this.renderizarPainel();
+    this.tipoPainel = tipo; this.acoes.pausar(true); this.renderizarPainel(); this.el('dica-mundo').hidden = true;
     if (!this.el('painel').open) this.el('painel').showModal();
   }
   fechar() { this.el('painel').close(); this.tipoPainel = null; this.acoes.pausar(false); }
@@ -127,7 +155,7 @@ export class Interface {
         const disponibilidade = this.sim.disponibilidadeMelhoria(m.id), pode = disponibilidade.disponivel && this.sim.estado.dinheiro >= custo;
         const nivelExibido = m.id === 'mochila' ? nivel + 1 : nivel;
         const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
-        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
+        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? disponibilidade.requisitoProduto ? 'Ovos' : disponibilidade.requisitoMelhoria ? 'Ajudante' : `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
         const aria = completa ? `${m.titulo} concluída` : !disponibilidade.disponivel ? disponibilidade.motivo : `Comprar ${m.titulo} por ${reais(custo)}`;
         return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.max > 1 ? `<span class="nivel-melhoria">Nível ${nivelExibido} de ${maxExibido}</span>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${aria}">${rotulo}</button></div>`;
       }).join('')}</div><button class="botao-secundario" id="voltar-escritorio">Voltar ao gerenciamento</button>`;
@@ -165,7 +193,15 @@ export class Interface {
         this.fechar();
         this.iniciarSelecaoHorta();
         this.acoes.iniciarSelecaoHorta();
-      } else if (resultado.sucesso) this.renderizarPainel(); else this.mensagem(resultado.motivo);
+      } else if (resultado.sucesso) {
+        const descricao = MELHORIAS.find(m => m.id === b.dataset.melhoria)?.descricao ?? 'Melhoria adquirida.';
+        this.renderizarPainel();
+        const aviso = document.createElement('p');
+        aviso.className = 'melhoria-confirmacao';
+        aviso.setAttribute('role', 'status');
+        aviso.textContent = `${descricao} Próximo: ${this.sim.missao().titulo}.`;
+        this.el('lista-melhorias').before(aviso);
+      } else this.mensagem(resultado.motivo);
       this.atualizar();
     });
     if (tipo === 'escritorio') {

@@ -4,8 +4,39 @@ import { Simulacao, estadoInicial, validarEstado, distancia } from '../src/jogo/
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { MOBILIARIO_CALCADA } from '../src/jogo/bairro.js';
 
+test('primeiros objetivos seguem as ações reais e continuam após recarregar', () => {
+  const sim = new Simulacao();
+  assert.equal(sim.missao().titulo, 'Colha seus primeiros tomates');
+  sim.estado.estatisticas.colhidos = 4;
+  assert.equal(sim.missao().titulo, 'Abasteça a prateleira');
+  sim.estado.estatisticas.repostos = 4;
+  assert.equal(sim.missao().titulo, 'Faça a primeira venda');
+  sim.estado.estatisticas.clientes = 1;
+  sim.estado.dinheiro = 25;
+  const retomada = new Simulacao(sim.estado);
+  assert.equal(retomada.missao().titulo, 'Sua primeira melhoria');
+  assert.equal(retomada.missao().destino, 'escritorio');
+  assert.equal(retomada.comprarMelhoria('mochila').sucesso, true);
+  assert.equal(retomada.missao().indice, 4);
+  assert.equal(retomada.capacidade, 8);
+});
+
+test('subir de nível concede uma única recompensa em dinheiro', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 24;
+  sim.estado.melhorias.caixa = 1;
+  sim.clientes.push({ id: 1, ...CONFIG.clienteCaixa, fase: 'fila', quantidade: 1, produto: 'tomate', desejado: 1, itens: ['tomate'] });
+  sim.progressoCaixa = CONFIG.tempoCaixa - 0.01;
+  sim.atualizarCaixa(0.02);
+  assert.equal(sim.estado.dinheiro, PRODUTOS.tomate.preco + CONFIG.bonusNivel);
+  sim.atualizarCaixa(0.02);
+  assert.equal(sim.estado.dinheiro, PRODUTOS.tomate.preco + CONFIG.bonusNivel);
+});
+
 test('o nível aumenta a cada 25 clientes atendidos', () => {
   const sim = new Simulacao();
+  assert.equal(sim.missao().alvo, 4, 'o primeiro objetivo ensina a colher');
+  sim.estado.melhorias.mochila = 1;
   for (const [clientes, nivel] of [[0, 1], [24, 1], [25, 2], [49, 2], [50, 3]]) {
     sim.estado.estatisticas.clientes = clientes;
     assert.equal(sim.nivel, nivel);
@@ -18,6 +49,7 @@ test('o nível aumenta a cada 25 clientes atendidos', () => {
 
 test('ao chegar ao nível 2, o próximo passo apresenta as melhorias do escritório', () => {
   const sim = new Simulacao();
+  sim.estado.melhorias.mochila = 1;
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel;
   const missao = sim.missao();
   assert.equal(missao.titulo, 'Seu mercadinho pode crescer');
@@ -26,17 +58,19 @@ test('ao chegar ao nível 2, o próximo passo apresenta as melhorias do escritó
   assert.match(missao.texto, /4 produtos/);
 });
 
-test('ao chegar ao nível 3, o próximo passo apresenta o ajudante', () => {
+test('ao chegar ao nível 3, o próximo passo explica o requisito do ajudante', () => {
   const sim = new Simulacao();
+  sim.estado.melhorias.mochila = 1;
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 2;
   const missao = sim.missao();
-  assert.equal(missao.titulo, 'Uma ajuda para abastecer');
-  assert.match(missao.texto, /escritório/);
-  assert.match(missao.texto, /contratar um ajudante/);
+  assert.equal(missao.titulo, 'Prepare a próxima etapa');
+  assert.match(missao.texto, /ovos/);
+  assert.match(missao.texto, /ajudante/);
 });
 
 test('ao chegar ao nível 4, o próximo passo apresenta a horta de milho', () => {
   const sim = new Simulacao();
+  sim.estado.melhorias.mochila = 1;
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
   const missao = sim.missao();
   assert.equal(missao.titulo, 'Uma nova colheita');
@@ -46,11 +80,12 @@ test('ao chegar ao nível 4, o próximo passo apresenta a horta de milho', () =>
 
 test('ao chegar ao nível 5, o próximo passo apresenta as melhorias de velocidade e crescimento', () => {
   const sim = new Simulacao();
+  sim.estado.melhorias.mochila = 1;
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
   const missao = sim.missao();
   assert.equal(missao.titulo, 'Mais velocidade para crescer');
   assert.match(missao.texto, /sua velocidade/);
-  assert.match(missao.texto, /ajudante/);
+  assert.match(missao.texto, /horta/);
   assert.match(missao.texto, /crescimento de uma horta/);
 });
 
@@ -91,12 +126,14 @@ test('clientes felizes, neutros e irritados rendem 10, 5 e 0 pontos', () => {
 test('reputação controla intervalo e tamanho máximo dos pedidos', () => {
   const cenarios = [
     { satisfacoes: Array(10).fill('irritado'), reputacao: 0, faixa: 'ruim', intervalo: 20, limite: 2 },
-    { satisfacoes: Array(10).fill('neutro'), reputacao: 50, faixa: 'media', intervalo: 15, limite: 3 },
-    { satisfacoes: [...Array(6).fill('feliz'), ...Array(3).fill('neutro'), 'irritado'], reputacao: 75, faixa: 'boa', intervalo: 5, limite: 5 }
+    { satisfacoes: Array(10).fill('neutro'), reputacao: 50, faixa: 'media', intervalo: 20 - 5 * 50 / 60, limite: 3 },
+    { satisfacoes: [...Array(6).fill('feliz'), ...Array(3).fill('neutro'), 'irritado'], reputacao: 75, faixa: 'boa', intervalo: 15 - 7 * 15 / 40, limite: 4, clientes: 10 },
+    { satisfacoes: Array(10).fill('feliz'), reputacao: 100, faixa: 'boa', intervalo: 8, limite: 5, clientes: 10 }
   ];
   for (const cenario of cenarios) {
     const sim = new Simulacao();
     sim.estado.satisfacoesRecentes = cenario.satisfacoes;
+    sim.estado.estatisticas.clientes = cenario.clientes ?? 0;
     sim.aleatorio = () => 0.999;
     assert.equal(sim.reputacao, cenario.reputacao);
     assert.equal(sim.faixaReputacao, cenario.faixa);
@@ -414,7 +451,9 @@ test('a cesta tem limite, e uma prateleira cheia não consome produtos', () => {
 test('melhorias são liberadas nos níveis definidos e respeitam seus custos', () => {
   const sim = new Simulacao();
   sim.estado.dinheiro = 2500;
-  assert.match(sim.comprarMelhoria('mochila').motivo, /nível 2/);
+  assert.equal(sim.comprarMelhoria('mochila').sucesso, true);
+  assert.equal(sim.capacidade, 8);
+  assert.equal(sim.estado.dinheiro, 2475);
   assert.match(sim.comprarMelhoria('caixa').motivo, /nível 2/);
   assert.match(sim.comprarMelhoria('milho').motivo, /nível 4/);
   assert.match(sim.comprarMelhoria('velocidade').motivo, /nível 5/);
@@ -422,48 +461,69 @@ test('melhorias são liberadas nos níveis definidos e respeitam seus custos', (
   assert.match(sim.comprarMelhoria('fertilizante').motivo, /nível 5/);
   assert.match(sim.comprarMelhoria('ajudante').motivo, /nível 3/);
   assert.equal(sim.comprarMelhoria('inexistente').sucesso, false);
-  assert.equal(sim.estado.dinheiro, 2500);
+  assert.equal(sim.estado.dinheiro, 2475);
 
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel;
-  assert.equal(sim.comprarMelhoria('mochila').sucesso, true);
-  assert.equal(sim.capacidade, 8);
-  assert.equal(sim.estado.dinheiro, 2400);
   assert.equal(sim.comprarMelhoria('mochila').sucesso, false);
   assert.equal(sim.comprarMelhoria('caixa').sucesso, true);
-  assert.equal(sim.estado.dinheiro, 1900);
+  assert.equal(sim.estado.dinheiro, 2225);
   assert.match(sim.comprarMelhoria('ajudante').motivo, /nível 3/);
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 2;
+  assert.match(sim.comprarMelhoria('ajudante').motivo, /ovos/);
+  assert.equal(sim.estado.dinheiro, 2225, 'não cobra uma melhoria bloqueada');
+  sim.estado.produtos.ovos = { liberado: true };
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
-  assert.equal(sim.estado.dinheiro, 1400);
+  assert.equal(sim.estado.dinheiro, 1925);
   assert.match(sim.comprarMelhoria('milho').motivo, /nível 4/);
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
   assert.equal(sim.comprarMelhoria('milho').sucesso, true);
-  assert.equal(sim.estado.dinheiro, 750);
+  assert.equal(sim.estado.dinheiro, 1575);
   assert.equal(sim.estado.produtos.milho.liberado, true);
   assert.equal(sim.estado.produtos.milho.horta, PRODUTOS.milho.capacidadeHorta);
 
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
   assert.equal(sim.comprarMelhoria('velocidade').sucesso, true);
   assert.equal(sim.velocidade, CONFIG.velocidadeInicial * 1.2);
-  assert.equal(sim.estado.dinheiro, 650);
+  assert.equal(sim.estado.dinheiro, 1475);
   assert.equal(sim.comprarMelhoria('velocidadeAjudante').sucesso, true);
   assert.equal(sim.velocidadeAjudante, 2.8 * CONFIG.multiplicadorVelocidadeAjudante);
-  assert.equal(sim.estado.dinheiro, 550);
+  assert.equal(sim.estado.dinheiro, 1375);
 
   assert.equal(sim.comprarMelhoria('fertilizante').selecionarProduto, true);
-  assert.equal(sim.estado.dinheiro, 450);
+  assert.equal(sim.estado.dinheiro, 1275);
   assert.equal(sim.comprarMelhoria('fertilizante').sucesso, false, 'deve escolher uma horta antes de comprar novamente');
   assert.equal(sim.aplicarFertilizante('tomate').sucesso, true);
   assert.equal(sim.estado.produtos.tomate.crescimentoMelhorado, true);
   assert.equal(sim.estado.melhorias.fertilizante, 1);
 
   assert.equal(sim.comprarMelhoria('fertilizante').selecionarProduto, true);
-  assert.equal(sim.estado.dinheiro, 350);
+  assert.equal(sim.estado.dinheiro, 1175);
   assert.equal(sim.aplicarFertilizante('tomate').sucesso, false, 'não pode aplicar duas vezes no mesmo produto');
   assert.equal(sim.aplicarFertilizante('milho').sucesso, true);
   assert.equal(sim.estado.produtos.milho.crescimentoMelhorado, true);
   assert.equal(sim.estado.melhorias.fertilizante, 2);
   assert.equal(sim.comprarMelhoria('fertilizante').sucesso, false);
+});
+
+test('salvamentos antigos mantêm ajudantes já contratados', () => {
+  const salvo = estadoInicial();
+  salvo.estatisticas.clientes = CONFIG.clientesPorNivel * 2;
+  salvo.melhorias.ajudante = 1;
+  const sim = new Simulacao(salvo);
+  assert.equal(sim.estado.melhorias.ajudante, 1);
+  assert.equal(sim.estado.produtos.ovos, undefined);
+});
+
+test('o ajudante exige ovos e sua velocidade exige o ajudante', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
+  sim.estado.dinheiro = 1000;
+  assert.match(sim.comprarMelhoria('ajudante').motivo, /ovos/);
+  assert.match(sim.comprarMelhoria('velocidadeAjudante').motivo, /Contrate o ajudante/);
+  assert.equal(sim.estado.dinheiro, 1000);
+  sim.estado.produtos.ovos = { liberado: true };
+  assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
+  assert.equal(sim.comprarMelhoria('velocidadeAjudante').sucesso, true);
 });
 
 test('fertilizante reduz pela metade o tempo de crescimento somente na horta escolhida', () => {
@@ -531,7 +591,7 @@ test('movimento respeita obstáculos e limites do mapa; pausa congela o mundo', 
 test('salvamento incompleto ou adulterado não gera dinheiro negativo nem estoques inválidos', () => {
   assert.equal(validarEstado(null).dinheiro, 0);
   const estado = validarEstado({ versao: 1, dinheiro: -10, melhorias: { mochila: 99, milho: 1 }, produtos: { tomate: { horta: 999, prateleira: -2 }, milho: { horta: 7, prateleira: 4 } }, jogador: { inventario: ['tomate','milho','desconhecido'] }, estatisticas: { clientes: NaN } });
-  assert.equal(estado.dinheiro, 0); assert.equal(estado.melhorias.mochila, 0); assert.equal(estado.melhorias.milho, 0);
+  assert.equal(estado.dinheiro, 0); assert.equal(estado.melhorias.mochila, 1); assert.equal(estado.melhorias.milho, 0);
   assert.equal(estado.produtos.tomate.horta, 8); assert.equal(estado.produtos.tomate.prateleira, 0);
   assert.deepEqual(estado.jogador.inventario, ['tomate']);
   assert.equal(estado.estatisticas.clientes, 0);

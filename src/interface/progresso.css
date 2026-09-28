@@ -1,0 +1,39 @@
+.proxima-novidade {
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid #dce3cf;
+  color: #517c5c;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.melhoria-confirmacao {
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #e8f2df;
+  color: #286750;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+#dica-mundo {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 3;
+  padding: 6px 10px;
+  border-radius: 15px;
+  background: var(--verde);
+  color: #fff9e6;
+  box-shadow: 0 3px 8px #25452b40;
+  font: 700 11px 'Outfit', sans-serif;
+  letter-spacing: .5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@media (max-width: 700px) {
+  .proxima-novidade { margin-top: 6px; padding-top: 6px; font-size: 10px; }
+  #dica-mundo { font-size: 10px; padding: 5px 8px; }
+}

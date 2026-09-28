@@ -1,4 +1,5 @@
 import './interface/estilos.css';
+import './interface/progresso.css';
 import '@fontsource/dm-sans/latin-400.css';
 import '@fontsource/dm-sans/latin-500.css';
 import '@fontsource/dm-sans/latin-600.css';
@@ -15,6 +16,7 @@ import { Controles } from './jogo/controles.js';
 import { Sons } from './jogo/audio.js';
 import { Interface } from './interface/interface.js';
 import { validarPersonalizacao } from './jogo/personalizacao.js';
+import { CONFIG, MELHORIAS } from './jogo/configuracao.js';
 
 const sim = new Simulacao(carregar());
 const sons = new Sons();
@@ -66,6 +68,7 @@ const ui = new Interface(sim, {
 try {
   cena = new Cena(document.getElementById('mundo'), sim);
   controles = new Controles(document.getElementById('mundo'), document.getElementById('joystick'));
+  ui.atualizarDicaMundo(cena);
   const mundo = document.getElementById('mundo');
   mundo.addEventListener('pointermove', e => { if (sim.estado.melhoriaPendente === 'fertilizante') ui.moverCursorHorta(e.clientX, e.clientY); });
   mundo.addEventListener('click', e => {
@@ -89,13 +92,16 @@ try {
       for (const evento of sim.consumirEventos()) {
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
-        if (evento.tipo === 'nivel') ui.subiuDeNivel(evento.nivel);
-        if (evento.tipo === 'melhoria') ui.mensagem(`${evento.texto} · melhoria adquirida!`);
+        if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.`); }
+        if (evento.tipo === 'melhoria') {
+          const descricao = MELHORIAS.find(m => m.id === evento.id)?.descricao ?? 'Melhoria adquirida.';
+          ui.mensagem(`${evento.texto}: ${descricao} Próximo: ${sim.missao().titulo}.`);
+        }
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
         if (evento.tipo === 'missao') ui.mensagem(evento.texto);
         if (evento.tipo === 'escritorio') ui.abrir('escritorio');
       }
-      if (agora >= proximaUI) { ui.atualizar(); proximaUI = agora + 100; }
+      if (agora >= proximaUI) { ui.atualizar(); ui.atualizarDicaMundo(cena); proximaUI = agora + 100; }
     } else acumulado = 0;
     if (cena.modoCompativel) setTimeout(() => requestAnimationFrame(quadro), 25);
     else requestAnimationFrame(quadro);

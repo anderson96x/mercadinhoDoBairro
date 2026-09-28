@@ -109,8 +109,16 @@ export class Simulacao {
     return Math.round((valores.reduce((total, valor) => total + valor, 0) + faltantes * CONFIG.reputacaoInicial) / CONFIG.tamanhoHistoricoReputacao);
   }
   get faixaReputacao() { return this.reputacao <= 40 ? 'ruim' : this.reputacao <= 60 ? 'media' : 'boa'; }
-  get intervaloClientes() { return CONFIG.intervaloClientesReputacao[this.faixaReputacao]; }
-  get limitePedidoCliente() { return CONFIG.limitePedidoReputacao[this.faixaReputacao]; }
+  get intervaloClientes() {
+    // A smooth curve prevents a single good review from tripling customer traffic.
+    const r = this.reputacao;
+    const { ruim, media, boa } = CONFIG.intervaloClientesReputacao;
+    return r <= 60 ? ruim + (media - ruim) * r / 60 : media + (boa - media) * (r - 60) / 40;
+  }
+  get limitePedidoCliente() {
+    const { ruim, media, boa } = CONFIG.limitePedidoReputacao;
+    return this.reputacao < 45 ? ruim : this.reputacao < 75 || this.estado.estatisticas.clientes < 10 ? media : this.reputacao < 90 ? boa - 1 : boa;
+  }
   get cestasEmUso() { return this.clientes.filter(c => c.cestaReservada).length; }
   get cestasDisponiveis() { return Math.max(0, CONFIG.quantidadeCestas - this.cestasEmUso); }
   get cestasNoSuporte() { return Math.max(0, CONFIG.quantidadeCestas - this.clientes.filter(c => c.temCesta).length); }
@@ -132,6 +140,12 @@ export class Simulacao {
     if (m.ativa === false) return { disponivel: false, motivo: 'Essa melhoria estará disponível em breve.' };
     const nivelMinimo = m.nivelMinimo || 1;
     if (this.nivel < nivelMinimo) return { disponivel: false, motivo: `Essa melhoria é liberada no nível ${nivelMinimo}.`, nivelMinimo };
+    if (m.requisitoProduto && !this.estado.produtos[m.requisitoProduto]?.liberado) {
+      return { disponivel: false, motivo: 'Tenha ovos antes de contratar o ajudante.', requisitoProduto: m.requisitoProduto };
+    }
+    if (m.requisitoMelhoria && !this.estado.melhorias[m.requisitoMelhoria]) {
+      return { disponivel: false, motivo: 'Contrate o ajudante antes de melhorar sua velocidade.', requisitoMelhoria: m.requisitoMelhoria };
+    }
     return { disponivel: true };
   }
   comprarMelhoria(id) {
@@ -169,6 +183,15 @@ export class Simulacao {
     return { sucesso: true, produto: id };
   }
   missao() {
+    const s = this.estado.estatisticas;
+    if (!s.clientes && !this.estado.melhorias.mochila) {
+      if (s.colhidos < 4) return { indice: 0, titulo: 'Colha seus primeiros tomates', texto: 'Vá à horta e pegue 4 tomates.', valor: s.colhidos, alvo: 4, destino: 'horta' };
+      if (s.repostos < 4) return { indice: 1, titulo: 'Abasteça a prateleira', texto: 'Leve 4 tomates da horta para a prateleira da loja.', valor: s.repostos, alvo: 4, destino: 'prateleira' };
+      return { indice: 2, titulo: 'Faça a primeira venda', texto: 'Sente-se no caixa quando um cliente chegar.', valor: 0, alvo: 1, destino: 'caixa' };
+    }
+    if (s.clientes && !this.estado.melhorias.mochila) {
+      return { indice: 3, titulo: 'Sua primeira melhoria', texto: 'Junte R$ 25 com as vendas. Depois, compre a cesta maior no escritório.', valor: Math.min(25, this.estado.dinheiro), alvo: 25, destino: this.estado.dinheiro >= 25 ? 'escritorio' : 'caixa' };
+    }
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
@@ -178,8 +201,9 @@ export class Simulacao {
           texto: 'Vá ao escritório para contratar um caixa ou aumentar sua capacidade em 4 produtos.'
         },
         3: {
-          titulo: 'Uma ajuda para abastecer',
-          texto: 'Vá ao escritório para contratar um ajudante que colhe e abastece as prateleiras.'
+          titulo: 'Prepare a próxima etapa',
+          texto: 'Continue atendendo o bairro. O ajudante será liberado depois que você tiver ovos.',
+          destino: 'caixa'
         },
         4: {
           titulo: 'Uma nova colheita',
@@ -187,11 +211,11 @@ export class Simulacao {
         },
         5: {
           titulo: 'Mais velocidade para crescer',
-          texto: 'No escritório, aumente sua velocidade, acelere o ajudante ou melhore o crescimento de uma horta.'
+          texto: 'No escritório, aumente sua velocidade ou melhore o crescimento de uma horta.'
         }
       };
       const orientacaoNivel = orientacoesNivel[this.nivel] || {};
-      return { ...recorrente, ...orientacaoNivel, indice: 0, valor, alvo: this.nivel * recorrente.intervalo };
+      return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa') };
     }
     const indice = MISSOES.findIndex(m => (this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) < m.alvo);
     if (indice === -1) return { indice: MISSOES.length, completa: true, titulo: 'O bairro é seu!', texto: 'Continue cuidando da loja e descubra todas as melhorias.', valor: 1, alvo: 1 };
@@ -321,7 +345,7 @@ export class Simulacao {
     this.atualizarCaixa(dt);
     if (this.estado.melhorias.ajudante) this.atualizarAjudante(dt);
     const missao = this.missao();
-    if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: 'Objetivo concluído!' }); this.missaoAnterior = missao.indice; }
+    if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: `Próximo passo: ${missao.titulo}` }); this.missaoAnterior = missao.indice; }
   }
   interagir() {
     const jogador = this.estado.jogador;
@@ -526,7 +550,10 @@ export class Simulacao {
         primeiro.fase = 'saindo'; primeiro.etapa = 0;
         this.progressoCaixa = 0;
         this.emitir('venda', { valor, ponto: CONFIG.caixa });
-        if (this.nivel > nivelAnterior) this.emitir('nivel', { nivel: this.nivel });
+        if (this.nivel > nivelAnterior) {
+          this.estado.dinheiro += CONFIG.bonusNivel;
+          this.emitir('nivel', { nivel: this.nivel });
+        }
       }
     } else this.progressoCaixa = 0;
   }
