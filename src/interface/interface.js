@@ -146,7 +146,7 @@ export class Interface {
   fechar() { this.el('painel').close(); this.tipoPainel = null; this.acoes.pausar(false); }
   renderizarPainel() {
     const tipo = this.tipoPainel;
-    const titulos = { escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', pausa: 'Uma pausa para respirar', reiniciar: 'Começar do zero?', dev: 'Menu de desenvolvimento' };
+    const titulos = { escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', pausa: 'Uma pausa para respirar', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
     let conteudo = '';
     if (tipo === 'escritorio') {
       const aberta = this.sim.estado.lojaAberta;
@@ -182,11 +182,31 @@ export class Interface {
     } else if (tipo === 'pausa') {
       conteudo = `<p class="painel-subtitulo">A loja espera por você.</p><div class="resumo-pausa"><div><strong>${reais(this.sim.estado.dinheiro)}</strong><span>em caixa</span></div><div><strong>${this.sim.estado.estatisticas.satisfacao}</strong><span>pontos de satisfação</span></div><div><strong>${this.sim.reputacao}</strong><span>de reputação</span></div></div><button class="botao-principal" data-fechar>${icone('jogar')} Continuar jogando</button><button class="botao-secundario" id="como-jogar">${icone('ajuda')} Como jogar</button><button class="botao-secundario" id="tela-cheia">${icone('tela')} ${document.fullscreenElement ? 'Sair da tela cheia' : 'Jogar em tela cheia'}</button><button class="botao-texto" id="reiniciar">Começar um novo jogo</button><p class="nota central">O progresso fica salvo neste navegador.</p>`;
     } else if (tipo === 'dev') {
-      conteudo = `<p class="painel-subtitulo">Ferramentas para ajustar esta sessão de desenvolvimento.</p><div class="saldo-painel">${icone('moeda')} Saldo atual <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="dev-saldo-controles"><button class="botao-secundario" id="dev-remover" ${this.sim.estado.dinheiro < 100 ? 'disabled' : ''}>− R$ 100</button><button class="botao-secundario" id="dev-adicionar">+ R$ 100</button></div><button class="botao-principal perigo" id="dev-reset">${icone('reiniciar')} Zerar todo o progresso</button>`;
+      const proximaReputacao = Math.min(100, Math.ceil((this.sim.reputacao + 1) / 10) * 10);
+      conteudo = `<div class="dev-painel">
+        <p class="painel-subtitulo">Ajuste o progresso para testar o jogo.</p>
+        <section class="dev-cartao dev-dinheiro" aria-label="Dinheiro">
+          <div class="dev-cartao-topo"><span class="dev-rotulo">${icone('moeda')} Dinheiro</span><strong>${reais(this.sim.estado.dinheiro)}</strong></div>
+          <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 100 ? 'disabled' : ''}>− R$ 100</button><button id="dev-adicionar">+ R$ 100</button></div>
+        </section>
+        <div class="dev-progresso">
+          <section class="dev-cartao" aria-label="Nível">
+            <div class="dev-cartao-topo"><span class="dev-rotulo">Nível</span><strong>${this.sim.nivel}</strong></div>
+            <p>Libera melhorias conforme o progresso.</p>
+            <div class="dev-acoes"><button id="dev-nivel">+ 1 nível</button></div>
+          </section>
+          <section class="dev-cartao" aria-label="Reputação">
+            <div class="dev-cartao-topo"><span class="dev-rotulo">Reputação</span><strong>${this.sim.reputacao}<small> / 100</small></strong></div>
+            <progress value="${this.sim.reputacao}" max="100" aria-label="Reputação atual"></progress>
+            <div class="dev-acoes"><button id="dev-reputacao" ${this.sim.reputacao >= 100 ? 'disabled' : ''}>${this.sim.reputacao >= 100 ? 'No máximo' : `Aumentar para ${proximaReputacao}`}</button></div>
+          </section>
+        </div>
+        <div class="dev-rodape"><button id="dev-reset">${icone('reiniciar')} Zerar todo o progresso</button></div>
+      </div>`;
     } else {
       conteudo = `<p class="painel-subtitulo">O dinheiro, as melhorias e o progresso deste mercadinho serão apagados neste navegador.</p><button class="botao-principal perigo" id="confirmar-reinicio">${icone('reiniciar')} Apagar e começar de novo</button><button class="botao-secundario" id="cancelar-reinicio">Voltar para minha loja</button>`;
     }
-    this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
+    this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : tipo === 'dev' ? 'dev' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
     this.el('painel').querySelectorAll('[data-fechar]').forEach(b => b.onclick = () => this.fechar());
     this.el('painel').querySelectorAll('[data-aba-melhoria]').forEach(b => b.onclick = () => {
       this.abaMelhorias = b.dataset.abaMelhoria;
@@ -240,6 +260,8 @@ export class Interface {
     if (tipo === 'dev') {
       this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-100);
       this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(100);
+      this.el('dev-nivel').onclick = () => this.acoes.aumentarNivelDev();
+      this.el('dev-reputacao').onclick = () => this.acoes.aumentarReputacaoDev();
       this.el('dev-reset').onclick = () => this.abrir('reiniciar');
     }
     if (tipo === 'personalizacao') {

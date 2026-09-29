@@ -69,6 +69,23 @@ function abrirAla(sim) {
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, true);
 }
 
+test('controles de desenvolvimento elevam nível e reputação e persistem no salvamento', () => {
+  const sim = new Simulacao();
+  assert.equal(sim.aumentarNivelDev(), 2);
+  assert.equal(sim.estado.estatisticas.clientes, CONFIG.clientesPorNivel);
+  assert.equal(sim.estado.dinheiro, CONFIG.bonusNivel);
+  assert.equal(sim.consumirEventos().at(-1).nivel, 2);
+  assert.equal(sim.aumentarReputacaoDev(), 70);
+  assert.equal(sim.aumentarReputacaoDev(), 80);
+  const retomado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(retomado.nivel, 2);
+  assert.equal(retomado.reputacao, 80);
+  assert.equal(retomado.estado.dinheiro, CONFIG.bonusNivel);
+  for (let i = 0; i < 2; i++) retomado.aumentarReputacaoDev();
+  assert.equal(retomado.reputacao, 100);
+  assert.equal(retomado.aumentarReputacaoDev(), 100);
+});
+
 test('ala dos ovos exige milho e nível 5; a construção muda limites, estoque e salvamento', () => {
   const sim = new Simulacao();
   sim.estado.dinheiro = 2000;

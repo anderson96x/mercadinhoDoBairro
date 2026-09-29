@@ -140,6 +140,29 @@ export class Simulacao {
     return Math.round((valores.reduce((total, valor) => total + valor, 0) + faltantes * CONFIG.reputacaoInicial) / CONFIG.tamanhoHistoricoReputacao);
   }
   get faixaReputacao() { return this.reputacao <= 40 ? 'ruim' : this.reputacao <= 60 ? 'media' : 'boa'; }
+  aumentarNivelDev() {
+    this.estado.estatisticas.clientes = this.nivel * CONFIG.clientesPorNivel;
+    this.estado.dinheiro += CONFIG.bonusNivel;
+    this.emitir('nivel', { nivel: this.nivel });
+    return this.nivel;
+  }
+  aumentarReputacaoDev() {
+    if (this.reputacao >= 100) return 100;
+    const alvo = Math.min(100, Math.ceil((this.reputacao + 1) / 10) * 10);
+    const tamanho = CONFIG.tamanhoHistoricoReputacao;
+    if (alvo >= 50) {
+      const felizes = (alvo - 50) / 5;
+      this.estado.satisfacoesRecentes = [
+        ...Array(tamanho - felizes).fill('neutro'), ...Array(felizes).fill('feliz')
+      ];
+    } else {
+      const neutros = alvo / 5;
+      this.estado.satisfacoesRecentes = [
+        ...Array(tamanho - neutros).fill('irritado'), ...Array(neutros).fill('neutro')
+      ];
+    }
+    return this.reputacao;
+  }
   get intervaloClientes() {
     // A smooth curve prevents a single good review from tripling customer traffic.
     const r = this.reputacao;

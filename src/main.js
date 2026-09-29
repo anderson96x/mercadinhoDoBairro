@@ -41,6 +41,18 @@ function alterarSaldo(valor) {
   ui.atualizar();
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
 }
+function aumentarNivelDev() {
+  if (!import.meta.env.DEV) return;
+  sim.aumentarNivelDev();
+  gravar(); ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+}
+function aumentarReputacaoDev() {
+  if (!import.meta.env.DEV) return;
+  sim.aumentarReputacaoDev();
+  gravar(); ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+}
 function reiniciar() {
   if (!salvar(estadoInicial())) {
     ui.mensagem('Não foi possível apagar o progresso salvo. Verifique o armazenamento do navegador.');
@@ -52,7 +64,7 @@ function reiniciar() {
   window.location.reload();
 }
 const ui = new Interface(sim, {
-  pausar, comprar, alterarSaldo, iniciarSelecaoHorta,
+  pausar, comprar, alterarSaldo, aumentarNivelDev, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;
