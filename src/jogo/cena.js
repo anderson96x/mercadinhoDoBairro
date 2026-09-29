@@ -49,6 +49,44 @@ export function criarProduto(id, escala = 1) {
   grupo.scale.setScalar(escala); return grupo;
 }
 
+function criarGalinha(pai, x, y, z, corCorpo, corAsa, fase) {
+  const galinha = new THREE.Group(); galinha.position.set(x, y, z); pai.add(galinha);
+  esfera(galinha, 0.29, corCorpo, 0, 0.34, 0, 1, 0.92, 1.18);
+  esfera(galinha, 0.18, corCorpo, 0, 0.51, 0.18, 0.9, 1.1, 0.9);
+  const asas = [];
+  for (const lado of [-1, 1]) {
+    const asa = new THREE.Group(); asa.position.set(lado * 0.23, 0.39, -0.03); galinha.add(asa);
+    esfera(asa, 0.19, corAsa, lado * 0.07, 0, 0, 0.54, 0.75, 1.15);
+    asas.push(asa);
+    cilindro(galinha, 0.04, 0.045, 0.16, 0xd69839, lado * 0.12, 0.12, 0.08);
+    caixa(galinha, 0.11, 0.035, 0.19, 0xd69839, lado * 0.12, 0.045, 0.17);
+  }
+  const cauda = objeto(new THREE.ConeGeometry(0.18, 0.42, 5), corAsa, 0, 0.56, -0.34);
+  cauda.rotation.x = -0.55; galinha.add(cauda);
+  const cabeca = new THREE.Group(); cabeca.position.set(0, 0.58, 0.24); galinha.add(cabeca);
+  esfera(cabeca, 0.19, corCorpo, 0, 0, 0);
+  for (const [zPena, altura] of [[-0.1, 0.18], [0, 0.23], [0.1, 0.17]]) {
+    esfera(cabeca, 0.075, 0xd94b36, 0, altura, zPena, 0.85, 1.1, 0.8);
+  }
+  const bico = objeto(new THREE.ConeGeometry(0.085, 0.17, 4), 0xeab13e, 0, -0.045, 0.23);
+  bico.rotation.x = Math.PI / 2; cabeca.add(bico);
+  esfera(cabeca, 0.06, 0xd94b36, 0, -0.15, 0.16, 0.7, 1.25, 0.75);
+  for (const lado of [-1, 1]) {
+    esfera(cabeca, 0.037, 0x272a25, lado * 0.165, 0.025, 0.075, 0.7, 1, 1);
+  }
+  galinha.userData = { cabeca, asas, baseY: y, fase };
+  return galinha;
+}
+
+function animarGalinha(galinha, tempo) {
+  const { cabeca, asas, baseY, fase } = galinha.userData;
+  const bicada = Math.max(0, Math.sin(tempo * 1.7 + fase)) ** 10;
+  galinha.position.y = baseY + Math.sin(tempo * 3 + fase) * 0.018;
+  galinha.rotation.y = Math.sin(tempo * 0.9 + fase) * 0.08;
+  cabeca.rotation.x = bicada * 0.48;
+  asas.forEach((asa, i) => { asa.rotation.z = (i ? -1 : 1) * (0.12 + Math.sin(tempo * 4.5 + fase) * 0.055); });
+}
+
 function braco(cor, pele, x) {
   const grupo = new THREE.Group();
   const superior = caixa(grupo, 0.16, 1, 0.18, cor, 0, 0, 0);
@@ -533,9 +571,19 @@ export class Cena {
   construirEstacao(id, p) {
     const grupo = new THREE.Group(); this.cena.add(grupo);
     const h = p.horta;
+    const galinhas = [];
     if (id === 'ovos') {
       caixa(grupo, 2.1, 0.65, 2.2, 0xb37a4c, h.x, 0.55, h.z);
       caixa(grupo, 2.1, 0.12, 2.2, 0xe4bb75, h.x, 0.93, h.z);
+      // Abrigo aberto, ninhos e galinhas na área da fazenda.
+      for (const dx of [-0.95, 0.95]) {
+        caixa(grupo, 0.12, 1.65, 0.12, 0x8d603e, h.x + dx, 1.05, h.z - 0.95);
+      }
+      caixa(grupo, 2.1, 1.3, 0.12, 0xbc8752, h.x, 1.25, h.z - 1);
+      const telhado = caixa(grupo, 2.5, 0.16, 1.25, 0x286750, h.x, 1.95, h.z - 0.6);
+      telhado.rotation.x = -0.15;
+      galinhas.push(criarGalinha(grupo, h.x - 0.57, 2.03, h.z - 0.62, 0xfff6df, 0xe6ddbe, 0));
+      galinhas.push(criarGalinha(grupo, h.x + 0.57, 2.03, h.z - 0.62, 0xf5d5aa, 0xd9ad78, 2.4));
     } else {
       caixa(grupo, 2.5, 0.35, 3.6, 0xbd7545, h.x, 0.22, h.z);
       caixa(grupo, 2.23, 0.05, 3.32, 0x70401f, h.x, 0.42, h.z);
@@ -571,7 +619,7 @@ export class Cena {
       caixa(bloqueio, 2.55, 0.035, 0.055, 0xb8df65, h.x, 0.09, h.z + d * 1.8);
       caixa(bloqueio, 0.055, 0.035, 3.65, 0xb8df65, h.x + d * 1.26, 0.09, h.z);
     }
-    this.produtos[id] = { grupo, bloqueio, frutos, frutas };
+    this.produtos[id] = { grupo, bloqueio, frutos, frutas, galinhas };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
@@ -586,7 +634,7 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const altura = this.mobile ? 18.8 : Math.max(this.sim.estado.estagioLoja ? ALA_PRODUCAO.camera.alturaDesktop : 25, 37 / proporcao);
+    const altura = this.mobile ? 18.8 : Math.max(ALA_PRODUCAO.camera.alturaDesktop, 37 / proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.w, this.h);
@@ -841,7 +889,7 @@ export class Cena {
     this.bairro.animarEntrada(this.aberturaLojaVisual, e.lojaAberta);
     this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
-    const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(e.estagioLoja ? ALA_PRODUCAO.camera.x : -0.7, 0, e.estagioLoja ? ALA_PRODUCAO.camera.z : 0.5);
+    const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(ALA_PRODUCAO.camera.x, 0, ALA_PRODUCAO.camera.z);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     const equipamentoAla = this.bairro.atualizarEstagio(e.estagioLoja, dt);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
@@ -970,6 +1018,7 @@ export class Cena {
     for (const [id, objetos] of Object.entries(this.produtos)) {
       const estado = e.produtos[id]; objetos.grupo.visible = estado.liberado && (id !== 'ovos' || equipamentoAla > 0); objetos.bloqueio.visible = false;
       if (id === 'ovos') objetos.grupo.scale.y = Math.max(0.001, equipamentoAla);
+      if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
       objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = 1 + Math.sin(tempo * 2 + i) * 0.025; });
       const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
         .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);

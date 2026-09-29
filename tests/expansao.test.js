@@ -39,8 +39,8 @@ test('a loja permanece intacta antes da compra e constrói a ala lateral em etap
   assert.equal(ala.scale.x, 1);
   assert.equal(ala.position.x, 0);
   assert.equal(andaime.visible, false);
-  assert.equal(rodape.position.x, 8.15);
-  assert.ok(Math.abs(rodape.scale.x - 15.9 / 8.9) < 1e-10);
+  assert.equal(rodape.position.x, 6.15);
+  assert.ok(Math.abs(rodape.scale.x - 11.9 / 8.9) < 1e-10);
 });
 
 test('carregar uma ala comprada mostra a construção pronta sem repetir a animação', () => {
@@ -51,7 +51,7 @@ test('carregar uma ala comprada mostra a construção pronta sem repetir a anima
   assert.equal(andaime.visible, false);
 });
 
-test('o ajudante salvo na antiga ala traseira retoma na lateral com sua carga', () => {
+test('o ajudante salvo na antiga ala traseira retoma na fazenda com sua carga', () => {
   const sim = new Simulacao(); abrirAla(sim);
   sim.estado.melhorias.ajudante = 1;
   Object.assign(sim.ajudante, { x: 3.3, z: -7.55, produto: 'ovos', destino: 'prateleira', inventario: ['ovos'] });
@@ -60,6 +60,39 @@ test('o ajudante salvo na antiga ala traseira retoma na lateral com sua carga', 
   assert.equal(retomado.ajudante.z, PRODUTOS.ovos.coleta.z);
   assert.deepEqual(retomado.ajudante.inventario, ['ovos']);
   assert.equal(retomado.ajudante.destino, 'prateleira');
+});
+
+test('galinheiro respeita capacidade, retoma produção após coleta e preserva progresso salvo', () => {
+  const sim = new Simulacao(); abrirAla(sim);
+  for (let i = 0; i < 1000; i++) sim.atualizarProducao(0.1);
+  assert.equal(sim.estado.produtos.ovos.horta, PRODUTOS.ovos.capacidadeHorta);
+  assert.equal(sim.estado.producao.ovosProduzidos, PRODUTOS.ovos.capacidadeHorta);
+  Object.assign(sim.estado.jogador, PRODUTOS.ovos.coleta);
+  sim.interagir();
+  sim.atualizarProducao(1);
+  const retomado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(retomado.estado.producao.progressoOvo, 1);
+  retomado.atualizarProducao(ALA_PRODUCAO.tempoOvo - 1);
+  assert.equal(retomado.estado.produtos.ovos.horta, PRODUTOS.ovos.capacidadeHorta);
+  assert.deepEqual(retomado.estado.jogador.inventario, ['ovos']);
+});
+
+test('save da antiga área lateral mantém ovos e compras e reposiciona ajudante', () => {
+  const sim = new Simulacao(); abrirAla(sim);
+  sim.estado.melhorias.ajudante = 1;
+  sim.estado.produtos.ovos.horta = 3;
+  sim.estado.produtos.ovos.prateleira = 4;
+  // Campos legados são descartados; ovos e carga continuam disponíveis.
+  Object.assign(sim.estado.producao, { milhoNoMoinho: 5, racao: 3, progressoRacao: 1 });
+  Object.assign(sim.ajudante, { x: 14.3, z: -2.65, produto: 'ovos', destino: 'prateleira', inventario: ['ovos'] });
+  const retomado = new Simulacao(structuredClone(sim.estado));
+  assert.deepEqual(retomado.estado.producao, { progressoOvo: 0, ovosProduzidos: 0 });
+  assert.equal(retomado.estado.dinheiro, sim.estado.dinheiro);
+  assert.equal(retomado.estado.produtos.ovos.horta, 3);
+  assert.equal(retomado.estado.produtos.ovos.prateleira, 4);
+  assert.equal(retomado.ajudante.x, PRODUTOS.ovos.coleta.x);
+  assert.equal(retomado.ajudante.z, PRODUTOS.ovos.coleta.z);
+  assert.deepEqual(retomado.ajudante.inventario, ['ovos']);
 });
 
 function abrirAla(sim) {
@@ -86,42 +119,32 @@ test('controles de desenvolvimento elevam nível e reputação e persistem no sa
   assert.equal(retomado.aumentarReputacaoDev(), 100);
 });
 
-test('ala dos ovos exige milho e nível 5; a construção muda limites, estoque e salvamento', () => {
+test('galinheiro exige nível 5 sem depender de milho e preserva o terreno', () => {
   const sim = new Simulacao();
   sim.estado.dinheiro = 2000;
   assert.match(sim.comprarMelhoria('alaProducao').motivo, /nível 5/);
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
-  assert.match(sim.comprarMelhoria('alaProducao').motivo, /milho/);
-  assert.equal(sim.comprarMelhoria('milho').sucesso, true);
+
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, true);
   assert.equal(sim.estado.estagioLoja, 1);
   assert.equal(sim.estado.produtos.ovos.liberado, true);
   assert.equal(sim.estado.produtos.ovos.horta, 0);
   assert.equal(sim.limitesMundo.minZ, CONFIG.limiteMundo.minZ);
   assert.equal(sim.limitesMundo.maxX, ALA_PRODUCAO.limites.maxX);
-  assert.ok(sim.limitesMundo.maxX > CONFIG.limiteMundo.maxX);
+  assert.deepEqual(sim.limitesMundo, CONFIG.limiteMundo);
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
-  assert.equal(sim.estado.dinheiro, 850);
+  assert.equal(sim.estado.dinheiro, 1200);
   const salvo = validarEstado(structuredClone(sim.estado));
   assert.equal(salvo.estagioLoja, 1);
   assert.equal(salvo.produtos.ovos.liberado, true);
   assert.equal(salvo.melhorias.ajudante, 1);
 });
 
-test('milho alimenta moinho, ração alimenta galinhas e ovos chegam à prateleira', () => {
+test('galinhas produzem ovos sem insumos, que podem ser coletados e vendidos', () => {
   const sim = new Simulacao();
   abrirAla(sim);
   sim.proximoCliente = Infinity;
-  sim.estado.jogador.inventario.push('milho');
-  assert.equal(sim.missao().destino, 'moinho');
-  Object.assign(sim.estado.jogador, ALA_PRODUCAO.entregaMoinho);
-  sim.interagir();
-  assert.equal(sim.estado.producao.milhoNoMoinho, 1);
-  assert.deepEqual(sim.estado.jogador.inventario, []);
-  assert.equal(sim.missao().titulo, 'Espere os primeiros ovos');
-  for (let i = 0; i < 140; i++) sim.atualizarProducao(0.05);
-  assert.equal(sim.estado.producao.milhoNoMoinho, 0);
-  assert.equal(sim.estado.producao.racao, 1);
+  for (let i = 0; i < 71; i++) sim.atualizarProducao(0.05);
   assert.equal(sim.estado.produtos.ovos.horta, 1);
   assert.equal(sim.estado.producao.ovosProduzidos, 1);
   assert.equal(sim.missao().destino, 'ovos');
@@ -179,7 +202,7 @@ test('cliente visita a nova prateleira, paga pelos ovos e sai', () => {
   assert.equal(sim.estado.produtos.ovos.prateleira, 2);
 });
 
-test('ajudante leva os ovos do galinheiro à prateleira enquanto o moinho espera pelo jogador', () => {
+test('ajudante leva os ovos do galinheiro à prateleira sem precisar de insumos', () => {
   const sim = new Simulacao();
   abrirAla(sim);
   sim.estado.melhorias.ajudante = 1;
@@ -191,8 +214,6 @@ test('ajudante leva os ovos do galinheiro à prateleira enquanto o moinho espera
     sim.atualizarAjudante(1 / 60);
   }
   assert.equal(sim.estado.produtos.ovos.prateleira, 2);
-  assert.equal(sim.estado.producao.milhoNoMoinho, 0);
-  assert.equal(sim.estado.producao.racao, 0);
 });
 
 test('salvar durante a viagem preserva a carga e o destino do ajudante', () => {
@@ -211,14 +232,29 @@ test('salvar durante a viagem preserva a carga e o destino do ajudante', () => {
   assert.deepEqual(retomado.ajudante.inventario, []);
 });
 
-test('a ala bloqueia acesso antes da construção e oferece rotas para moinho, ovos e caixa', () => {
+test('a ala bloqueia acesso antes da construção e oferece rotas entre fazenda, ovos e caixa', () => {
   const sim = new Simulacao();
   assert.ok(sim.obstaculos().some(o => o.lateral));
   abrirAla(sim);
   assert.ok(!sim.obstaculos().some(o => o.x === ALA_PRODUCAO.piso.x && o.z === ALA_PRODUCAO.piso.z && o.w === ALA_PRODUCAO.piso.w));
   assert.ok(!sim.obstaculos().some(o => o.lateral));
   const ator = { x: 5.35, z: -5.1, andando: false };
-  for (const alvo of [ALA_PRODUCAO.entregaMoinho, PRODUTOS.ovos.coleta, PRODUTOS.ovos.cliente, CONFIG.clienteCaixa]) {
+  for (const alvo of [PRODUTOS.ovos.coleta, PRODUTOS.ovos.cliente, CONFIG.clienteCaixa]) {
+    let chegou = false;
+    for (let i = 0; i < 2400 && !chegou; i++) {
+      sim.tempo += 1 / 60;
+      chegou = sim.caminharCliente(ator, alvo, 1 / 60);
+    }
+    assert.ok(chegou && distancia(ator, alvo) < 0.03, `rota para ${JSON.stringify(alvo)}`);
+  }
+});
+
+test('hortas afastadas deixam um corredor livre e continuam acessíveis desde o início', () => {
+  const sim = new Simulacao();
+  const corredor = { x: -5.5, z: -1.7, andando: false };
+  assert.ok(!sim.obstaculos().some(o => Math.abs(corredor.x - o.x) < o.w / 2 + 0.27 && Math.abs(corredor.z - o.z) < o.d / 2 + 0.27));
+  const ator = { x: -3.8, z: 0.7, andando: false };
+  for (const alvo of [PRODUTOS.tomate.coleta, PRODUTOS.milho.coleta]) {
     let chegou = false;
     for (let i = 0; i < 2400 && !chegou; i++) {
       sim.tempo += 1 / 60;

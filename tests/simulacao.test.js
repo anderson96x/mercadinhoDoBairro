@@ -82,11 +82,11 @@ test('ao chegar ao nível 5, o próximo passo apresenta a ala dos ovos', () => {
   const sim = new Simulacao();
   sim.estado.melhorias.mochila = 1;
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
-  assert.equal(sim.missao().titulo, 'Abra a horta de milho');
+  assert.equal(sim.missao().titulo, 'Construa o galinheiro');
   sim.estado.melhorias.milho = 1;
   sim.estado.produtos.milho.liberado = true;
-  assert.equal(sim.missao().titulo, 'Construa a ala dos ovos');
-  assert.match(sim.missao().texto, /moinho/);
+  assert.equal(sim.missao().titulo, 'Construa o galinheiro');
+  assert.match(sim.missao().texto, /galinheiro na fazenda/);
 });
 
 test('checkout do vigésimo quinto cliente emite o evento de novo nível uma única vez', () => {
@@ -419,7 +419,7 @@ test('a melhoria única da cesta aumenta a capacidade de 4 para 8 produtos', () 
 
 test('colher, repor, atender e receber o valor exato da compra', () => {
   const sim = new Simulacao();
-  aproximar(sim, { x: -4.8, z: -1.7 });
+  aproximar(sim, PRODUTOS.tomate.coleta);
   avancar(sim, 3);
   assert.equal(sim.estado.jogador.inventario.length, 4);
   assert.equal(sim.estado.estatisticas.colhidos, 4);
@@ -440,7 +440,7 @@ test('colher, repor, atender e receber o valor exato da compra', () => {
 
 test('a cesta tem limite, e uma prateleira cheia não consome produtos', () => {
   const sim = new Simulacao();
-  aproximar(sim, { x: -4.8, z: -1.7 }); avancar(sim, 12);
+  aproximar(sim, PRODUTOS.tomate.coleta); avancar(sim, 12);
   assert.equal(sim.estado.jogador.inventario.length, sim.capacidade);
   sim.estado.produtos.tomate.prateleira = 12;
   aproximar(sim, PRODUTOS.tomate.reposicao); sim.interagir();

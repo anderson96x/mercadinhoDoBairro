@@ -110,7 +110,7 @@ try {
           ui.mensagem(`${evento.texto}: ${descricao} Próximo: ${sim.missao().titulo}.`);
         }
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
-        if (['expansao', 'racaoPronta', 'ovoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
+        if (['expansao', 'ovoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
         if (evento.tipo === 'missao') ui.mensagem(evento.texto);
         if (evento.tipo === 'escritorio') ui.abrir('escritorio');
       }

@@ -32,7 +32,7 @@ O dinheiro é alterado somente pela simulação. Comprar um botão chama `Simula
 
 ## Adicionar um produto
 
-1. Acrescente uma entrada em `PRODUTOS`, com nome, cor, preço, capacidade, origem e pontos do mapa. Hortas usam `tempoCrescimento`; produtos de uma cadeia têm sua própria regra em `Simulacao.atualizarProducao()`.
+1. Acrescente uma entrada em `PRODUTOS`, com nome, cor, preço, capacidade, origem e pontos do mapa. Hortas usam `tempoCrescimento`; ovos são produzidos automaticamente no galinheiro em `Simulacao.atualizarProducao()`.
 2. Acrescente uma melhoria de `tipo: 'produto'`, com o mesmo identificador do produto, se ele começar bloqueado, ou vincule-o a uma expansão como `ALA_PRODUCAO`.
 3. Adicione sua aparência em `criarProduto()` e, se necessário, em `construirEstacao()`, em `cena.js`.
 4. Adicione seu ícone a `interface/icones.js` e as cores em `estilos.css`.
@@ -48,7 +48,7 @@ Os clientes escolhem entre os produtos liberados; ovos só entram nos pedidos de
 
 As coordenadas usam `x` para os lados, `z` para a profundidade e `y` para a altura. A origem fica perto do centro da loja. O chão está em `y = 0` e o piso elevado da loja em aproximadamente `y = 0.2`.
 
-Mantenha os pontos de coleta e reposição fora dos objetos sólidos. A ala de produção define piso, paredes, moinho, entrada e limites em `ALA_PRODUCAO`; `construirBairro()` desenha a ala e `Simulacao.obstaculos()` usa a mesma configuração para colisão e busca de caminho. Teste as rotas de clientes e ajudante após mudar qualquer estação.
+Mantenha os pontos de coleta e reposição fora dos objetos sólidos. A ala de produção define piso e paredes da pequena extensão, galinheiro na fazenda, prateleira e limites fixos do terreno em `ALA_PRODUCAO`; `construirBairro()` desenha a ala e `Simulacao.obstaculos()` usa a mesma configuração para colisão e busca de caminho. Teste as rotas de clientes e ajudante após mudar qualquer estação.
 
 O navegador do celular acompanha o personagem com a câmera; em telas largas, mostra o conjunto da loja. Ajuste isso em `Cena.redimensionar()` e `Cena.atualizar()`.
 

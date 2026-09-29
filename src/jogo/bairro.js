@@ -64,15 +64,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     0x286750, p.x, 0.34, p.z, 'principal'
   );
   chao(0, 120, 0.3, 120, 0x78c85a, 0, -0.5, 0);
-  chao(1, 24, 0.3, 25, 0x62b94b, 0, -0.2, 2);
-  chao(2, 24, 0.08, 4.4, 0x48525e, 0, 0, 11.3);
-  chao(3, 24, 0.18, 2.5, 0xe0bc8c, 0, 0.04, 7.95);
-  bloco(24, 0.22, 0.16, 0xf3e5ce, 0, 0.07, 9.18);
-  for (let x = -11; x < 12; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
+  chao(1, 31, 0.3, 28, 0x62b94b, 0.5, -0.2, 0.5);
+  chao(2, 31, 0.08, 4.4, 0x48525e, 0.5, 0, 11.3);
+  chao(3, 31, 0.18, 2.5, 0xe0bc8c, 0.5, 0.04, 7.95);
+  bloco(31, 0.22, 0.16, 0xf3e5ce, 0.5, 0.07, 9.18);
+  for (let x = -14; x < 16; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
   // A faixa atravessa a rua inteira, de uma calçada à outra.
   for (let z = 9.5; z < 13.5; z += 0.35) chao(4, 2.2, 0.012, 0.18, 0xf7eddb, -1.3, 0.052, z);
-  for (let x = -11.5; x < 12; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
-  for (const z of [7.25, 7.95, 8.65]) chao(4, 24, 0.01, 0.015, 0xbeb19a, 0, 0.136, z);
+  for (let x = -14.5; x < 16; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
+  for (const z of [7.25, 7.95, 8.65]) chao(4, 31, 0.01, 0.015, 0xbeb19a, 0.5, 0.136, z);
   // Os pisos se encontram em x = 9.1, com a mesma altura e malha de azulejos.
   chao(3, 12.2, 0.2, 12.7, 0xc4b9a5, 3, 0.06, 0.35);
   chao(4, 12.2, 0.07, 12.4, 0xe3dcc8, 3, 0.19, 0.35, 'piso');
@@ -82,16 +82,9 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const ala = new THREE.Group(); grupo.add(ala); destino = ala;
   ala.name = 'ala-producao';
   ala.visible = false;
-  chao(1, 7, 0.3, 25, 0x62b94b, 15.5, -0.2, 2);
-  chao(2, 7, 0.08, 4.4, 0x48525e, 15.5, 0, 11.3);
-  chao(3, 7, 0.18, 2.5, 0xe0bc8c, 15.5, 0.04, 7.95);
-  bloco(7, 0.22, 0.16, 0xf3e5ce, 15.5, 0.07, 9.18);
-  for (let x = 12; x < 19; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
-  for (const z of [7.25, 7.95, 8.65]) chao(4, 7, 0.01, 0.015, 0xbeb19a, 15.5, 0.136, z);
-  for (let x = 14; x < 19; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
   chao(3, area.w, 0.2, area.d, 0xc4b9a5, area.x, 0.06, area.z);
   chao(4, area.w, 0.07, 12.4, 0xe3dcc8, area.x, 0.19, area.z, 'piso');
-  for (let x = 9.2; x < 16; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, area.z);
+  for (let x = 9.2; x < 12.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, area.z);
   for (let z = -5.8; z < 6.6; z += 1.2) chao(5, area.w, 0.008, 0.018, 0xc8bfae, area.x, 0.23, z);
   const paredesAla = new THREE.Group(); ala.add(paredesAla); destino = paredesAla;
   for (const p of ALA_PRODUCAO.paredes) {
@@ -99,22 +92,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
   }
-  const equipamento = new THREE.Group(); ala.add(equipamento); destino = equipamento;
-  const moinho = ALA_PRODUCAO.moinho;
-  bloco(moinho.w, 1.15, moinho.d, 0x9b6743, moinho.x, 0.8, moinho.z);
-  cilindro(equipamento, 0.47, 0.55, 0.45, 0xe7b65a, moinho.x, 1.58, moinho.z);
-  bloco(0.72, 0.2, 0.42, 0xd6a063, moinho.x, 1.25, moinho.z + 0.65);
   const lateral = new THREE.Group(); grupo.add(lateral);
   const andaime = new THREE.Group(); grupo.add(andaime); destino = andaime;
   andaime.name = 'andaime';
   andaime.visible = false;
   for (const z of [-5.5, -1.5, 2.5, 6.3]) {
-    bloco(0.09, 3.2, 0.09, 0x849296, 16.35, 1.8, z);
-    bloco(0.65, 0.08, 0.5, 0xc79765, 16.35, 1.3, z);
+    bloco(0.09, 3.2, 0.09, 0x849296, 12.35, 1.8, z);
+    bloco(0.65, 0.08, 0.5, 0xc79765, 12.35, 1.3, z);
   }
-  for (const y of [1.25, 2.65]) bloco(0.08, 0.08, 11.8, 0xe7b65a, 16.35, y, 0.4);
-  const poeira = new THREE.Group(); grupo.add(poeira); poeira.visible = false;
-  for (let i = 0; i < 12; i++) esfera(poeira, 0.25, 0xe0cfaa, 16.2, 0.4, -5.4 + i, 1.5, 0.8, 1);
+  for (const y of [1.25, 2.65]) bloco(0.08, 0.08, 11.8, 0xe7b65a, 12.35, y, 0.4);
   destino = grupo;
   for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) {
     destino = p.lateral ? lateral : grupo;
@@ -192,12 +178,12 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     }
   }
   // Cerca e árvores enquadram a área de cultivo.
-  for (let z = -7; z <= 6; z += 1.3) {
-    bloco(0.13, 0.9, 0.13, 0xa8733f, -9.2, 0.5, z);
-    bloco(0.1, 0.12, 1.35, 0xd29a5b, -9.2, 0.7, z + 0.62);
+  for (let z = -9.6; z <= 6; z += 1.3) {
+    bloco(0.13, 0.9, 0.13, 0xa8733f, -11.6, 0.5, z);
+    bloco(0.1, 0.12, 1.35, 0xd29a5b, -11.6, 0.7, z + 0.62);
   }
   const arvoreLateral = new THREE.Group(); grupo.add(arvoreLateral);
-  for (const [x,z] of [[-10,-6.2],[-10,4.7],[10.6,-5.4]]) {
+  for (const [x,z] of [[-12.4,-6.2],[-12.4,4.7],[13.8,-5.4]]) {
     const arvores = x > 0 ? arvoreLateral : grupo;
     cilindro(arvores, 0.13, 0.2, 1.8, 0x8f5b32, x, 0.9, z);
     esfera(arvores, 1, 0x3ca34b, x, 2.15, z, 1, 1.2, 1);
@@ -222,22 +208,13 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       ala.scale.x = Math.max(0.001, piso);
       ala.position.x = 9.1 * (1 - ala.scale.x);
       paredesAla.scale.y = Math.max(0.001, paredes);
-      equipamento.scale.y = Math.max(0.001, equipamentos);
-      equipamento.visible = equipamentos > 0;
       lateral.visible = !estagio || progresso < 0.8;
-      lateral.position.x = estagio ? 7 * piso : 0;
-      arvoreLateral.position.x = estagio ? 7 * piso : 0;
-      rodapeFrontal.scale.x = 1 + (estagio ? 7 * piso / 8.9 : 0);
-      rodapeFrontal.position.x = 4.65 + (estagio ? 3.5 * piso : 0);
+      lateral.position.x = estagio ? area.w * piso : 0;
+      rodapeFrontal.scale.x = 1 + (estagio ? area.w * piso / 8.9 : 0);
+      rodapeFrontal.position.x = 4.65 + (estagio ? area.w / 2 * piso : 0);
       andaime.visible = !!estagio && progresso > 0 && progresso < 0.95;
-      andaime.position.x = -7 * (1 - piso);
+      andaime.position.x = -area.w * (1 - piso);
       andaime.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
-      poeira.visible = !!estagio && progresso > 0 && progresso < 1;
-      poeira.position.x = -7 * (1 - piso);
-      poeira.children.forEach((nuvem, i) => {
-        nuvem.scale.setScalar(Math.sin(progresso * Math.PI) * (0.8 + Math.sin(progresso * 35 + i) * 0.25));
-        nuvem.position.y = 0.4 + Math.abs(Math.sin(progresso * 18 + i)) * 0.5;
-      });
       return estagio ? equipamentos : 0;
     },
     animarPorta(abertura) {

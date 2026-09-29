@@ -43,7 +43,7 @@ At a constant paying-customer rate, `minutes to level L ≈ 25 × (L − 1) / cu
 
 1. **Early progression asks for repetition before explaining the loop through objectives.** The recurring task is already “serve 25 customers.” Add a short sequence: collect 4 tomatoes → stock the shelf → complete the first sale → buy the first improvement. Show the destination in the world. Target a first sale within 30–45 seconds and a useful upgrade within 60–90 seconds; validate on mobile.
 2. **Automation almost ends the player's role.** Staff-only completion was within about half a minute of active completion for these seeds. Keep automation rewarding, but pair it with a new department or optional higher-value job. Let employees maintain the established store while the player opens the next system.
-3. **Corn adds another route but little new behavior.** Follow it with a simple transformation, such as corn → feed → eggs, or milk → cheese. Begin with one input and one output; avoid multiple unfamiliar chains at once.
+3. **Corn adds another route but little new behavior.** The level-5 addition now follows the same collection loop: a farm chicken coop produces eggs automatically, and the player stocks a nearby shelf. Processing recipes such as milk → cheese remain possible future work.
 4. **The map is largely complete from the start.** Corn reveals configured objects inside fixed world bounds and walls. It does not expand the store footprint. Make new floor space, entrances, machines, signage, and staffing positions appear with milestones.
 5. **Reputation changes demand too abruptly.** Starting reputation is 60. One happy customer can raise it to 64, changing arrivals from every 15 seconds to every 5, and maximum orders from 3 to 5. Nominal expected demand jumps from 8 to 36 items/minute before capacity limits. Tomatoes grow at about 33.3/minute before fertilizer, even before transport losses. Smooth the ramp and introduce larger orders separately from higher footfall.
 6. **Levels are disconnected from growing operational complexity.** Every tier uses another 25 paying customers; satisfaction points are tracked separately and do not grant levels. Add specific milestones, and make every level provide a visible or useful reward.
@@ -56,7 +56,7 @@ Aim for **2–3 hours of active play** to finish the first store, across multipl
 | Levels | Store evolution | New decision or task | Approximate elapsed target at end |
 | --- | --- | --- | ---: |
 | 1–3 | Compact produce stall; tomatoes and corn | Learn loop, increase carrying capacity, hire cashier | 5 min |
-| 4–7 | Open produce wing and service passage | Hire/assign stocker, add feed → eggs | 21 min |
+| 4–7 | Open produce wing and service passage | Hire/assign stocker, collect eggs from the farm coop | 21 min |
 | 8–11 | Add refrigerated wing and receiving/storage area | Milk supply, cheese processing, balance inputs and finished stock | 45 min |
 | 12–15 | Open bakery frontage and second service area | Wheat → bread, worker specialization, predictable busy periods | 77 min |
 | 16–20 | Grow into neighborhood supermarket with loading area | Mixed delivery orders, larger storage, department optimization, final expansion | 129 min |
@@ -71,7 +71,7 @@ Between major stages, award capacity, shelf space, storage, worker assignment sl
 
 ## Make expansion feel physical and useful
 
-- Show the next wing as a fenced construction site with its price, requirement, and future department visible.
+- Keep the larger plot visible from the start. Reveal the coop and compact shelf extension on purchase; no locked equipment previews.
 - On purchase, animate the fence removal, floor/wall change, new equipment delivery, and sign change. Reveal the first interaction immediately.
 - Give each expansion an operational benefit: a shorter service path, another loading point, storage, or checkout capacity. More floor space should not just increase walking distance.
 - Establish distinct visual landmarks and clear product icons for each department. Keep delivery and customer paths readable on a portrait screen.
@@ -107,7 +107,7 @@ Offline earnings could help return sessions later, but first establish reliable 
 ## Implementation order and validation
 
 1. Improve the first five minutes: onboarding objectives, destination hints, early upgrade affordability, smoother reputation demand, and a visible next expansion.
-2. Build one true expansion and one processing chain; pair it with automation and evaluate whether it creates useful decisions.
+2. Build one compact shelf expansion and a farm chicken coop; pair egg collection with stocking automation and evaluate the routes.
 3. Generalize stage data, staff assignments, recipes, customer capacity, and save migration. Then extend to the full campaign.
 4. Tune duration using recorded first-sale, upgrade, expansion, and level times; paid/empty visits; stockout duration; queue time; income/minute; and active-versus-staff-only progress.
 

@@ -23,7 +23,7 @@ export function estadoInicial() {
     personalizacao: { ...PERSONALIZACAO_PADRAO },
     melhorias: Object.fromEntries(MELHORIAS.map(m => [m.id, 0])),
     estagioLoja: 0,
-    producao: { milhoNoMoinho: 0, racao: 0, progressoRacao: 0, progressoOvo: 0, ovosProduzidos: 0 },
+    producao: { progressoOvo: 0, ovosProduzidos: 0 },
     funcionarios: { ajudante: { x: -1.8, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false } },
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0, crescimentoMelhorado: false
@@ -53,9 +53,6 @@ export function validarEstado(dados) {
   }
   base.estagioLoja = base.melhorias[ALA_PRODUCAO.id] ? ALA_PRODUCAO.indice : 0;
   if (base.estagioLoja) {
-    base.producao.milhoNoMoinho = numero(dados.producao?.milhoNoMoinho, ALA_PRODUCAO.capacidadeMilho);
-    base.producao.racao = numero(dados.producao?.racao, ALA_PRODUCAO.capacidadeRacao);
-    base.producao.progressoRacao = Number.isFinite(dados.producao?.progressoRacao) ? limitar(dados.producao.progressoRacao, 0, ALA_PRODUCAO.tempoRacao) : 0;
     base.producao.progressoOvo = Number.isFinite(dados.producao?.progressoOvo) ? limitar(dados.producao.progressoOvo, 0, ALA_PRODUCAO.tempoOvo) : 0;
     base.producao.ovosProduzidos = numero(dados.producao?.ovosProduzidos);
   }
@@ -97,7 +94,7 @@ export function validarEstado(dados) {
       angulo: Number.isFinite(ajudanteSalvo.angulo) ? limitar(ajudanteSalvo.angulo, -Math.PI, Math.PI) : 0
     };
     if (!base.funcionarios.ajudante.inventario.length) base.funcionarios.ajudante.destino = 'horta';
-    if (ajudanteSalvo.z < -6) Object.assign(base.funcionarios.ajudante, PRODUTOS.ovos.coleta);
+    if (ajudanteSalvo.x > 12 || ajudanteSalvo.z < -6) Object.assign(base.funcionarios.ajudante, PRODUTOS.ovos.coleta);
   }
   // Retomar em um ponto livre evita que mudanças futuras no mapa prendam o jogador.
   base.som = dados.som === true;
@@ -198,7 +195,7 @@ export class Simulacao {
       return { disponivel: false, motivo: 'Tenha ovos antes de contratar o ajudante.', requisitoProduto: m.requisitoProduto };
     }
     if (m.requisitoMelhoria && !this.estado.melhorias[m.requisitoMelhoria]) {
-      const motivo = m.id === 'alaProducao' ? 'Abra a horta de milho antes de construir a ala dos ovos.' : 'Contrate o ajudante antes de melhorar sua velocidade.';
+      const motivo = 'Contrate o ajudante antes de melhorar sua velocidade.';
       return { disponivel: false, motivo, requisitoMelhoria: m.requisitoMelhoria };
     }
     return { disponivel: true };
@@ -222,7 +219,7 @@ export class Simulacao {
     if (m.tipo === 'expansao') {
       this.estado.estagioLoja = ALA_PRODUCAO.indice;
       for (const produto of ALA_PRODUCAO.produtos) this.estado.produtos[produto].liberado = true;
-      this.emitir('expansao', { texto: 'Ala dos ovos aberta! Leve milho ao moinho para produzir ração.' });
+      this.emitir('expansao', { texto: 'Galinheiro pronto na fazenda! Colete os ovos e abasteça a nova prateleira.' });
     }
     if (m.tipo === 'produto') {
       this.estado.produtos[id].liberado = true;
@@ -255,20 +252,13 @@ export class Simulacao {
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
-      const producaoIniciada = this.estado.producao.milhoNoMoinho > 0 || this.estado.producao.racao > 0;
-      const orientacaoOvos = !this.estado.produtos.milho.liberado
-        ? { titulo: 'Abra a horta de milho', texto: 'Compre a horta de milho no escritório para preparar a próxima etapa.', destino: 'escritorio' }
-        : !this.estado.estagioLoja
-          ? { titulo: 'Construa a ala dos ovos', texto: 'No escritório, compre a ala dos ovos. O moinho e o galinheiro aparecem na nova área.', destino: 'escritorio' }
-          : this.estado.producao.ovosProduzidos < 1 && !producaoIniciada
-            ? { titulo: 'Leve milho ao moinho', texto: 'Colha milho e leve-o ao moinho para fazer ração.', destino: this.estado.jogador.inventario.includes('milho') ? 'moinho' : 'milho' }
-            : this.estado.producao.ovosProduzidos < 1
-              ? { titulo: 'Espere os primeiros ovos', texto: 'O moinho faz ração e as galinhas produzem ovos. Veja o galinheiro na nova ala.', destino: 'ovos' }
-              : this.estado.produtos.ovos.prateleira < 1
-                ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Pegue os ovos no galinheiro e leve-os à prateleira da nova ala.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos' }
-                : this.estado.melhorias.ajudante
-                  ? { titulo: 'Mantenha a ala funcionando', texto: 'O ajudante repõe os ovos. Continue levando milho ao moinho e atendendo o bairro.', destino: 'milho' }
-                  : { titulo: 'Contrate ajuda para repor', texto: 'Os ovos já estão à venda. Você pode contratar o ajudante; continue levando milho ao moinho.', destino: 'escritorio' };
+      const orientacaoOvos = !this.estado.estagioLoja
+        ? { titulo: 'Construa o galinheiro', texto: 'Compre a ala dos ovos no escritório para construir o galinheiro na fazenda e ampliar a loja.', destino: 'escritorio' }
+        : this.estado.produtos.ovos.prateleira < 1
+          ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Colete os ovos no galinheiro da fazenda e leve-os à nova prateleira.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos' }
+          : this.estado.melhorias.ajudante
+            ? { titulo: 'Mantenha a ala funcionando', texto: 'As galinhas produzem ovos automaticamente. Cuide das prateleiras e atenda o bairro.', destino: 'ovos' }
+            : { titulo: 'Contrate ajuda para repor', texto: 'Os ovos já estão à venda. Contrate o ajudante para coletar e repor os produtos.', destino: 'escritorio' };
       const orientacoesNivel = {
         2: {
           titulo: 'Seu mercadinho pode crescer',
@@ -295,16 +285,15 @@ export class Simulacao {
   }
   obstaculos() {
     const caixas = [
-      { x: -6.6, z: -2.8, w: 2.2, d: 3.3 },
+      { ...PRODUTOS.tomate.horta, w: 2.2, d: 3.3 },
       { ...PRODUTOS.tomate.prateleira, w: 2.2, d: 1.7 },
       { ...CONFIG.balcao, w: 2.7, d: 1.35 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
       ...PAREDES_LOJA.filter(p => !p.lateral || !this.estado.estagioLoja), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA
     ];
-    if (this.estado.produtos.milho.liberado) caixas.push({ x: -6.6, z: 3.4, w: 2.2, d: 3.3 }, { ...PRODUTOS.milho.prateleira, w: 2.2, d: 1.7 });
+    if (this.estado.produtos.milho.liberado) caixas.push({ ...PRODUTOS.milho.horta, w: 2.2, d: 3.3 }, { ...PRODUTOS.milho.prateleira, w: 2.2, d: 1.7 });
     if (this.estado.estagioLoja) caixas.push(
       ...ALA_PRODUCAO.paredes,
-      { ...ALA_PRODUCAO.moinho },
       { ...PRODUTOS.ovos.horta, w: 2.1, d: 2.2 },
       { ...PRODUTOS.ovos.prateleira, w: 2.3, d: 1.65 }
     );
@@ -428,18 +417,6 @@ export class Simulacao {
   interagir() {
     const jogador = this.estado.jogador;
     this.atividade = jogador.sentadoEscritorio ? 'Usando o computador…' : '';
-    if (this.estado.estagioLoja && pertoEstacao(jogador, ALA_PRODUCAO.moinho, 1.3, 1.4)) {
-      const entrada = jogador.inventario.indexOf('milho');
-      if (entrada >= 0 && this.estado.producao.milhoNoMoinho < ALA_PRODUCAO.capacidadeMilho) {
-        this.atividade = 'Colocando milho no moinho…';
-        if (this.tempo >= this.proximaInteracao) {
-          jogador.inventario.splice(entrada, 1);
-          this.estado.producao.milhoNoMoinho++;
-          this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
-          this.emitir('racao', { texto: 'Milho entregue ao moinho.' });
-        }
-      } else this.atividade = this.estado.producao.milhoNoMoinho >= ALA_PRODUCAO.capacidadeMilho ? 'Moinho cheio · aguarde a ração' : 'Leve milho ao moinho para alimentar as galinhas';
-    }
     for (const [id, p] of Object.entries(PRODUTOS)) {
       const e = this.estado.produtos[id];
       if (!e.liberado) continue;
@@ -470,21 +447,10 @@ export class Simulacao {
   atualizarProducao(dt) {
     if (!this.estado.estagioLoja) return;
     const p = this.estado.producao;
-    if (p.milhoNoMoinho > 0 && p.racao <= ALA_PRODUCAO.capacidadeRacao - ALA_PRODUCAO.racaoPorMilho) {
-      p.progressoRacao += dt;
-      if (p.progressoRacao >= ALA_PRODUCAO.tempoRacao) {
-        const primeiraRacao = p.racao === 0 && p.ovosProduzidos === 0;
-        p.milhoNoMoinho--;
-        p.racao += ALA_PRODUCAO.racaoPorMilho;
-        p.progressoRacao = 0;
-        if (primeiraRacao) this.emitir('racaoPronta', { texto: 'Ração pronta! As galinhas estão produzindo ovos.' });
-      }
-    }
-    if (p.racao > 0 && this.estado.produtos.ovos.horta < PRODUTOS.ovos.capacidadeHorta) {
+    if (this.estado.produtos.ovos.horta < PRODUTOS.ovos.capacidadeHorta) {
       p.progressoOvo += dt;
       if (p.progressoOvo >= ALA_PRODUCAO.tempoOvo) {
         const primeiroOvo = p.ovosProduzidos === 0;
-        p.racao--;
         p.progressoOvo = 0;
         this.estado.produtos.ovos.horta++;
         p.ovosProduzidos++;

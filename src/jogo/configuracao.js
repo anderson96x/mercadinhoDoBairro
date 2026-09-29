@@ -26,7 +26,7 @@ export const CONFIG = {
   maxClientes: 5,
   espacoClientes: 1.15,
   distanciaClientes: 1.05,
-  limiteMundo: { minX: -10.5, maxX: 10.5, minZ: -8, maxZ: 9 },
+  limiteMundo: { minX: -13.8, maxX: 14.5, minZ: -10, maxZ: 9 },
   inicio: { x: -1.8, z: 3.4 },
   caixa: { x: 3.5, z: 5.1 },
   balcao: { x: 3.5, z: 4.1 },
@@ -49,7 +49,7 @@ export const PRODUTOS = {
   tomate: {
     nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 5, origem: 'horta',
     tempoCrescimento: 1.8, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -6.6, z: -2.8 }, coleta: { x: -5.0, z: -1.7 },
+    horta: { x: -9, z: -2.8 }, coleta: { x: -7.4, z: -1.7 },
     prateleira: { x: 3, z: -0.5 }, reposicao: { x: 2, z: 1.2 },
     cliente: { x: 4, z: 1.2 },
     pontosCompra: [{ x: 4, z: 1.2 }, { x: 3, z: 1.2 }, { x: 2, z: 1.2 }, { x: 4.6, z: -0.5 }, { x: 1.4, z: -0.5 }], liberado: true
@@ -57,18 +57,18 @@ export const PRODUTOS = {
   milho: {
     nome: 'Milho', plural: 'Milhos', cor: 0xf6c844, preco: 10, origem: 'horta',
     tempoCrescimento: 2.8, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -6.6, z: 3.4 }, coleta: { x: -5.0, z: 3.4 },
-    prateleira: { x: 4.5, z: -3.8 }, reposicao: { x: 3.5, z: -2.1 },
-    cliente: { x: 5.5, z: -2.1 },
-    pontosCompra: [{ x: 5.5, z: -2.1 }, { x: 4.5, z: -2.1 }, { x: 3.5, z: -2.1 }, { x: 6, z: -3.8 }, { x: 3, z: -3.8 }], liberado: false
+    horta: { x: -9, z: 3.4 }, coleta: { x: -7.4, z: 3.4 },
+    prateleira: { x: 6.5, z: -3.8 }, reposicao: { x: 5.5, z: -2.1 },
+    cliente: { x: 7.5, z: -2.1 },
+    pontosCompra: [{ x: 7.5, z: -2.1 }, { x: 6.5, z: -2.1 }, { x: 5.5, z: -2.1 }, { x: 8, z: -3.8 }, { x: 5, z: -3.8 }], liberado: false
   },
   ovos: {
     nome: 'Ovo', plural: 'Ovos', cor: 0xf8e6bf, preco: 15, origem: 'galinheiro',
     capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: 14.3, z: -4.3 }, coleta: { x: 14.3, z: -2.65 },
-    prateleira: { x: 13.8, z: 3.8 }, reposicao: { x: 13.8, z: 2.25 },
-    cliente: { x: 13.8, z: 2.25 },
-    pontosCompra: [{ x: 13.8, z: 2.25 }, { x: 12.9, z: 2.25 }, { x: 14.7, z: 2.25 }], liberado: false
+    horta: { x: -9, z: -7.2 }, coleta: { x: -7.4, z: -6.7 },
+    prateleira: { x: 10, z: -0.5 }, reposicao: { x: 10, z: 1.2 },
+    cliente: { x: 10, z: 1.2 },
+    pontosCompra: [{ x: 10, z: 1.2 }, { x: 9.1, z: 1.2 }, { x: 10.9, z: 1.2 }], liberado: false
   }
 };
 
@@ -76,27 +76,24 @@ export const PRODUTOS = {
 export const NIVEL_OVOS = 5;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
-  limites: { ...CONFIG.limiteMundo, maxX: 17.5 },
-  piso: { x: 12.6, z: 0.35, w: 7, d: 12.7 },
-  camera: { x: 2.8, z: 0.5, alturaDesktop: 30 },
+  limites: { ...CONFIG.limiteMundo },
+  piso: { x: 10.6, z: 0.35, w: 3, d: 12.7 },
+  camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
   duracaoConstrucao: 4,
   paredes: [
-    { x: 12.6, z: -6, w: 7, d: 0.28, h: 2.8 },
-    { x: 12.6, z: 6.7, w: 7, d: 0.28, h: 0.65 },
-    { x: 16.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75 }
+    { x: 10.6, z: -6, w: 3, d: 0.28, h: 2.8 },
+    { x: 10.6, z: 6.7, w: 3, d: 0.28, h: 0.65 },
+    { x: 12.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75 }
   ],
-  moinho: { x: 11.2, z: -4.3, w: 1.3, d: 1.4 },
-  entregaMoinho: { x: 11.2, z: -2.9 },
   estacoes: { galinheiro: PRODUTOS.ovos.horta, prateleira: PRODUTOS.ovos.prateleira },
-  tempoRacao: 2.5, tempoOvo: 3.5, racaoPorMilho: 2,
-  capacidadeMilho: 8, capacidadeRacao: 12
+  tempoOvo: 3.5
 };
 
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
   { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 10.', custo: 350, icone: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 4 },
-  { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Amplie a loja. Leve milho ao moinho para fazer ração; o galinheiro usa a ração para produzir ovos.', custo: ALA_PRODUCAO.custo, icone: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS, requisitoMelhoria: 'milho' },
+  { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa um galinheiro na fazenda e amplie a loja para a prateleira de ovos. Colete os ovos e abasteça a prateleira.', custo: ALA_PRODUCAO.custo, icone: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
   { id: 'mochila', titulo: 'Cabe mais um pouco', descricao: 'Leve mais 4 produtos por viagem.', custo: 25, icone: 'mochila', max: 1, categoria: 'jogador', nivelMinimo: 1 },
   { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 100, icone: 'raio', max: 1, categoria: 'jogador', nivelMinimo: 5 },
   { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 250, icone: 'pessoa', max: 1, categoria: 'funcionarios', nivelMinimo: 2 },

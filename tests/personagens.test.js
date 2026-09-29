@@ -231,7 +231,7 @@ test('cliente sem cesta nasce com os braços relaxados e ganha a pose de carga a
 
 function preparar(origem = 'horta', duracao = 0.26) {
   const modelo = personagem(0x72a9bb);
-  const ator = { x: -4.8, z: -1.7, andando: false };
+  const ator = { ...PRODUTOS.tomate.coleta, andando: false };
   const animar = (inventario, dt = 0) => Cena.prototype.animarPersonagem(modelo, ator, dt, 0, inventario, origem, duracao);
   return { modelo, d: modelo.userData, animar };
 }
