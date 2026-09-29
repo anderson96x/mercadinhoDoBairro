@@ -8,7 +8,7 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 
 - [x] Replace the opening “serve 25 customers” objective with a short sequence: harvest tomatoes → stock the shelf → make the first sale → buy the first improvement.
   - Done when each step advances from an actual game event, gives a clear next destination, and survives saving/reloading.
-- [x] Add world hints for the active task and a visible preview of the next store area (corn).
+- [x] Add world hints for the active task. Keep unpurchased areas hidden without previews.
   - [ ] Validate with fresh desktop and portrait mobile players that they can identify where to go without opening Help. The headless browser could not render the 3D scene reliably.
 - [x] Make the first useful improvement affordable early; review the cost and unlock order for basket, cashier, helper, and corn.
   - [ ] Validate the human targets of first sale in 30–45 seconds and first useful improvement in 60–90 seconds. Bot results are faster and do not measure comprehension.
@@ -25,7 +25,7 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 - [x] Implement a staged store footprint shared by the scene, collision map, pathfinding, camera bounds, and save data.
   - A stage defines its prerequisite, price, active floor, walls, stations, paths, and unlocked products.
   - Done when buying an expansion changes the physical map and existing actors remain in reachable positions.
-- [x] Make the next wing visible as a construction site. On purchase, reveal floor space, equipment, signs, and a useful shorter path or new service area.
+- [x] Keep the original shop intact before purchase. After the required level and purchase, expand sideways with animated floor, walls, scaffolding, and equipment.
 - [x] Add one new production chain, starting with a single input and output, such as corn → feed → eggs.
   - Done when the player can learn the chain, sell its output, and see why the new department matters.
 - [x] Pair the first stocking helper with that new department so hiring staff creates a new player task instead of ending active play.

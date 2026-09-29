@@ -65,10 +65,10 @@ export const PRODUTOS = {
   ovos: {
     nome: 'Ovo', plural: 'Ovos', cor: 0xf8e6bf, preco: 15, origem: 'galinheiro',
     capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: 3.3, z: -9.1 }, coleta: { x: 3.3, z: -7.55 },
-    prateleira: { x: 7.75, z: -9.25 }, reposicao: { x: 7.75, z: -7.8 },
-    cliente: { x: 7.75, z: -7.8 },
-    pontosCompra: [{ x: 7.75, z: -7.8 }, { x: 6.9, z: -7.8 }, { x: 8.35, z: -7.8 }], liberado: false
+    horta: { x: 14.3, z: -4.3 }, coleta: { x: 14.3, z: -2.65 },
+    prateleira: { x: 13.8, z: 3.8 }, reposicao: { x: 13.8, z: 2.25 },
+    cliente: { x: 13.8, z: 2.25 },
+    pontosCompra: [{ x: 13.8, z: 2.25 }, { x: 12.9, z: 2.25 }, { x: 14.7, z: 2.25 }], liberado: false
   }
 };
 
@@ -76,16 +76,17 @@ export const PRODUTOS = {
 export const NIVEL_OVOS = 5;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
-  limites: { ...CONFIG.limiteMundo, minZ: -11.25 },
-  piso: { x: 5.6, z: -8.55, w: 7, d: 5 },
-  camera: { x: 0.5, z: -1.3, alturaDesktop: 28 },
-  porta: { x: 5.35, z: -6, w: 2.3, d: 0.3 },
+  limites: { ...CONFIG.limiteMundo, maxX: 17.5 },
+  piso: { x: 12.6, z: 0.35, w: 7, d: 12.7 },
+  camera: { x: 2.8, z: 0.5, alturaDesktop: 30 },
+  duracaoConstrucao: 4,
   paredes: [
-    { x: 5.6, z: -11.1, w: 7.2, d: 0.28, h: 2.8 },
-    { x: 2.1, z: -8.55, w: 0.28, d: 5.1, h: 2.8 },
-    { x: 9.1, z: -8.55, w: 0.28, d: 5.1, h: 0.75 }
+    { x: 12.6, z: -6, w: 7, d: 0.28, h: 2.8 },
+    { x: 12.6, z: 6.7, w: 7, d: 0.28, h: 0.65 },
+    { x: 16.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75 }
   ],
-  moinho: { x: 5.55, z: -9.1, w: 1.3, d: 1.4 },
+  moinho: { x: 11.2, z: -4.3, w: 1.3, d: 1.4 },
+  entregaMoinho: { x: 11.2, z: -2.9 },
   estacoes: { galinheiro: PRODUTOS.ovos.horta, prateleira: PRODUTOS.ovos.prateleira },
   tempoRacao: 2.5, tempoOvo: 3.5, racaoPorMilho: 2,
   capacidadeMilho: 8, capacidadeRacao: 12

@@ -97,6 +97,7 @@ export function validarEstado(dados) {
       angulo: Number.isFinite(ajudanteSalvo.angulo) ? limitar(ajudanteSalvo.angulo, -Math.PI, Math.PI) : 0
     };
     if (!base.funcionarios.ajudante.inventario.length) base.funcionarios.ajudante.destino = 'horta';
+    if (ajudanteSalvo.z < -6) Object.assign(base.funcionarios.ajudante, PRODUTOS.ovos.coleta);
   }
   // Retomar em um ponto livre evita que mudanças futuras no mapa prendam o jogador.
   base.som = dados.som === true;
@@ -275,7 +276,7 @@ export class Simulacao {
       { ...PRODUTOS.tomate.prateleira, w: 2.2, d: 1.7 },
       { ...CONFIG.balcao, w: 2.7, d: 1.35 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
-      ...PAREDES_LOJA, ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA
+      ...PAREDES_LOJA.filter(p => !p.lateral || !this.estado.estagioLoja), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA
     ];
     if (this.estado.produtos.milho.liberado) caixas.push({ x: -6.6, z: 3.4, w: 2.2, d: 3.3 }, { ...PRODUTOS.milho.prateleira, w: 2.2, d: 1.7 });
     if (this.estado.estagioLoja) caixas.push(
@@ -284,7 +285,6 @@ export class Simulacao {
       { ...PRODUTOS.ovos.horta, w: 2.1, d: 2.2 },
       { ...PRODUTOS.ovos.prateleira, w: 2.3, d: 1.65 }
     );
-    else caixas.push({ ...ALA_PRODUCAO.piso }, ALA_PRODUCAO.porta);
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }

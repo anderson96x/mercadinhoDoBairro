@@ -29,16 +29,6 @@ function esfera(pai, r, cor, x, y, z, sx = 1, sy = 1, sz = 1) {
 function cilindro(pai, r1, r2, h, cor, x, y, z, lados = 12) {
   const m = objeto(new THREE.CylinderGeometry(r1, r2, h, lados), cor, x, y, z); pai.add(m); return m;
 }
-function placa(texto, fundo = '#1d664d', cor = '#fff7dc', largura = 3.4, altura = 0.72) {
-  const c = document.createElement('canvas'); c.width = 768; c.height = 160;
-  const ctx = c.getContext('2d'); ctx.fillStyle = fundo; ctx.fillRect(0, 0, c.width, c.height);
-  ctx.fillStyle = cor; ctx.font = '800 67px system-ui, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(texto, 384, 82, 705);
-  const textura = new THREE.CanvasTexture(c); textura.colorSpace = THREE.SRGBColorSpace;
-  const m = new THREE.Mesh(new THREE.PlaneGeometry(largura, altura), new THREE.MeshBasicMaterial({ map: textura, side: THREE.DoubleSide }));
-  return m;
-}
-
 function liberarGeometrias(grupo) {
   grupo.traverse(m => { if (m.isMesh) m.geometry?.dispose(); });
   grupo.clear();
@@ -456,7 +446,7 @@ export class Cena {
   construirMundo() {
     const suporte = new THREE.Group(); suporte.position.set(CONFIG.balcao.x, 0, CONFIG.balcao.z); suporte.rotation.y = Math.PI / 2; this.cena.add(suporte);
     const c = new THREE.Group(); c.position.set(-5.5, 0, -4.1); suporte.add(c);
-    this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera, placa });
+    this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera });
     this.bairro.atualizarEstagio(this.sim.estado.estagioLoja);
     this.bairro.aplicar(this.sim.estado.personalizacao);
     const suporteCestas = new THREE.Group();
@@ -546,8 +536,6 @@ export class Cena {
     if (id === 'ovos') {
       caixa(grupo, 2.1, 0.65, 2.2, 0xb37a4c, h.x, 0.55, h.z);
       caixa(grupo, 2.1, 0.12, 2.2, 0xe4bb75, h.x, 0.93, h.z);
-      const placaCoop = placa('GALINHEIRO', '#9b6932', '#fff5db', 1.7, 0.38);
-      placaCoop.position.set(h.x, 1.5, h.z - 0.85); grupo.add(placaCoop);
     } else {
       caixa(grupo, 2.5, 0.35, 3.6, 0xbd7545, h.x, 0.22, h.z);
       caixa(grupo, 2.23, 0.05, 3.32, 0x70401f, h.x, 0.42, h.z);
@@ -577,7 +565,6 @@ export class Cena {
     for (let i = 0; i < 12; i++) {
       const f = criarProduto(id, 1.7); f.position.set(s.x - 0.83 + i % 4 * 0.56, 1.11, s.z - 0.5 + Math.floor(i / 4) * 0.49); grupo.add(f); frutas.push(f);
     }
-    const preco = placa(`R$ ${p.preco}`, '#fff5d8', '#2d6243', 0.85, 0.32); preco.position.set(s.x, 0.6, s.z + 0.835); grupo.add(preco);
     const bloqueio = new THREE.Group(); this.cena.add(bloqueio);
     caixa(bloqueio, 2.55, 0.03, 3.65, 0x70b74b, h.x, 0.065, h.z);
     for (const d of [-1,1]) {
@@ -856,7 +843,7 @@ export class Cena {
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
     const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(e.estagioLoja ? ALA_PRODUCAO.camera.x : -0.7, 0, e.estagioLoja ? ALA_PRODUCAO.camera.z : 0.5);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
-    this.bairro.atualizarEstagio(e.estagioLoja);
+    const equipamentoAla = this.bairro.atualizarEstagio(e.estagioLoja, dt);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
     this.animarPersonagem(this.jogador, e.jogador, dt, tempo, e.jogador.inventario);
     const atendendoNoCaixa = sim.progressoCaixa > 0;
@@ -981,7 +968,8 @@ export class Cena {
       this.animarPersonagem(this.ajudante, sim.ajudante, dt, tempo, sim.ajudante.inventario, 'horta', 0.44);
     }
     for (const [id, objetos] of Object.entries(this.produtos)) {
-      const estado = e.produtos[id]; objetos.grupo.visible = estado.liberado; objetos.bloqueio.visible = id !== 'ovos' && !estado.liberado;
+      const estado = e.produtos[id]; objetos.grupo.visible = estado.liberado && (id !== 'ovos' || equipamentoAla > 0); objetos.bloqueio.visible = false;
+      if (id === 'ovos') objetos.grupo.scale.y = Math.max(0.001, equipamentoAla);
       objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = 1 + Math.sin(tempo * 2 + i) * 0.025; });
       const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
         .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);
@@ -989,7 +977,7 @@ export class Cena {
     }
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
-      if (produto && !e.produtos[produto].liberado) { el.hidden = true; continue; }
+      if (produto && (!e.produtos[produto].liberado || (produto === 'ovos' && equipamentoAla < 1))) { el.hidden = true; continue; }
       const estacao = PRODUTOS[produto]?.[tipo === 'horta' ? 'horta' : 'prateleira'];
       const perto = tipo === 'horta'
         ? pertoDaEstacao(e.jogador, estacao, 2.5, 3.6)

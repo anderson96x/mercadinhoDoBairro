@@ -1,6 +1,6 @@
 import { icone } from './icones.js';
 import { PALETAS } from '../jogo/personalizacao.js';
-import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
+import { CONFIG, MELHORIAS, PRODUTOS, ALA_PRODUCAO } from '../jogo/configuracao.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
   { id: 'mercado', titulo: 'Mercado' },
@@ -95,8 +95,8 @@ export class Interface {
     this.el('objetivo-contagem').textContent = `${m.valor} / ${m.alvo}`;
     this.el('proxima-novidade').textContent = e.estagioLoja
       ? `Ala dos ovos · moinho: ${e.producao.milhoNoMoinho} milho · ${e.producao.racao} rações · ovos: ${e.produtos.ovos.horta} no galinheiro, ${e.produtos.ovos.prateleira} na prateleira`
-      : e.produtos.milho.liberado ? 'Próxima área: ala dos ovos no nível 5 · R$ 500'
-      : s.nivel < 4 ? 'Próxima área: milho no nível 4' : 'Próxima área: milho · junte R$ 350 no escritório';
+      : '';
+    this.el('proxima-novidade').hidden = !e.estagioLoja;
     const inv = e.jogador.inventario;
     this.el('inventario').hidden = inv.length === 0;
     const chave = `${s.capacidade}:${inv.join(',')}`;
@@ -119,7 +119,7 @@ export class Interface {
       horta: { ponto: PRODUTOS.tomate.coleta, nome: 'HORTA' },
       milho: { ponto: PRODUTOS.milho.coleta, nome: 'MILHO' },
       prateleira: { ponto: PRODUTOS.tomate.reposicao, nome: 'PRATELEIRA' },
-      moinho: { ponto: { x: 5.55, z: -7.75 }, nome: 'MOINHO' },
+      moinho: { ponto: ALA_PRODUCAO.entregaMoinho, nome: 'MOINHO' },
       ovos: { ponto: PRODUTOS.ovos.coleta, nome: 'OVOS' },
       prateleiraOvos: { ponto: PRODUTOS.ovos.reposicao, nome: 'PRATELEIRA DE OVOS' },
       caixa: { ponto: CONFIG.cadeiraCaixa, nome: 'CAIXA' },
