@@ -7,6 +7,7 @@ import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
 const capacidadeExtraAtiva = MELHORIAS.find(m => m.id === 'mochila')?.ativa !== false;
+const fertilizanteAtivo = MELHORIAS.find(m => m.id === 'fertilizante')?.ativa !== false;
 
 // Mede a distância à borda do objeto, permitindo interagir por qualquer lado.
 function pertoEstacao(ator, centro, largura, profundidade) {
@@ -63,11 +64,11 @@ export function validarEstado(dados) {
     base.produtos[id] = {
       liberado, horta: liberado ? numero(salvo?.horta ?? (p.origem === 'horta' ? p.capacidadeHorta : 0), p.capacidadeHorta) : 0,
       prateleira: liberado ? numero(salvo?.prateleira, p.capacidadePrateleira) : 0, crescimento: 0,
-      crescimentoMelhorado: p.origem === 'horta' && nivelSalvo >= 4 && salvo?.crescimentoMelhorado === true
+      crescimentoMelhorado: fertilizanteAtivo && p.origem === 'horta' && nivelSalvo >= 4 && salvo?.crescimentoMelhorado === true
     };
   }
   base.melhorias.fertilizante = Object.values(base.produtos).filter(p => p.crescimentoMelhorado).length;
-  if (nivelSalvo >= 4 && dados.melhoriaPendente === 'fertilizante' && base.melhorias.fertilizante < MELHORIAS.find(m => m.id === 'fertilizante').max) base.melhoriaPendente = 'fertilizante';
+  if (fertilizanteAtivo && nivelSalvo >= 4 && dados.melhoriaPendente === 'fertilizante' && base.melhorias.fertilizante < MELHORIAS.find(m => m.id === 'fertilizante').max) base.melhoriaPendente = 'fertilizante';
   // Salvamentos anteriores não tinham satisfação. As vendas registradas
   // continuam alimentando o histórico de satisfação desses jogos.
   if (dados.estatisticas?.satisfacao === undefined) {
@@ -265,7 +266,7 @@ export class Simulacao {
           texto: 'Vá ao escritório para abrir a horta e a prateleira de milho.',
           exibir: !this.estado.melhorias.milho
         },
-        5: orientacaoOvos,
+        4: orientacaoOvos,
         6: {
           titulo: 'Contrate um ajudante',
           texto: 'Vá ao escritório para contratar ajuda na colheita e reposição dos produtos.',

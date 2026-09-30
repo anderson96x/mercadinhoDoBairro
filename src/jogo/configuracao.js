@@ -73,7 +73,7 @@ export const PRODUTOS = {
 };
 
 // A ala dos ovos e o ajudante entram em marcos separados da progressão.
-export const NIVEL_OVOS = 5;
+export const NIVEL_OVOS = 4;
 export const NIVEL_AJUDANTE = 6;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
@@ -100,7 +100,7 @@ export const MELHORIAS = [
   { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 250, icone: 'pessoa', max: 1, categoria: 'funcionarios', nivelMinimo: 2 },
   { id: 'ajudante', titulo: 'Ajuda na reposição', descricao: 'Disponível no nível 6. O ajudante colhe e abastece as prateleiras de todos os produtos liberados.', custo: 300, icone: 'cesta', max: 1, categoria: 'funcionarios', nivelMinimo: NIVEL_AJUDANTE, nivelMinimoLegado: 3 },
   { id: 'velocidadeAjudante', titulo: 'Ajudante ligeiro', descricao: 'O ajudante anda 20% mais rápido.', custo: 100, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: NIVEL_AJUDANTE, nivelMinimoLegado: 5, requisitoMelhoria: 'ajudante' },
-  { id: 'fertilizante', titulo: 'Crescimento acelerado', descricao: 'Escolha uma horta para reduzir a 40% o tempo de crescimento. Uma vez por produto.', custo: 250, icone: 'folha', max: Object.values(PRODUTOS).filter(p => p.origem === 'horta').length, tipo: 'selecaoProduto', categoria: 'mercado', nivelMinimo: 4 }
+  { id: 'fertilizante', titulo: 'Crescimento acelerado', descricao: 'Escolha uma horta para reduzir a 40% o tempo de crescimento. Uma vez por produto.', custo: 250, icone: 'folha', max: Object.values(PRODUTOS).filter(p => p.origem === 'horta').length, tipo: 'selecaoProduto', categoria: 'mercado', nivelMinimo: 4, ativa: false }
 ];
 
 export const MISSOES = [

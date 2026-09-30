@@ -108,7 +108,7 @@ npm run preview
 
 Comece por [docs/COMO-ALTERAR.md](docs/COMO-ALTERAR.md). A simulação não importa Three.js nem elementos da página, o que permite testar a economia independentemente do visual.
 
-Esta versão tem três produtos e duas etapas físicas da loja. A expansão no nível 5 custa R$ 500: construa o galinheiro na fazenda, colete os ovos e leve-os à prateleira perto dos outros produtos. O terreno já começa maior; apenas a loja recebe uma extensão de 3 unidades. Milho é um produto independente e não é requisito para os ovos. Novos mapas, máquinas, receitas e personagens podem ser adicionados sobre a estrutura atual.
+Esta versão tem três produtos e duas etapas físicas da loja. A expansão no nível 4 custa R$ 500: construa o galinheiro na fazenda, colete os ovos e leve-os à prateleira perto dos outros produtos. O terreno já começa maior; apenas a loja recebe uma extensão de 3 unidades. Milho é um produto independente e não é requisito para os ovos. Novos mapas, máquinas, receitas e personagens podem ser adicionados sobre a estrutura atual.
 
 ## Créditos e dependências
 
