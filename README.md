@@ -41,7 +41,7 @@ O joystick aparece onde você começa a arrastar. O movimento acompanha as dire�
 - Cesta com capacidade, animação de pegar e guardar os produtos e melhorias.
 - Cesta cinza do jogador: capacidade inicial de 4 produtos e melhoria para 8.
 - Clientes com percurso até a prateleira, fila, compra e saída.
-- Dinheiro de jogo, contratação de caixa e ajudante. O ajudante é liberado no nível 6, independentemente da ala dos ovos, e repõe todos os produtos liberados.
+- Dinheiro de jogo e contratação de caixa. O ajudante está temporariamente desativado.
 - Objetivos progressivos, níveis, efeitos sonoros e pausa.
 - Interface adaptada a celular em retrato e paisagem.
 - Salvamento automático neste navegador a cada 5 segundos e ao sair da página.

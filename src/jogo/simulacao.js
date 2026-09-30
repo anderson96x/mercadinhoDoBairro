@@ -8,6 +8,9 @@ export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
 const capacidadeExtraAtiva = MELHORIAS.find(m => m.id === 'mochila')?.ativa !== false;
 const fertilizanteAtivo = MELHORIAS.find(m => m.id === 'fertilizante')?.ativa !== false;
+const velocidadeJogadorAtiva = MELHORIAS.find(m => m.id === 'velocidade')?.ativa !== false;
+const ajudanteAtivo = MELHORIAS.find(m => m.id === 'ajudante')?.ativa !== false;
+const velocidadeAjudanteAtiva = MELHORIAS.find(m => m.id === 'velocidadeAjudante')?.ativa !== false;
 
 // Mede a distância à borda do objeto, permitindo interagir por qualquer lado.
 function pertoEstacao(ator, centro, largura, profundidade) {
@@ -129,8 +132,9 @@ export class Simulacao {
   }
   get limitesMundo() { return this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
   get capacidade() { return CONFIG.capacidadeInicial + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
-  get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
-  get velocidadeAjudante() { return 2.8 * (this.estado.melhorias.velocidadeAjudante ? CONFIG.multiplicadorVelocidadeAjudante : 1); }
+  get velocidade() { return CONFIG.velocidadeInicial * (1 + (velocidadeJogadorAtiva ? this.estado.melhorias.velocidade * 0.2 : 0)); }
+  get ajudanteContratado() { return ajudanteAtivo && !!this.estado.melhorias.ajudante; }
+  get velocidadeAjudante() { return 2.8 * (velocidadeAjudanteAtiva && this.estado.melhorias.velocidadeAjudante ? CONFIG.multiplicadorVelocidadeAjudante : 1); }
   get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / CONFIG.clientesPorNivel); }
   get progressoClientes() { return this.estado.estatisticas.clientes % CONFIG.clientesPorNivel; }
   get reputacao() {
@@ -249,12 +253,12 @@ export class Simulacao {
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
       const orientacaoOvos = !this.estado.estagioLoja
-        ? { titulo: 'Construa o galinheiro', texto: 'Compre a ala dos ovos no escritório para construir o galinheiro na fazenda e ampliar a loja.', destino: 'escritorio' }
+        ? { titulo: 'Construa o galinheiro', texto: 'Compre a ala dos ovos no escritório.', destino: 'escritorio' }
         : this.estado.produtos.ovos.prateleira < 1
-          ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Colete os ovos no galinheiro da fazenda e leve-os à nova prateleira.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos' }
-          : this.estado.melhorias.ajudante
+          ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Colete os ovos no galinheiro da fazenda e leve-os à nova prateleira.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos', exibir: false }
+          : this.ajudanteContratado
             ? { titulo: 'Mantenha a ala funcionando', texto: 'As galinhas produzem ovos automaticamente. Cuide das prateleiras e atenda o bairro.', destino: 'ovos', exibir: false }
-            : { titulo: 'Atenda o bairro', texto: 'Os ovos já estão à venda. No nível 6, você poderá contratar um ajudante para repor todos os produtos.', destino: 'caixa' };
+            : { titulo: 'Atenda o bairro', texto: 'Os ovos já estão à venda. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacoesNivel = {
         2: {
           titulo: 'Seu mercadinho pode crescer',
@@ -267,12 +271,6 @@ export class Simulacao {
           exibir: !this.estado.melhorias.milho
         },
         4: orientacaoOvos,
-        6: {
-          titulo: 'Contrate um ajudante',
-          texto: 'Vá ao escritório para contratar ajuda na colheita e reposição dos produtos.',
-          destino: 'escritorio',
-          exibir: !this.estado.melhorias.ajudante
-        }
       };
       const orientacaoNivel = orientacoesNivel[this.nivel] || {};
       return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa'), exibir: orientacaoNivel.exibir ?? Boolean(orientacaoNivel.titulo) };
@@ -378,7 +376,7 @@ export class Simulacao {
     dt = limitar(dt, 0, 0.05);
     this.tempo += dt;
     const atoresPorta = [this.estado.jogador, ...this.clientes];
-    if (this.estado.melhorias.ajudante) atoresPorta.push(this.ajudante);
+    if (this.ajudanteContratado) atoresPorta.push(this.ajudante);
     const abrirPorta = atoresPorta.some(ator => distancia(ator, PORTA_ESCRITORIO) < 1.8);
     this.aberturaPortaEscritorio = limitar(this.aberturaPortaEscritorio + (abrirPorta ? 1 : -1) * dt * 2.5, 0, 1);
     const a = CONFIG.anguloCamera;
@@ -409,7 +407,7 @@ export class Simulacao {
     this.interagir();
     this.atualizarClientes(dt);
     this.atualizarCaixa(dt);
-    if (this.estado.melhorias.ajudante) this.atualizarAjudante(dt);
+    if (this.ajudanteContratado) this.atualizarAjudante(dt);
     const missao = this.missao();
     if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: `Próximo passo: ${missao.titulo}` }); this.missaoAnterior = missao.indice; }
   }
@@ -683,7 +681,7 @@ export class Simulacao {
       lojaAberta: this.estado.lojaAberta,
       estagioLoja: this.estado.estagioLoja, producao: { ...this.estado.producao },
       funcionarios: { ajudante: { ...this.ajudante, inventario: [...this.ajudante.inventario] } },
-      inventario: [...this.estado.jogador.inventario], melhorias: { ...this.estado.melhorias },
+      inventario: [...this.estado.jogador.inventario], melhorias: Object.fromEntries(MELHORIAS.map(m => [m.id, m.ativa === false ? 0 : this.estado.melhorias[m.id]])),
       produtos: structuredClone(this.estado.produtos), clientesAtendidos: this.estado.estatisticas.clientes,
       objetivo: this.missao().titulo, pausado: this.pausado };
   }
