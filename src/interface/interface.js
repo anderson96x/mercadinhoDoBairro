@@ -20,7 +20,7 @@ export class Interface {
           <nav class="ferramentas" aria-label="Opções do jogo">
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
             <button class="botao-icone" id="ajuda" title="Como jogar" aria-label="Como jogar">${icone('ajuda')}</button>
-            <button class="botao-icone" id="pausa" title="Pausar" aria-label="Pausar">${icone('pausa')}</button>
+            <button class="botao-icone" id="fullscreen" title="Jogar em tela cheia" aria-label="Jogar em tela cheia">${icone('tela')}</button>
             ${import.meta.env.DEV ? `<button class="botao-icone reset-dev" id="dev-menu" title="Abrir menu de desenvolvimento" aria-label="Abrir menu de desenvolvimento">${icone('dev')}<small>DEV</small></button>` : ''}
           </nav>
         </header>
@@ -37,19 +37,40 @@ export class Interface {
         <div id="joystick" aria-hidden="true"><span></span></div>
         <div id="mensagens" hidden aria-live="polite" aria-atomic="true"></div>
         <div id="efeitos" aria-hidden="true"></div><div id="cursor-melhoria" aria-hidden="true" hidden>${icone('folha')}</div>
+        <div id="pausa-foco" class="pausa-foco" role="status" aria-live="polite" hidden>
+          <div class="pausa-foco-cartao">
+            <span class="pausa-foco-icone" aria-hidden="true"><i></i><i></i></span>
+            <span class="pausa-foco-legenda">MERCADINHO DO BAIRRO</span>
+            <h2>Jogo pausado</h2>
+            <p>Volte para esta janela para continuar.</p>
+          </div>
+        </div>
         <dialog id="painel" aria-labelledby="painel-titulo"><div id="painel-conteudo"></div></dialog>
       </main>`;
     this.el = id => document.getElementById(id);
     this.el('som').onclick = () => { this.acoes.som(); this.atualizarSom(); };
     this.el('ajuda').onclick = () => this.abrir('ajuda');
-    this.el('pausa').onclick = () => this.abrir('pausa');
+    this.atualizarTelaCheia();
+    this.el('fullscreen').onclick = async () => {
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        else await document.documentElement.requestFullscreen();
+      } catch { this.mensagem('Este navegador não permite tela cheia.'); }
+    };
+    document.addEventListener('fullscreenchange', () => this.atualizarTelaCheia());
     if (import.meta.env.DEV) this.el('dev-menu').onclick = () => this.abrir('dev');
     this.el('painel').addEventListener('cancel', e => { e.preventDefault(); this.fechar(); });
     this.el('painel').addEventListener('click', e => { if (e.target === this.el('painel')) this.fechar(); });
-    window.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && !this.el('painel').open) { e.preventDefault(); this.abrir('pausa'); }
-    });
     this.atualizarSom(); this.atualizar();
+  }
+  mostrarPausaFoco(pausado) { this.el('pausa-foco').hidden = !pausado; }
+  atualizarTelaCheia() {
+    const botao = this.el('fullscreen');
+    const emTelaCheia = !!document.fullscreenElement;
+    botao.hidden = !document.fullscreenEnabled && !emTelaCheia;
+    botao.title = emTelaCheia ? 'Sair da tela cheia' : 'Jogar em tela cheia';
+    botao.setAttribute('aria-label', botao.title);
+    botao.setAttribute('aria-pressed', String(emTelaCheia));
   }
   atualizarSom() {
     const ligado = this.sim.estado.som;
@@ -146,7 +167,7 @@ export class Interface {
   fechar() { this.el('painel').close(); this.tipoPainel = null; this.acoes.pausar(false); }
   renderizarPainel() {
     const tipo = this.tipoPainel;
-    const titulos = { escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', pausa: 'Uma pausa para respirar', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
+    const titulos = { escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
     let conteudo = '';
     if (tipo === 'escritorio') {
       const aberta = this.sim.estado.lojaAberta;
@@ -180,8 +201,6 @@ export class Interface {
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p></div></div>
           <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 5, construa o galinheiro na fazenda. As galinhas produzem ovos automaticamente; colete e leve à prateleira.</p></div></li><li><span>5</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>6</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
-    } else if (tipo === 'pausa') {
-      conteudo = `<p class="painel-subtitulo">A loja espera por você.</p><div class="resumo-pausa"><div><strong>${reais(this.sim.estado.dinheiro)}</strong><span>em caixa</span></div><div><strong>${this.sim.estado.estatisticas.satisfacao}</strong><span>pontos de satisfação</span></div><div><strong>${this.sim.reputacao}</strong><span>de reputação</span></div></div><button class="botao-principal" data-fechar>${icone('jogar')} Continuar jogando</button><button class="botao-secundario" id="como-jogar">${icone('ajuda')} Como jogar</button><button class="botao-secundario" id="tela-cheia">${icone('tela')} ${document.fullscreenElement ? 'Sair da tela cheia' : 'Jogar em tela cheia'}</button><button class="botao-texto" id="reiniciar">Começar um novo jogo</button><p class="nota central">O progresso fica salvo neste navegador.</p>`;
     } else if (tipo === 'dev') {
       const proximaReputacao = Math.min(100, Math.ceil((this.sim.reputacao + 1) / 10) * 10);
       conteudo = `<div class="dev-painel">
@@ -238,22 +257,8 @@ export class Interface {
       };
     }
     if (tipo === 'melhorias') this.el('voltar-escritorio').onclick = () => this.abrir('escritorio');
-    if (tipo === 'pausa') {
-      const somBotao = document.createElement('button'); somBotao.className = 'botao-secundario';
-      somBotao.innerHTML = `${icone(this.sim.estado.som ? 'som' : 'mudo')} ${this.sim.estado.som ? 'Desativar sons' : 'Ativar sons'}`;
-      somBotao.onclick = () => { this.acoes.som(); this.atualizarSom(); this.renderizarPainel(); };
-      this.el('como-jogar').after(somBotao);
-      this.el('como-jogar').onclick = () => this.abrir('ajuda');
-      this.el('reiniciar').onclick = () => this.abrir('reiniciar');
-      const botaoTela = this.el('tela-cheia');
-      botaoTela.hidden = !document.fullscreenEnabled && !document.fullscreenElement;
-      botaoTela.onclick = async () => {
-        try { if (document.fullscreenElement) await document.exitFullscreen(); else await document.documentElement.requestFullscreen(); this.renderizarPainel(); }
-        catch { this.mensagem('Este navegador não permite tela cheia.'); }
-      };
-    }
     if (tipo === 'reiniciar') {
-      this.el('cancelar-reinicio').onclick = () => this.abrir('pausa');
+      this.el('cancelar-reinicio').onclick = () => this.fechar();
       this.el('confirmar-reinicio').onclick = () => this.acoes.reiniciar();
     }
     if (tipo === 'dev') {

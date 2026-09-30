@@ -99,9 +99,17 @@ try {
   if (sim.estado.melhoriaPendente === 'fertilizante') { ui.iniciarSelecaoHorta(); iniciarSelecaoHorta(); }
   document.addEventListener('pointerdown', () => { if (sim.estado.som) sons.ativar(true); }, { once: true });
   let anterior = performance.now(), proximaUI = 0, acumulado = 0;
+  const janelaEmFoco = () => !document.hidden && document.hasFocus();
+  const atualizarFoco = () => {
+    anterior = performance.now();
+    acumulado = 0;
+    controles.limpar();
+    ui.mostrarPausaFoco(!janelaEmFoco());
+    if (document.hidden) gravar();
+  };
   const quadro = agora => {
     const dt = Math.min((agora - anterior) / 1000, 0.25); anterior = agora;
-    if (!document.hidden) {
+    if (janelaEmFoco()) {
       acumulado += dt;
       const entrada = controles.ler();
       while (acumulado >= 1 / 60) { sim.atualizar(1 / 60, entrada); acumulado -= 1 / 60; }
@@ -123,7 +131,10 @@ try {
   requestAnimationFrame(quadro);
   setInterval(gravar, 5000);
   window.addEventListener('pagehide', gravar);
-  document.addEventListener('visibilitychange', () => { controles.limpar(); if (document.hidden) gravar(); });
+  window.addEventListener('blur', atualizarFoco);
+  window.addEventListener('focus', atualizarFoco);
+  document.addEventListener('visibilitychange', atualizarFoco);
+  ui.mostrarPausaFoco(!janelaEmFoco());
   // Ferramentas opcionais do navegador: usam as mesmas ações da interface.
   if (document.modelContext?.registerTool) {
     const opcoes = { signal: new AbortController().signal };

@@ -14,8 +14,6 @@ const caminhos = {
   melhorar: '<path d="M4 18h4v3H4v-3Zm6-5h4v8h-4v-8Zm6-6h4v14h-4V7ZM3 11l6-6 4 2 6-5m-5 0h5v5"/>',
   som: '<path d="m4 9 4 0 5-4v14l-5-4H4V9Zm12-1c3 2 3 6 0 8m3-11c5 4 5 10 0 14"/>',
   mudo: '<path d="m4 9 4 0 5-4v14l-5-4H4V9Zm12 0 5 6m0-6-5 6"/>',
-  pausa: '<path d="M8 5v14M16 5v14"/>',
-  jogar: '<path d="m8 4 12 8-12 8V4Z"/>',
   ajuda: '<circle cx="12" cy="12" r="9"/><path d="M9 9a3 3 0 0 1 6 0c0 2-3 2-3 4m0 3v.1"/>',
   fechar: '<path d="m6 6 12 12M6 18 18 6"/>',
   certo: '<path d="m5 12 4 4L19 6"/>',
