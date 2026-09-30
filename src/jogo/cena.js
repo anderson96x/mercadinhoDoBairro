@@ -1,4 +1,5 @@
 import { construirBairro } from './bairro.js';
+import { Trafego } from './trafego.js';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS, ALA_PRODUCAO } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
@@ -469,6 +470,7 @@ export class Cena {
     this.cena.add(sol);
     this.alvoCamera = new THREE.Vector3(-0.5, 0, 0.8);
     this.construirMundo();
+    this.trafego = new Trafego(this.cena);
     this.aberturaLojaVisual = 0;
     this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, -0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
@@ -869,6 +871,7 @@ export class Cena {
   }
   atualizar(dt) {
     const sim = this.sim, e = sim.estado;
+    this.trafego.atualizar(dt);
     const dtVisual = dt || (e.jogador.sentadoEscritorio ? 1 / 60 : 0);
     this.tempoVisual += dtVisual;
     const tempo = this.tempoVisual;

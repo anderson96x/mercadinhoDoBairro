@@ -48,6 +48,14 @@ export const MOBILIARIO_CALCADA = [
   ...[1.4, 6.2, 10.5].map(x => ({ x, z: 7.4, w: 1.1, d: 0.55 }))
 ];
 
+export const RUA = Object.freeze({
+  minX: -15, maxX: 16,
+  faixas: Object.freeze([
+    Object.freeze({ z: 10.35, direcao: -1 }),
+    Object.freeze({ z: 12.55, direcao: 1 })
+  ])
+});
+
 function criarDetalhesGrama(grupo) {
   // Posicoes fixas deixam a paisagem igual em cada carregamento.
   let semente = 4187;
