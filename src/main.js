@@ -20,6 +20,10 @@ import { validarPersonalizacao } from './jogo/personalizacao.js';
 import { CONFIG, MELHORIAS } from './jogo/configuracao.js';
 
 const sim = new Simulacao(carregar());
+const chavePrazoAssaltoDev = 'mercadinho-do-bairro-dev-prazo-assalto';
+if (import.meta.env.DEV) {
+  try { sim.definirTempoEsperaAssalto(Number(localStorage.getItem(chavePrazoAssaltoDev))); } catch { /* armazenamento opcional */ }
+}
 const sons = new Sons();
 let controles, cena;
 let avisoSalvamento = false;
@@ -58,6 +62,12 @@ function definirClientesPorNivel(valor) {
   ui.atualizar();
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
 }
+function definirTempoAssalto(valor) {
+  if (!import.meta.env.DEV || !sim.definirTempoEsperaAssalto(valor)) return false;
+  try { localStorage.setItem(chavePrazoAssaltoDev, String(valor)); } catch { /* vale até recarregar */ }
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+  return true;
+}
 function aumentarReputacaoDev() {
   if (!import.meta.env.DEV) return;
   sim.aumentarReputacaoDev();
@@ -80,7 +90,7 @@ const ui = new Interface(sim, {
     if (resultado.sucesso) gravar();
     return resultado;
   },
-  pausar, comprar, alterarSaldo, aumentarNivelDev, definirClientesPorNivel, aumentarReputacaoDev, iniciarSelecaoHorta,
+  pausar, comprar, alterarSaldo, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;
@@ -128,6 +138,11 @@ try {
         if (evento.tipo === 'depositoConcluido') {
           gravar(); ui.mensagem(`Depósito de ${evento.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} concluído. Dinheiro em segurança!`);
         }
+        if (evento.tipo === 'assaltoChegando') { gravar(); ui.mensagem('Um carro suspeito está chegando ao mercadinho!'); }
+        if (evento.tipo === 'assaltoIniciado') { gravar(); ui.mensagem('Assalto! Os clientes estão apavorados.'); }
+        if (evento.tipo === 'dinheiroRoubado') { gravar(); ui.mensagem(`Roubaram ${evento.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} do caixa!`); }
+        if (evento.tipo === 'assaltoEncerrado') { gravar(); ui.mensagem('O assaltante fugiu. A reputação do mercadinho caiu para zero.'); }
+        if (evento.tipo === 'assaltoConcluido') gravar();
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
         if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.`); }

@@ -1,10 +1,14 @@
+import { ASSALTO, validarAssalto } from './assalto.js';
+
 export const BANCO = Object.freeze({ limite: 1000, chegada: 5, desembarque: 6, coleta: 14, retirada: 17, embarque: 25, partida: 27, fim: 33 });
 
-export function estadoBanco() { return { noCaixa: 0, depositado: 0, coleta: null }; }
+export function estadoBanco() { return { noCaixa: 0, depositado: 0, coleta: null, tempoRisco: 0, assalto: null }; }
 
 export function validarBanco(dados) {
   const numero = v => Number.isFinite(v) ? Math.max(0, Math.min(1e9, Math.floor(v))) : 0;
-  const banco = { noCaixa: numero(dados?.noCaixa), depositado: numero(dados?.depositado), coleta: null };
+  const banco = { ...estadoBanco(), noCaixa: numero(dados?.noCaixa), depositado: numero(dados?.depositado),
+    tempoRisco: Number.isFinite(dados?.tempoRisco) ? Math.max(0, Math.min(ASSALTO.espera, dados.tempoRisco)) : 0,
+    assalto: validarAssalto(dados?.assalto) };
   const coleta = dados?.coleta;
   if (coleta && numero(coleta.valor) > 0) {
     const retirado = coleta.retirado === true;
@@ -14,6 +18,7 @@ export function validarBanco(dados) {
     else tempo = Math.min(BANCO.retirada, tempo);
     if (valor) banco.coleta = { valor, tempo, retirado };
   }
+  if (banco.coleta) { banco.assalto = null; banco.tempoRisco = 0; }
   return banco;
 }
 

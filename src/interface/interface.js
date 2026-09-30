@@ -2,6 +2,7 @@ import { icone } from './icones.js';
 import { PALETAS } from '../jogo/personalizacao.js';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
 import { BANCO, statusColeta } from '../jogo/banco.js';
+import { statusAssalto } from '../jogo/assalto.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
   { id: 'mercado', titulo: 'Mercado' },
@@ -177,16 +178,19 @@ export class Interface {
   atualizarBanco() {
     const banco = this.sim.estado.banco;
     const status = statusColeta(banco.coleta);
-    const chave = `${banco.noCaixa}:${status}`;
+    const assalto = banco.assalto;
+    const chave = `${banco.noCaixa}:${status}:${assalto ? `${statusAssalto(assalto)}:${assalto.valor}` : ''}`;
     if (chave === this.ultimoBanco) return;
     this.ultimoBanco = chave;
     const alerta = banco.noCaixa >= BANCO.limite && !banco.coleta;
     this.el('dinheiro-caixa').textContent = `No caixa: ${reais(banco.noCaixa)}`;
-    this.el('saldo').closest('.saldo').classList.toggle('alerta-deposito', alerta);
-    this.el('aviso-banco').hidden = !alerta && !banco.coleta;
+    this.el('aviso-banco').hidden = !alerta && !banco.coleta && !assalto;
     this.el('aviso-banco').classList.toggle('coleta-em-andamento', !!banco.coleta);
-    this.el('aviso-banco-titulo').textContent = banco.coleta ? status : 'Dinheiro acumulado no caixa!';
-    this.el('aviso-banco-texto').textContent = banco.coleta
+    this.el('aviso-banco').classList.toggle('assalto-em-andamento', !!assalto);
+    this.el('aviso-banco-titulo').textContent = assalto ? statusAssalto(assalto) : banco.coleta ? status : 'Dinheiro acumulado no caixa!';
+    this.el('aviso-banco-texto').textContent = assalto
+      ? assalto.roubado ? `${reais(assalto.valor)} foram roubados do caixa. Reputação: ${this.sim.reputacao} / 100.` : 'Os clientes estão assustados. O caixa corre perigo!'
+      : banco.coleta
       ? `Coleta de ${reais(banco.coleta.valor)}. Seu saldo disponível permanece o mesmo.`
       : `${reais(banco.noCaixa)} no caixa. Vá ao escritório e deposite no banco. Sem depósito, o mercadinho pode ser assaltado.`;
   }
@@ -200,8 +204,8 @@ export class Interface {
       const banco = this.sim.estado.banco;
       conteudo += `<section class="deposito-banco"><h3>Depósito bancário</h3>
         <dl><div><dt>Dinheiro no caixa</dt><dd>${reais(banco.noCaixa)}</dd></div><div><dt>Total depositado</dt><dd>${reais(banco.depositado)}</dd></div></dl>
-        <p>${banco.coleta ? statusColeta(banco.coleta) + '.' : 'A partir de R$ 1.000, solicite o carro-forte para recolher o dinheiro.'}</p>
-        <button class="botao-principal" id="depositar-banco" ${banco.coleta || banco.noCaixa < BANCO.limite ? 'disabled' : ''}>${icone('moeda')} ${banco.coleta ? 'Coleta em andamento' : 'Depositar no banco'}</button>
+        <p>${banco.assalto ? statusAssalto(banco.assalto) + '.' : banco.coleta ? statusColeta(banco.coleta) + '.' : 'A partir de R$ 1.000, solicite o carro-forte para recolher o dinheiro.'}</p>
+        <button class="botao-principal" id="depositar-banco" ${banco.coleta || banco.assalto || banco.noCaixa < BANCO.limite ? 'disabled' : ''}>${icone('moeda')} ${banco.assalto ? 'Aguarde o fim do assalto' : banco.coleta ? 'Coleta em andamento' : 'Depositar no banco'}</button>
         <p class="deposito-nota">O depósito protege o dinheiro sem alterar seu saldo disponível.</p></section>`;
     } else if (tipo === 'melhorias') {
       const abasDisponiveis = ABAS_MELHORIAS.filter(aba => MELHORIAS.some(m => m.categoria === aba.id && m.ativa !== false));
@@ -240,6 +244,14 @@ export class Interface {
           <div class="dev-cartao-topo"><span class="dev-rotulo">${icone('moeda')} Saldo disponível</span><strong>${reais(this.sim.estado.dinheiro)}</strong></div>
           <p>No caixa: ${reais(this.sim.estado.banco.noCaixa)}. Os botões ajustam os dois valores para testar depósitos.</p>
           <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 100 ? 'disabled' : ''}>− R$ 100</button><button id="dev-adicionar">+ R$ 100</button></div>
+        </section>
+        <section class="dev-cartao" aria-label="Tempo até o assalto">
+          <div class="dev-cartao-topo"><span class="dev-rotulo">Prazo para depositar</span><strong>${this.sim.tempoEsperaAssalto}<small> s</small></strong></div>
+          <p>Com R$ 1.000 ou mais no caixa, o assalto começa após esse tempo. Decorridos: ${Math.floor(this.sim.estado.banco.tempoRisco)} s. A mudança vale imediatamente.</p>
+          <div class="dev-acoes dev-acoes-duplas" aria-label="Prazo até o assalto">
+            <button data-tempo-assalto="5" aria-pressed="${this.sim.tempoEsperaAssalto === 5}">5 segundos</button>
+            <button data-tempo-assalto="60" aria-pressed="${this.sim.tempoEsperaAssalto === 60}">60 segundos</button>
+          </div>
         </section>
         <div class="dev-progresso">
           <section class="dev-cartao" aria-label="Nível">
@@ -300,6 +312,9 @@ export class Interface {
       this.el('confirmar-reinicio').onclick = () => this.acoes.reiniciar();
     }
     if (tipo === 'dev') {
+      this.el('painel-conteudo').querySelectorAll('[data-tempo-assalto]').forEach(botao => {
+        botao.onclick = () => this.acoes.definirTempoAssalto(Number(botao.dataset.tempoAssalto));
+      });
       this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-100);
       this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(100);
       this.el('dev-nivel').onclick = () => this.acoes.aumentarNivelDev();

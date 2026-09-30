@@ -72,35 +72,38 @@ function criarCarroForte() {
   van.userData.rodas = rodas;
   return van;
 }
-function criarAgente(pele) {
+export function criarAgente(pele, assaltante = false) {
+  const roupa = assaltante ? 0x141517 : 0x233b50;
+  const rosto = assaltante ? 0x18191c : pele;
   const grupo = new THREE.Group();
   const corpo = new THREE.Group(); grupo.add(corpo);
-  bloco(corpo, 0.46, 0.5, 0.28, 0x233b50, 0, 0.8, 0);
-  bloco(corpo, 0.38, 0.33, 0.035, 0x597084, 0, 0.81, 0.16);
-  bloco(corpo, 0.07, 0.09, 0.025, 0xe9c76c, -0.1, 0.91, 0.19);
-  const cabeca = new THREE.Mesh(new THREE.SphereGeometry(0.21, 8, 6), material(pele));
+  bloco(corpo, 0.46, 0.5, 0.28, roupa, 0, 0.8, 0);
+  bloco(corpo, 0.38, 0.33, 0.035, assaltante ? 0x202126 : 0x597084, 0, 0.81, 0.16);
+  if (!assaltante) bloco(corpo, 0.07, 0.09, 0.025, 0xe9c76c, -0.1, 0.91, 0.19);
+  const cabeca = new THREE.Mesh(new THREE.SphereGeometry(0.21, 8, 6), material(rosto));
   cabeca.position.y = 1.21; corpo.add(cabeca);
-  bloco(corpo, 0.39, 0.09, 0.34, 0x233b50, 0, 1.4, 0);
-  bloco(corpo, 0.3, 0.03, 0.19, 0x172b3c, 0, 1.35, 0.2);
-  for (const x of [-0.08, 0.08]) bloco(corpo, 0.055, 0.04, 0.02, 0x20282f, x, 1.23, 0.195);
+  bloco(corpo, 0.39, 0.09, 0.34, roupa, 0, 1.4, 0);
+  if (assaltante) bloco(corpo, 0.37, 0.15, 0.09, 0x111214, 0, 1.12, 0.17);
+  bloco(corpo, 0.3, 0.03, 0.19, assaltante ? 0x111214 : 0x172b3c, 0, 1.35, 0.2);
+  for (const x of [-0.08, 0.08]) bloco(corpo, 0.055, 0.04, 0.02, assaltante ? 0xe3ded0 : 0x20282f, x, 1.23, 0.195);
   const pernas = [], bracos = [];
   for (const lado of [-1, 1]) {
     const perna = new THREE.Group(); perna.position.set(lado * 0.13, 0.56, 0); corpo.add(perna);
-    bloco(perna, 0.18, 0.45, 0.19, 0x243444, 0, -0.23, 0);
-    bloco(perna, 0.21, 0.12, 0.32, 0x172129, 0, -0.49, 0.055); pernas.push(perna);
+    bloco(perna, 0.18, 0.45, 0.19, assaltante ? 0x191a1d : 0x243444, 0, -0.23, 0);
+    bloco(perna, 0.21, 0.12, 0.32, assaltante ? 0x0d0e10 : 0x172129, 0, -0.49, 0.055); pernas.push(perna);
     const braco = new THREE.Group(); braco.position.set(lado * 0.28, 0.98, 0); corpo.add(braco);
-    bloco(braco, 0.15, 0.36, 0.16, 0x233b50, 0, -0.17, 0);
-    bloco(braco, 0.13, 0.13, 0.14, pele, 0, -0.4, 0); bracos.push(braco);
+    bloco(braco, 0.15, 0.36, 0.16, roupa, 0, -0.17, 0);
+    bloco(braco, 0.13, 0.13, 0.14, rosto, 0, -0.4, 0); bracos.push(braco);
   }
   const maleta = new THREE.Group(); bracos[1].add(maleta); maleta.position.set(0.05, -0.63, 0);
-  bloco(maleta, 0.17, 0.3, 0.44, 0x354e49, 0, 0, 0);
-  bloco(maleta, 0.19, 0.035, 0.45, 0x9aa99d, 0, 0.02, 0);
-  bloco(maleta, 0.045, 0.07, 0.14, 0x293831, 0, 0.19, 0);
+  bloco(maleta, 0.17, 0.3, 0.44, assaltante ? 0x111315 : 0x354e49, 0, 0, 0);
+  bloco(maleta, 0.19, 0.035, 0.45, assaltante ? 0x323539 : 0x9aa99d, 0, 0.02, 0);
+  bloco(maleta, 0.045, 0.07, 0.14, assaltante ? 0x090a0b : 0x293831, 0, 0.19, 0);
   grupo.userData = { corpo, pernas, bracos, maleta };
   return grupo;
 }
 
-function pontoRota(rota, progresso) {
+export function pontoRota(rota, progresso) {
   const comprimentos = rota.slice(1).map((p, i) => Math.hypot(p.x - rota[i].x, p.z - rota[i].z));
   let restante = Math.max(0, Math.min(1, progresso)) * comprimentos.reduce((a, b) => a + b, 0);
   for (let i = 0; i < comprimentos.length; i++) {

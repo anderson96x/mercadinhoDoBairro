@@ -1,6 +1,7 @@
 import { construirBairro } from './bairro.js';
 import { Trafego } from './trafego.js';
 import { ColetaBancoVisual } from './coleta-banco.js';
+import { AssaltoVisual } from './assalto-visual.js';
 import { BANCO } from './banco.js';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS, ALA_PRODUCAO } from './configuracao.js';
@@ -474,12 +475,15 @@ export class Cena {
     this.construirMundo();
     this.trafego = new Trafego(this.cena);
     this.coletaBanco = new ColetaBancoVisual(this.cena);
+    this.assaltoVisual = new AssaltoVisual(this.cena);
     this.alertaCaixa = new THREE.Group();
     const fundoAlerta = new THREE.Mesh(new THREE.CircleGeometry(0.28, 20), new THREE.MeshBasicMaterial({ color: 0xc34f32, side: THREE.DoubleSide }));
     this.alertaCaixa.add(fundoAlerta);
     caixa(this.alertaCaixa, 0.065, 0.23, 0.025, 0xfff9e9, 0, 0.07, 0.02);
     esfera(this.alertaCaixa, 0.04, 0xfff9e9, 0, -0.13, 0.025);
     this.alertaCaixa.name = 'alerta-dinheiro-caixa'; this.cena.add(this.alertaCaixa);
+    this.alertaCaixeiro = this.alertaCaixa.clone();
+    this.alertaCaixeiro.name = 'alerta-caixeiro-assalto'; this.cena.add(this.alertaCaixeiro);
     this.notasCaixa = Array.from({ length: 4 }, (_, i) => caixa(this.cena, 0.26, 0.045, 0.13, i % 2 ? 0x91b578 : 0xb6c68e, CONFIG.balcao.x - 0.3, 1.42 + i * 0.047, CONFIG.balcao.z + 0.15));
     this.aberturaLojaVisual = 0;
     this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, -0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
@@ -831,6 +835,13 @@ export class Cena {
     posicionarBraco(d.bracoE, new THREE.Vector3(-0.25, 0.69 - teclaE, 0.76 + teclaE));
     posicionarBraco(d.bracoD, new THREE.Vector3(0.25, 0.69 - teclaD, 0.76 + teclaD));
   }
+  animarSustoCaixa(modelo, tempo) {
+    const tremor = Math.sin(tempo * 17) * 0.025;
+    posicionarBraco(modelo.userData.bracoE, new THREE.Vector3(-0.52, 1.48 + tremor, 0.1));
+    posicionarBraco(modelo.userData.bracoD, new THREE.Vector3(0.52, 1.48 - tremor, 0.1));
+    modelo.userData.corpo.rotation.x = -0.08;
+    modelo.userData.corpo.rotation.z = tremor;
+  }
   animarAtendimento(modelo, tempo, ativo, progresso = 0) {
     if (!ativo) return;
     const fase = tempo * 8;
@@ -882,11 +893,14 @@ export class Cena {
   atualizar(dt) {
     const sim = this.sim, e = sim.estado;
     const coleta = e.banco.coleta;
-    if (coleta) this.trafego.faixasReservadas.add(0);
+    const assalto = e.banco.assalto;
+    if (coleta || assalto) this.trafego.faixasReservadas.add(0);
     else this.trafego.faixasReservadas.delete(0);
     this.trafego.atualizar(dt);
     if (coleta?.tempo < 0 && dt > 0 && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
+    if (assalto?.tempo < 0 && dt > 0 && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
     this.coletaBanco.atualizar(coleta);
+    this.assaltoVisual.atualizar(assalto);
     const dtVisual = dt || (e.jogador.sentadoEscritorio ? 1 / 60 : 0);
     this.tempoVisual += dtVisual;
     const tempo = this.tempoVisual;
@@ -920,6 +934,9 @@ export class Cena {
     this.alertaCaixa.visible = e.banco.noCaixa >= BANCO.limite;
     this.alertaCaixa.position.set(CONFIG.balcao.x, 2.7 + Math.sin(sim.tempo * 5) * 0.08, CONFIG.balcao.z);
     this.alertaCaixa.lookAt(this.camera.position);
+    this.alertaCaixeiro.visible = sim.assaltoNaLoja;
+    this.alertaCaixeiro.position.set(CONFIG.cadeiraCaixa.x, 2.75 + Math.sin(sim.tempo * 8) * 0.06, CONFIG.cadeiraCaixa.z);
+    this.alertaCaixeiro.lookAt(this.camera.position);
     this.notasCaixa.forEach((nota, i) => { nota.visible = e.banco.noCaixa > i * 250; });
     this.jogador.userData.usandoCaixaMadeira = sim.capacidade > CONFIG.capacidadeInicial && e.jogador.inventario.length > 0;
     this.jogador.userData.caixaMadeira.visible = this.jogador.userData.usandoCaixaMadeira;
@@ -928,6 +945,7 @@ export class Cena {
     const progressoCaixa = sim.progressoCaixa / CONFIG.tempoCaixa;
     this.animarAtendimento(this.jogador, tempo, atendendoNoCaixa && !e.melhorias.caixa && e.jogador.sentado, progressoCaixa);
     this.animarComputador(this.jogador, tempo, !!e.jogador.sentadoEscritorio);
+    if (sim.assaltoNaLoja && !e.melhorias.caixa && e.jogador.sentadoCaixa) this.animarSustoCaixa(this.jogador, tempo);
     const embalagem = this.atualizarEmbalagem(sim);
     const paletaAtual = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
     this.cestasEntrada.forEach((cesta, i) => {
@@ -950,15 +968,22 @@ export class Cena {
       const modelo = this.clientes.get(c.id);
       const itens = c.itens ?? Array(c.quantidade).fill(c.produto);
       if (c.temCesta && !c.levaSacolas) aplicarPaletaCesta(modelo.userData.cesta, paletaAtual);
-      this.animarPersonagem(modelo, c, dt, tempo + c.id, itens, 'prateleira', 0.55);
+      if (!c.assustado || !modelo.userData.congelado) this.animarPersonagem(modelo, c, c.assustado ? 0 : dt, tempo + c.id, itens, 'prateleira', 0.55);
+      modelo.userData.congelado = !!c.assustado;
       const compra = c.compras?.[c.compraAtual ?? 0];
       const mostrarCompra = compra && ['chegando', 'pegandoCesta', 'comprando'].includes(c.fase) && !c.recusado;
       const mostrarReacao = c.satisfacao && c.fase === 'saindo' && !c.recusado;
-      const mostrarBalao = mostrarCompra || mostrarReacao;
+      const mostrarBalao = c.assustado || mostrarCompra || mostrarReacao;
       const balao = modelo.userData.balao;
       balao.hidden = !mostrarBalao;
       if (mostrarBalao) {
-        if (mostrarReacao) {
+        if (c.assustado) {
+          if (balao.dataset.conteudo !== 'assustado') {
+            balao.dataset.conteudo = 'assustado';
+            balao.className = 'balao-compra balao-reacao assustado';
+            balao.innerHTML = '<span role="img" aria-label="Cliente apavorado">😱</span>';
+          }
+        } else if (mostrarReacao) {
           const reacoes = {
             feliz: 'sorriso',
             neutro: 'neutro',
@@ -994,6 +1019,7 @@ export class Cena {
       modelo.userData.cesta.visible = !!c.temCesta && !c.levaSacolas;
       modelo.userData.sacolas.children.forEach((sacola, i) => {
         sacola.visible = !!c.levaSacolas;
+        if (c.assustado) return;
         const assinaturaItens = itens.join(',');
         if (c.levaSacolas && sacola.userData.assinaturaItens !== assinaturaItens) {
           liberarGeometrias(sacola.userData.conteudo);
@@ -1038,6 +1064,7 @@ export class Cena {
       this.animarPersonagem(this.caixeiro, { x: CONFIG.cadeiraCaixa.x, z: CONFIG.cadeiraCaixa.z, angulo: CONFIG.anguloCaixa, andando: false, sentado: true }, dt, tempo);
       this.animarAtendimento(this.caixeiro, tempo, atendendoNoCaixa, progressoCaixa);
       this.caixeiro.userData.corpo.rotation.z = Math.sin(tempo * 1.8) * 0.018;
+      if (sim.assaltoNaLoja) this.animarSustoCaixa(this.caixeiro, tempo);
     }
     this.ajudante.visible = !!e.melhorias.ajudante;
     if (this.ajudante.visible) {

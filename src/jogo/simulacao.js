@@ -4,6 +4,7 @@ import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO } from './configurac
 import { buscarCaminho } from './navegacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
+import { ASSALTO } from './assalto.js';
 
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
@@ -129,8 +130,26 @@ export class Simulacao {
     this.progressoCaixa = 0;
     this.atividade = '';
     this.pausado = false;
+    this.tempoEsperaAssalto = ASSALTO.espera;
     this.aleatorio = Math.random;
     this.ajudante = this.estado.funcionarios.ajudante;
+    if (this.estado.banco.assalto && Array.isArray(salvo?.clientesAssalto)) {
+      const fases = ['chegando', 'pegandoCesta', 'comprando', 'indoCaixa', 'fila', 'saindo'];
+      this.clientes = salvo.clientesAssalto.filter(c => c && Number.isFinite(c.x) && Number.isFinite(c.z)
+        && PRODUTOS[c.produto] && fases.includes(c.fase)).slice(0, 30).map((c, i) => {
+        const itens = (Array.isArray(c.itens) ? c.itens : []).filter(id => PRODUTOS[id]).slice(0, CONFIG.capacidadeCestaCliente);
+        const compras = (Array.isArray(c.compras) ? c.compras : []).filter(p => p && PRODUTOS[p.produto]).map(p => ({
+          produto: p.produto, desejado: limitar(Number(p.desejado) || 1, 1, 5), quantidade: limitar(Number(p.quantidade) || 0, 0, 5)
+        }));
+        return { ...c, id: i + 1, x: limitar(c.x, -15, 16), z: limitar(c.z, -10, 13),
+          itens, quantidade: itens.length, compras, compraAtual: 0,
+          satisfacao: ['feliz', 'neutro', 'irritado'].includes(c.satisfacao) ? c.satisfacao : null,
+          satisfacaoRegistrada: c.satisfacaoRegistrada === true && ['feliz', 'neutro', 'irritado'].includes(c.satisfacao),
+          assustado: this.assaltoNaLoja && c.z <= CONFIG.portaEntrada.z, tempoAssusto: 0, andando: false };
+      });
+      this.proximaId = this.clientes.length + 1;
+      this.proximaOrdemFila = Math.max(0, ...this.clientes.map(c => Number(c.ordemFila) || 0)) + 1;
+    }
     this.missaoAnterior = this.missao().indice;
   }
   get limitesMundo() { return this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
@@ -189,14 +208,81 @@ export class Simulacao {
     return primeiro?.fase === 'fila' && caixaAtivo && distancia(primeiro, CONFIG.clienteCaixa) < 0.2 ? primeiro : null;
   }
   emitir(tipo, dados = {}) { this.eventos.push({ tipo, ...dados }); }
+  definirTempoEsperaAssalto(segundos) {
+    if (![5, 60].includes(segundos)) return false;
+    this.tempoEsperaAssalto = segundos;
+    return true;
+  }
   consumirEventos() { const eventos = this.eventos; this.eventos = []; return eventos; }
   solicitarDeposito() {
     const banco = this.estado.banco;
+    if (banco.assalto) return { sucesso: false, motivo: 'Aguarde o fim do assalto para chamar o banco.' };
     if (!this.estado.jogador.sentadoEscritorio) return { sucesso: false, motivo: 'Vá ao escritório para solicitar o depósito.' };
     if (banco.coleta) return { sucesso: false, motivo: 'Já existe uma coleta em andamento.' };
     if (banco.noCaixa < BANCO.limite) return { sucesso: false, motivo: 'O depósito fica disponível a partir de R$ 1.000 no caixa.' };
     banco.coleta = { valor: banco.noCaixa, tempo: -1, retirado: false };
+    banco.tempoRisco = 0;
     return { sucesso: true, valor: banco.coleta.valor };
+  }
+  get assaltoNaLoja() {
+    const a = this.estado.banco.assalto;
+    return !!a && a.invadiu && !a.encerrado;
+  }
+  atualizarAssalto(dt) {
+    const banco = this.estado.banco;
+    if (!banco.assalto) {
+      banco.tempoRisco = !banco.coleta && banco.noCaixa >= BANCO.limite ? banco.tempoRisco + dt : 0;
+      if (banco.tempoRisco >= this.tempoEsperaAssalto) {
+        banco.tempoRisco = 0;
+        banco.assalto = { tempo: -1, invadiu: false, roubado: false, encerrado: false, valor: 0 };
+        this.emitir('assaltoChegando');
+      }
+      return;
+    }
+    const a = banco.assalto;
+    if (a.tempo < 0) return; // O carro espera a faixa de trânsito esvaziar.
+    a.tempo += dt;
+    if (!a.invadiu && a.tempo >= ASSALTO.entrada) {
+      a.invadiu = true;
+      this.progressoCaixa = 0;
+      for (const c of this.clientes) if (c.z <= CONFIG.portaEntrada.z && c.fase !== 'fim') {
+        c.assustado = true; c.andando = false; c.tempoAssusto = this.tempo;
+      }
+      this.emitir('assaltoIniciado');
+    }
+    if (!a.roubado && a.tempo >= ASSALTO.retirada) {
+      a.valor = banco.noCaixa;
+      banco.noCaixa = 0;
+      this.estado.dinheiro = Math.max(0, this.estado.dinheiro - a.valor);
+      a.roubado = true;
+      this.emitir('dinheiroRoubado', { valor: a.valor });
+    }
+    if (!a.encerrado && a.tempo >= ASSALTO.saida) {
+      for (const c of this.clientes.filter(c => c.assustado)) {
+        if (c.satisfacaoRegistrada) {
+          const contador = { feliz: 'clientesFelizes', neutro: 'clientesNeutros', irritado: 'clientesIrritados' }[c.satisfacao];
+          this.estado.estatisticas[contador] = Math.max(0, this.estado.estatisticas[contador] - 1);
+          this.estado.estatisticas.satisfacao = Math.max(0, this.estado.estatisticas.satisfacao - CONFIG.pontosSatisfacao[c.satisfacao]);
+          c.satisfacaoRegistrada = false;
+        }
+        this.registrarSatisfacao(c, 'neutro');
+        if (!c.embalado) {
+          for (const id of c.itens ?? []) {
+            const estoque = this.estado.produtos[id];
+            estoque.prateleira = Math.min(PRODUTOS[id].capacidadePrateleira, estoque.prateleira + 1);
+          }
+          c.itens = []; c.quantidade = 0;
+        }
+        c.assustado = false; c.temCesta = false; c.cestaReservada = false; c.acaoCesta = null;
+        c.fase = 'saindo'; c.etapa = 0; c.recusado = false;
+        this.caminhosClientes.delete(c);
+      }
+      // As avaliações neutras são contabilizadas antes da penalidade do assalto.
+      this.estado.satisfacoesRecentes = Array(CONFIG.tamanhoHistoricoReputacao).fill('irritado');
+      a.encerrado = true;
+      this.emitir('assaltoEncerrado', { valor: a.valor });
+    }
+    if (a.tempo >= ASSALTO.fim) { banco.assalto = null; this.emitir('assaltoConcluido'); }
   }
   custoMelhoria(id) {
     const m = MELHORIAS.find(m => m.id === id);
@@ -388,6 +474,7 @@ export class Simulacao {
     this.tempo += dt;
     const deposito = atualizarBanco(this.estado.banco, dt);
     if (deposito !== null) this.emitir('depositoConcluido', { valor: deposito });
+    this.atualizarAssalto(dt);
     const atoresPorta = [this.estado.jogador, ...this.clientes];
     if (this.ajudanteContratado) atoresPorta.push(this.ajudante);
     const abrirPorta = atoresPorta.some(ator => distancia(ator, PORTA_ESCRITORIO) < 1.8);
@@ -469,6 +556,7 @@ export class Simulacao {
     }
   }
   criarCliente() {
+    if (this.estado.banco.assalto) return false;
     if (this.cestasDisponiveis <= 0) return false;
     const pedirOvos = this.estado.producao.ovosProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.ovosVendidos >= 10 ? 3 : 4) === 0;
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado && (id !== 'ovos' || pedirOvos));
@@ -563,6 +651,8 @@ export class Simulacao {
     return c.satisfacao;
   }
   portaEntradaDeveAbrir() {
+    const assalto = this.estado.banco.assalto;
+    if (assalto && assalto.tempo >= ASSALTO.chegada && assalto.tempo <= ASSALTO.embarque) return true;
     const coleta = this.estado.banco.coleta;
     if (coleta && coleta.tempo >= BANCO.chegada && coleta.tempo <= BANCO.embarque) return true;
     return this.clientes.some(c => {
@@ -577,9 +667,10 @@ export class Simulacao {
     const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));
     const clienteEmAtendimento = this.clienteEmAtendimento;
     for (const c of this.clientes) {
+      if (c.assustado) { c.andando = false; continue; }
       const compra = this.normalizarComprasCliente(c);
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
-      if (!this.estado.lojaAberta && c.fase === 'chegando' && c.etapa > 0 && c.z >= 6.7) {
+      if (((!this.estado.lojaAberta && c.etapa > 0) || this.estado.banco.assalto?.invadiu) && c.fase === 'chegando' && c.z >= 6.7) {
         c.fase = 'saindo'; c.etapa = 1; c.temCesta = false; c.cestaReservada = false; c.ladoSaida = c.ladoEntrada; c.recusado = true;
       }
       if (c.fase === 'chegando') {
@@ -630,6 +721,7 @@ export class Simulacao {
     this.clientes = this.clientes.filter(c => c.fase !== 'fim');
   }
   atualizarCaixa(dt) {
+    if (this.assaltoNaLoja) { this.progressoCaixa = 0; return; }
     const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
     if (primeiro && this.clienteEmAtendimento === primeiro) {
       this.progressoCaixa += dt;
