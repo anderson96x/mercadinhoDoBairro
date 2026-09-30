@@ -32,7 +32,7 @@ O dinheiro é alterado somente pela simulação. Comprar um botão chama `Simula
 
 ## Adicionar um produto
 
-1. Acrescente uma entrada em `PRODUTOS`, com nome, cor, preço, capacidade, origem e pontos do mapa. Hortas usam `tempoCrescimento`; ovos são produzidos automaticamente no galinheiro em `Simulacao.atualizarProducao()`.
+1. Acrescente uma entrada em `PRODUTOS`, com nome, cor, preço, capacidade, origem e pontos do mapa. Hortas usam `tempoCrescimento`; ovos e leite são produzidos automaticamente em `Simulacao.atualizarProducao()`.
 2. Acrescente uma melhoria de `tipo: 'produto'`, com o mesmo identificador do produto, se ele começar bloqueado, ou vincule-o a uma expansão como `ALA_PRODUCAO`.
 3. Adicione sua aparência em `criarProduto()` e, se necessário, em `construirEstacao()`, em `cena.js`.
 4. Adicione seu ícone a `interface/icones.js` e as cores em `estilos.css`.
@@ -42,7 +42,7 @@ O dinheiro é alterado somente pela simulação. Comprar um botão chama `Simula
 8. A ferramenta opcional `comprar_melhoria`, em `main.js`, usa automaticamente os identificadores de `MELHORIAS`.
 9. Adicione campos salvos com valores padrão em `estadoInicial()` e valide-os em `validarEstado()`; jogos da versão atual devem continuar carregando.
 
-Os clientes escolhem entre os produtos liberados; ovos só entram nos pedidos depois de começar a produção. O ajudante escolhe produtos com estoque na origem e espaço na prateleira, priorizando ovos quando precisam de reposição.
+Os clientes escolhem entre os produtos liberados; ovos e leite só entram nos pedidos depois de começar a produção. O ajudante escolhe produtos com estoque na origem e espaço na prateleira, priorizando ovos quando precisam de reposição.
 
 ## Alterar o mapa
 

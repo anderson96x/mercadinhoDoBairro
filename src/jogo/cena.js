@@ -4,7 +4,7 @@ import { ColetaBancoVisual } from './coleta-banco.js';
 import { AssaltoVisual } from './assalto-visual.js';
 import { BANCO } from './banco.js';
 import * as THREE from 'three';
-import { CONFIG, PRODUTOS, ALA_PRODUCAO } from './configuracao.js';
+import { CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
@@ -12,6 +12,7 @@ import { icone } from '../interface/icones.js';
 
 const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
 const materiais = new Map();
+const vidroLeite = new THREE.MeshPhysicalMaterial({ color: 0xd8eeed, transparent: true, opacity: 0.48, roughness: 0.08, metalness: 0, depthWrite: false, side: THREE.DoubleSide });
 const pertoDaEstacao = (ator, centro, largura, profundidade) => Math.hypot(
   Math.max(0, Math.abs(ator.x - centro.x) - largura / 2),
   Math.max(0, Math.abs(ator.z - centro.z) - profundidade / 2)
@@ -46,11 +47,68 @@ export function criarProduto(id, escala = 1) {
     caixa(grupo, 0.04, 0.09, 0.04, 0x2a9b40, 0, 0.18, 0);
   } else if (id === 'ovos') {
     esfera(grupo, 0.16, 0xf8e6bf, 0, 0, 0, 0.82, 1.16, 0.82);
+  } else if (id === 'leite') {
+    cilindro(grupo, 0.115, 0.115, 0.31, 0xfaf9ec, 0, -0.02, 0);
+    const corpo = cilindro(grupo, 0.135, 0.135, 0.38, 0xd8e8e4, 0, 0, 0); corpo.material = vidroLeite;
+    const gargalo = cilindro(grupo, 0.075, 0.09, 0.14, 0xd8e8e4, 0, 0.25, 0); gargalo.material = vidroLeite;
+    cilindro(grupo, 0.08, 0.08, 0.045, 0x478e6a, 0, 0.34, 0);
+    caixa(grupo, 0.27, 0.085, 0.015, 0x8ac4a7, 0, 0.02, 0.14);
   } else {
     esfera(grupo, 0.14, 0xffd22e, 0, 0, 0, 0.7, 1.5, 0.7);
     const folha = esfera(grupo, 0.12, 0x38a447, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;
   }
   grupo.scale.setScalar(escala); return grupo;
+}
+
+function criarVaca(pai, x, z) {
+  const vaca = new THREE.Group(); vaca.position.set(x, 0, z); pai.add(vaca);
+  const pelo = 0xf3f2ec, peloEscuro = 0xdededa, mancha = 0x252827;
+  const tronco = new THREE.Group(); tronco.position.y = 1.35; vaca.add(tronco);
+  esfera(tronco, 1, pelo, 0, 0, 0, 1.15, 0.61, 0.53);
+  for (const lado of [-1, 1]) {
+    esfera(tronco, 0.38, mancha, -0.48, 0.09, lado * 0.46, 0.9, 0.78, 0.3);
+    esfera(tronco, 0.27, mancha, 0.4, -0.08, lado * 0.49, 0.9, 0.86, 0.25);
+  }
+  esfera(tronco, 0.3, 0xd9b2b4, -0.1, -0.57, 0, 0.88, 0.48, 0.76);
+  for (const px of [-0.24, 0.04]) for (const pz of [-0.13, 0.13]) {
+    cilindro(tronco, 0.045, 0.06, 0.17, 0xd09fa5, px, -0.77, pz, 6);
+  }
+  for (const px of [-0.7, 0.7]) for (const pz of [-0.28, 0.28]) {
+    esfera(vaca, 0.27, pelo, px, 1.05, pz, 1, 1.15, 0.85);
+    const perna = cilindro(vaca, 0.19, 0.105, 1.04, peloEscuro, px, 0.69, pz, 8);
+    perna.rotation.z = px > 0 ? -0.13 : 0.11;
+    esfera(vaca, 0.17, 0x282b29, px + (px > 0 ? 0.06 : -0.04), 0.13, pz, 1.06, 0.45, 0.85);
+  }
+  const cabeca = new THREE.Group(); cabeca.position.set(0.96, 1.56, 0); vaca.add(cabeca);
+  const pescoco = esfera(cabeca, 0.45, pelo, 0.1, -0.25, 0, 0.89, 1.12, 0.88);
+  pescoco.rotation.z = -0.28;
+  const rosto = esfera(cabeca, 0.4, pelo, 0.57, -0.2, 0, 1.2, 0.74, 0.77);
+  rosto.rotation.z = -0.23;
+  const testa = esfera(cabeca, 0.35, peloEscuro, 0.48, -0.06, 0, 0.99, 0.42, 0.82);
+  testa.rotation.z = -0.23;
+  esfera(cabeca, 0.28, 0xc79099, 1.01, -0.47, 0, 0.76, 0.45, 1.06);
+  for (const lado of [-1, 1]) {
+    const orelha = esfera(cabeca, 0.17, pelo, 0.31, 0.07, lado * 0.39, 1.25, 0.48, 0.75);
+    orelha.rotation.x = lado * 0.25;
+    cilindro(cabeca, 0.055, 0.09, 0.2, peloEscuro, 0.34, 0.22, lado * 0.2, 6);
+    esfera(cabeca, 0.043, 0xf5f2e9, 0.75, -0.12, lado * 0.29);
+    esfera(cabeca, 0.019, 0x171a19, 0.765, -0.12, lado * 0.32);
+  }
+  const cauda = new THREE.Group(); cauda.position.set(-1.05, 1.56, 0); vaca.add(cauda);
+  const haste = cilindro(cauda, 0.055, 0.065, 0.62, peloEscuro, -0.12, -0.27, 0, 7);
+  haste.rotation.z = -0.3;
+  esfera(cauda, 0.11, mancha, -0.23, -0.57, 0, 0.75, 1.3, 0.75);
+  vaca.userData = { tronco, cabeca, cauda, baseY: vaca.position.y };
+  return vaca;
+}
+
+function animarVaca(vaca, tempo) {
+  const { tronco, cabeca, cauda, baseY } = vaca.userData;
+  vaca.position.y = baseY + Math.sin(tempo * 1.5) * 0.018;
+  tronco.scale.y = 1 + Math.sin(tempo * 1.5) * 0.025;
+  cabeca.rotation.z = Math.sin(tempo * 0.9) * 0.075 - 0.04;
+  cauda.rotation.x = Math.sin(tempo * 2.2) * 0.26;
+  cauda.rotation.z = Math.sin(tempo * 1.25) * 0.18;
 }
 
 function criarGalinha(pai, x, y, z, corCorpo, corAsa, fase) {
@@ -604,6 +662,25 @@ export class Cena {
       telhado.rotation.x = -0.15;
       galinhas.push(criarGalinha(grupo, h.x - 0.57, 2.03, h.z - 0.62, 0xfff6df, 0xe6ddbe, 0));
       galinhas.push(criarGalinha(grupo, h.x + 0.57, 2.03, h.z - 0.62, 0xf5d5aa, 0xd9ad78, 2.4));
+    } else if (id === 'leite') {
+      const { w, d } = p.curral;
+      for (const x of [-w / 2, w / 2]) for (const z of [-d / 2, 0, d / 2]) {
+        caixa(grupo, 0.09, 0.9, 0.09, 0x9b6a43, h.x + x, 0.6, h.z + z);
+      }
+      for (const z of [-d / 2, d / 2]) for (const y of [0.55, 0.9]) caixa(grupo, w, 0.08, 0.07, 0xc18b54, h.x, y, h.z + z);
+      for (const x of [-w / 2, w / 2]) for (const y of [0.55, 0.9]) caixa(grupo, 0.07, 0.08, d, 0xc18b54, h.x + x, y, h.z);
+      this.vaca = criarVaca(grupo, h.x - 0.45, h.z - 0.45);
+      const banco = { x: h.x - 0.45, z: h.z + 0.8 };
+      this.posicaoCuidadorVaca = banco;
+      for (const x of [-0.23, 0.23]) for (const z of [-0.23, 0.23]) caixa(grupo, 0.07, 0.48, 0.07, 0x8f6040, banco.x + x, 0.39, banco.z + z);
+      caixa(grupo, 0.64, 0.09, 0.64, 0xc79765, banco.x, 0.66, banco.z);
+      const cuidador = personagem(0x4c8e69, 0xb77d5d, false, [], null, 'ajudante');
+      cuidador.position.set(banco.x, 0.23, banco.z); cuidador.rotation.y = Math.PI;
+      cuidador.userData.cesta.visible = false; grupo.add(cuidador);
+      this.cuidadorVaca = cuidador;
+      cilindro(grupo, 0.17, 0.14, 0.3, 0xa1aaa7, h.x - 0.55, 0.23, h.z - 0.25);
+      cilindro(grupo, 0.15, 0.15, 0.015, 0xf4f3e9, h.x - 0.55, 0.385, h.z - 0.25);
+      caixa(grupo, 1.35, 0.28, 0.7, 0xb98250, h.x + 1.3, 0.27, h.z + 0.85);
     } else {
       caixa(grupo, 2.5, 0.35, 3.6, 0xbd7545, h.x, 0.22, h.z);
       caixa(grupo, 2.23, 0.05, 3.32, 0x70401f, h.x, 0.42, h.z);
@@ -613,15 +690,15 @@ export class Cena {
     }
     const frutos = [];
     for (let i = 0; i < 8; i++) {
-      const x = id === 'ovos' ? h.x - 0.58 + i % 2 * 1.16 : h.x - 0.65 + i % 2 * 1.25;
-      const z = id === 'ovos' ? h.z - 0.72 + Math.floor(i / 2) * 0.47 : h.z - 1.18 + Math.floor(i / 2) * 0.78;
+      const x = id === 'ovos' ? h.x - 0.58 + i % 2 * 1.16 : id === 'leite' ? h.x + 0.85 + i % 4 * 0.3 : h.x - 0.65 + i % 2 * 1.25;
+      const z = id === 'ovos' ? h.z - 0.72 + Math.floor(i / 2) * 0.47 : id === 'leite' ? h.z + 0.7 + Math.floor(i / 4) * 0.25 : h.z - 1.18 + Math.floor(i / 2) * 0.78;
       if (id === 'ovos') cilindro(grupo, 0.27, 0.3, 0.09, 0xc29153, x, 1.02, z);
-      else {
+      else if (id !== 'leite') {
         cilindro(grupo, 0.035, 0.035, 0.6, 0x35a84a, x, 0.72, z, 6);
         const f1 = esfera(grupo, 0.22, 0x65c158, x - 0.12, 0.67, z, 1.5, 0.35, 0.8); f1.rotation.z = -0.25;
         const f2 = esfera(grupo, 0.22, 0x3cad4b, x + 0.12, 0.83, z, 1.5, 0.35, 0.8); f2.rotation.z = 0.3;
       }
-      const fruto = criarProduto(id, 1.6); fruto.position.set(x, 1, z); grupo.add(fruto); frutos.push(fruto);
+      const fruto = criarProduto(id, 1.6); fruto.position.set(x, id === 'leite' ? 0.69 : 1, z); grupo.add(fruto); frutos.push(fruto);
     }
     const s = p.prateleira;
     caixa(grupo, 2.3, 0.65, 1.65, 0xd98b43, s.x, 0.53, s.z);
@@ -640,7 +717,7 @@ export class Cena {
       caixa(bloqueio, 0.055, 0.035, 3.65, 0xb8df65, h.x + d * 1.26, 0.09, h.z);
     }
     this.produtos[id] = { grupo, bloqueio, frutos, frutas, galinhas };
-    this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
+    this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : id === 'leite' ? 'CURRAL' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   criarLabel(id, ponto, titulo, detalhe, classe) {
@@ -654,7 +731,8 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const altura = this.mobile ? 18.8 : Math.max(ALA_PRODUCAO.camera.alturaDesktop, 37 / proporcao);
+    const camera = this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const altura = this.mobile ? 18.8 : Math.max(camera.alturaDesktop, 37 / proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.w, this.h);
@@ -927,7 +1005,8 @@ export class Cena {
     this.bairro.animarEntrada(this.aberturaLojaVisual, e.lojaAberta);
     this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
-    const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(ALA_PRODUCAO.camera.x, 0, ALA_PRODUCAO.camera.z);
+    const camera = e.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(camera.x, 0, camera.z);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     const equipamentoAla = this.bairro.atualizarEstagio(e.estagioLoja, dt);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
@@ -1073,20 +1152,34 @@ export class Cena {
       this.animarPersonagem(this.ajudante, sim.ajudante, dt, tempo, sim.ajudante.inventario, 'horta', 0.44);
     }
     for (const [id, objetos] of Object.entries(this.produtos)) {
-      const estado = e.produtos[id]; objetos.grupo.visible = estado.liberado && (id !== 'ovos' || equipamentoAla > 0); objetos.bloqueio.visible = false;
-      if (id === 'ovos') objetos.grupo.scale.y = Math.max(0.001, equipamentoAla);
+      const estado = e.produtos[id];
+      const construcao = id === 'ovos' && e.estagioLoja >= ALA_LEITE.indice ? 1 : equipamentoAla;
+      objetos.grupo.visible = estado.liberado && (!['ovos', 'leite'].includes(id) || construcao > 0); objetos.bloqueio.visible = false;
+      if (['ovos', 'leite'].includes(id)) objetos.grupo.scale.y = Math.max(0.001, construcao);
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
-      objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = 1 + Math.sin(tempo * 2 + i) * 0.025; });
+      objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = (id === 'leite' ? 0.69 : 1) + Math.sin(tempo * 2 + i) * 0.025; });
       const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
         .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);
       objetos.frutas.forEach((f, i) => { f.visible = i < estado.prateleira && !emTransito.some(r => r.lugar === i); });
     }
+    if (this.cuidadorVaca?.visible && this.produtos.leite.grupo.visible) {
+      animarVaca(this.vaca, tempo);
+      this.animarPersonagem(this.cuidadorVaca, { ...this.posicaoCuidadorVaca, angulo: Math.PI, andando: false, sentado: true }, dt, tempo);
+      const { corpo, bracoE, bracoD } = this.cuidadorVaca.userData;
+      const ordenhaE = Math.max(0, Math.sin(tempo * 5));
+      const ordenhaD = Math.max(0, Math.sin(tempo * 5 + Math.PI));
+      corpo.rotation.x = -0.1 + Math.sin(tempo * 2.5) * 0.03;
+      corpo.rotation.z = Math.sin(tempo * 1.3) * 0.02;
+      posicionarBraco(bracoE, new THREE.Vector3(-0.16, 0.4 - ordenhaE * 0.13, 1.02 + ordenhaE * 0.04));
+      posicionarBraco(bracoD, new THREE.Vector3(0.16, 0.4 - ordenhaD * 0.13, 1.02 + ordenhaD * 0.04));
+    }
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
-      if (produto && (!e.produtos[produto].liberado || (produto === 'ovos' && equipamentoAla < 1))) { el.hidden = true; continue; }
+      const construcao = produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice ? 1 : equipamentoAla;
+      if (produto && (!e.produtos[produto].liberado || (['ovos', 'leite'].includes(produto) && construcao < 1))) { el.hidden = true; continue; }
       const estacao = PRODUTOS[produto]?.[tipo === 'horta' ? 'horta' : 'prateleira'];
       const perto = tipo === 'horta'
-        ? pertoDaEstacao(e.jogador, estacao, 2.5, 3.6)
+        ? pertoDaEstacao(e.jogador, estacao, PRODUTOS[produto].curral?.w ?? 2.5, PRODUTOS[produto].curral?.d ?? 3.6)
         : pertoDaEstacao(e.jogador, estacao, 2.45, 1.8);
       if (!perto) { el.hidden = true; continue; }
       const pos = this.projetar(ponto);

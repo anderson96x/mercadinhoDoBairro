@@ -37,7 +37,7 @@ O joystick aparece onde você começa a arrastar. O movimento acompanha as dire�
 
 ## O que já funciona
 
-- Tomates e milho nas hortas; um galinheiro na fazenda que produz ovos automaticamente.
+- Tomates e milho nas hortas; um galinheiro que produz ovos e um curral que fornece leite em garrafas de vidro.
 - Cesta com capacidade, animação de pegar e guardar os produtos e melhorias.
 - Cesta cinza do jogador: capacidade inicial de 4 produtos e melhoria para 8.
 - Clientes com percurso até a prateleira, fila, compra e saída.

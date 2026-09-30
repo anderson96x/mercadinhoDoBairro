@@ -77,6 +77,8 @@
 
 .item.ovos { background: #fbefd8; color: #a98145; }
 .etiqueta-ovos b { color: #a98145; }
+.item.leite { background: #e7f2ed; color: #448a70; }
+.etiqueta-leite b { color: #448a70; }
 
 #dica-mundo {
   position: absolute;

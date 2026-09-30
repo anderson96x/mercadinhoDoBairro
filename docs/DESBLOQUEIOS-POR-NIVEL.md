@@ -2,11 +2,13 @@
 
 ## Disponíveis
 
-| Nível | Melhoria | Custo |
-| --- | --- | --- |
-| 2 | Caixa | R$ 250 |
-| 3 | Milho | R$ 350 |
-| 4 | Ala dos ovos | R$ 500 |
+| Nível | Melhoria ou produto | Custo | Preço de venda por unidade |
+| --- | --- | --- | --- |
+| 1 | Tomate (disponível desde o início) | — | R$ 5 |
+| 2 | Caixa | R$ 250 | — |
+| 3 | Milho | R$ 350 | R$ 10 |
+| 4 | Ala dos ovos | R$ 500 | R$ 15 por ovo |
+| 5 | Ala do leite | R$ 800 | R$ 20 por garrafa |
 
 ## Desativadas
 

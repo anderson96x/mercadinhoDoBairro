@@ -125,10 +125,12 @@ export class Interface {
     this.el('objetivo-titulo').textContent = m.titulo;
     this.el('objetivo-texto').textContent = m.texto;
     this.el('passo').textContent = m.indice < 4 ? `${String(m.indice + 1).padStart(2, '0')} / 04` : `NÍVEL ${s.nivel}`;
-    this.el('proxima-novidade').textContent = e.estagioLoja
-      ? `Ovos: ${e.produtos.ovos.horta} no galinheiro, ${e.produtos.ovos.prateleira} na prateleira`
-      : '';
-    this.el('proxima-novidade').hidden = !e.estagioLoja;
+    const producaoDisponivel = [
+      e.melhorias.alaProducao && `Ovos: ${e.produtos.ovos.horta} no galinheiro, ${e.produtos.ovos.prateleira} na prateleira`,
+      e.melhorias.alaLeite && `Leite: ${e.produtos.leite.horta} no curral, ${e.produtos.leite.prateleira} na prateleira`
+    ].filter(Boolean);
+    this.el('proxima-novidade').textContent = producaoDisponivel.join(' · ');
+    this.el('proxima-novidade').hidden = !producaoDisponivel.length;
     const inv = e.jogador.inventario;
     this.el('inventario').hidden = inv.length === 0;
     const chave = `${s.capacidade}:${inv.join(',')}`;
@@ -153,6 +155,8 @@ export class Interface {
       prateleira: { ponto: PRODUTOS.tomate.reposicao, nome: 'PRATELEIRA' },
       ovos: { ponto: PRODUTOS.ovos.coleta, nome: 'OVOS' },
       prateleiraOvos: { ponto: PRODUTOS.ovos.reposicao, nome: 'PRATELEIRA DE OVOS' },
+      leite: { ponto: PRODUTOS.leite.coleta, nome: 'CURRAL' },
+      prateleiraLeite: { ponto: PRODUTOS.leite.reposicao, nome: 'PRATELEIRA DE LEITE' },
       caixa: { ponto: CONFIG.cadeiraCaixa, nome: 'CAIXA' },
       escritorio: { ponto: CONFIG.cadeiraEscritorio, nome: 'ESCRITÓRIO' }
     };
@@ -234,7 +238,7 @@ export class Interface {
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p></div></div>
-          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 5, construa o galinheiro na fazenda. As galinhas produzem ovos automaticamente; colete e leve à prateleira.</p></div></li><li><span>5</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>6</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
+          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 4, construa o galinheiro. As galinhas produzem ovos automaticamente.</p></div></li><li><span>5</span><div><b>Abra a ala do leite</b><p>No nível 5, construa o curral por R$ 800. Recolha as garrafas de vidro e abasteça a prateleira de leite.</p></div></li><li><span>6</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>7</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'dev') {
       const proximaReputacao = Math.min(100, Math.ceil((this.sim.reputacao + 1) / 10) * 10);

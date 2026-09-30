@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PALETAS } from './personalizacao.js';
-import { ALA_PRODUCAO } from './configuracao.js';
+import { ALA_PRODUCAO, ALA_LEITE } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = [
@@ -49,7 +49,7 @@ export const MOBILIARIO_CALCADA = [
 ];
 
 export const RUA = Object.freeze({
-  minX: -15, maxX: 16,
+  minX: -15, maxX: 18,
   faixas: Object.freeze([
     Object.freeze({ z: 10.35, direcao: -1 }),
     Object.freeze({ z: 12.55, direcao: 1 })
@@ -64,6 +64,7 @@ function criarDetalhesGrama(grupo) {
     { x: [-11.1, -10.3], z: [-9.3, 5.8], quantidade: 18 },
     { x: [-6.8, -4.3], z: [-9.2, 5.8], quantidade: 28 },
     { x: [-2.4, 11.5], z: [-9.4, -7.4], quantidade: 24 },
+    { x: [-12.4, 16.5], z: [-16.2, -10.5], quantidade: 62 },
     { x: [9.4, 12.6], z: [-5.2, 5.5], quantidade: 30 },
     { x: [12.8, 14.8], z: [-8.7, 6.1], quantidade: 22 }
   ];
@@ -116,13 +117,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     0x286750, p.x, 0.34, p.z, 'principal'
   );
   chao(0, 120, 0.3, 120, 0x78c85a, 0, -0.5, 0);
-  chao(1, 31, 0.3, 28, 0x62b94b, 0.5, -0.2, 0.5);
+  // O terreno inteiro existe desde o início; as construções ocupam espaço nele depois.
+  chao(1, 35, 0.3, 32, 0x62b94b, 1.5, -0.2, -1.5);
   // Manchas suaves quebram o tapete verde sem criar obstaculos no terreno.
   for (const [x, z, rx, rz, cor] of [
     [-10.8, -8.4, 1.2, 0.7, 0x69bd4f], [-5.3, -4.8, 1.1, 0.6, 0x67b94d],
     [-10.7, 0.4, 1.1, 0.6, 0x6abe50], [-5.2, 4.8, 1.2, 0.65, 0x63b64b],
     [12.9, -8.3, 1.1, 0.6, 0x6abe50], [13.6, 3.1, 1, 0.65, 0x63b64b],
-    [1.1, -8.4, 1.4, 0.55, 0x6abe50], [8.1, -8.5, 1.4, 0.55, 0x63b64b]
+    [1.1, -8.4, 1.4, 0.55, 0x6abe50], [8.1, -8.5, 1.4, 0.55, 0x63b64b],
+    [-5.5, -13.5, 1.4, 0.7, 0x69bd4f], [10.4, -13.2, 1.5, 0.65, 0x67b94d]
   ]) {
     const mancha = new THREE.Mesh(new THREE.CircleGeometry(1, 9), new THREE.MeshStandardMaterial({ color: cor, roughness: 1, side: THREE.DoubleSide }));
     mancha.rotation.x = -Math.PI / 2;
@@ -133,14 +136,14 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     grupo.add(mancha);
   }
   criarDetalhesGrama(grupo);
-  chao(2, 31, 0.08, 4.4, 0x48525e, 0.5, 0, 11.3);
-  chao(3, 31, 0.18, 2.5, 0xe0bc8c, 0.5, 0.04, 7.95);
-  bloco(31, 0.22, 0.16, 0xf3e5ce, 0.5, 0.07, 9.18);
-  for (let x = -14; x < 16; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
+  chao(2, 35, 0.08, 4.4, 0x48525e, 1.5, 0, 11.3);
+  chao(3, 35, 0.18, 2.5, 0xe0bc8c, 1.5, 0.04, 7.95);
+  bloco(35, 0.22, 0.16, 0xf3e5ce, 1.5, 0.07, 9.18);
+  for (let x = -14; x < 18; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
   // A faixa atravessa a rua inteira, de uma calçada à outra.
   for (let z = 9.5; z < 13.5; z += 0.35) chao(4, 2.2, 0.012, 0.18, 0xf7eddb, -1.3, 0.052, z);
-  for (let x = -14.5; x < 16; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
-  for (const z of [7.25, 7.95, 8.65]) chao(4, 31, 0.01, 0.015, 0xbeb19a, 0.5, 0.136, z);
+  for (let x = -14.5; x < 18; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
+  for (const z of [7.25, 7.95, 8.65]) chao(4, 35, 0.01, 0.015, 0xbeb19a, 1.5, 0.136, z);
   for (let i = 0; i < 38; i++) {
     if (i % 3 !== 1) continue;
     const x = -14.7 + i * 0.8;
@@ -171,7 +174,23 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   for (let x = 9.2; x < 12.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, area.z);
   for (let z = -5.8; z < 6.6; z += 1.2) chao(5, area.w, 0.008, 0.018, 0xc8bfae, area.x, 0.23, z);
   const paredesAla = new THREE.Group(); ala.add(paredesAla); destino = paredesAla;
+  const paredeLateralOvos = new THREE.Group(); paredesAla.add(paredeLateralOvos);
   for (const p of ALA_PRODUCAO.paredes) {
+    destino = p.x === 12.1 ? paredeLateralOvos : paredesAla;
+    bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
+    bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
+    if (p.z !== 6.7) rodape(p);
+  }
+  const areaLeite = ALA_LEITE.piso;
+  const alaLeite = new THREE.Group(); grupo.add(alaLeite); destino = alaLeite;
+  alaLeite.name = 'ala-leite'; alaLeite.visible = false;
+  chao(3, areaLeite.w, 0.2, areaLeite.d, 0xc4b9a5, areaLeite.x, 0.06, areaLeite.z);
+  chao(4, areaLeite.w, 0.07, 12.4, 0xe3dcc8, areaLeite.x, 0.19, areaLeite.z, 'piso');
+  decorarPiso(12.8, 2);
+  for (let x = 12.2; x < 15.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, areaLeite.z);
+  for (let z = -5.8; z < 6.6; z += 1.2) chao(5, areaLeite.w, 0.008, 0.018, 0xc8bfae, areaLeite.x, 0.23, z);
+  const paredesAlaLeite = new THREE.Group(); alaLeite.add(paredesAlaLeite); destino = paredesAlaLeite;
+  for (const p of ALA_LEITE.paredes) {
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
@@ -185,6 +204,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     bloco(0.65, 0.08, 0.5, 0xc79765, 12.35, 1.3, z);
   }
   for (const y of [1.25, 2.65]) bloco(0.08, 0.08, 11.8, 0xe7b65a, 12.35, y, 0.4);
+  const andaimeLeite = andaime.clone(); grupo.add(andaimeLeite);
+  andaimeLeite.name = 'andaime-leite'; andaimeLeite.position.x = 3; andaimeLeite.visible = false;
   destino = grupo;
   for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) {
     destino = p.lateral ? lateral : grupo;
@@ -262,7 +283,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     }
   }
   // Cerca e árvores enquadram a área de cultivo.
-  for (let z = -9.6; z <= 6; z += 1.3) {
+  for (let z = -15.8; z <= 6; z += 1.3) {
     bloco(0.13, 0.9, 0.13, 0xa8733f, -11.6, 0.5, z);
     bloco(0.1, 0.12, 1.35, 0xd29a5b, -11.6, 0.7, z + 0.62);
   }
@@ -298,21 +319,35 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     atualizarEstagio(estagio, dt = 0) {
       if (estagioAnterior !== undefined && estagio > estagioAnterior) progresso = 0;
       estagioAnterior = estagio;
-      progresso = Math.min(1, progresso + dt / ALA_PRODUCAO.duracaoConstrucao);
-      const piso = THREE.MathUtils.smoothstep(progresso, 0, 0.5);
-      const paredes = THREE.MathUtils.smoothstep(progresso, 0.35, 0.8);
+      const duracao = estagio >= ALA_LEITE.indice ? ALA_LEITE.duracaoConstrucao : ALA_PRODUCAO.duracaoConstrucao;
+      progresso = Math.min(1, progresso + dt / duracao);
+      const progressoOvos = estagio >= ALA_LEITE.indice ? 1 : progresso;
+      const piso = THREE.MathUtils.smoothstep(progressoOvos, 0, 0.5);
+      const paredes = THREE.MathUtils.smoothstep(progressoOvos, 0.35, 0.8);
       const equipamentos = THREE.MathUtils.smoothstep(progresso, 0.7, 1);
+      const pisoLeite = THREE.MathUtils.smoothstep(progresso, 0, 0.5);
       ala.visible = !!estagio;
       ala.scale.x = Math.max(0.001, piso);
       ala.position.x = 9.1 * (1 - ala.scale.x);
       paredesAla.scale.y = Math.max(0.001, paredes);
-      lateral.visible = !estagio || progresso < 0.8;
+      paredeLateralOvos.visible = estagio < ALA_LEITE.indice || progresso < 0.8;
+      paredeLateralOvos.position.x = estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0;
+      alaLeite.visible = estagio >= ALA_LEITE.indice;
+      alaLeite.scale.x = Math.max(0.001, pisoLeite);
+      alaLeite.position.x = 12.1 * (1 - alaLeite.scale.x);
+      paredesAlaLeite.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progresso, 0.35, 0.8));
+      lateral.visible = !estagio || (estagio === ALA_PRODUCAO.indice && progresso < 0.8);
       lateral.position.x = estagio ? area.w * piso : 0;
-      rodapeFrontal.scale.x = 1 + (estagio ? area.w * piso / 8.9 : 0);
-      rodapeFrontal.position.x = 4.65 + (estagio ? area.w / 2 * piso : 0);
-      andaime.visible = !!estagio && progresso > 0 && progresso < 0.95;
+      const largura = (estagio ? area.w * piso : 0) + (estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0);
+      rodapeFrontal.scale.x = 1 + largura / 8.9;
+      rodapeFrontal.position.x = 4.65 + largura / 2;
+      andaime.visible = estagio === ALA_PRODUCAO.indice && progresso > 0 && progresso < 0.95;
       andaime.position.x = -area.w * (1 - piso);
       andaime.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
+      andaimeLeite.visible = estagio >= ALA_LEITE.indice && progresso > 0 && progresso < 0.95;
+      andaimeLeite.position.x = 3 - areaLeite.w * (1 - pisoLeite);
+      andaimeLeite.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
+      arvoreLateral.position.x = estagio >= ALA_LEITE.indice ? 3 * pisoLeite : 0;
       return estagio ? equipamentos : 0;
     },
     animarPorta(abertura) {

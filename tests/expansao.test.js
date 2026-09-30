@@ -86,7 +86,7 @@ test('save da antiga área lateral mantém ovos e compras e reposiciona ajudante
   Object.assign(sim.estado.producao, { milhoNoMoinho: 5, racao: 3, progressoRacao: 1 });
   Object.assign(sim.ajudante, { x: 14.3, z: -2.65, produto: 'ovos', destino: 'prateleira', inventario: ['ovos'] });
   const retomado = new Simulacao(structuredClone(sim.estado));
-  assert.deepEqual(retomado.estado.producao, { progressoOvo: 0, ovosProduzidos: 0 });
+  assert.deepEqual(retomado.estado.producao, { progressoOvo: 0, ovosProduzidos: 0, progressoLeite: 0, leitesProduzidos: 0 });
   assert.equal(retomado.estado.dinheiro, sim.estado.dinheiro);
   assert.equal(retomado.estado.produtos.ovos.horta, 3);
   assert.equal(retomado.estado.produtos.ovos.prateleira, 4);
