@@ -1,3 +1,71 @@
+.marca {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+}
+
+.marca-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.progresso-nivel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-left: 66px;
+}
+
+.progresso-nivel .nivel {
+  align-self: auto;
+  margin: 0;
+}
+
+.progresso-nivel progress {
+  display: block;
+  width: 76px;
+  height: 5px;
+  border: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #e4e8d5;
+}
+
+.progresso-nivel progress::-webkit-progress-bar { background: #e4e8d5; }
+.progresso-nivel progress::-webkit-progress-value { background: var(--paleta-principal); border-radius: 6px; transition: width .3s; }
+.progresso-nivel progress::-moz-progress-bar { background: var(--paleta-principal); border-radius: 6px; }
+
+.progresso-nivel span {
+  color: var(--ui-texto-suave);
+  font-size: 9px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.objetivo[hidden] { display: none; }
+
+@media (max-width: 1120px) {
+  .nivel { display: block; }
+  .progresso-nivel progress { width: 56px; }
+}
+
+@media (max-width: 700px) {
+  .marca-topo { gap: 8px; }
+  .progresso-nivel .nivel { font-size: 8px; letter-spacing: .7px; padding: 5px 6px; }
+  .progresso-nivel { gap: 4px; }
+  .progresso-nivel progress { width: 42px; height: 4px; }
+  .progresso-nivel span { font-size: 8px; }
+  .progresso-nivel { margin-left: 46px; }
+}
+
+.dev-acoes button[aria-pressed="true"] {
+  background: var(--paleta-principal);
+  color: #fffdf3;
+}
+
 .proxima-novidade {
   margin-top: 10px;
   padding-top: 9px;
@@ -9,16 +77,6 @@
 
 .item.ovos { background: #fbefd8; color: #a98145; }
 .etiqueta-ovos b { color: #a98145; }
-
-.melhoria-confirmacao {
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  border-radius: 10px;
-  background: #e8f2df;
-  color: #286750;
-  font-size: 12px;
-  line-height: 1.4;
-}
 
 #dica-mundo {
   position: absolute;

@@ -6,6 +6,7 @@ import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
+const capacidadeExtraAtiva = MELHORIAS.find(m => m.id === 'mochila')?.ativa !== false;
 
 // Mede a distância à borda do objeto, permitindo interagir por qualquer lado.
 function pertoEstacao(ator, centro, largura, profundidade) {
@@ -62,11 +63,11 @@ export function validarEstado(dados) {
     base.produtos[id] = {
       liberado, horta: liberado ? numero(salvo?.horta ?? (p.origem === 'horta' ? p.capacidadeHorta : 0), p.capacidadeHorta) : 0,
       prateleira: liberado ? numero(salvo?.prateleira, p.capacidadePrateleira) : 0, crescimento: 0,
-      crescimentoMelhorado: p.origem === 'horta' && nivelSalvo >= 5 && salvo?.crescimentoMelhorado === true
+      crescimentoMelhorado: p.origem === 'horta' && nivelSalvo >= 4 && salvo?.crescimentoMelhorado === true
     };
   }
   base.melhorias.fertilizante = Object.values(base.produtos).filter(p => p.crescimentoMelhorado).length;
-  if (nivelSalvo >= 5 && dados.melhoriaPendente === 'fertilizante' && base.melhorias.fertilizante < MELHORIAS.find(m => m.id === 'fertilizante').max) base.melhoriaPendente = 'fertilizante';
+  if (nivelSalvo >= 4 && dados.melhoriaPendente === 'fertilizante' && base.melhorias.fertilizante < MELHORIAS.find(m => m.id === 'fertilizante').max) base.melhoriaPendente = 'fertilizante';
   // Salvamentos anteriores não tinham satisfação. As vendas registradas
   // continuam alimentando o histórico de satisfação desses jogos.
   if (dados.estatisticas?.satisfacao === undefined) {
@@ -77,7 +78,7 @@ export function validarEstado(dados) {
   base.satisfacoesRecentes = Array.isArray(dados.satisfacoesRecentes)
     ? dados.satisfacoesRecentes.filter(item => satisfacoesValidas.includes(item)).slice(-CONFIG.tamanhoHistoricoReputacao) : [];
   base.jogador.inventario = Array.isArray(dados.jogador?.inventario)
-    ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + 4 * base.melhorias.mochila) : [];
+    ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + (capacidadeExtraAtiva ? 4 * base.melhorias.mochila : 0)) : [];
   const ajudanteSalvo = dados.funcionarios?.ajudante;
   if (base.melhorias.ajudante && ajudanteSalvo) {
     const produto = base.produtos[ajudanteSalvo.produto]?.liberado ? ajudanteSalvo.produto : 'tomate';
@@ -126,7 +127,7 @@ export class Simulacao {
     this.missaoAnterior = this.missao().indice;
   }
   get limitesMundo() { return this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
-  get capacidade() { return CONFIG.capacidadeInicial + this.estado.melhorias.mochila * 4; }
+  get capacidade() { return CONFIG.capacidadeInicial + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + this.estado.melhorias.velocidade * 0.2); }
   get velocidadeAjudante() { return 2.8 * (this.estado.melhorias.velocidadeAjudante ? CONFIG.multiplicadorVelocidadeAjudante : 1); }
   get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / CONFIG.clientesPorNivel); }
@@ -191,9 +192,6 @@ export class Simulacao {
     if (m.ativa === false) return { disponivel: false, motivo: 'Essa melhoria estará disponível em breve.' };
     const nivelMinimo = m.nivelMinimo || 1;
     if (this.nivel < nivelMinimo) return { disponivel: false, motivo: `Essa melhoria é liberada no nível ${nivelMinimo}.`, nivelMinimo };
-    if (m.requisitoProduto && !this.estado.produtos[m.requisitoProduto]?.liberado) {
-      return { disponivel: false, motivo: 'Tenha ovos antes de contratar o ajudante.', requisitoProduto: m.requisitoProduto };
-    }
     if (m.requisitoMelhoria && !this.estado.melhorias[m.requisitoMelhoria]) {
       const motivo = 'Contrate o ajudante antes de melhorar sua velocidade.';
       return { disponivel: false, motivo, requisitoMelhoria: m.requisitoMelhoria };
@@ -241,13 +239,10 @@ export class Simulacao {
   }
   missao() {
     const s = this.estado.estatisticas;
-    if (!s.clientes && !this.estado.melhorias.mochila) {
+    if (!s.clientes) {
       if (s.colhidos < 4) return { indice: 0, titulo: 'Colha seus primeiros tomates', texto: 'Vá à horta e pegue 4 tomates.', valor: s.colhidos, alvo: 4, destino: 'horta' };
       if (s.repostos < 4) return { indice: 1, titulo: 'Abasteça a prateleira', texto: 'Leve 4 tomates da horta para a prateleira da loja.', valor: s.repostos, alvo: 4, destino: 'prateleira' };
       return { indice: 2, titulo: 'Faça a primeira venda', texto: 'Sente-se no caixa quando um cliente chegar.', valor: 0, alvo: 1, destino: 'caixa' };
-    }
-    if (s.clientes && !this.estado.melhorias.mochila && this.nivel === 1) {
-      return { indice: 3, titulo: 'Sua primeira melhoria', texto: 'Junte R$ 25 com as vendas. Depois, compre a cesta maior no escritório.', valor: Math.min(25, this.estado.dinheiro), alvo: 25, destino: this.estado.dinheiro >= 25 ? 'escritorio' : 'caixa' };
     }
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
@@ -257,26 +252,29 @@ export class Simulacao {
         : this.estado.produtos.ovos.prateleira < 1
           ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Colete os ovos no galinheiro da fazenda e leve-os à nova prateleira.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos' }
           : this.estado.melhorias.ajudante
-            ? { titulo: 'Mantenha a ala funcionando', texto: 'As galinhas produzem ovos automaticamente. Cuide das prateleiras e atenda o bairro.', destino: 'ovos' }
-            : { titulo: 'Contrate ajuda para repor', texto: 'Os ovos já estão à venda. Contrate o ajudante para coletar e repor os produtos.', destino: 'escritorio' };
+            ? { titulo: 'Mantenha a ala funcionando', texto: 'As galinhas produzem ovos automaticamente. Cuide das prateleiras e atenda o bairro.', destino: 'ovos', exibir: false }
+            : { titulo: 'Atenda o bairro', texto: 'Os ovos já estão à venda. No nível 6, você poderá contratar um ajudante para repor todos os produtos.', destino: 'caixa' };
       const orientacoesNivel = {
         2: {
           titulo: 'Seu mercadinho pode crescer',
-          texto: 'Vá ao escritório para contratar um caixa ou aumentar sua capacidade em 4 produtos.'
+          texto: 'Vá ao escritório para contratar um caixa.',
+          exibir: !this.estado.melhorias.caixa
         },
         3: {
-          titulo: 'Prepare a próxima etapa',
-          texto: 'Continue atendendo o bairro. No nível 4 você poderá abrir a horta de milho.',
-          destino: 'caixa'
-        },
-        4: {
           titulo: 'Uma nova colheita',
-          texto: 'Vá ao escritório para abrir a horta e a prateleira de milho.'
+          texto: 'Vá ao escritório para abrir a horta e a prateleira de milho.',
+          exibir: !this.estado.melhorias.milho
         },
-        5: orientacaoOvos
+        5: orientacaoOvos,
+        6: {
+          titulo: 'Contrate um ajudante',
+          texto: 'Vá ao escritório para contratar ajuda na colheita e reposição dos produtos.',
+          destino: 'escritorio',
+          exibir: !this.estado.melhorias.ajudante
+        }
       };
       const orientacaoNivel = orientacoesNivel[this.nivel] || {};
-      return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa') };
+      return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa'), exibir: orientacaoNivel.exibir ?? Boolean(orientacaoNivel.titulo) };
     }
     const indice = MISSOES.findIndex(m => (this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) < m.alvo);
     if (indice === -1) return { indice: MISSOES.length, completa: true, titulo: 'O bairro é seu!', texto: 'Continue cuidando da loja e descubra todas as melhorias.', valor: 1, alvo: 1 };

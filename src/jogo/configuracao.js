@@ -14,7 +14,7 @@ export const CONFIG = {
   capacidadeCestaCliente: 5,
   capacidadeAjudante: 8,
   multiplicadorVelocidadeAjudante: 1.2,
-  multiplicadorCrescimentoMelhorado: 0.5,
+  multiplicadorCrescimentoMelhorado: 0.4,
   tempoEsperaCliente: 10,
   clientesPorNivel: 25,
   pontosSatisfacao: { feliz: 10, neutro: 5, irritado: 0 },
@@ -72,8 +72,9 @@ export const PRODUTOS = {
   }
 };
 
-// A ala dos ovos e o ajudante acompanham o mesmo marco de progressão.
+// A ala dos ovos e o ajudante entram em marcos separados da progressão.
 export const NIVEL_OVOS = 5;
+export const NIVEL_AJUDANTE = 6;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
   limites: { ...CONFIG.limiteMundo },
@@ -92,14 +93,14 @@ export const ALA_PRODUCAO = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
-  { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 10.', custo: 350, icone: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 4 },
+  { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 10.', custo: 350, icone: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 3 },
   { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa um galinheiro na fazenda e amplie a loja para a prateleira de ovos. Colete os ovos e abasteça a prateleira.', custo: ALA_PRODUCAO.custo, icone: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
-  { id: 'mochila', titulo: 'Cabe mais um pouco', descricao: 'Leve mais 4 produtos por viagem.', custo: 25, icone: 'mochila', max: 1, categoria: 'jogador', nivelMinimo: 1 },
+  { id: 'mochila', titulo: 'Mais capacidade', descricao: 'Carregue mais 4 produtos por viagem.', custo: 25, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 1, ativa: false },
   { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 100, icone: 'raio', max: 1, categoria: 'jogador', nivelMinimo: 5 },
   { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 250, icone: 'pessoa', max: 1, categoria: 'funcionarios', nivelMinimo: 2 },
-  { id: 'ajudante', titulo: 'Ajuda na reposição', descricao: 'Disponível no nível dos ovos, depois que você os liberar. O ajudante colhe e abastece as prateleiras.', custo: 300, icone: 'cesta', max: 1, categoria: 'funcionarios', nivelMinimo: NIVEL_OVOS, nivelMinimoLegado: 3, requisitoProduto: 'ovos' },
-  { id: 'velocidadeAjudante', titulo: 'Ajudante ligeiro', descricao: 'O ajudante anda 20% mais rápido.', custo: 100, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: NIVEL_OVOS, requisitoMelhoria: 'ajudante' },
-  { id: 'fertilizante', titulo: 'Crescimento acelerado', descricao: 'Escolha uma horta para reduzir pela metade o tempo de crescimento. Uma vez por produto.', custo: 100, icone: 'folha', max: Object.values(PRODUTOS).filter(p => p.origem === 'horta').length, tipo: 'selecaoProduto', categoria: 'mercado', nivelMinimo: 5 }
+  { id: 'ajudante', titulo: 'Ajuda na reposição', descricao: 'Disponível no nível 6. O ajudante colhe e abastece as prateleiras de todos os produtos liberados.', custo: 300, icone: 'cesta', max: 1, categoria: 'funcionarios', nivelMinimo: NIVEL_AJUDANTE, nivelMinimoLegado: 3 },
+  { id: 'velocidadeAjudante', titulo: 'Ajudante ligeiro', descricao: 'O ajudante anda 20% mais rápido.', custo: 100, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: NIVEL_AJUDANTE, nivelMinimoLegado: 5, requisitoMelhoria: 'ajudante' },
+  { id: 'fertilizante', titulo: 'Crescimento acelerado', descricao: 'Escolha uma horta para reduzir a 40% o tempo de crescimento. Uma vez por produto.', custo: 250, icone: 'folha', max: Object.values(PRODUTOS).filter(p => p.origem === 'horta').length, tipo: 'selecaoProduto', categoria: 'mercado', nivelMinimo: 4 }
 ];
 
 export const MISSOES = [

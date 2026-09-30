@@ -20,15 +20,15 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 
 ## P1 — Build one complete expansion before the full campaign
 
-- [x] Set the helper's minimum level to the planned egg level (5). New helper hires also require eggs to be unlocked; keep helpers already purchased in older saves. Helper speed requires the helper.
-- [x] Implement eggs at level 5 through a farm chicken coop and compact shelf extension so players can satisfy the helper prerequisite.
+- [x] Set the helper's minimum level to 6, independently of the egg expansion; retain helpers already purchased in older saves. Helper speed requires the helper.
+- [x] Implement eggs at level 5 through a farm chicken coop and compact shelf extension, independently of helper availability.
 - [x] Implement a staged store footprint shared by the scene, collision map, pathfinding, fixed world/camera bounds, and save data.
   - A stage defines its prerequisite, price, active floor, walls, stations, paths, and unlocked products.
   - Done when buying an expansion changes the physical map and existing actors remain in reachable positions.
 - [x] Keep the original shop intact before purchase. After the required level and purchase, expand sideways by 3 units with animated floor, walls, scaffolding, and the egg shelf. The larger plot, road, sidewalk, and camera framing are present from the start.
 - [x] Add a chicken coop in the farm area: chickens produce eggs automatically → collect eggs → stock the nearby egg shelf. Corn remains an independent crop.
   - Done when the player can collect eggs without inputs, sell its output, and see why the new department matters.
-- [x] Pair the first stocking helper with that new department so staff can collect eggs and stock the new shelf.
+- [x] Make the level-6 stocking helper available for any unlocked product, without requiring the egg expansion.
 - [x] Introduce the new product gradually in customer orders; do not demand it from every customer before the player can stock it.
 - [x] Add save migration for stages, egg production, and staff state. Existing saves must retain money, customers served, purchases, and unlocked products.
 - [ ] Test the complete expansion on desktop and portrait mobile: construction reveal, reachability, customer and helper routes, performance, and reload. Automated route, sale, stocking, and reload checks cover the revised coop flow. Earlier browser captures predate the new layout. Hands-on phone playtesting and frame-rate measurement remain.
@@ -37,8 +37,8 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 
 | Levels | Store stage | Main addition | Elapsed target |
 | --- | --- | --- | ---: |
-| 1–3 | Compact produce stall | Learn the loop; tomatoes and cashier | 5 min |
-| 4–7 | Produce wing | Corn at level 4; chicken coop, eggs and helper at level 5 | 21 min |
+| 1–2 | Compact produce stall | Learn the loop; tomatoes and cashier | 5 min |
+| 3–7 | Produce wing | Corn at level 3; chicken coop and eggs at level 5; helper at level 6 | 21 min |
 | 8–11 | Refrigerated wing | Milk, cheese, storage | 45 min |
 | 12–15 | Bakery frontage | Wheat, bread, worker specialization | 77 min |
 | 16–20 | Neighborhood supermarket | Loading area, mixed orders, final expansion | 129 min |
@@ -56,6 +56,7 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 - [ ] Instrument first sale, upgrade, expansion, level, and completion times; stockout duration; queue time; paid and empty visits; income per minute; and time spent working versus waiting.
 - [ ] Extend `scripts/analyze-progression.mjs` to cover each new stage and multiple purchase policies. Include cases where the player does nothing after hiring staff.
 - [ ] Balance each level using expected customer throughput and the target minutes per level. Balance purchase costs using uncommitted income and target saving time; inspect upgrade payback separately.
+- [x] Set fertilizer to unlock at level 4, cost R$ 250, and reduce the selected crop's growth time to 40% of its normal duration.
 - [ ] Check that demand never greatly exceeds the minimum of crop production, transport, shelf space, baskets, and checkout capacity unless a brief, announced challenge is intended.
 - [ ] Playtest fresh desktop and mobile sessions. Measure median and slower-player completion times, where players get lost, and whether they understand the next task.
 - [ ] Adjust the campaign toward 2–3 hours of active play from observed results. Avoid lengthening it solely through higher prices or repeated customer-count goals.

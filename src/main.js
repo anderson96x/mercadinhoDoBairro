@@ -47,6 +47,12 @@ function aumentarNivelDev() {
   gravar(); ui.atualizar();
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
 }
+function definirClientesPorNivel(valor) {
+  if (!import.meta.env.DEV || ![1, 25].includes(valor)) return;
+  CONFIG.clientesPorNivel = valor;
+  ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+}
 function aumentarReputacaoDev() {
   if (!import.meta.env.DEV) return;
   sim.aumentarReputacaoDev();
@@ -64,7 +70,7 @@ function reiniciar() {
   window.location.reload();
 }
 const ui = new Interface(sim, {
-  pausar, comprar, alterarSaldo, aumentarNivelDev, aumentarReputacaoDev, iniciarSelecaoHorta,
+  pausar, comprar, alterarSaldo, aumentarNivelDev, definirClientesPorNivel, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;
@@ -80,7 +86,6 @@ const ui = new Interface(sim, {
 try {
   cena = new Cena(document.getElementById('mundo'), sim);
   controles = new Controles(document.getElementById('mundo'), document.getElementById('joystick'));
-  ui.atualizarDicaMundo(cena);
   const mundo = document.getElementById('mundo');
   mundo.addEventListener('pointermove', e => { if (sim.estado.melhoriaPendente === 'fertilizante') ui.moverCursorHorta(e.clientX, e.clientY); });
   mundo.addEventListener('click', e => {
@@ -105,16 +110,12 @@ try {
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
         if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.`); }
-        if (evento.tipo === 'melhoria') {
-          const descricao = MELHORIAS.find(m => m.id === evento.id)?.descricao ?? 'Melhoria adquirida.';
-          ui.mensagem(`${evento.texto}: ${descricao} Próximo: ${sim.missao().titulo}.`);
-        }
+        if (evento.tipo === 'melhoria') ui.mensagem(evento.texto);
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
         if (['expansao', 'ovoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
-        if (evento.tipo === 'missao') ui.mensagem(evento.texto);
         if (evento.tipo === 'escritorio') ui.abrir('escritorio');
       }
-      if (agora >= proximaUI) { ui.atualizar(); ui.atualizarDicaMundo(cena); proximaUI = agora + 100; }
+      if (agora >= proximaUI) { ui.atualizar(); proximaUI = agora + 100; }
     } else acumulado = 0;
     if (cena.modoCompativel) setTimeout(() => requestAnimationFrame(quadro), 25);
     else requestAnimationFrame(quadro);

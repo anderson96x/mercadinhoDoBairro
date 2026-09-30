@@ -15,7 +15,7 @@ export class Interface {
       <main class="jogo" aria-label="Mercadinho do Bairro">
         <div id="mundo"></div><div id="etiquetas" aria-hidden="true"><div id="dica-mundo" hidden></div></div>
         <header class="cabecalho">
-          <div class="marca"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div><span class="nivel" id="nivel" role="status" aria-live="polite">NÍVEL 1</span></div>
+          <div class="marca"><div class="marca-topo"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div></div><div class="progresso-nivel"><progress id="nivel-progresso" value="0" max="25" aria-label="Progresso para o próximo nível"></progress><span id="nivel-contagem">0 / 25</span><span class="nivel" id="nivel" role="status" aria-live="polite">NÍVEL 1</span></div></div>
           <div class="saldo" aria-label="Resumo do mercado"><div class="saldo-linha"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div></div><div class="reputacao-topo media" id="reputacao-painel" aria-label="Satisfação média, 60 de 100"><span class="satisfacao-rosto" id="satisfacao-rosto">${icone('neutro')}</span><progress id="reputacao-progresso" value="60" max="100" aria-label="Satisfação do mercadinho"></progress><small id="reputacao-meta">Média · 60 / 100</small></div></div>
           <nav class="ferramentas" aria-label="Opções do jogo">
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
@@ -27,16 +27,15 @@ export class Interface {
         <aside class="objetivo" id="objetivo" aria-label="Objetivo atual">
           <div class="objetivo-topo"><span>${icone('alvo')} PRÓXIMO PASSO</span><span id="passo">01 / 04</span></div>
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
-          <div class="progresso-linha"><progress id="objetivo-progresso" value="0" max="3" aria-label="Progresso do objetivo"></progress><span id="objetivo-contagem">0 / 3</span></div>
           <p class="proxima-novidade" id="proxima-novidade"></p>
         </aside>
         <div id="atividade" role="status"></div>
         <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Use as setas ou arraste para andar</span></span></div>
         <footer class="rodape">
-          <div class="inventario" id="inventario" hidden><div class="inventario-conteudo"><div class="inventario-titulo"><b id="nivel-inventario">Inventário · Nível ${this.sim.estado.melhorias.mochila + 1}</b><span id="capacidade">${this.sim.estado.jogador.inventario.length} / ${this.sim.capacidade}</span></div><div id="itens"></div></div></div>
+          <div class="inventario" id="inventario" hidden><div class="inventario-conteudo"><div class="inventario-titulo"><b id="nivel-inventario">Inventário</b><span id="capacidade">${this.sim.estado.jogador.inventario.length} / ${this.sim.capacidade}</span></div><div id="itens"></div></div></div>
         </footer>
         <div id="joystick" aria-hidden="true"><span></span></div>
-        <div id="mensagens" aria-live="polite" aria-atomic="true"></div>
+        <div id="mensagens" hidden aria-live="polite" aria-atomic="true"></div>
         <div id="efeitos" aria-hidden="true"></div><div id="cursor-melhoria" aria-hidden="true" hidden>${icone('folha')}</div>
         <dialog id="painel" aria-labelledby="painel-titulo"><div id="painel-conteudo"></div></dialog>
       </main>`;
@@ -88,11 +87,13 @@ export class Interface {
     this.el('reputacao-meta').textContent = `${nomesReputacao[s.faixaReputacao]} · ${s.reputacao} / 100`;
     this.el('reputacao-progresso').setAttribute('aria-valuetext', `${s.reputacao} de 100, satisfação ${nomesReputacao[s.faixaReputacao].toLocaleLowerCase('pt-BR')}`);
     this.el('nivel').textContent = `NÍVEL ${s.nivel}`;
+    const clientesProximoNivel = s.nivel * CONFIG.clientesPorNivel;
+    this.el('nivel-progresso').max = clientesProximoNivel; this.el('nivel-progresso').value = e.estatisticas.clientes;
+    this.el('nivel-contagem').textContent = `${e.estatisticas.clientes} / ${clientesProximoNivel}`;
+    this.el('objetivo').hidden = m.indice >= 4 && !m.exibir;
     this.el('objetivo-titulo').textContent = m.titulo;
     this.el('objetivo-texto').textContent = m.texto;
     this.el('passo').textContent = m.indice < 4 ? `${String(m.indice + 1).padStart(2, '0')} / 04` : `NÍVEL ${s.nivel}`;
-    this.el('objetivo-progresso').max = m.alvo; this.el('objetivo-progresso').value = m.valor;
-    this.el('objetivo-contagem').textContent = `${m.valor} / ${m.alvo}`;
     this.el('proxima-novidade').textContent = e.estagioLoja
       ? `Ovos: ${e.produtos.ovos.horta} no galinheiro, ${e.produtos.ovos.prateleira} na prateleira`
       : '';
@@ -102,7 +103,7 @@ export class Interface {
     const chave = `${s.capacidade}:${inv.join(',')}`;
     if (chave !== this.ultimoInventario) {
       this.el('capacidade').textContent = `${inv.length} / ${s.capacidade}`;
-      this.el('nivel-inventario').textContent = `Inventário · Nível ${e.melhorias.mochila + 1}`;
+      this.el('nivel-inventario').textContent = 'Inventário';
       this.el('itens').style.setProperty('--colunas', Math.min(s.capacidade, 8));
       this.el('itens').innerHTML = Array.from({ length: s.capacidade }, (_, i) => `<span class="item ${inv[i] || ''}" title="${inv[i] ? PRODUTOS[inv[i]].nome : 'Espaço livre'}">${inv[i] ? icone(inv[i]) : '<i></i>'}</span>`).join('');
       this.el('itens').setAttribute('aria-label', Object.keys(PRODUTOS).map(id => `${inv.filter(item => item === id).length} ${PRODUTOS[id].plural.toLocaleLowerCase('pt-BR')}`).join(', ') + '.');
@@ -151,9 +152,10 @@ export class Interface {
       const aberta = this.sim.estado.lojaAberta;
       conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho sem sair do escritório.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
     } else if (tipo === 'melhorias') {
-      const abaAtiva = ABAS_MELHORIAS.find(aba => aba.id === this.abaMelhorias) ?? ABAS_MELHORIAS[0];
-      const melhorias = MELHORIAS.filter(m => m.categoria === abaAtiva.id);
-      const abas = `<div class="abas-melhorias" role="tablist" aria-label="Tipo de melhoria">${ABAS_MELHORIAS.map(aba => `<button class="aba-melhoria ${aba.id === abaAtiva.id ? 'ativa' : ''}" id="aba-${aba.id}" role="tab" aria-selected="${aba.id === abaAtiva.id}" aria-controls="lista-melhorias" tabindex="${aba.id === abaAtiva.id ? 0 : -1}" data-aba-melhoria="${aba.id}">${aba.titulo}</button>`).join('')}</div>`;
+      const abasDisponiveis = ABAS_MELHORIAS.filter(aba => MELHORIAS.some(m => m.categoria === aba.id && m.ativa !== false));
+      const abaAtiva = abasDisponiveis.find(aba => aba.id === this.abaMelhorias) ?? abasDisponiveis[0];
+      const melhorias = MELHORIAS.filter(m => m.categoria === abaAtiva.id && m.ativa !== false);
+      const abas = `<div class="abas-melhorias" role="tablist" aria-label="Tipo de melhoria">${abasDisponiveis.map(aba => `<button class="aba-melhoria ${aba.id === abaAtiva.id ? 'ativa' : ''}" id="aba-${aba.id}" role="tab" aria-selected="${aba.id === abaAtiva.id}" aria-controls="lista-melhorias" tabindex="${aba.id === abaAtiva.id ? 0 : -1}" data-aba-melhoria="${aba.id}">${aba.titulo}</button>`).join('')}</div>`;
       conteudo = `<p class="painel-subtitulo">Cada venda abre novas possibilidades.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div>${abas}<div class="lista-melhorias" id="lista-melhorias" role="tabpanel" aria-labelledby="aba-${abaAtiva.id}">${melhorias.map(m => {
         const nivel = this.sim.estado.melhorias[m.id], completa = nivel >= m.max, custo = this.sim.custoMelhoria(m.id);
         const disponibilidade = this.sim.disponibilidadeMelhoria(m.id), pode = disponibilidade.disponivel && this.sim.estado.dinheiro >= custo;
@@ -191,7 +193,11 @@ export class Interface {
         <div class="dev-progresso">
           <section class="dev-cartao" aria-label="Nível">
             <div class="dev-cartao-topo"><span class="dev-rotulo">Nível</span><strong>${this.sim.nivel}</strong></div>
-            <p>Libera melhorias conforme o progresso.</p>
+            <p>Clientes por nível. A escolha vale até recarregar a página.</p>
+            <div class="dev-acoes dev-acoes-duplas" aria-label="Clientes necessários para subir de nível">
+              <button data-clientes-por-nivel="1" aria-pressed="${CONFIG.clientesPorNivel === 1}">1 cliente</button>
+              <button data-clientes-por-nivel="25" aria-pressed="${CONFIG.clientesPorNivel === 25}">25 clientes</button>
+            </div>
             <div class="dev-acoes"><button id="dev-nivel">+ 1 nível</button></div>
           </section>
           <section class="dev-cartao" aria-label="Reputação">
@@ -218,13 +224,7 @@ export class Interface {
         this.iniciarSelecaoHorta();
         this.acoes.iniciarSelecaoHorta();
       } else if (resultado.sucesso) {
-        const descricao = MELHORIAS.find(m => m.id === b.dataset.melhoria)?.descricao ?? 'Melhoria adquirida.';
         this.renderizarPainel();
-        const aviso = document.createElement('p');
-        aviso.className = 'melhoria-confirmacao';
-        aviso.setAttribute('role', 'status');
-        aviso.textContent = `${descricao} Próximo: ${this.sim.missao().titulo}.`;
-        this.el('lista-melhorias').before(aviso);
       } else this.mensagem(resultado.motivo);
       this.atualizar();
     });
@@ -262,6 +262,9 @@ export class Interface {
       this.el('dev-nivel').onclick = () => this.acoes.aumentarNivelDev();
       this.el('dev-reputacao').onclick = () => this.acoes.aumentarReputacaoDev();
       this.el('dev-reset').onclick = () => this.abrir('reiniciar');
+      this.el('painel-conteudo').querySelectorAll('[data-clientes-por-nivel]').forEach(botao => {
+        botao.onclick = () => this.acoes.definirClientesPorNivel(Number(botao.dataset.clientesPorNivel));
+      });
     }
     if (tipo === 'personalizacao') {
       const form = this.el('form-personalizacao');

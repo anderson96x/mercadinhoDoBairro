@@ -429,8 +429,12 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
   cesta.position.set(0, jogador ? 0.42 : corpulento ? 0.2 : 0.26, jogador ? 0.5 : corpulento ? 0.72 : 0.58); corpo.add(cesta);
   cesta.userData.pega ??= new THREE.Vector3(0, 0.89, 0);
   const visualCestaNormal = [...cesta.children];
-  const caixaMadeira = funcao === 'ajudante' ? criarCaixaMadeira() : null;
-  if (caixaMadeira) { caixaMadeira.visible = false; cesta.add(caixaMadeira); }
+  const caixaMadeira = funcao === 'ajudante' || jogador ? criarCaixaMadeira() : null;
+  if (caixaMadeira) {
+    caixaMadeira.visible = false;
+    if (jogador) caixaMadeira.scale.setScalar(0.58);
+    cesta.add(caixaMadeira);
+  }
   const carga = new THREE.Group(); cesta.add(carga);
   const produtoNaMao = new THREE.Group(); corpo.add(produtoNaMao);
   const uniforme = uniformizado ? { camisa: [torso, bracoE.userData.superior, bracoD.userData.superior, ...(barriga ? [barriga] : [])], chapeu, paletaAplicada: null } : null;
@@ -736,8 +740,9 @@ export class Cena {
         d.cesta.rotation.z = 0;
       }
     }
+    const escalaCaixa = d.jogador ? 0.58 : 1;
     const repouso = d.usandoCaixaMadeira
-      ? new THREE.Vector3(0.43, d.cesta.position.y + 0.32, d.cesta.position.z)
+      ? new THREE.Vector3(0.43 * escalaCaixa, d.cesta.position.y + 0.32 * escalaCaixa, d.cesta.position.z)
       : new THREE.Vector3(0.4, 0.65, 0.32);
     const mao = repouso.clone();
     d.produtoNaMao.visible = false;
@@ -780,7 +785,7 @@ export class Cena {
       if (t >= 1) d.reposicao = null;
     }
     const semCarga = !coleta && !reposicao && inventario.length === 0 && (
-      d.jogador || d.funcao === 'caixa' || (ator.temCesta === false && !ator.levaSacolas)
+      (d.jogador && !d.usandoCaixaMadeira) || d.funcao === 'caixa' || (ator.temCesta === false && !ator.levaSacolas)
       || d.funcao === 'ajudante'
     );
     if (semCarga) {
@@ -791,15 +796,16 @@ export class Cena {
       posicionarBraco(d.bracoD, maoLivreD);
       return;
     }
-    const carregandoNasMaos = d.jogador && inventario.length > 0;
+    const carregandoNasMaos = d.jogador && !d.usandoCaixaMadeira && inventario.length > 0;
     const maoE = carregandoNasMaos
       ? new THREE.Vector3(-0.3, 0.62, 0.5)
       : d.usandoCaixaMadeira
-        ? new THREE.Vector3(-0.43, d.cesta.position.y + 0.32, d.cesta.position.z)
+        ? new THREE.Vector3(-0.43 * escalaCaixa, d.cesta.position.y + 0.32 * escalaCaixa, d.cesta.position.z)
         : d.cesta.userData.pega.clone().add(d.cesta.position);
     const soltar = THREE.MathUtils.smoothstep(sentado, 0.65, 1);
     if (!carregandoNasMaos) maoE.lerp(new THREE.Vector3(-0.3, 0.87, 0.7), soltar);
     if (carregandoNasMaos) mao.set(0.3, 0.62, 0.5);
+    else if (d.usandoCaixaMadeira) mao.copy(repouso);
     else mao.lerp(new THREE.Vector3(0.3, 0.87, 0.7), sentado);
     posicionarBraco(d.bracoE, maoE);
     posicionarBraco(d.bracoD, mao);
@@ -893,6 +899,8 @@ export class Cena {
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     const equipamentoAla = this.bairro.atualizarEstagio(e.estagioLoja, dt);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
+    this.jogador.userData.usandoCaixaMadeira = sim.capacidade > CONFIG.capacidadeInicial && e.jogador.inventario.length > 0;
+    this.jogador.userData.caixaMadeira.visible = this.jogador.userData.usandoCaixaMadeira;
     this.animarPersonagem(this.jogador, e.jogador, dt, tempo, e.jogador.inventario);
     const atendendoNoCaixa = sim.progressoCaixa > 0;
     const progressoCaixa = sim.progressoCaixa / CONFIG.tempoCaixa;
