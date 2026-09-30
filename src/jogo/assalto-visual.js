@@ -22,6 +22,7 @@ function bloco(pai, w, h, d, cor, x, y, z) {
 // Silhueta pequena e angular: capuz grande, rosto coberto, jaqueta e pernas articuladas.
 function criarAssaltante(pele) {
   const grupo = new THREE.Group(); grupo.name = 'assaltante-encapuzado';
+  grupo.scale.setScalar(0.8);
   const corpo = new THREE.Group(); grupo.add(corpo);
   const jaqueta = malha(corpo, new THREE.DodecahedronGeometry(0.5, 0), 0x1e1e23, 0, 1.04, 0);
   jaqueta.scale.set(0.88, 0.88, 0.62);
