@@ -48,13 +48,57 @@ export const MOBILIARIO_CALCADA = [
   ...[1.4, 6.2, 10.5].map(x => ({ x, z: 7.4, w: 1.1, d: 0.55 }))
 ];
 
+function criarDetalhesGrama(grupo) {
+  // Posicoes fixas deixam a paisagem igual em cada carregamento.
+  let semente = 4187;
+  const aleatorio = () => ((semente = (1664525 * semente + 1013904223) >>> 0) / 4294967296);
+  const faixas = [
+    { x: [-11.1, -10.3], z: [-9.3, 5.8], quantidade: 18 },
+    { x: [-6.8, -4.3], z: [-9.2, 5.8], quantidade: 28 },
+    { x: [-2.4, 11.5], z: [-9.4, -7.4], quantidade: 24 },
+    { x: [9.4, 12.6], z: [-5.2, 5.5], quantidade: 30 },
+    { x: [12.8, 14.8], z: [-8.7, 6.1], quantidade: 22 }
+  ];
+  const cores = [0x398f43, 0x84c85c, 0xa5d76c];
+  const vertices = cores.map(() => []);
+  for (const faixa of faixas) {
+    for (let i = 0; i < faixa.quantidade; i++) {
+      const x = faixa.x[0] + aleatorio() * (faixa.x[1] - faixa.x[0]);
+      const z = faixa.z[0] + aleatorio() * (faixa.z[1] - faixa.z[0]);
+      const altura = 0.16 + aleatorio() * 0.12;
+      const pontos = vertices[Math.floor(aleatorio() * cores.length)];
+      for (let folha = 0; folha < 3; folha++) {
+        const angulo = folha * Math.PI * 2 / 3 + aleatorio() * 0.4;
+        const dx = Math.cos(angulo), dz = Math.sin(angulo);
+        const largura = 0.055 + aleatorio() * 0.025;
+        pontos.push(
+          x - dx * largura, -0.045, z - dz * largura,
+          x + dx * largura, -0.045, z + dz * largura,
+          x + dx * altura * 0.45, -0.045 + altura, z + dz * altura * 0.45
+        );
+      }
+    }
+  }
+  vertices.forEach((pontos, i) => {
+    const geometria = new THREE.BufferGeometry();
+    geometria.setAttribute('position', new THREE.Float32BufferAttribute(pontos, 3));
+    geometria.computeVertexNormals();
+    const malha = new THREE.Mesh(geometria, new THREE.MeshStandardMaterial({ color: cores[i], side: THREE.DoubleSide, roughness: 1 }));
+    malha.receiveShadow = true;
+    grupo.add(malha);
+  });
+}
+
 export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const grupo = new THREE.Group(); cena.add(grupo);
   let destino = grupo;
   const materiais = [];
   const bloco = (w, h, d, cor, x, y, z, papel) => {
     const m = caixa(destino, w, h, d, cor, x, y, z);
-    if (papel) { m.material = m.material.clone(); materiais.push({ material: m.material, papel }); }
+    if (papel) {
+      m.material = m.material.clone();
+      materiais.push({ material: m.material, papel: typeof papel === 'string' ? papel : papel.nome, tom: papel.tom || 0 });
+    }
     return m;
   };
   const chao = (camada, ...args) => { const m = bloco(...args); m.userData.fundo = camada; return m; };
@@ -65,6 +109,22 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   );
   chao(0, 120, 0.3, 120, 0x78c85a, 0, -0.5, 0);
   chao(1, 31, 0.3, 28, 0x62b94b, 0.5, -0.2, 0.5);
+  // Manchas suaves quebram o tapete verde sem criar obstaculos no terreno.
+  for (const [x, z, rx, rz, cor] of [
+    [-10.8, -8.4, 1.2, 0.7, 0x69bd4f], [-5.3, -4.8, 1.1, 0.6, 0x67b94d],
+    [-10.7, 0.4, 1.1, 0.6, 0x6abe50], [-5.2, 4.8, 1.2, 0.65, 0x63b64b],
+    [12.9, -8.3, 1.1, 0.6, 0x6abe50], [13.6, 3.1, 1, 0.65, 0x63b64b],
+    [1.1, -8.4, 1.4, 0.55, 0x6abe50], [8.1, -8.5, 1.4, 0.55, 0x63b64b]
+  ]) {
+    const mancha = new THREE.Mesh(new THREE.CircleGeometry(1, 9), new THREE.MeshStandardMaterial({ color: cor, roughness: 1, side: THREE.DoubleSide }));
+    mancha.rotation.x = -Math.PI / 2;
+    mancha.rotation.z = x * 0.2;
+    mancha.scale.set(rx, rz, 1);
+    mancha.position.set(x, -0.046, z);
+    mancha.userData.fundo = 2;
+    grupo.add(mancha);
+  }
+  criarDetalhesGrama(grupo);
   chao(2, 31, 0.08, 4.4, 0x48525e, 0.5, 0, 11.3);
   chao(3, 31, 0.18, 2.5, 0xe0bc8c, 0.5, 0.04, 7.95);
   bloco(31, 0.22, 0.16, 0xf3e5ce, 0.5, 0.07, 9.18);
@@ -73,9 +133,24 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   for (let z = 9.5; z < 13.5; z += 0.35) chao(4, 2.2, 0.012, 0.18, 0xf7eddb, -1.3, 0.052, z);
   for (let x = -14.5; x < 16; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
   for (const z of [7.25, 7.95, 8.65]) chao(4, 31, 0.01, 0.015, 0xbeb19a, 0.5, 0.136, z);
+  for (let i = 0; i < 38; i++) {
+    if (i % 3 !== 1) continue;
+    const x = -14.7 + i * 0.8;
+    for (const z of [7.6, 8.3]) chao(4, 0.77, 0.004, 0.67, 0xe7c89e, x, 0.133, z);
+  }
+  const decorarPiso = (primeiraColuna, colunas) => {
+    for (let i = 0; i < colunas; i++) {
+      for (let j = 0; j < 10; j++) {
+        if ((i + j * 2) % 3 === 0) {
+          chao(4, 1.16, 0.004, 1.16, 0xe7dfcd, primeiraColuna + i * 1.2, 0.227, -5.2 + j * 1.2, { nome: 'piso', tom: 0.025 });
+        }
+      }
+    }
+  };
   // Os pisos se encontram em x = 9.1, com a mesma altura e malha de azulejos.
   chao(3, 12.2, 0.2, 12.7, 0xc4b9a5, 3, 0.06, 0.35);
   chao(4, 12.2, 0.07, 12.4, 0xe3dcc8, 3, 0.19, 0.35, 'piso');
+  decorarPiso(-2.2, 9);
   for (let x = -2.8; x < 9; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, 0.35);
   for (let z = -5.8; z < 6.6; z += 1.2) chao(5, 12.2, 0.008, 0.018, 0xc8bfae, 3, 0.23, z);
   const area = ALA_PRODUCAO.piso;
@@ -84,6 +159,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   ala.visible = false;
   chao(3, area.w, 0.2, area.d, 0xc4b9a5, area.x, 0.06, area.z);
   chao(4, area.w, 0.07, 12.4, 0xe3dcc8, area.x, 0.19, area.z, 'piso');
+  decorarPiso(9.8, 2);
   for (let x = 9.2; x < 12.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, area.z);
   for (let z = -5.8; z < 6.6; z += 1.2) chao(5, area.w, 0.008, 0.018, 0xc8bfae, area.x, 0.23, z);
   const paredesAla = new THREE.Group(); ala.add(paredesAla); destino = paredesAla;
@@ -183,11 +259,25 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     bloco(0.1, 0.12, 1.35, 0xd29a5b, -11.6, 0.7, z + 0.62);
   }
   const arvoreLateral = new THREE.Group(); grupo.add(arvoreLateral);
-  for (const [x,z] of [[-12.4,-6.2],[-12.4,4.7],[13.8,-5.4]]) {
+  for (const [indice, [x,z]] of [[-12.4,-6.2],[-12.4,4.7],[13.8,-5.4]].entries()) {
     const arvores = x > 0 ? arvoreLateral : grupo;
-    cilindro(arvores, 0.13, 0.2, 1.8, 0x8f5b32, x, 0.9, z);
-    esfera(arvores, 1, 0x3ca34b, x, 2.15, z, 1, 1.2, 1);
-    esfera(arvores, 0.65, 0x66c05a, x - 0.45, 2.5, z + 0.25);
+    const arvore = new THREE.Group(); arvore.position.set(x, 0, z); arvores.add(arvore);
+    const escala = [1, 0.91, 1.06][indice]; arvore.scale.setScalar(escala);
+    cilindro(arvore, 0.16, 0.27, 1.76, 0x865834, 0, 0.84, 0, 9);
+    cilindro(arvore, 0.12, 0.17, 1.1, 0xa37143, -0.055, 0.99, 0.13, 8);
+    for (const [lado, frente] of [[-1, 0.2], [1, -0.16]]) {
+      const galho = cilindro(arvore, 0.07, 0.12, 1.05, 0x865834, lado * 0.31, 1.55, frente, 7);
+      galho.rotation.z = lado * 0.72;
+    }
+    esfera(arvore, 0.98, 0x2f8840, 0, 2.06, 0, 1.22, 0.78, 1.08);
+    for (const [px, py, pz, raio, cor] of [
+      [-0.61, 2.24, 0.04, 0.73, 0x389b49],
+      [0.57, 2.22, -0.12, 0.78, 0x43a64d],
+      [-0.13, 2.59, -0.37, 0.79, 0x51b456],
+      [0.15, 2.56, 0.37, 0.75, 0x49a94b],
+      [-0.43, 2.78, 0.27, 0.49, 0x6fc762],
+      [0.45, 2.78, 0.03, 0.46, 0x79ca65]
+    ]) esfera(arvore, raio, cor, px, py, pz, 1, 0.82, 0.92);
   }
   for (const x of [-7.8, 10.8]) {
     cilindro(grupo, 0.055, 0.075, 2.8, 0x45544e, x, 1.55, 8.4);
@@ -235,7 +325,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     aplicar(dados) {
       const chave = dados.paleta; if (chave === anterior) return; anterior = chave;
       const paleta = PALETAS.find(p => p.id === dados.paleta) || PALETAS[0];
-      for (const { material, papel } of materiais) material.color.set(paleta[papel]);
+      for (const { material, papel, tom = 0 } of materiais) material.color.set(paleta[papel]).offsetHSL(0, 0, tom);
     }
   };
 }
