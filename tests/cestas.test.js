@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 
-test('a quantidade de cestas limita quantos clientes podem entrar', () => {
+test('sem cestas, clientes atravessam a calçada sem entrar na loja', () => {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
   for (let i = 0; i < CONFIG.quantidadeCestas; i++) {
     assert.equal(sim.criarCliente(), true);
@@ -12,7 +12,18 @@ test('a quantidade de cestas limita quantos clientes podem entrar', () => {
   assert.equal(sim.cestasEmUso, CONFIG.quantidadeCestas);
   assert.equal(sim.cestasDisponiveis, 0);
   assert.equal(sim.cestasNoSuporte, CONFIG.quantidadeCestas, 'reservar não remove a cesta do suporte');
-  assert.equal(sim.criarCliente(), false);
+  assert.equal(sim.criarCliente(), true);
+  const passante = sim.clientes.at(-1);
+  assert.equal(passante.fase, 'passando');
+  assert.equal(passante.cestaReservada, false);
+  assert.equal(passante.ladoSaida, 1 - passante.ladoEntrada);
+  assert.equal(sim.cestasEmUso, CONFIG.quantidadeCestas);
+  for (const cliente of sim.clientes.slice(0, -1)) cliente.fase = 'fila';
+  const reputacao = sim.reputacao;
+  for (let i = 0; i < 1200 && passante.fase !== 'fim'; i++) sim.atualizarClientes(1 / 60);
+  assert.equal(passante.fase, 'fim');
+  assert.equal(sim.reputacao, reputacao);
+  assert.equal(sim.estado.estatisticas.clientes, 0);
 
   sim.clientes[0].cestaReservada = false;
   assert.equal(sim.cestasDisponiveis, 1);

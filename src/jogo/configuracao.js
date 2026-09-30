@@ -9,7 +9,14 @@ export const CONFIG = {
   raioInteracao: 0.9,
   tempoCaixa: 1.15,
   bonusNivel: 100,
-  intervaloClientesReputacao: { ruim: 20, media: 15, boa: 8 },
+  intervaloClientesReputacao: [
+    { reputacao: 0, segundos: 25 },
+    { reputacao: 20, segundos: 20 },
+    { reputacao: 50, segundos: 15 },
+    { reputacao: 70, segundos: 10 },
+    { reputacao: 90, segundos: 5 },
+    { reputacao: 100, segundos: 2.5 }
+  ],
   quantidadeCestas: 5,
   capacidadeCestaCliente: 5,
   capacidadeAjudante: 8,

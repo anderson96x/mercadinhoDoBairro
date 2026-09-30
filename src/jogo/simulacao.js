@@ -189,10 +189,16 @@ export class Simulacao {
     return this.reputacao;
   }
   get intervaloClientes() {
-    // A smooth curve prevents a single good review from tripling customer traffic.
     const r = this.reputacao;
-    const { ruim, media, boa } = CONFIG.intervaloClientesReputacao;
-    return r <= 60 ? ruim + (media - ruim) * r / 60 : media + (boa - media) * (r - 60) / 40;
+    const pontos = CONFIG.intervaloClientesReputacao;
+    for (let i = 1; i < pontos.length; i++) {
+      const anterior = pontos[i - 1], atual = pontos[i];
+      if (r <= atual.reputacao) {
+        return anterior.segundos + (atual.segundos - anterior.segundos) *
+          (r - anterior.reputacao) / (atual.reputacao - anterior.reputacao);
+      }
+    }
+    return pontos[pontos.length - 1].segundos;
   }
   get limitePedidoCliente() {
     const { ruim, media, boa } = CONFIG.limitePedidoReputacao;
@@ -557,7 +563,7 @@ export class Simulacao {
   }
   criarCliente() {
     if (this.estado.banco.assalto) return false;
-    if (this.cestasDisponiveis <= 0) return false;
+    const cestaReservada = this.cestasDisponiveis > 0;
     const pedirOvos = this.estado.producao.ovosProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.ovosVendidos >= 10 ? 3 : 4) === 0;
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado && (id !== 'ovos' || pedirOvos));
     const inicioProdutos = (this.proximaId - 1) % disponiveis.length;
@@ -592,7 +598,7 @@ export class Simulacao {
     }
     const aparencia = this.aparenciasDisponiveis.pop();
     this.ultimaAparenciaCliente = aparencia;
-    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: compras[0].desejado, compras, compraAtual: 0, itens: [], fase: 'chegando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada: true, temCesta: false, levaSacolas: false });
+    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: compras[0].desejado, compras, compraAtual: 0, itens: [], fase: cestaReservada ? 'chegando' : 'passando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida: cestaReservada ? ladoSaida : 1 - ladoEntrada, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada, temCesta: false, levaSacolas: false });
     return true;
   }
   normalizarComprasCliente(c) {
@@ -663,7 +669,7 @@ export class Simulacao {
   }
   atualizarClientes(dt) {
     this.proximoCliente -= dt;
-    if (this.proximoCliente <= 0 && this.cestasDisponiveis > 0 && this.criarCliente()) this.proximoCliente = this.intervaloClientes;
+    if (this.proximoCliente <= 0 && this.criarCliente()) this.proximoCliente = this.intervaloClientes;
     const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));
     const clienteEmAtendimento = this.clienteEmAtendimento;
     for (const c of this.clientes) {
@@ -712,6 +718,8 @@ export class Simulacao {
       } else if (c.fase === 'fila') {
         const indice = Math.max(0, fila.indexOf(c));
         if (this.caminharCliente(c, { x: CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes, z: CONFIG.clienteCaixa.z }, dt)) { c.andando = false; c.angulo = CONFIG.anguloCaixa + Math.PI; }
+      } else if (c.fase === 'passando') {
+        if (this.caminharCliente(c, CONFIG.extremosCalcada[c.ladoSaida], dt)) c.fase = 'fim';
       } else if (c.fase === 'saindo') {
         if (c.etapa === 0) {
           if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;

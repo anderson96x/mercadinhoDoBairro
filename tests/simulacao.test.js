@@ -122,10 +122,13 @@ test('clientes felizes, neutros e irritados rendem 10, 5 e 0 pontos', () => {
 
 test('reputação controla intervalo e tamanho máximo dos pedidos', () => {
   const cenarios = [
-    { satisfacoes: Array(10).fill('irritado'), reputacao: 0, faixa: 'ruim', intervalo: 20, limite: 2 },
-    { satisfacoes: Array(10).fill('neutro'), reputacao: 50, faixa: 'media', intervalo: 20 - 5 * 50 / 60, limite: 3 },
-    { satisfacoes: [...Array(6).fill('feliz'), ...Array(3).fill('neutro'), 'irritado'], reputacao: 75, faixa: 'boa', intervalo: 15 - 7 * 15 / 40, limite: 4, clientes: 10 },
-    { satisfacoes: Array(10).fill('feliz'), reputacao: 100, faixa: 'boa', intervalo: 8, limite: 5, clientes: 10 }
+    { satisfacoes: Array(10).fill('irritado'), reputacao: 0, faixa: 'ruim', intervalo: 25, limite: 2 },
+    { satisfacoes: [...Array(4).fill('neutro'), ...Array(6).fill('irritado')], reputacao: 20, faixa: 'ruim', intervalo: 20, limite: 2 },
+    { satisfacoes: Array(10).fill('neutro'), reputacao: 50, faixa: 'media', intervalo: 15, limite: 3 },
+    { satisfacoes: [...Array(4).fill('feliz'), ...Array(6).fill('neutro')], reputacao: 70, faixa: 'boa', intervalo: 10, limite: 3 },
+    { satisfacoes: [...Array(6).fill('feliz'), ...Array(3).fill('neutro'), 'irritado'], reputacao: 75, faixa: 'boa', intervalo: 8.75, limite: 4, clientes: 10 },
+    { satisfacoes: [...Array(8).fill('feliz'), ...Array(2).fill('neutro')], reputacao: 90, faixa: 'boa', intervalo: 5, limite: 5, clientes: 10 },
+    { satisfacoes: Array(10).fill('feliz'), reputacao: 100, faixa: 'boa', intervalo: 2.5, limite: 5, clientes: 10 }
   ];
   for (const cenario of cenarios) {
     const sim = new Simulacao();
