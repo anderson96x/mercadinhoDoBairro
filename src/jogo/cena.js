@@ -1,5 +1,7 @@
 import { construirBairro } from './bairro.js';
 import { Trafego } from './trafego.js';
+import { ColetaBancoVisual } from './coleta-banco.js';
+import { BANCO } from './banco.js';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS, ALA_PRODUCAO } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
@@ -471,6 +473,14 @@ export class Cena {
     this.alvoCamera = new THREE.Vector3(-0.5, 0, 0.8);
     this.construirMundo();
     this.trafego = new Trafego(this.cena);
+    this.coletaBanco = new ColetaBancoVisual(this.cena);
+    this.alertaCaixa = new THREE.Group();
+    const fundoAlerta = new THREE.Mesh(new THREE.CircleGeometry(0.28, 20), new THREE.MeshBasicMaterial({ color: 0xc34f32, side: THREE.DoubleSide }));
+    this.alertaCaixa.add(fundoAlerta);
+    caixa(this.alertaCaixa, 0.065, 0.23, 0.025, 0xfff9e9, 0, 0.07, 0.02);
+    esfera(this.alertaCaixa, 0.04, 0xfff9e9, 0, -0.13, 0.025);
+    this.alertaCaixa.name = 'alerta-dinheiro-caixa'; this.cena.add(this.alertaCaixa);
+    this.notasCaixa = Array.from({ length: 4 }, (_, i) => caixa(this.cena, 0.26, 0.045, 0.13, i % 2 ? 0x91b578 : 0xb6c68e, CONFIG.balcao.x - 0.3, 1.42 + i * 0.047, CONFIG.balcao.z + 0.15));
     this.aberturaLojaVisual = 0;
     this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, -0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
@@ -871,7 +881,12 @@ export class Cena {
   }
   atualizar(dt) {
     const sim = this.sim, e = sim.estado;
+    const coleta = e.banco.coleta;
+    if (coleta) this.trafego.faixasReservadas.add(0);
+    else this.trafego.faixasReservadas.delete(0);
     this.trafego.atualizar(dt);
+    if (coleta?.tempo < 0 && dt > 0 && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
+    this.coletaBanco.atualizar(coleta);
     const dtVisual = dt || (e.jogador.sentadoEscritorio ? 1 / 60 : 0);
     this.tempoVisual += dtVisual;
     const tempo = this.tempoVisual;
@@ -902,6 +917,10 @@ export class Cena {
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     const equipamentoAla = this.bairro.atualizarEstagio(e.estagioLoja, dt);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
+    this.alertaCaixa.visible = e.banco.noCaixa >= BANCO.limite;
+    this.alertaCaixa.position.set(CONFIG.balcao.x, 2.7 + Math.sin(sim.tempo * 5) * 0.08, CONFIG.balcao.z);
+    this.alertaCaixa.lookAt(this.camera.position);
+    this.notasCaixa.forEach((nota, i) => { nota.visible = e.banco.noCaixa > i * 250; });
     this.jogador.userData.usandoCaixaMadeira = sim.capacidade > CONFIG.capacidadeInicial && e.jogador.inventario.length > 0;
     this.jogador.userData.caixaMadeira.visible = this.jogador.userData.usandoCaixaMadeira;
     this.animarPersonagem(this.jogador, e.jogador, dt, tempo, e.jogador.inventario);

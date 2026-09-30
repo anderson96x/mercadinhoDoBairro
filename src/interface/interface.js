@@ -1,6 +1,7 @@
 import { icone } from './icones.js';
 import { PALETAS } from '../jogo/personalizacao.js';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
+import { BANCO, statusColeta } from '../jogo/banco.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
   { id: 'mercado', titulo: 'Mercado' },
@@ -24,6 +25,10 @@ export class Interface {
             ${import.meta.env.DEV ? `<button class="botao-icone reset-dev" id="dev-menu" title="Abrir menu de desenvolvimento" aria-label="Abrir menu de desenvolvimento">${icone('dev')}<small>DEV</small></button>` : ''}
           </nav>
         </header>
+        <aside id="aviso-banco" class="aviso-banco" role="status" aria-live="polite" aria-atomic="true" hidden>
+          <span class="aviso-banco-icone" aria-hidden="true">!</span>
+          <div><strong id="aviso-banco-titulo"></strong><p id="aviso-banco-texto"></p></div>
+        </aside>
         <aside class="objetivo" id="objetivo" aria-label="Objetivo atual">
           <div class="objetivo-topo"><span>${icone('alvo')} PRÓXIMO PASSO</span><span id="passo">01 / 04</span></div>
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
@@ -48,6 +53,9 @@ export class Interface {
         <dialog id="painel" aria-labelledby="painel-titulo"><div id="painel-conteudo"></div></dialog>
       </main>`;
     this.el = id => document.getElementById(id);
+    this.el('saldo').previousElementSibling.textContent = 'SALDO DISPONÍVEL';
+    const dinheiroCaixa = document.createElement('div'); dinheiroCaixa.id = 'dinheiro-caixa'; dinheiroCaixa.className = 'dinheiro-caixa';
+    this.el('saldo').closest('.saldo').append(dinheiroCaixa);
     this.el('som').onclick = () => { this.acoes.som(); this.atualizarSom(); };
     this.el('ajuda').onclick = () => this.abrir('ajuda');
     this.atualizarTelaCheia();
@@ -81,6 +89,7 @@ export class Interface {
   }
   atualizar() {
     const s = this.sim, e = s.estado, m = s.missao();
+    this.atualizarBanco();
     const identidade = JSON.stringify(e.personalizacao);
     if (identidade !== this.ultimaIdentidade) {
       const marca = document.querySelector('.marca h1');
@@ -165,6 +174,22 @@ export class Interface {
     if (!this.el('painel').open) this.el('painel').showModal();
   }
   fechar() { this.el('painel').close(); this.tipoPainel = null; this.acoes.pausar(false); }
+  atualizarBanco() {
+    const banco = this.sim.estado.banco;
+    const status = statusColeta(banco.coleta);
+    const chave = `${banco.noCaixa}:${status}`;
+    if (chave === this.ultimoBanco) return;
+    this.ultimoBanco = chave;
+    const alerta = banco.noCaixa >= BANCO.limite && !banco.coleta;
+    this.el('dinheiro-caixa').textContent = `No caixa: ${reais(banco.noCaixa)}`;
+    this.el('saldo').closest('.saldo').classList.toggle('alerta-deposito', alerta);
+    this.el('aviso-banco').hidden = !alerta && !banco.coleta;
+    this.el('aviso-banco').classList.toggle('coleta-em-andamento', !!banco.coleta);
+    this.el('aviso-banco-titulo').textContent = banco.coleta ? status : 'Dinheiro acumulado no caixa!';
+    this.el('aviso-banco-texto').textContent = banco.coleta
+      ? `Coleta de ${reais(banco.coleta.valor)}. Seu saldo disponível permanece o mesmo.`
+      : `${reais(banco.noCaixa)} no caixa. Vá ao escritório e deposite no banco. Sem depósito, o mercadinho pode ser assaltado.`;
+  }
   renderizarPainel() {
     const tipo = this.tipoPainel;
     const titulos = { escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
@@ -172,6 +197,12 @@ export class Interface {
     if (tipo === 'escritorio') {
       const aberta = this.sim.estado.lojaAberta;
       conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho sem sair do escritório.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
+      const banco = this.sim.estado.banco;
+      conteudo += `<section class="deposito-banco"><h3>Depósito bancário</h3>
+        <dl><div><dt>Dinheiro no caixa</dt><dd>${reais(banco.noCaixa)}</dd></div><div><dt>Total depositado</dt><dd>${reais(banco.depositado)}</dd></div></dl>
+        <p>${banco.coleta ? statusColeta(banco.coleta) + '.' : 'A partir de R$ 1.000, solicite o carro-forte para recolher o dinheiro.'}</p>
+        <button class="botao-principal" id="depositar-banco" ${banco.coleta || banco.noCaixa < BANCO.limite ? 'disabled' : ''}>${icone('moeda')} ${banco.coleta ? 'Coleta em andamento' : 'Depositar no banco'}</button>
+        <p class="deposito-nota">O depósito protege o dinheiro sem alterar seu saldo disponível.</p></section>`;
     } else if (tipo === 'melhorias') {
       const abasDisponiveis = ABAS_MELHORIAS.filter(aba => MELHORIAS.some(m => m.categoria === aba.id && m.ativa !== false));
       const abaAtiva = abasDisponiveis.find(aba => aba.id === this.abaMelhorias) ?? abasDisponiveis[0];
@@ -206,7 +237,8 @@ export class Interface {
       conteudo = `<div class="dev-painel">
         <p class="painel-subtitulo">Ajuste o progresso para testar o jogo.</p>
         <section class="dev-cartao dev-dinheiro" aria-label="Dinheiro">
-          <div class="dev-cartao-topo"><span class="dev-rotulo">${icone('moeda')} Dinheiro</span><strong>${reais(this.sim.estado.dinheiro)}</strong></div>
+          <div class="dev-cartao-topo"><span class="dev-rotulo">${icone('moeda')} Saldo disponível</span><strong>${reais(this.sim.estado.dinheiro)}</strong></div>
+          <p>No caixa: ${reais(this.sim.estado.banco.noCaixa)}. Os botões ajustam os dois valores para testar depósitos.</p>
           <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 100 ? 'disabled' : ''}>− R$ 100</button><button id="dev-adicionar">+ R$ 100</button></div>
         </section>
         <div class="dev-progresso">
@@ -248,6 +280,12 @@ export class Interface {
       this.atualizar();
     });
     if (tipo === 'escritorio') {
+      this.el('depositar-banco').onclick = () => {
+        const resultado = this.acoes.depositarBanco();
+        if (resultado.sucesso) { this.fechar(); this.mensagem('Carro-forte chamado! Um agente vai recolher o dinheiro no caixa.'); }
+        else this.mensagem(resultado.motivo);
+        this.atualizar();
+      };
       this.el('abrir-melhorias').onclick = () => this.abrir('melhorias');
       this.el('abrir-personalizacao').onclick = () => this.abrir('personalizacao');
       this.el('alternar-loja').onclick = () => {

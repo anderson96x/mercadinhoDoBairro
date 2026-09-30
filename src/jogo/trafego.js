@@ -158,6 +158,7 @@ export class Trafego {
     this.cena = cena;
     this.aleatorio = aleatorio;
     this.carros = [];
+    this.faixasReservadas = new Set();
     this.sacola = [];
     this.proximos = RUA.faixas.map((_, indice) => 2 + indice * 4 + aleatorio() * 4);
   }
@@ -174,6 +175,7 @@ export class Trafego {
   }
 
   criarNaFaixa(indice) {
+    if (this.faixasReservadas.has(indice)) return false;
     if (this.carros.length >= 3) return false;
     const faixa = RUA.faixas[indice];
     const borda = faixa.direcao > 0 ? RUA.minX : RUA.maxX;

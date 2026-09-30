@@ -3,6 +3,7 @@ import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, 
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO } from './configuracao.js';
 import { buscarCaminho } from './navegacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
+import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
@@ -23,6 +24,7 @@ function pertoEstacao(ator, centro, largura, profundidade) {
 export function estadoInicial() {
   return {
     versao: CONFIG.versaoSalvamento, dinheiro: CONFIG.dinheiroInicial,
+    banco: estadoBanco(),
     lojaAberta: true,
     jogador: { ...CONFIG.inicio, inventario: [] },
     personalizacao: { ...PERSONALIZACAO_PADRAO },
@@ -47,6 +49,7 @@ export function validarEstado(dados) {
   if (!dados || dados.versao !== CONFIG.versaoSalvamento) return base;
   const numero = (v, max = 1e9) => Number.isFinite(v) ? limitar(Math.floor(v), 0, max) : 0;
   base.dinheiro = numero(dados.dinheiro);
+  base.banco = dados.banco ? validarBanco(dados.banco) : { ...estadoBanco(), noCaixa: base.dinheiro };
   base.lojaAberta = dados.lojaAberta !== false;
   base.personalizacao = validarPersonalizacao(dados.personalizacao);
   for (const id of Object.keys(base.estatisticas)) base.estatisticas[id] = numero(dados.estatisticas?.[id]);
@@ -187,6 +190,14 @@ export class Simulacao {
   }
   emitir(tipo, dados = {}) { this.eventos.push({ tipo, ...dados }); }
   consumirEventos() { const eventos = this.eventos; this.eventos = []; return eventos; }
+  solicitarDeposito() {
+    const banco = this.estado.banco;
+    if (!this.estado.jogador.sentadoEscritorio) return { sucesso: false, motivo: 'Vá ao escritório para solicitar o depósito.' };
+    if (banco.coleta) return { sucesso: false, motivo: 'Já existe uma coleta em andamento.' };
+    if (banco.noCaixa < BANCO.limite) return { sucesso: false, motivo: 'O depósito fica disponível a partir de R$ 1.000 no caixa.' };
+    banco.coleta = { valor: banco.noCaixa, tempo: -1, retirado: false };
+    return { sucesso: true, valor: banco.coleta.valor };
+  }
   custoMelhoria(id) {
     const m = MELHORIAS.find(m => m.id === id);
     return m ? Math.round(m.custo * Math.pow(m.multiplicador || 1, this.estado.melhorias[id])) : Infinity;
@@ -375,6 +386,8 @@ export class Simulacao {
     if (this.pausado) return;
     dt = limitar(dt, 0, 0.05);
     this.tempo += dt;
+    const deposito = atualizarBanco(this.estado.banco, dt);
+    if (deposito !== null) this.emitir('depositoConcluido', { valor: deposito });
     const atoresPorta = [this.estado.jogador, ...this.clientes];
     if (this.ajudanteContratado) atoresPorta.push(this.ajudante);
     const abrirPorta = atoresPorta.some(ator => distancia(ator, PORTA_ESCRITORIO) < 1.8);
@@ -550,6 +563,8 @@ export class Simulacao {
     return c.satisfacao;
   }
   portaEntradaDeveAbrir() {
+    const coleta = this.estado.banco.coleta;
+    if (coleta && coleta.tempo >= BANCO.chegada && coleta.tempo <= BANCO.embarque) return true;
     return this.clientes.some(c => {
       if (c.recusado || !['chegando', 'saindo'].includes(c.fase)) return false;
       if (c.fase === 'chegando' && !this.estado.lojaAberta) return false;
@@ -624,6 +639,7 @@ export class Simulacao {
         this.normalizarComprasCliente(primeiro);
         const valor = primeiro.itens.reduce((total, id) => total + PRODUTOS[id].preco, 0);
         this.estado.dinheiro += valor; this.estado.estatisticas.faturamento += valor; this.estado.estatisticas.clientes++;
+        this.estado.banco.noCaixa += valor;
         this.estado.estatisticas.ovosVendidos += primeiro.itens.filter(id => id === 'ovos').length;
         this.registrarSatisfacao(primeiro);
         primeiro.embalado = true; primeiro.temCesta = false; primeiro.cestaReservada = false; primeiro.levaSacolas = true;

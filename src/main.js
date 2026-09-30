@@ -1,5 +1,6 @@
 import './interface/estilos.css';
 import './interface/progresso.css';
+import './interface/banco.css';
 import '@fontsource/dm-sans/latin-400.css';
 import '@fontsource/dm-sans/latin-500.css';
 import '@fontsource/dm-sans/latin-600.css';
@@ -36,7 +37,11 @@ function iniciarSelecaoHorta() {
   controles.limpar(); controles.bloqueado = true;
 }
 function alterarSaldo(valor) {
+  if (!import.meta.env.DEV || !Number.isFinite(valor)) return;
   sim.estado.dinheiro = Math.max(0, sim.estado.dinheiro + valor);
+  const banco = sim.estado.banco;
+  const reservado = banco.coleta && !banco.coleta.retirado ? banco.coleta.valor : 0;
+  banco.noCaixa = Math.max(reservado, banco.noCaixa + valor);
   gravar();
   ui.atualizar();
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
@@ -70,6 +75,11 @@ function reiniciar() {
   window.location.reload();
 }
 const ui = new Interface(sim, {
+  depositarBanco: () => {
+    const resultado = sim.solicitarDeposito();
+    if (resultado.sucesso) gravar();
+    return resultado;
+  },
   pausar, comprar, alterarSaldo, aumentarNivelDev, definirClientesPorNivel, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
@@ -115,6 +125,9 @@ try {
       while (acumulado >= 1 / 60) { sim.atualizar(1 / 60, entrada); acumulado -= 1 / 60; }
       cena.atualizar(sim.pausado ? 0 : dt);
       for (const evento of sim.consumirEventos()) {
+        if (evento.tipo === 'depositoConcluido') {
+          gravar(); ui.mensagem(`Depósito de ${evento.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} concluído. Dinheiro em segurança!`);
+        }
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
         if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.`); }
