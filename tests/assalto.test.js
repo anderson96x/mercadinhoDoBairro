@@ -7,6 +7,22 @@ import { AssaltoVisual } from '../src/jogo/assalto-visual.js';
 import { salvar, carregar } from '../src/jogo/salvamento.js';
 import { RUA } from '../src/jogo/bairro.js';
 
+test('pausar durante o aviso congela o prazo e retomar não dispara assalto', () => {
+  const sim = new Simulacao();
+  sim.estado.banco.noCaixa = 1000;
+  sim.definirTempoEsperaAssalto(5);
+  sim.atualizarAssalto(4);
+  sim.pausado = true;
+  for (let i = 0; i < 200; i++) sim.atualizar(0.05);
+  assert.equal(sim.estado.banco.tempoRisco, 4);
+  assert.equal(sim.estado.banco.assalto, null);
+
+  sim.pausado = false;
+  sim.atualizar(0.05);
+  assert.ok(sim.estado.banco.tempoRisco > 4 && sim.estado.banco.tempoRisco < 4.1);
+  assert.equal(sim.estado.banco.assalto, null);
+});
+
 test('o prazo escolhido para teste altera o gatilho sem zerar o tempo já decorrido', () => {
   const sim = new Simulacao();
   sim.estado.banco.noCaixa = 1000;

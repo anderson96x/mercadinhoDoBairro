@@ -28,7 +28,12 @@ export class Interface {
         </header>
         <aside id="aviso-banco" class="aviso-banco" role="status" aria-live="polite" aria-atomic="true" hidden>
           <span class="aviso-banco-icone" aria-hidden="true">!</span>
-          <div><strong id="aviso-banco-titulo"></strong><p id="aviso-banco-texto"></p></div>
+          <div class="aviso-banco-conteudo"><strong id="aviso-banco-titulo"></strong><p id="aviso-banco-texto"></p>
+            <div id="aviso-banco-prazo" class="aviso-banco-prazo" aria-live="off" hidden>
+              <div class="aviso-banco-prazo-legenda"><span>Tempo para depositar</span><b id="aviso-banco-segundos"></b></div>
+              <div id="aviso-banco-progresso" class="aviso-banco-progresso" role="progressbar" aria-label="Tempo restante para depositar antes do assalto" aria-valuemin="0"><span id="aviso-banco-barra"></span></div>
+            </div>
+          </div>
         </aside>
         <aside class="objetivo" id="objetivo" aria-label="Objetivo atual">
           <div class="objetivo-topo"><span>${icone('alvo')} PRÓXIMO PASSO</span><span id="passo">01 / 04</span></div>
@@ -72,7 +77,10 @@ export class Interface {
     this.el('painel').addEventListener('click', e => { if (e.target === this.el('painel')) this.fechar(); });
     this.atualizarSom(); this.atualizar();
   }
-  mostrarPausaFoco(pausado) { this.el('pausa-foco').hidden = !pausado; }
+  mostrarPausaFoco(pausado) {
+    const aviso = this.el('pausa-foco');
+    if (aviso.hidden !== !pausado) aviso.hidden = !pausado;
+  }
   atualizarTelaCheia() {
     const botao = this.el('fullscreen');
     const emTelaCheia = !!document.fullscreenElement;
@@ -183,6 +191,20 @@ export class Interface {
     const banco = this.sim.estado.banco;
     const status = statusColeta(banco.coleta);
     const assalto = banco.assalto;
+    const riscoAtivo = banco.noCaixa >= BANCO.limite && !banco.coleta && !assalto;
+    const prazo = this.sim.tempoEsperaAssalto;
+    const restante = Math.max(0, prazo - banco.tempoRisco);
+    const segundos = Math.ceil(restante);
+    const avisoPrazo = this.el('aviso-banco-prazo');
+    avisoPrazo.hidden = !riscoAtivo;
+    if (riscoAtivo) {
+      this.el('aviso-banco-segundos').textContent = `${segundos}s`;
+      this.el('aviso-banco-barra').style.width = `${Math.min(100, restante / prazo * 100)}%`;
+      const progresso = this.el('aviso-banco-progresso');
+      progresso.setAttribute('aria-valuemax', String(prazo));
+      progresso.setAttribute('aria-valuenow', String(segundos));
+      avisoPrazo.classList.toggle('urgente', restante <= 10);
+    }
     const chave = `${banco.noCaixa}:${status}:${assalto ? `${statusAssalto(assalto)}:${assalto.valor}` : ''}`;
     if (chave === this.ultimoBanco) return;
     this.ultimoBanco = chave;

@@ -17,6 +17,10 @@ const pertoDaEstacao = (ator, centro, largura, profundidade) => Math.hypot(
   Math.max(0, Math.abs(ator.x - centro.x) - largura / 2),
   Math.max(0, Math.abs(ator.z - centro.z) - profundidade / 2)
 ) < CONFIG.raioInteracao;
+function estacaoDesbloqueada(id, estado) {
+  const estagioNecessario = id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : 0;
+  return !!estado.produtos[id]?.liberado && estado.estagioLoja >= estagioNecessario;
+}
 function material(cor) {
   if (!materiais.has(cor)) materiais.set(cor, new THREE.MeshStandardMaterial({ color: cor, roughness: 0.8, metalness: 0 }));
   return materiais.get(cor);
@@ -648,6 +652,7 @@ export class Cena {
   }
   construirEstacao(id, p) {
     const grupo = new THREE.Group(); this.cena.add(grupo);
+    grupo.visible = estacaoDesbloqueada(id, this.sim.estado);
     const h = p.horta;
     const galinhas = [];
     if (id === 'ovos') {
@@ -710,13 +715,7 @@ export class Cena {
     for (let i = 0; i < 12; i++) {
       const f = criarProduto(id, 1.7); f.position.set(s.x - 0.83 + i % 4 * 0.56, 1.11, s.z - 0.5 + Math.floor(i / 4) * 0.49); grupo.add(f); frutas.push(f);
     }
-    const bloqueio = new THREE.Group(); this.cena.add(bloqueio);
-    caixa(bloqueio, 2.55, 0.03, 3.65, 0x70b74b, h.x, 0.065, h.z);
-    for (const d of [-1,1]) {
-      caixa(bloqueio, 2.55, 0.035, 0.055, 0xb8df65, h.x, 0.09, h.z + d * 1.8);
-      caixa(bloqueio, 0.055, 0.035, 3.65, 0xb8df65, h.x + d * 1.26, 0.09, h.z);
-    }
-    this.produtos[id] = { grupo, bloqueio, frutos, frutas, galinhas };
+    this.produtos[id] = { grupo, frutos, frutas, galinhas };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : id === 'leite' ? 'CURRAL' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
@@ -748,7 +747,8 @@ export class Cena {
       -((clientY - retangulo.top) / retangulo.height) * 2 + 1
     );
     this.raycaster.setFromCamera(this.ponteiroRaycast, this.camera);
-    return this.raycaster.intersectObjects(this.alvosHorta, false)[0]?.object.userData.produtoHorta ?? null;
+    const alvos = this.alvosHorta.filter(alvo => estacaoDesbloqueada(alvo.userData.produtoHorta, this.sim.estado));
+    return this.raycaster.intersectObjects(alvos, false)[0]?.object.userData.produtoHorta ?? null;
   }
   animarMelhoriaHorta(id) {
     const horta = PRODUTOS[id]?.horta;
@@ -1154,7 +1154,7 @@ export class Cena {
     for (const [id, objetos] of Object.entries(this.produtos)) {
       const estado = e.produtos[id];
       const construcao = id === 'ovos' && e.estagioLoja >= ALA_LEITE.indice ? 1 : equipamentoAla;
-      objetos.grupo.visible = estado.liberado && (!['ovos', 'leite'].includes(id) || construcao > 0); objetos.bloqueio.visible = false;
+      objetos.grupo.visible = estacaoDesbloqueada(id, e) && (!['ovos', 'leite'].includes(id) || construcao > 0);
       if (['ovos', 'leite'].includes(id)) objetos.grupo.scale.y = Math.max(0.001, construcao);
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
       objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = (id === 'leite' ? 0.69 : 1) + Math.sin(tempo * 2 + i) * 0.025; });
@@ -1176,7 +1176,7 @@ export class Cena {
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
       const construcao = produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice ? 1 : equipamentoAla;
-      if (produto && (!e.produtos[produto].liberado || (['ovos', 'leite'].includes(produto) && construcao < 1))) { el.hidden = true; continue; }
+      if (produto && (!estacaoDesbloqueada(produto, e) || (['ovos', 'leite'].includes(produto) && construcao < 1))) { el.hidden = true; continue; }
       const estacao = PRODUTOS[produto]?.[tipo === 'horta' ? 'horta' : 'prateleira'];
       const perto = tipo === 'horta'
         ? pertoDaEstacao(e.jogador, estacao, PRODUTOS[produto].curral?.w ?? 2.5, PRODUTOS[produto].curral?.d ?? 3.6)

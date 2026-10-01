@@ -7,6 +7,46 @@ import { CONFIG } from '../src/jogo/configuracao.js';
 import { Trafego } from '../src/jogo/trafego.js';
 import { ColetaBancoVisual } from '../src/jogo/coleta-banco.js';
 import { RUA } from '../src/jogo/bairro.js';
+import { Interface } from '../src/interface/interface.js';
+
+test('aviso bancário reduz a barra até o prazo e a oculta após solicitar depósito', () => {
+  const sim = new Simulacao();
+  sim.estado.banco.noCaixa = BANCO.limite;
+  sim.estado.jogador.sentadoEscritorio = true;
+  sim.definirTempoEsperaAssalto(60);
+  const elementos = new Map();
+  const el = id => {
+    if (!elementos.has(id)) elementos.set(id, {
+      hidden: false, textContent: '', style: {}, atributos: {},
+      classList: { toggle() {} },
+      setAttribute(nome, valor) { this.atributos[nome] = valor; }
+    });
+    return elementos.get(id);
+  };
+  const ui = { sim, el };
+  Interface.prototype.atualizarBanco.call(ui);
+  assert.equal(el('aviso-banco').hidden, false);
+  assert.equal(el('aviso-banco-barra').style.width, '100%');
+  assert.equal(el('aviso-banco-segundos').textContent, '60s');
+
+  sim.atualizarAssalto(30);
+  Interface.prototype.atualizarBanco.call(ui);
+  assert.equal(el('aviso-banco-barra').style.width, '50%');
+  assert.equal(el('aviso-banco-segundos').textContent, '30s');
+  assert.equal(el('aviso-banco-progresso').atributos['aria-valuenow'], '30');
+
+  sim.pausado = true;
+  for (let i = 0; i < 200; i++) sim.atualizar(0.05);
+  Interface.prototype.atualizarBanco.call(ui);
+  assert.equal(el('aviso-banco-barra').style.width, '50%');
+  assert.equal(el('aviso-banco-segundos').textContent, '30s');
+  sim.pausado = false;
+
+  assert.equal(sim.solicitarDeposito().sucesso, true);
+  Interface.prototype.atualizarBanco.call(ui);
+  assert.equal(el('aviso-banco-prazo').hidden, true);
+  assert.equal(el('aviso-banco').hidden, false);
+});
 
 function vender(sim) {
   sim.estado.melhorias.caixa = 1;

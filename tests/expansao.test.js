@@ -1,9 +1,37 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Simulacao, estadoInicial, validarEstado, distancia } from '../src/jogo/simulacao.js';
-import { CONFIG, PRODUTOS, ALA_PRODUCAO, NIVEL_OVOS } from '../src/jogo/configuracao.js';
+import { CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE, NIVEL_OVOS } from '../src/jogo/configuracao.js';
 import * as THREE from 'three';
 import { construirBairro } from '../src/jogo/bairro.js';
+import { Cena } from '../src/jogo/cena.js';
+
+test('estações futuras não aparecem nem criam marcações antes da compra', () => {
+  const sim = new Simulacao();
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, alvosHorta: [], criarLabel() {} };
+  for (const [id, produto] of Object.entries(PRODUTOS)) Cena.prototype.construirEstacao.call(visual, id, produto);
+
+  assert.equal(visual.cena.children.length, Object.keys(PRODUTOS).length);
+  assert.equal(visual.produtos.tomate.grupo.visible, true);
+  for (const id of ['milho', 'ovos', 'leite']) assert.equal(visual.produtos[id].grupo.visible, false, id);
+
+  // Mesmo se um estado antigo trouxer um produto liberado, a ala ainda exige a compra.
+  sim.estado.produtos.ovos.liberado = true;
+  sim.estado.produtos.leite.liberado = true;
+  const visualSemAla = { cena: new THREE.Scene(), sim, produtos: {}, alvosHorta: [], criarLabel() {} };
+  for (const id of ['ovos', 'leite']) Cena.prototype.construirEstacao.call(visualSemAla, id, PRODUTOS[id]);
+  assert.equal(visualSemAla.produtos.ovos.grupo.visible, false);
+  assert.equal(visualSemAla.produtos.leite.grupo.visible, false);
+  sim.estado.estagioLoja = ALA_PRODUCAO.indice;
+  const visualComOvos = { cena: new THREE.Scene(), sim, produtos: {}, alvosHorta: [], criarLabel() {} };
+  for (const id of ['ovos', 'leite']) Cena.prototype.construirEstacao.call(visualComOvos, id, PRODUTOS[id]);
+  assert.equal(visualComOvos.produtos.ovos.grupo.visible, true);
+  assert.equal(visualComOvos.produtos.leite.grupo.visible, false);
+  sim.estado.estagioLoja = ALA_LEITE.indice;
+  const visualComLeite = { cena: new THREE.Scene(), sim, produtos: {}, alvosHorta: [], criarLabel() {} };
+  Cena.prototype.construirEstacao.call(visualComLeite, 'leite', PRODUTOS.leite);
+  assert.equal(visualComLeite.produtos.leite.grupo.visible, true);
+});
 
 function bairroVisual() {
   const cena = new THREE.Scene();

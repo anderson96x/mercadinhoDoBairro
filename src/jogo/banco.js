@@ -7,7 +7,7 @@ export function estadoBanco() { return { noCaixa: 0, depositado: 0, coleta: null
 export function validarBanco(dados) {
   const numero = v => Number.isFinite(v) ? Math.max(0, Math.min(1e9, Math.floor(v))) : 0;
   const banco = { ...estadoBanco(), noCaixa: numero(dados?.noCaixa), depositado: numero(dados?.depositado),
-    tempoRisco: Number.isFinite(dados?.tempoRisco) ? Math.max(0, Math.min(ASSALTO.espera, dados.tempoRisco)) : 0,
+    tempoRisco: Number.isFinite(dados?.tempoRisco) ? Math.max(0, Math.min(Math.max(ASSALTO.espera, 60), dados.tempoRisco)) : 0,
     assalto: validarAssalto(dados?.assalto) };
   const coleta = dados?.coleta;
   if (coleta && numero(coleta.valor) > 0) {

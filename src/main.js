@@ -26,6 +26,8 @@ if (import.meta.env.DEV) {
 }
 const sons = new Sons();
 let controles, cena;
+let anterior = performance.now(), proximaUI = 0, acumulado = 0;
+let focoQuadroAnterior = false;
 let avisoSalvamento = false;
 let reiniciando = false;
 function gravar() {
@@ -34,7 +36,11 @@ function gravar() {
   if (!sucesso && !avisoSalvamento) { avisoSalvamento = true; ui.mensagem('O navegador não permitiu salvar. O progresso dura até fechar a página.'); }
   return sucesso;
 }
-function pausar(valor) { sim.pausado = valor; if (controles) { controles.bloqueado = valor || sim.estado.melhoriaPendente === 'fertilizante'; controles.limpar(); } }
+function pausar(valor) {
+  sim.pausado = valor;
+  anterior = performance.now(); acumulado = 0;
+  if (controles) { controles.bloqueado = valor || sim.estado.melhoriaPendente === 'fertilizante'; controles.limpar(); }
+}
 function comprar(id) { const r = sim.comprarMelhoria(id); if (r.sucesso) gravar(); return r; }
 function iniciarSelecaoHorta() {
   if (!controles) return;
@@ -118,7 +124,6 @@ try {
   });
   if (sim.estado.melhoriaPendente === 'fertilizante') { ui.iniciarSelecaoHorta(); iniciarSelecaoHorta(); }
   document.addEventListener('pointerdown', () => { if (sim.estado.som) sons.ativar(true); }, { once: true });
-  let anterior = performance.now(), proximaUI = 0, acumulado = 0;
   const janelaEmFoco = () => !document.hidden && document.hasFocus();
   const atualizarFoco = () => {
     anterior = performance.now();
@@ -128,11 +133,18 @@ try {
     if (document.hidden) gravar();
   };
   const quadro = agora => {
-    const dt = Math.min((agora - anterior) / 1000, 0.25); anterior = agora;
-    if (janelaEmFoco()) {
-      acumulado += dt;
-      const entrada = controles.ler();
-      while (acumulado >= 1 / 60) { sim.atualizar(1 / 60, entrada); acumulado -= 1 / 60; }
+    const emFoco = janelaEmFoco();
+    const dt = emFoco && focoQuadroAnterior ? Math.min((agora - anterior) / 1000, 0.25) : 0;
+    anterior = agora; focoQuadroAnterior = emFoco;
+    ui.mostrarPausaFoco(!emFoco);
+    if (emFoco) {
+      if (sim.pausado) acumulado = 0;
+      else {
+        acumulado += dt;
+        const entrada = controles.ler();
+        while (acumulado >= 1 / 60 && !sim.pausado) { sim.atualizar(1 / 60, entrada); acumulado -= 1 / 60; }
+        if (sim.pausado) acumulado = 0;
+      }
       cena.atualizar(sim.pausado ? 0 : dt);
       for (const evento of sim.consumirEventos()) {
         if (evento.tipo === 'depositoConcluido') {
