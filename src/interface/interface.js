@@ -126,7 +126,10 @@ export class Interface {
     this.el('reputacao-progresso').setAttribute('aria-valuetext', `${s.reputacao} de 100, satisfação ${nomesReputacao[s.faixaReputacao].toLocaleLowerCase('pt-BR')}`);
     this.el('nivel').textContent = `NÍVEL ${s.nivel}`;
     const clientesProximoNivel = s.nivel * CONFIG.clientesPorNivel;
-    this.el('nivel-progresso').max = clientesProximoNivel; this.el('nivel-progresso').value = e.estatisticas.clientes;
+    const progressoNivel = this.el('nivel-progresso');
+    progressoNivel.max = CONFIG.clientesPorNivel;
+    progressoNivel.value = this.sim.progressoClientes;
+    progressoNivel.setAttribute('aria-valuetext', `${this.sim.progressoClientes} de ${CONFIG.clientesPorNivel} clientes neste nível; ${e.estatisticas.clientes} de ${clientesProximoNivel} clientes no total`);
     this.el('nivel-contagem').textContent = `${e.estatisticas.clientes} / ${clientesProximoNivel}`;
     this.el('objetivo').hidden = m.indice >= 4 && !m.exibir;
     this.el('objetivo-titulo').textContent = m.titulo;
