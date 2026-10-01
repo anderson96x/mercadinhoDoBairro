@@ -38,7 +38,6 @@ export class Interface {
         <aside class="objetivo" id="objetivo" aria-label="Objetivo atual">
           <div class="objetivo-topo"><span>${icone('alvo')} PRÓXIMO PASSO</span><span id="passo">01 / 04</span></div>
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
-          <p class="proxima-novidade" id="proxima-novidade"></p>
         </aside>
         <div id="atividade" role="status"></div>
         <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Use as setas ou arraste para andar</span></span></div>
@@ -133,12 +132,6 @@ export class Interface {
     this.el('objetivo-titulo').textContent = m.titulo;
     this.el('objetivo-texto').textContent = m.texto;
     this.el('passo').textContent = m.indice < 4 ? `${String(m.indice + 1).padStart(2, '0')} / 04` : `NÍVEL ${s.nivel}`;
-    const producaoDisponivel = [
-      e.melhorias.alaProducao && `Ovos: ${e.produtos.ovos.horta} no galinheiro, ${e.produtos.ovos.prateleira} na prateleira`,
-      e.melhorias.alaLeite && `Leite: ${e.produtos.leite.horta} no curral, ${e.produtos.leite.prateleira} na prateleira`
-    ].filter(Boolean);
-    this.el('proxima-novidade').textContent = producaoDisponivel.join(' · ');
-    this.el('proxima-novidade').hidden = !producaoDisponivel.length;
     const inv = e.jogador.inventario;
     this.el('inventario').hidden = inv.length === 0;
     const chave = `${s.capacidade}:${inv.join(',')}`;
@@ -243,7 +236,7 @@ export class Interface {
         const disponibilidade = this.sim.disponibilidadeMelhoria(m.id), pode = disponibilidade.disponivel && this.sim.estado.dinheiro >= custo;
         const nivelExibido = m.id === 'mochila' ? nivel + 1 : nivel;
         const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
-        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? disponibilidade.requisitoProduto ? 'Ovos' : disponibilidade.requisitoMelhoria ? 'Ajudante' : `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
+        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? disponibilidade.requisitoProduto ? 'Ovos' : disponibilidade.requisitoMelhoria ? 'Repositor' : `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
         const aria = completa ? `${m.titulo} concluída` : !disponibilidade.disponivel ? disponibilidade.motivo : `Comprar ${m.titulo} por ${reais(custo)}`;
         return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.max > 1 ? `<span class="nivel-melhoria">Nível ${nivelExibido} de ${maxExibido}</span>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${aria}">${rotulo}</button></div>`;
       }).join('')}</div><button class="botao-secundario" id="voltar-escritorio">Voltar ao gerenciamento</button>`;

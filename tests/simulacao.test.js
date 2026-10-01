@@ -520,6 +520,32 @@ test('salvamentos antigos mantêm ajudantes já contratados', () => {
   assert.equal(validarEstado(salvo).melhorias.ajudante, 0, 'nível 2 não podia comprar o ajudante');
 });
 
+test('repositor aparece no nível 6, custa R$ 900 e pode ser contratado sem ovos', () => {
+  const melhoria = MELHORIAS.find(m => m.id === 'ajudante');
+  const sim = new Simulacao();
+  assert.equal(melhoria.titulo, 'Repositor');
+  assert.equal(melhoria.nivelMinimo, NIVEL_AJUDANTE);
+  assert.equal(sim.custoMelhoria('ajudante'), 900);
+  sim.estado.dinheiro = 900;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * (NIVEL_AJUDANTE - 2);
+  assert.match(sim.comprarMelhoria('ajudante').motivo, /nível 6/);
+  assert.equal(sim.estado.dinheiro, 900);
+  sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
+  sim.estado.dinheiro = 899;
+  assert.equal(sim.missao().titulo, 'Contrate o Repositor');
+  assert.match(sim.missao().texto, /R\$ 900/);
+  assert.equal(sim.missao().destino, 'escritorio');
+  assert.equal(sim.comprarMelhoria('ajudante').sucesso, false);
+  sim.estado.dinheiro = 900;
+  assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
+  assert.equal(sim.estado.dinheiro, 0);
+  assert.equal(sim.ajudanteContratado, true);
+  assert.equal(sim.missao().exibir, false);
+  assert.equal(sim.missao().destino, 'caixa');
+  assert.equal(sim.estado.produtos.ovos.liberado, false);
+  assert.equal(new Simulacao(structuredClone(sim.estado)).ajudanteContratado, true);
+});
+
 test('o ajudante libera no nível 6 sem ovos e sua velocidade exige o ajudante', () => {
   const sim = new Simulacao();
   assert.equal(MELHORIAS.find(m => m.id === 'ajudante').nivelMinimo, NIVEL_AJUDANTE);

@@ -157,7 +157,7 @@ try {
         if (evento.tipo === 'assaltoConcluido') gravar();
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
-        if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.`); }
+        if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${evento.nivel === 6 ? ' Dica: contrate o Repositor no escritório por R$ 900.' : ''}`); }
         if (evento.tipo === 'melhoria') ui.mensagem(evento.texto);
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
         if (['expansao', 'ovoPronto', 'leitePronto'].includes(evento.tipo)) ui.mensagem(evento.texto);

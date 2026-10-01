@@ -308,7 +308,7 @@ export class Simulacao {
     const nivelMinimo = m.nivelMinimo || 1;
     if (this.nivel < nivelMinimo) return { disponivel: false, motivo: `Essa melhoria é liberada no nível ${nivelMinimo}.`, nivelMinimo };
     if (m.requisitoMelhoria && !this.estado.melhorias[m.requisitoMelhoria]) {
-      const motivo = 'Contrate o ajudante antes de melhorar sua velocidade.';
+      const motivo = 'Contrate o repositor antes de melhorar sua velocidade.';
       return { disponivel: false, motivo, requisitoMelhoria: m.requisitoMelhoria };
     }
     return { disponivel: true };
@@ -390,6 +390,9 @@ export class Simulacao {
         },
         4: orientacaoOvos,
         5: orientacaoLeite,
+        6: this.ajudanteContratado
+          ? { titulo: 'Atenda o bairro', texto: 'O Repositor cuida das prateleiras. Continue atendendo seus clientes.', destino: 'caixa', exibir: false }
+          : { titulo: 'Contrate o Repositor', texto: 'Vá ao escritório e contrate o Repositor por R$ 900 para abastecer as prateleiras.', destino: 'escritorio' },
       };
       const orientacaoNivel = orientacoesNivel[this.nivel] || {};
       return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa'), exibir: orientacaoNivel.exibir ?? Boolean(orientacaoNivel.titulo) };

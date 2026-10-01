@@ -66,15 +66,6 @@
   color: #fffdf3;
 }
 
-.proxima-novidade {
-  margin-top: 10px;
-  padding-top: 9px;
-  border-top: 1px solid #dce3cf;
-  color: #517c5c;
-  font-size: 11px;
-  line-height: 1.3;
-}
-
 .item.ovos { background: #fbefd8; color: #a98145; }
 .etiqueta-ovos b { color: #a98145; }
 .item.leite { background: #e7f2ed; color: #448a70; }
@@ -97,6 +88,5 @@
 }
 
 @media (max-width: 700px) {
-  .proxima-novidade { margin-top: 6px; padding-top: 6px; font-size: 10px; }
   #dica-mundo { font-size: 10px; padding: 5px 8px; }
 }
