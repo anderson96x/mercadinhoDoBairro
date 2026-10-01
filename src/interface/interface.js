@@ -40,7 +40,7 @@ export class Interface {
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
         </aside>
         <div id="atividade" role="status"></div>
-        <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Use as setas ou arraste para andar</span></span></div>
+        <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Arraste para andar · botão direito ou dois dedos para mover o mapa</span></span></div>
         <footer class="rodape">
           <div class="inventario" id="inventario" hidden><div class="inventario-conteudo"><div class="inventario-titulo"><b id="nivel-inventario">Inventário</b><span id="capacidade">${this.sim.estado.jogador.inventario.length} / ${this.sim.capacidade}</span></div><div id="itens"></div></div></div>
         </footer>
@@ -255,7 +255,7 @@ export class Interface {
         </form>`;
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
-        <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p></div></div>
+        <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p><p>Para mover o mapa, arraste com o <b>botão direito</b> ou <b>Shift</b>; no celular, use <b>dois dedos</b>. <b>Shift + setas</b> também move a câmera.</p></div></div>
           <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 4, construa o galinheiro. As galinhas produzem ovos automaticamente.</p></div></li><li><span>5</span><div><b>Abra a ala do leite</b><p>No nível 5, construa o curral por R$ 800. Recolha as garrafas de vidro e abasteça a prateleira de leite.</p></div></li><li><span>6</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>7</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'dev') {

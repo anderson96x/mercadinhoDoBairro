@@ -526,7 +526,7 @@ export class Cena {
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.5;
-    this.renderer.domElement.setAttribute('aria-label', 'Mercadinho em 3D. Arraste para andar ou use as setas e as teclas W, A, S e D.');
+    this.renderer.domElement.setAttribute('aria-label', 'Mercadinho em 3D. Arraste para andar; use o botão direito, Shift e arraste, ou dois dedos para mover o mapa.');
     container.prepend(this.renderer.domElement);
     this.cena.add(new THREE.HemisphereLight(0xfff4dc, 0x70a85d, 2.55));
     const sol = new THREE.DirectionalLight(0xffebc9, 2.8); sol.position.set(-8, 22, 13); sol.castShadow = true;
@@ -534,6 +534,7 @@ export class Cena {
     sol.shadow.camera.top = 18; sol.shadow.camera.bottom = -18; sol.shadow.normalBias = 0.035; sol.shadow.bias = -0.0002;
     this.cena.add(sol);
     this.alvoCamera = new THREE.Vector3(-0.5, 0, 0.8);
+    this.deslocamentoCamera = new THREE.Vector3();
     this.construirMundo();
     this.trafego = new Trafego(this.cena);
     this.coletaBanco = new ColetaBancoVisual(this.cena);
@@ -735,6 +736,26 @@ export class Cena {
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.w, this.h);
+  }
+  moverCamera(dx, dy) {
+    if (!dx && !dy || !this.w || !this.h) return;
+    // Converte o arrasto na tela para deslocamento no plano do terreno.
+    const horizontal = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
+    const vertical = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
+    const direcao = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
+    const deslocamento = horizontal.multiplyScalar(dx * (this.camera.right - this.camera.left) / this.w)
+      .add(vertical.multiplyScalar(-dy * (this.camera.top - this.camera.bottom) / this.h));
+    deslocamento.addScaledVector(direcao, -deslocamento.y / direcao.y);
+    const base = this.baseCamera();
+    const limites = CONFIG.limiteCamera;
+    const x = THREE.MathUtils.clamp(base.x + this.deslocamentoCamera.x - deslocamento.x, limites.minX, limites.maxX);
+    const z = THREE.MathUtils.clamp(base.z + this.deslocamentoCamera.z - deslocamento.z, limites.minZ, limites.maxZ);
+    this.deslocamentoCamera.set(x - base.x, 0, z - base.z);
+    this.alvoCamera.set(x, 0, z);
+  }
+  baseCamera() {
+    const camera = this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    return this.mobile ? this.sim.estado.jogador : camera;
   }
   projetar(ponto) {
     const p = new THREE.Vector3(ponto.x, ponto.y ?? 1.5, ponto.z).project(this.camera);
@@ -1005,8 +1026,12 @@ export class Cena {
     this.bairro.animarEntrada(this.aberturaLojaVisual, e.lojaAberta);
     this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
-    const camera = e.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
-    const alvo = this.mobile ? new THREE.Vector3(e.jogador.x, 0, e.jogador.z) : new THREE.Vector3(camera.x, 0, camera.z);
+    const base = this.baseCamera(), limites = CONFIG.limiteCamera;
+    const alvo = new THREE.Vector3(
+      THREE.MathUtils.clamp(base.x + this.deslocamentoCamera.x, limites.minX, limites.maxX), 0,
+      THREE.MathUtils.clamp(base.z + this.deslocamentoCamera.z, limites.minZ, limites.maxZ)
+    );
+    this.deslocamentoCamera.set(alvo.x - base.x, 0, alvo.z - base.z);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     const equipamentoAla = this.bairro.atualizarEstagio(e.estagioLoja, dt);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);

@@ -112,3 +112,4 @@ kbd{color:var(--paleta-principal);border-color:color-mix(in srgb,var(--paleta-pr
 @keyframes pausa-foco-cartao{from{opacity:0;transform:translateY(18px) scale(.95)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes pausa-foco-pulso{50%{box-shadow:0 0 0 13px color-mix(in srgb,var(--paleta-principal) 8%,transparent);transform:scale(1.04)}}
 @media(prefers-reduced-motion:reduce){.pausa-foco,.pausa-foco-cartao,.pausa-foco-icone{animation:none}}
+@media(max-width:700px){.controles-dica{width:calc(100% - 28px);justify-content:center}.controles-dica>span:last-child{white-space:normal;text-align:center}}

@@ -1,17 +1,41 @@
 export class Controles {
-  constructor(superficie, joystick) {
+  constructor(superficie, joystick, moverCamera = () => {}) {
     this.teclas = new Set(); this.vetor = { x: 0, y: 0 }; this.ponteiro = null;
     this.superficie = superficie; this.joystick = joystick; this.bloqueado = false;
+    this.moverCamera = moverCamera; this.ponteiroCamera = null;
+    this.toques = new Map(); this.arrastandoComDoisDedos = false;
     this.origem = { x: 0, y: 0 };
     const usadas = ['w', 'a', 's', 'd', 'arrowup', 'arrowleft', 'arrowdown', 'arrowright'];
     window.addEventListener('keydown', e => {
       if (this.bloqueado || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
-      if (usadas.includes(e.key.toLowerCase())) { e.preventDefault(); this.teclas.add(e.key.toLowerCase()); }
+      const tecla = e.key.toLowerCase();
+      if (e.shiftKey && tecla.startsWith('arrow')) {
+        e.preventDefault(); this.teclas.delete(tecla);
+        this.moverCamera((tecla === 'arrowleft' ? 1 : tecla === 'arrowright' ? -1 : 0) * 60,
+          (tecla === 'arrowup' ? 1 : tecla === 'arrowdown' ? -1 : 0) * 60);
+      } else if (usadas.includes(tecla)) { e.preventDefault(); this.teclas.add(tecla); }
     });
     window.addEventListener('keyup', e => this.teclas.delete(e.key.toLowerCase()));
     window.addEventListener('blur', () => this.limpar());
+    superficie.addEventListener('contextmenu', e => e.preventDefault());
     superficie.addEventListener('pointerdown', e => {
-      if (this.bloqueado || this.ponteiro !== null || e.button !== 0) return;
+      if (this.bloqueado) return;
+      if (e.pointerType === 'touch') {
+        this.toques.set(e.pointerId, { x: e.clientX, y: e.clientY });
+        superficie.setPointerCapture(e.pointerId);
+        if (this.toques.size > 1) {
+          this.arrastandoComDoisDedos = true;
+          this.pararJoystick();
+          e.preventDefault();
+          return;
+        }
+      }
+      if (this.ponteiro === null && this.ponteiroCamera === null && (e.button === 2 || e.shiftKey && e.button === 0)) {
+        this.ponteiroCamera = { id: e.pointerId, x: e.clientX, y: e.clientY };
+        superficie.setPointerCapture(e.pointerId); e.preventDefault();
+        return;
+      }
+      if (this.ponteiro !== null || e.button !== 0) return;
       this.ponteiro = e.pointerId;
       this.origem = { x: e.clientX, y: e.clientY };
       superficie.setPointerCapture(e.pointerId);
@@ -19,19 +43,44 @@ export class Controles {
       joystick.classList.add('ativo'); e.preventDefault();
     });
     superficie.addEventListener('pointermove', e => {
+      const toque = this.toques.get(e.pointerId);
+      if (toque) {
+        const dx = e.clientX - toque.x, dy = e.clientY - toque.y;
+        toque.x = e.clientX; toque.y = e.clientY;
+        if (this.arrastandoComDoisDedos) {
+          if (!this.bloqueado && this.toques.size > 1) this.moverCamera(dx, dy);
+          return;
+        }
+      }
+      if (this.ponteiroCamera?.id === e.pointerId) {
+        if (!this.bloqueado) this.moverCamera(e.clientX - this.ponteiroCamera.x, e.clientY - this.ponteiroCamera.y);
+        this.ponteiroCamera.x = e.clientX; this.ponteiroCamera.y = e.clientY;
+        return;
+      }
       if (this.ponteiro !== e.pointerId || this.bloqueado) return;
       const dx = e.clientX - this.origem.x, dy = e.clientY - this.origem.y;
       const d = Math.hypot(dx, dy), raio = 48, escala = d > raio ? raio / d : 1;
       this.vetor = d < 5 ? { x: 0, y: 0 } : { x: dx * escala / raio, y: dy * escala / raio };
       joystick.firstElementChild.style.transform = `translate(${dx * escala}px, ${dy * escala}px)`;
     });
-    const soltar = e => { if (this.ponteiro === e.pointerId) this.limpar(); };
+    const soltar = e => {
+      if (this.toques.delete(e.pointerId)) {
+        if (this.arrastandoComDoisDedos && this.toques.size === 0) this.arrastandoComDoisDedos = false;
+        if (this.arrastandoComDoisDedos) return;
+      }
+      if (this.ponteiroCamera?.id === e.pointerId) this.ponteiroCamera = null;
+      if (this.ponteiro === e.pointerId) this.pararJoystick();
+    };
     superficie.addEventListener('pointerup', soltar);
     superficie.addEventListener('pointercancel', soltar);
     superficie.addEventListener('lostpointercapture', soltar);
   }
   limpar() {
-    this.teclas.clear(); this.ponteiro = null; this.vetor = { x: 0, y: 0 };
+    this.teclas.clear(); this.ponteiroCamera = null; this.toques.clear(); this.arrastandoComDoisDedos = false;
+    this.pararJoystick();
+  }
+  pararJoystick() {
+    this.ponteiro = null; this.vetor = { x: 0, y: 0 };
     this.joystick.classList.remove('ativo'); this.joystick.firstElementChild.style.transform = '';
   }
   ler() {

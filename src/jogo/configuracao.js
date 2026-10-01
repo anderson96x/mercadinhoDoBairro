@@ -34,6 +34,8 @@ export const CONFIG = {
   espacoClientes: 1.15,
   distanciaClientes: 1.05,
   limiteMundo: { minX: -13.8, maxX: 17.5, minZ: -16, maxZ: 9 },
+  // Bordas do terreno visível (35 x 32, centrado em 1.5, -1.5).
+  limiteCamera: { minX: -16, maxX: 19, minZ: -17.5, maxZ: 14.5 },
   inicio: { x: -1.8, z: 3.4 },
   caixa: { x: 3.5, z: 5.1 },
   balcao: { x: 3.5, z: 4.1 },
