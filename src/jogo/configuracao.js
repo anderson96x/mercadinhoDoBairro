@@ -83,9 +83,9 @@ export const PRODUTOS = {
     nome: 'Leite', plural: 'Garrafas de leite', cor: 0xf4f5e8, preco: 20, origem: 'curral',
     capacidadeHorta: 8, capacidadePrateleira: 12,
     horta: { x: -2, z: -12.5 }, coleta: { x: -1.8, z: -10.15 }, curral: { w: 4.2, d: 3.2 },
-    prateleira: { x: 13.55, z: 3.3 }, reposicao: { x: 13.55, z: 5.0 },
-    cliente: { x: 13.55, z: 1.8 },
-    pontosCompra: [{ x: 13.55, z: 1.8 }, { x: 12.7, z: 1.8 }, { x: 14.35, z: 1.8 }], liberado: false
+    prateleira: { x: 13.55, z: -5.35 }, reposicao: { x: 13.55, z: -3.85 },
+    cliente: { x: 13.55, z: -3.85 },
+    pontosCompra: [{ x: 13.55, z: -3.85 }, { x: 12.7, z: -3.85 }, { x: 14.35, z: -3.85 }], liberado: false
   },
   trigo: {
     nome: 'Trigo', plural: 'Espigas de trigo', cor: 0xe4bc57, preco: 5, origem: 'horta',
@@ -147,7 +147,7 @@ export const ALA_TRIGO = {
 export const MELHORIAS = [
   { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 10.', custo: 350, icone: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 3 },
   { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa um galinheiro na fazenda e amplie a loja para a prateleira de ovos. Colete os ovos e abasteça a prateleira.', custo: ALA_PRODUCAO.custo, icone: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
-  { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa um curral com vaca na fazenda e amplie a loja para a prateleira de leite em garrafas de vidro.', custo: ALA_LEITE.custo, icone: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },
+  { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa um curral com vaca na fazenda e amplie a loja com um refrigerador de leite em garrafas de vidro.', custo: ALA_LEITE.custo, icone: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },
   { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra a plantação ao lado dos ovos e do leite e amplie a loja com uma prateleira de trigo. Cada unidade vale R$ 5.', custo: ALA_TRIGO.custo, icone: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
   { id: 'mochila', titulo: 'Mais capacidade', descricao: 'Carregue mais 4 produtos por viagem.', custo: 25, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 1, ativa: false },
   { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 100, icone: 'raio', max: 1, categoria: 'jogador', nivelMinimo: 5, ativa: false },

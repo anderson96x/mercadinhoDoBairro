@@ -13,6 +13,9 @@ import { icone } from '../interface/icones.js';
 const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
 const materiais = new Map();
 const vidroLeite = new THREE.MeshPhysicalMaterial({ color: 0xd8eeed, transparent: true, opacity: 0.48, roughness: 0.08, metalness: 0, depthWrite: false, side: THREE.DoubleSide });
+const vidroLeiteVitrine = new THREE.MeshPhysicalMaterial({ color: 0x91c8d0, transparent: true, opacity: 0.2, roughness: 0.08, depthWrite: false, side: THREE.DoubleSide });
+const leiteVitrine = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const vidroRefrigerador = new THREE.MeshPhysicalMaterial({ color: 0xe8f9f8, transparent: true, opacity: 0.07, roughness: 0.08, metalness: 0, depthWrite: false, side: THREE.DoubleSide });
 const pertoDaEstacao = (ator, centro, largura, profundidade) => Math.hypot(
   Math.max(0, Math.abs(ator.x - centro.x) - largura / 2),
   Math.max(0, Math.abs(ator.z - centro.z) - profundidade / 2)
@@ -43,6 +46,42 @@ function liberarGeometrias(grupo) {
   grupo.clear();
 }
 
+function posicaoProdutoPrateleira(id, p, i) {
+  if (id === 'leite') return new THREE.Vector3(p.x - 0.83 + i % 4 * 0.56, 2.1 - Math.floor(i / 4) * 0.6, p.z + 0.11);
+  return new THREE.Vector3(p.x - 0.83 + i % 4 * 0.56, 1.11, p.z - 0.5 + Math.floor(i / 4) * 0.49);
+}
+
+function criarRefrigerador(pai, ponto) {
+  const refrigerador = new THREE.Group();
+  refrigerador.position.set(ponto.x, 0, ponto.z); pai.add(refrigerador);
+  // Vitrine vertical branca encostada na parede, com três prateleiras iluminadas.
+  caixa(refrigerador, 2.36, 0.43, 1.12, 0xf2f5f2, 0, 0.43, 0);
+  const fundo = caixa(refrigerador, 2.22, 2.23, 0.08, 0x24454f, 0, 1.68, -0.51);
+  fundo.material = new THREE.MeshBasicMaterial({ color: 0x24454f });
+  for (const x of [-1.14, 1.14]) caixa(refrigerador, 0.09, 2.24, 1.12, 0xf4f6f3, x, 1.66, 0);
+  caixa(refrigerador, 2.36, 0.18, 1.12, 0xf4f6f3, 0, 2.84, 0);
+  for (const y of [0.68, 1.28, 1.88]) {
+    caixa(refrigerador, 2.2, 0.055, 0.92, 0x789aa1, 0, y, -0.04);
+    const luz = caixa(refrigerador, 2.2, 0.025, 0.035, 0xcffcf4, 0, y + 0.04, 0.42);
+    luz.material = new THREE.MeshBasicMaterial({ color: 0xcffcf4 });
+  }
+  for (const x of [-1.02, 1.02]) caixa(refrigerador, 0.035, 2.02, 0.035, 0xd8f9f4, x, 1.7, -0.42);
+  caixa(refrigerador, 2.17, 0.09, 0.045, 0x61a9b5, 0, 2.85, 0.57);
+  for (const y of [0.59, 2.79]) caixa(refrigerador, 2.27, 0.045, 0.14, 0xe5eeed, 0, y, 0.61);
+  const portas = [-1, 1].map(lado => {
+    const porta = new THREE.Group();
+    // Trilhos em profundidades diferentes deixam uma porta deslizar sobre a outra.
+    porta.position.set(lado * 0.55, 0, lado < 0 ? 0.58 : 0.65); refrigerador.add(porta);
+    const vidro = caixa(porta, 1.04, 2.08, 0.025, 0xffffff, 0, 1.69, 0);
+    vidro.material = vidroRefrigerador;
+    for (const y of [0.63, 2.75]) caixa(porta, 1.09, 0.07, 0.07, 0xf8faf8, 0, y, 0);
+    for (const x of [-0.54, 0.54]) caixa(porta, 0.065, 2.16, 0.07, 0xf8faf8, x, 1.69, 0);
+    caixa(porta, 0.045, 0.58, 0.08, 0xa7b9bc, -lado * 0.39, 1.64, 0.09);
+    return porta;
+  });
+  return { portas, abertura: [0, 0] };
+}
+
 export function criarProduto(id, escala = 1) {
   const grupo = new THREE.Group();
   if (id === 'tomate') {
@@ -56,7 +95,8 @@ export function criarProduto(id, escala = 1) {
     const corpo = cilindro(grupo, 0.135, 0.135, 0.38, 0xd8e8e4, 0, 0, 0); corpo.material = vidroLeite;
     const gargalo = cilindro(grupo, 0.075, 0.09, 0.14, 0xd8e8e4, 0, 0.25, 0); gargalo.material = vidroLeite;
     cilindro(grupo, 0.08, 0.08, 0.045, 0x478e6a, 0, 0.34, 0);
-    caixa(grupo, 0.27, 0.085, 0.015, 0x8ac4a7, 0, 0.02, 0.14);
+    caixa(grupo, 0.27, 0.1, 0.018, 0x267b64, 0, 0.02, 0.14);
+    caixa(grupo, 0.17, 0.018, 0.02, 0xfaf8df, 0, 0.02, 0.153);
   } else if (id === 'trigo') {
     for (const [x, z, altura] of [[-0.09, 0, 0.5], [0.06, -0.06, 0.57], [0.14, 0.07, 0.46]]) {
       cilindro(grupo, 0.018, 0.025, altura, 0x78963e, x, -0.12, z, 5);
@@ -716,18 +756,28 @@ export class Cena {
       const fruto = criarProduto(id, 1.6); fruto.position.set(x, id === 'leite' ? 0.69 : id === 'trigo' ? 0.82 : 1, z); grupo.add(fruto); frutos.push(fruto);
     }
     const s = p.prateleira;
-    caixa(grupo, 2.3, 0.65, 1.65, 0xd98b43, s.x, 0.53, s.z);
-    caixa(grupo, 2.45, 0.13, 1.8, 0xffc96f, s.x, 0.91, s.z);
-    caixa(grupo, 2.42, 0.23, 0.14, 0xb96a32, s.x, 1.07, s.z + 0.8);
-    caixa(grupo, 2.42, 0.23, 0.14, 0xb96a32, s.x, 1.07, s.z - 0.8);
-    for (const x of [-1.15, 1.15]) caixa(grupo, 0.14, 0.23, 1.65, 0xb96a32, s.x + x, 1.07, s.z);
+    const refrigerador = id === 'leite' ? criarRefrigerador(grupo, s) : null;
+    if (!refrigerador) {
+      caixa(grupo, 2.3, 0.65, 1.65, 0xd98b43, s.x, 0.53, s.z);
+      caixa(grupo, 2.45, 0.13, 1.8, 0xffc96f, s.x, 0.91, s.z);
+      caixa(grupo, 2.42, 0.23, 0.14, 0xb96a32, s.x, 1.07, s.z + 0.8);
+      caixa(grupo, 2.42, 0.23, 0.14, 0xb96a32, s.x, 1.07, s.z - 0.8);
+      for (const x of [-1.15, 1.15]) caixa(grupo, 0.14, 0.23, 1.65, 0xb96a32, s.x + x, 1.07, s.z);
+    }
     const frutas = [];
     for (let i = 0; i < 12; i++) {
-      const f = criarProduto(id, 1.7); f.position.set(s.x - 0.83 + i % 4 * 0.56, 1.11, s.z - 0.5 + Math.floor(i / 4) * 0.49); grupo.add(f); frutas.push(f);
+      const f = criarProduto(id, id === 'leite' ? 1 : 1.7);
+      if (id === 'leite') {
+        f.scale.set(1.78, 1.03, 1.78);
+        f.children[0].material = leiteVitrine;
+        f.children[1].material = vidroLeiteVitrine;
+        f.children[2].material = vidroLeiteVitrine;
+      }
+      f.position.copy(posicaoProdutoPrateleira(id, s, i)); grupo.add(f); frutas.push(f);
     }
-    this.produtos[id] = { grupo, frutos, frutas, galinhas };
+    this.produtos[id] = { grupo, frutos, frutas, galinhas, refrigerador };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : id === 'leite' ? 'CURRAL' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
-    this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
+    this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'leite' ? 3.05 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   criarLabel(id, ponto, titulo, detalhe, classe) {
     const el = document.createElement('div'); el.className = `etiqueta etiqueta-${classe}`;
@@ -942,7 +992,7 @@ export class Cena {
       const p = PRODUTOS[reposicao.id].prateleira, i = reposicao.lugar;
       // O destino usa exatamente a posição do produto desenhado na prateleira.
       d.corpo.updateWorldMatrix(true, false);
-      const destino = d.corpo.worldToLocal(new THREE.Vector3(p.x - 0.83 + i % 4 * 0.56, 1.11, p.z - 0.5 + Math.floor(i / 4) * 0.49));
+      const destino = d.corpo.worldToLocal(posicaoProdutoPrateleira(reposicao.id, p, i));
       const suave = v => v * v * (3 - 2 * v);
       if (t < 0.22) mao.lerp(reposicao.inicio, suave(t / 0.22));
       else if (t < 0.85) {
@@ -1211,6 +1261,24 @@ export class Cena {
       const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
         .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);
       objetos.frutas.forEach((f, i) => { f.visible = i < estado.prateleira && !emTransito.some(r => r.lugar === i); });
+      if (objetos.refrigerador) {
+        const ponto = PRODUTOS.leite.prateleira;
+        const perto = ator => pertoDaEstacao(ator, ponto, 2.45, 1.4);
+        const usuario = (perto(e.jogador) && e.jogador)
+          || (sim.ajudante.inventario.includes('leite') && perto(sim.ajudante) && sim.ajudante)
+          || sim.clientes.find(c => c.produto === 'leite' && c.fase === 'comprando' && perto(c));
+        const reposicao = emTransito[0];
+        const ladoAberto = reposicao ? (reposicao.lugar % 4 < 2 ? 0 : 1) : usuario ? (usuario.x <= ponto.x ? 0 : 1) : -1;
+        objetos.refrigerador.portas.forEach((porta, lado) => {
+          const alvo = lado === ladoAberto ? 1 : 0;
+          const abertura = objetos.refrigerador.abertura[lado];
+          objetos.refrigerador.abertura[lado] = THREE.MathUtils.clamp(
+            abertura + Math.sign(alvo - abertura) * dtVisual * 2.3,
+            Math.min(abertura, alvo), Math.max(abertura, alvo)
+          );
+          porta.position.x = (lado ? 1 : -1) * (0.55 - 1.09 * objetos.refrigerador.abertura[lado]);
+        });
+      }
     }
     if (this.cuidadorVaca?.visible && this.produtos.leite.grupo.visible) {
       animarVaca(this.vaca, tempo);

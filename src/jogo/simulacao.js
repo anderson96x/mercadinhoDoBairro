@@ -341,7 +341,7 @@ export class Simulacao {
       this.emitir('expansao', { texto: id === ALA_TRIGO.id
         ? 'Plantação de trigo pronta! Colha o trigo ao lado do galinheiro e do curral e abasteça a nova prateleira.'
         : id === ALA_LEITE.id
-        ? 'Curral pronto! Recolha o leite em garrafas de vidro e abasteça a nova prateleira.'
+        ? 'Curral pronto! Recolha o leite em garrafas de vidro e abasteça o novo refrigerador.'
         : 'Galinheiro pronto na fazenda! Colete os ovos e abasteça a nova prateleira.' });
     }
     if (m.tipo === 'produto') {
@@ -382,7 +382,7 @@ export class Simulacao {
       const orientacaoLeite = !this.estado.melhorias.alaLeite
         ? { titulo: 'Construa o curral', texto: 'Compre a ala do leite no escritório por R$ 800.', destino: 'escritorio' }
         : this.estado.produtos.leite.prateleira < 1
-          ? { titulo: 'Leve leite à prateleira', texto: 'Recolha as garrafas de vidro no curral e abasteça a nova prateleira.', destino: this.estado.jogador.inventario.includes('leite') ? 'prateleiraLeite' : 'leite' }
+          ? { titulo: 'Leve leite ao refrigerador', texto: 'Recolha as garrafas de vidro no curral e abasteça o novo refrigerador.', destino: this.estado.jogador.inventario.includes('leite') ? 'prateleiraLeite' : 'leite' }
           : { titulo: 'Atenda o bairro', texto: 'O leite já está à venda. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacaoTrigo = !this.estado.melhorias.alaTrigo
         ? { titulo: 'Abra a plantação de trigo', texto: 'Compre a ala do trigo no escritório por R$ 400.', destino: 'escritorio' }
@@ -432,7 +432,7 @@ export class Simulacao {
     if (this.estado.estagioLoja >= ALA_LEITE.indice) caixas.push(
       ...ALA_LEITE.paredes.filter(p => this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1),
       { ...PRODUTOS.leite.horta, ...PRODUTOS.leite.curral },
-      { ...PRODUTOS.leite.prateleira, w: 2.3, d: 1.65 }
+      { ...PRODUTOS.leite.prateleira, w: 2.3, d: 1.15 }
     );
     if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(
       ...ALA_TRIGO.paredes,
@@ -568,14 +568,14 @@ export class Simulacao {
       if (pertoEstacao(jogador, p.prateleira, 2.45, 1.8)) {
         const indice = jogador.inventario.indexOf(id);
         if (indice >= 0 && e.prateleira < p.capacidadePrateleira) {
-          this.atividade = 'Abastecendo a prateleira…';
+          this.atividade = id === 'leite' ? 'Abastecendo o refrigerador…' : 'Abastecendo a prateleira…';
           if (this.tempo >= this.proximaInteracao) {
             jogador.inventario.splice(indice, 1); e.prateleira++; this.estado.estatisticas.repostos++;
             this.reposicoes.set(jogador, { id, indice, lugar: e.prateleira - 1 });
             this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
             this.emitir('reposicao', { id, ponto: p.prateleira });
           }
-        } else if (e.prateleira >= p.capacidadePrateleira && indice >= 0) this.atividade = 'Prateleira cheia';
+        } else if (e.prateleira >= p.capacidadePrateleira && indice >= 0) this.atividade = id === 'leite' ? 'Refrigerador cheio' : 'Prateleira cheia';
       }
       if (pertoEstacao(jogador, p.horta, p.curral?.w ?? 2.5, p.curral?.d ?? 3.6)) {
         if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Inventário cheio · leve os produtos à prateleira'; continue; }

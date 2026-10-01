@@ -167,7 +167,7 @@ export class Interface {
       ovos: { ponto: PRODUTOS.ovos.coleta, nome: 'OVOS' },
       prateleiraOvos: { ponto: PRODUTOS.ovos.reposicao, nome: 'PRATELEIRA DE OVOS' },
       leite: { ponto: PRODUTOS.leite.coleta, nome: 'CURRAL' },
-      prateleiraLeite: { ponto: PRODUTOS.leite.reposicao, nome: 'PRATELEIRA DE LEITE' },
+      prateleiraLeite: { ponto: PRODUTOS.leite.reposicao, nome: 'REFRIGERADOR DE LEITE' },
       trigo: { ponto: PRODUTOS.trigo.coleta, nome: 'TRIGO' },
       prateleiraTrigo: { ponto: PRODUTOS.trigo.reposicao, nome: 'PRATELEIRA DE TRIGO' },
       caixa: { ponto: CONFIG.cadeiraCaixa, nome: 'CAIXA' },

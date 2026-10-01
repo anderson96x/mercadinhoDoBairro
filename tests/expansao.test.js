@@ -33,6 +33,32 @@ test('estações futuras não aparecem nem criam marcações antes da compra', (
   assert.equal(visualComLeite.produtos.leite.grupo.visible, true);
 });
 
+test('refrigerador de leite fica junto à parede e mantém acesso pela frente', () => {
+  const sim = new Simulacao();
+  sim.estado.estagioLoja = ALA_LEITE.indice;
+  sim.estado.melhorias.alaProducao = 1;
+  sim.estado.melhorias.alaLeite = 1;
+  sim.estado.produtos.ovos.liberado = true;
+  sim.estado.produtos.leite.liberado = true;
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, alvosHorta: [], criarLabel() {} };
+  Cena.prototype.construirEstacao.call(visual, 'leite', PRODUTOS.leite);
+  const { refrigerador, frutas } = visual.produtos.leite;
+  assert.equal(refrigerador.portas.length, 2);
+  const tamanho = new THREE.Box3().setFromObject(refrigerador.portas[0].parent).getSize(new THREE.Vector3());
+  assert.ok(tamanho.y > tamanho.x && tamanho.y > tamanho.z);
+  assert.ok(frutas[0].position.y > frutas[4].position.y, 'o primeiro leite abastecido aparece na prateleira superior');
+  assert.ok(PRODUTOS.leite.prateleira.z < -5 && PRODUTOS.leite.reposicao.z > PRODUTOS.leite.prateleira.z);
+  for (const ponto of [PRODUTOS.leite.reposicao, ...PRODUTOS.leite.pontosCompra]) {
+    const ator = { x: -1.3, z: 4.9, andando: false };
+    let chegou = false;
+    for (let i = 0; i < 2400 && !chegou; i++) {
+      sim.tempo += 0.05;
+      chegou = sim.caminharCliente(ator, ponto, 0.05);
+    }
+    assert.equal(chegou, true, `sem rota para ${JSON.stringify(ponto)}`);
+  }
+});
+
 function bairroVisual() {
   const cena = new THREE.Scene();
   const geometria = new THREE.BoxGeometry(1, 1, 1);
