@@ -159,10 +159,10 @@ try {
         if (evento.tipo === 'assaltoConcluido') gravar();
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
-        if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${evento.nivel === 6 ? ' Dica: contrate o Repositor no escritório por R$ 900.' : evento.nivel === 7 ? ' Dica: abra a ala do trigo no escritório por R$ 400.' : ''}`); }
+        if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${evento.nivel === 6 ? ' Dica: contrate o Repositor no escritório por R$ 900.' : evento.nivel === 7 ? ' Dica: abra a ala do trigo no escritório por R$ 400.' : evento.nivel === 9 ? ' Dica: abra a padaria no escritório por R$ 1.400. Cada trigo rende 3 pães de R$ 10.' : ''}`); }
         if (evento.tipo === 'melhoria') ui.mensagem(evento.texto);
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
-        if (['expansao', 'ovoPronto', 'leitePronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
+        if (['expansao', 'ovoPronto', 'leitePronto', 'paoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
         if (evento.tipo === 'escritorio') ui.abrir('escritorio');
       }
       if (agora >= proximaUI) { ui.atualizar(); proximaUI = agora + 100; }

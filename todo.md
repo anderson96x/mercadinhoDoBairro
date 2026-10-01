@@ -24,6 +24,7 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 - [x] Implement eggs at level 4 through a farm chicken coop and compact shelf extension, independently of helper availability.
 - [ ] Add a level-5 milk expansion for R$ 800 with a cow, caretaker, glass bottles, and a new shelf. Milk sells for R$ 20. Implementation and build are complete; gameplay routes and visual layout still need hands-on validation.
 - [x] Add the level-7 wheat plot between the coop and curral for R$ 400, with a new animated store wing and shelf. Wheat sells for R$ 5; the helper carries it in the wooden crate. Automated purchase, route, stocking, sale, and reload checks pass.
+- [x] Add the level-9 bakery for R$ 1,400 opposite the egg shelf. The player leaves wheat in a crate to the left of the single glass bread counter; the grinder and oven close the left and right sides of the work area. Two bakers walk between the stations. Each wheat yields three breads sold for R$ 10. Bakery customers request at least three breads. Automated production, sale, route, and reload checks pass; visual playtesting remains.
 - [x] Implement a staged store footprint shared by the scene, collision map, pathfinding, fixed world/camera bounds, and save data.
   - A stage defines its prerequisite, price, active floor, walls, stations, paths, and unlocked products.
   - Done when buying an expansion changes the physical map and existing actors remain in reachable positions.
@@ -41,8 +42,8 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 | --- | --- | --- | ---: |
 | 1–2 | Compact produce stall | Learn the loop; tomatoes and cashier | 5 min |
 | 3–7 | Produce and dairy wings | Corn at level 3; eggs at level 4; cow and milk at level 5; helper at level 6; wheat at level 7 | 21 min |
-| 8–11 | Refrigerated wing | Cheese, storage | 45 min |
-| 12–15 | Bakery frontage | Bread, worker specialization | 77 min |
+| 8–11 | Bakery and refrigerated wing | Extra baskets at level 8, bread at level 9; cheese and storage remain future work | 45 min |
+| 12–15 | Store frontage | Further worker specialization | 77 min |
 | 16–20 | Neighborhood supermarket | Loading area, mixed orders, final expansion | 129 min |
 
 - [ ] Define level rewards and visible milestones for every level, including a clear completion state at level 20.

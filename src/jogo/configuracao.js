@@ -95,6 +95,14 @@ export const PRODUTOS = {
     prateleira: { x: 16.55, z: -0.5 }, reposicao: { x: 16.55, z: 1.2 },
     cliente: { x: 16.55, z: 1.2 },
     pontosCompra: [{ x: 16.55, z: 1.2 }, { x: 15.7, z: 1.2 }, { x: 17.3, z: 1.2 }], liberado: false
+  },
+  pao: {
+    nome: 'Pão', plural: 'Pães', cor: 0xc87833, preco: 10, origem: 'padaria',
+    capacidadeHorta: 0, capacidadePrateleira: 18,
+    horta: { x: 7.75, z: 4.1 }, coleta: { x: 7.75, z: 2.7 },
+    prateleira: { x: 10.4, z: 3.85 }, reposicao: { x: 7.75, z: 2.7 },
+    cliente: { x: 10.4, z: 2.15 },
+    pontosCompra: [{ x: 9.5, z: 2.15 }, { x: 10.4, z: 2.15 }, { x: 11.3, z: 2.15 }], liberado: false
   }
 };
 
@@ -103,6 +111,7 @@ export const NIVEL_OVOS = 4;
 export const NIVEL_LEITE = 5;
 export const NIVEL_AJUDANTE = 6;
 export const NIVEL_TRIGO = 7;
+export const NIVEL_PADARIA = 9;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
   limites: { ...CONFIG.limiteMundo },
@@ -142,6 +151,11 @@ export const ALA_TRIGO = {
     { x: 18.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75 }
   ]
 };
+export const ALA_PADARIA = {
+  id: 'alaPadaria', indice: 4, nivelMinimo: NIVEL_PADARIA, custo: 1400, produtos: ['pao'],
+  entrada: { x: 7.75, z: 4.1 }, capacidadeTrigo: 12,
+  tempoMoagem: 1.8, tempoForno: 2.3, paesPorTrigo: 3
+};
 
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
@@ -150,6 +164,7 @@ export const MELHORIAS = [
   { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa um galinheiro na fazenda e amplie a loja para a prateleira de ovos. Colete os ovos e abasteça a prateleira.', custo: ALA_PRODUCAO.custo, icone: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
   { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa um curral com vaca na fazenda e amplie a loja com um refrigerador de leite em garrafas de vidro.', custo: ALA_LEITE.custo, icone: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },
   { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra a plantação ao lado dos ovos e do leite e amplie a loja com uma prateleira de trigo. Cada unidade vale R$ 5.', custo: ALA_TRIGO.custo, icone: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
+  { id: 'alaPadaria', titulo: 'Padaria', descricao: 'Cada trigo rende 3 pães, vendidos por R$ 10 cada. Deixe o trigo na caixa à esquerda do balcão.', custo: ALA_PADARIA.custo, icone: 'pao', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_PADARIA, requisitoMelhoria: 'alaTrigo' },
   { id: 'cestasExtras', titulo: 'Mais cestas para clientes', descricao: 'Adicione 5 cestas para receber mais 5 clientes na loja ao mesmo tempo.', custo: 100, icone: 'cesta', max: 1, categoria: 'mercado', nivelMinimo: 8 },
   { id: 'mochila', titulo: 'Mais capacidade', descricao: 'Carregue mais 4 produtos por viagem.', custo: 25, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 1, ativa: false },
   { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 100, icone: 'raio', max: 1, categoria: 'jogador', nivelMinimo: 5, ativa: false },
