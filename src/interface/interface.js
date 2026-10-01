@@ -3,6 +3,7 @@ import { PALETAS } from '../jogo/personalizacao.js';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
 import { BANCO, statusColeta } from '../jogo/banco.js';
 import { statusAssalto } from '../jogo/assalto.js';
+import { atualizarPainelClientes } from './clientes.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
   { id: 'mercado', titulo: 'Mercado' },
@@ -26,6 +27,11 @@ export class Interface {
             ${import.meta.env.DEV ? `<button class="botao-icone reset-dev" id="dev-menu" title="Abrir menu de desenvolvimento" aria-label="Abrir menu de desenvolvimento">${icone('dev')}<small>DEV</small></button>` : ''}
           </nav>
         </header>
+        <aside class="painel-clientes" id="painel-clientes" aria-label="Clientes">
+          <div class="painel-clientes-topo"><div><small>PEDIDOS</small><h2>Clientes <span id="clientes-ativos">0</span></h2></div>${icone('pessoa')}</div>
+          <div id="lista-clientes" class="lista-clientes"></div>
+          <p id="clientes-vazio" class="clientes-vazio">Nenhum cliente na loja.</p>
+        </aside>
         <aside id="aviso-banco" class="aviso-banco" role="status" aria-live="polite" aria-atomic="true" hidden>
           <span class="aviso-banco-icone" aria-hidden="true">!</span>
           <div class="aviso-banco-conteudo"><strong id="aviso-banco-titulo"></strong><p id="aviso-banco-texto"></p>
@@ -124,6 +130,7 @@ export class Interface {
     this.el('reputacao-progresso').value = s.reputacao;
     this.el('reputacao-meta').textContent = `${nomesReputacao[s.faixaReputacao]} · ${s.reputacao} / 100`;
     this.el('reputacao-progresso').setAttribute('aria-valuetext', `${s.reputacao} de 100, satisfação ${nomesReputacao[s.faixaReputacao].toLocaleLowerCase('pt-BR')}`);
+    atualizarPainelClientes(this.el('painel-clientes'), s.clientes, e.produtos, this.retratosClientes);
     this.el('nivel').textContent = `NÍVEL ${s.nivel}`;
     const clientesProximoNivel = s.nivel * CONFIG.clientesPorNivel;
     const progressoNivel = this.el('nivel-progresso');

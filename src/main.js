@@ -1,4 +1,5 @@
 import './interface/estilos.css';
+import './interface/clientes.css';
 import './interface/progresso.css';
 import './interface/banco.css';
 import '@fontsource/dm-sans/latin-400.css';
@@ -111,6 +112,7 @@ const ui = new Interface(sim, {
 });
 try {
   cena = new Cena(document.getElementById('mundo'), sim);
+  ui.retratosClientes = cena.retratosClientes;
   controles = new Controles(document.getElementById('mundo'), document.getElementById('joystick'), (dx, dy) => cena.moverCamera(dx, dy));
   const mundo = document.getElementById('mundo');
   mundo.addEventListener('pointermove', e => { if (sim.estado.melhoriaPendente === 'fertilizante') ui.moverCursorHorta(e.clientX, e.clientY); });

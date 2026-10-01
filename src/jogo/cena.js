@@ -561,7 +561,7 @@ export class Cena {
     this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, -0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
     this.jogador = personagem(0xf8ecd1, 0xe9b489, true); this.cena.add(this.jogador);
-    this.clientes = new Map(); this.labels = []; this.alvosHorta = []; this.efeitosCrescimento = [];
+    this.clientes = new Map(); this.retratosClientes = new Map(); this.labels = []; this.alvosHorta = []; this.efeitosCrescimento = [];
     this.raycaster = new THREE.Raycaster(); this.ponteiroRaycast = new THREE.Vector2();
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) this.construirEstacao(id, p);
@@ -735,6 +735,53 @@ export class Cena {
     el.innerHTML = `<b>${titulo}</b><span>${detalhe}</span>`;
     document.getElementById('etiquetas').append(el);
     this.labels.push({ id, el, ponto });
+  }
+  criarRetratoCliente(visual, aparencia) {
+    if (this.retratosClientes.has(aparencia)) return;
+    const miniatura = personagem(visual.corRoupa, visual.pele, false, [0x1d654b, 0x3d8a65, 0x254233], visual);
+    miniatura.userData.cesta.visible = false;
+    for (const braco of [miniatura.userData.bracoE, miniatura.userData.bracoD]) {
+      posicionarBraco(braco, new THREE.Vector3(braco.userData.ombro.x, 0.46, 0));
+    }
+    const cena = new THREE.Scene();
+    cena.background = new THREE.Color(0xe7ede1);
+    cena.add(miniatura, new THREE.HemisphereLight(0xfff4dc, 0x70a85d, 2.55));
+    const luz = new THREE.DirectionalLight(0xffebc9, 2.8);
+    luz.position.set(-3, 5, 6); cena.add(luz);
+    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 10);
+    camera.position.set(0.35, 1.42, 2.5);
+    camera.lookAt(0, 1.04, 0);
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = 96;
+    const ctx = canvas.getContext('2d');
+    const desenharCompativel = () => {
+      const renderizador = new RenderizadorCompativel();
+      renderizador.setSize(96, 96);
+      renderizador.render(cena, camera);
+      ctx.drawImage(renderizador.domElement, 0, 0);
+    };
+    try {
+      if (!this.modoCompativel) {
+        this.alvoRetrato ??= new THREE.WebGLRenderTarget(96, 96);
+        this.alvoRetrato.texture.colorSpace = THREE.SRGBColorSpace;
+        this.renderer.setRenderTarget(this.alvoRetrato);
+        this.renderer.render(cena, camera);
+        const pixels = new Uint8Array(96 * 96 * 4);
+        this.renderer.readRenderTargetPixels(this.alvoRetrato, 0, 0, 96, 96, pixels);
+        const imagem = ctx.createImageData(96, 96);
+        for (let y = 0; y < 96; y++) imagem.data.set(pixels.subarray((95 - y) * 384, (96 - y) * 384), y * 384);
+        ctx.putImageData(imagem, 0, 0);
+      } else desenharCompativel();
+      this.retratosClientes.set(aparencia, canvas.toDataURL('image/png'));
+    } catch {
+      try {
+        desenharCompativel();
+        this.retratosClientes.set(aparencia, canvas.toDataURL('image/png'));
+      } catch { /* O jogo segue funcionando se um retrato não puder ser desenhado. */ }
+    } finally {
+      if (!this.modoCompativel) this.renderer.setRenderTarget(null);
+      liberarGeometrias(miniatura);
+    }
   }
   redimensionar() {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
@@ -1072,9 +1119,10 @@ export class Cena {
       if (!this.clientes.has(c.id)) {
         const visual = APARENCIAS_CLIENTES[c.aparencia] ?? APARENCIAS_CLIENTES[0];
         const m = personagem(visual.corRoupa, visual.pele, false, [0x1d654b, 0x3d8a65, 0x254233], visual);
+        this.criarRetratoCliente(visual, c.aparencia);
         m.userData.sacolas = new THREE.Group(); m.userData.corpo.add(m.userData.sacolas);
         const sacola = criarSacola(); sacola.position.set(0, 0.18, 0.58); sacola.visible = false; m.userData.sacolas.add(sacola);
-        const balao = document.createElement('div'); balao.className = 'balao-compra'; balao.hidden = true;
+        const balao = document.createElement('div'); balao.className = 'balao-reacao'; balao.hidden = true;
         document.getElementById('etiquetas').append(balao); m.userData.balao = balao;
         this.clientes.set(c.id, m); this.cena.add(m);
       }
@@ -1083,52 +1131,20 @@ export class Cena {
       if (c.temCesta && !c.levaSacolas) aplicarPaletaCesta(modelo.userData.cesta, paletaAtual);
       if (!c.assustado || !modelo.userData.congelado) this.animarPersonagem(modelo, c, c.assustado ? 0 : dt, tempo + c.id, itens, 'prateleira', 0.55);
       modelo.userData.congelado = !!c.assustado;
-      const compra = c.compras?.[c.compraAtual ?? 0];
-      const mostrarCompra = compra && ['chegando', 'pegandoCesta', 'comprando'].includes(c.fase) && !c.recusado;
-      const mostrarReacao = c.satisfacao && c.fase === 'saindo' && !c.recusado;
-      const mostrarBalao = c.assustado || mostrarCompra || mostrarReacao;
       const balao = modelo.userData.balao;
-      balao.hidden = !mostrarBalao;
-      if (mostrarBalao) {
-        if (c.assustado) {
-          if (balao.dataset.conteudo !== 'assustado') {
-            balao.dataset.conteudo = 'assustado';
-            balao.className = 'balao-compra balao-reacao assustado';
-            balao.innerHTML = '<span role="img" aria-label="Cliente apavorado">😱</span>';
-          }
-        } else if (mostrarReacao) {
-          const reacoes = {
-            feliz: 'sorriso',
-            neutro: 'neutro',
-            irritado: 'irritado'
-          };
-          const reacao = reacoes[c.satisfacao];
-          const chave = `reacao:${c.satisfacao}`;
-          if (balao.dataset.conteudo !== chave) {
-            balao.dataset.conteudo = chave;
-            balao.className = `balao-compra balao-reacao ${c.satisfacao}`;
-            balao.innerHTML = icone(reacao);
-          }
-        } else {
-          const chave = `compra:${compra.produto}:${compra.desejado}`;
-          if (balao.dataset.conteudo !== chave) {
-            balao.dataset.conteudo = chave;
-            balao.className = 'balao-compra';
-            balao.innerHTML = `${icone(compra.produto)}<b>${compra.desejado}</b><span class="balao-espera" hidden>${icone('relogio')}<b></b></span>`;
-          }
-          const espera = c.esperaSemEstoque ?? 0;
-          const esperando = c.fase === 'comprando' && e.produtos[compra.produto].prateleira === 0 && compra.quantidade < compra.desejado;
-          const relogio = balao.querySelector('.balao-espera');
-          relogio.hidden = !esperando;
-          if (esperando) {
-            relogio.lastElementChild.textContent = `${Math.max(0, Math.ceil(CONFIG.tempoEsperaCliente - espera))}s`;
-            relogio.style.setProperty('--progresso-espera', `${Math.min(1, espera / CONFIG.tempoEsperaCliente) * 360}deg`);
-          }
+      const mostrarReacao = c.satisfacao && c.fase === 'saindo' && !c.recusado;
+      if (c.assustado || mostrarReacao) {
+        const chave = c.assustado ? 'assustado' : c.satisfacao;
+        if (balao.dataset.reacao !== chave) {
+          balao.dataset.reacao = chave;
+          balao.className = `balao-reacao ${chave}`;
+          balao.innerHTML = c.assustado ? '<span role="img" aria-label="Cliente apavorado">😱</span>'
+            : icone({ feliz: 'sorriso', neutro: 'neutro', irritado: 'irritado' }[chave]);
         }
         const pos = this.projetar({ x: c.x, y: 3.15, z: c.z });
         balao.hidden = pos.x < 20 || pos.x > this.w - 20 || pos.y < 20 || pos.y > this.h - 90;
         balao.style.transform = `translate(${pos.x}px,${pos.y}px) translate(-50%,-100%)`;
-      }
+      } else balao.hidden = true;
       modelo.userData.cesta.visible = !!c.temCesta && !c.levaSacolas;
       modelo.userData.sacolas.children.forEach((sacola, i) => {
         sacola.visible = !!c.levaSacolas;
