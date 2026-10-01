@@ -44,16 +44,31 @@ test('padaria exige nível 9, trigo e R$ 1.400; trigo entregue vira farinha e tr
   assert.equal(retomado.producao.paesProduzidos, 3);
 });
 
-test('todo cliente da padaria pede pelo menos três pães e consegue comprar e pagar', () => {
+test('pão entra na demanda normal e clientes que o pedem levam pelo menos três', () => {
   const sim = abrirPadaria();
   sim.estado.melhorias.caixa = 1;
   sim.estado.produtos.pao.prateleira = 18;
   sim.proximoCliente = Infinity;
   sim.aleatorio = () => 0;
+  const demandas = [];
+  for (let id = 1; id <= 8; id++) {
+    sim.clientes = [];
+    sim.proximoId = id;
+    assert.equal(sim.criarCliente(), true);
+    demandas.push(sim.clientes[0].produto);
+    const pedidoPao = sim.clientes[0].compras.find(compra => compra.produto === 'pao');
+    if (pedidoPao) assert.ok(pedidoPao.desejado >= 3);
+  }
+  const frequencias = [...new Set(demandas)].map(id => demandas.filter(produto => produto === id).length);
+  assert.ok(Math.max(...frequencias) - Math.min(...frequencias) <= 1);
+  assert.ok(demandas.includes('pao'));
+
+  sim.clientes = [];
+  sim.proximoId = demandas.indexOf('pao') + 1;
   assert.equal(sim.criarCliente(), true);
   const cliente = sim.clientes[0];
   assert.equal(cliente.compras[0].produto, 'pao');
-  assert.ok(cliente.compras[0].desejado >= 3);
+  assert.equal(cliente.compras[0].desejado, 3);
   for (let i = 0; i < 6000 && sim.estado.estatisticas.clientes === CONFIG.clientesPorNivel * 8; i++) sim.atualizar(1 / 60);
   assert.ok(sim.estado.estatisticas.clientes > CONFIG.clientesPorNivel * 8);
   assert.ok(sim.estado.estatisticas.faturamento >= 30);

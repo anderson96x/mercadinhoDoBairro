@@ -679,21 +679,31 @@ export class Simulacao {
     const cestaReservada = this.cestasDisponiveis > 0;
     const pedirOvos = this.estado.producao.ovosProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.ovosVendidos >= 10 ? 3 : 4) === 0;
     const pedirLeite = this.estado.producao.leitesProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.leitesVendidos >= 10 ? 4 : 5) === 0;
-    const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado && id !== 'pao' && (id !== 'ovos' || pedirOvos) && (id !== 'leite' || pedirLeite));
+    const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado && (id !== 'ovos' || pedirOvos) && (id !== 'leite' || pedirLeite));
     const inicioProdutos = (this.proximaId - 1) % disponiveis.length;
     const prioridade = pedirLeite ? 'leite' : pedirOvos ? 'ovos' : null;
     const produtosDesejados = prioridade
       ? [prioridade, ...disponiveis.filter(id => id !== prioridade)]
       : Array.from({ length: Math.min(disponiveis.length, CONFIG.capacidadeCestaCliente) }, (_, i) => disponiveis[(inicioProdutos + i) % disponiveis.length]);
-    const querPao = !!this.estado.melhorias.alaPadaria;
-    const quantidadePao = querPao ? 3 + Math.floor(this.aleatorio() * (CONFIG.capacidadeCestaCliente - 2)) : 0;
-    const totalDesejado = querPao ? Math.min(CONFIG.capacidadeCestaCliente, quantidadePao + Math.floor(this.aleatorio() * 3)) : 1 + Math.floor(this.aleatorio() * this.limitePedidoCliente);
-    const outros = produtosDesejados.slice(0, totalDesejado - quantidadePao).map((produto, indice, lista) => ({
-      produto,
-      desejado: Math.floor((totalDesejado - quantidadePao) / lista.length) + (indice < (totalDesejado - quantidadePao) % lista.length ? 1 : 0),
-      quantidade: 0
-    }));
-    const compras = querPao ? [{ produto: 'pao', desejado: quantidadePao, quantidade: 0 }, ...outros] : outros;
+    const totalDesejado = 1 + Math.floor(this.aleatorio() * this.limitePedidoCliente);
+    const produtosPedidos = produtosDesejados.slice(0, totalDesejado);
+    const indicePao = produtosPedidos.indexOf('pao');
+    let compras;
+    if (indicePao >= 0) {
+      const quantidadePao = 3 + Math.floor(this.aleatorio() * (CONFIG.capacidadeCestaCliente - 2));
+      const espacoRestante = CONFIG.capacidadeCestaCliente - quantidadePao;
+      const outros = produtosPedidos.filter(id => id !== 'pao').slice(0, espacoRestante);
+      compras = [
+        { produto: 'pao', desejado: quantidadePao, quantidade: 0 },
+        ...outros.map(produto => ({ produto, desejado: 1, quantidade: 0 }))
+      ];
+    } else {
+      compras = produtosPedidos.map((produto, indice, lista) => ({
+        produto,
+        desejado: Math.floor(totalDesejado / lista.length) + (indice < totalDesejado % lista.length ? 1 : 0),
+        quantidade: 0
+      }));
+    }
     const produto = compras[0].produto;
     const ordemEntradas = [this.proximoLadoEntrada, 1 - this.proximoLadoEntrada];
     const ladoEntrada = ordemEntradas.find(indice => !this.clientes.some(c => distancia(c, CONFIG.extremosCalcada[indice]) < CONFIG.distanciaClientes));
