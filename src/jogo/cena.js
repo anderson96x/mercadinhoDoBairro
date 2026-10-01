@@ -626,7 +626,7 @@ export class Cena {
       caixa(suporteCestas, 0.08, 0.52, 0.08, 0x545c5b, -0.33, 0.28, z);
       caixa(suporteCestas, 0.08, 0.52, 0.08, 0x545c5b, 0.33, 0.28, z);
     }
-    this.cestasEntrada = Array.from({ length: CONFIG.quantidadeCestas }, (_, i) => {
+    this.cestasEntrada = Array.from({ length: CONFIG.quantidadeCestas + CONFIG.cestasPorMelhoria }, (_, i) => {
       const cesta = criarCesta(0x1d654b, 0x3d8a65, 0x254233);
       cesta.position.set(0, 0.31 + i * 0.055, (i - 2) * 0.075);
       cesta.scale.setScalar(0.78); suporteCestas.add(cesta); return cesta;

@@ -11,6 +11,7 @@
 | 5 | Ala do leite | R$ 800 | R$ 20 por garrafa |
 | 6 | Repositor | R$ 900 | — |
 | 7 | Ala do trigo | R$ 400 | R$ 5 por trigo |
+| 8 | Mais 5 cestas (até 10 clientes na loja) | R$ 100 | — |
 
 
 ## Desativadas

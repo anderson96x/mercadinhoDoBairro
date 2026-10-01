@@ -11,7 +11,7 @@ Abra `src/jogo/configuracao.js`. Ele concentra os ajustes mais frequentes:
 | Velocidade | `CONFIG.velocidadeInicial` |
 | Distância das interações | `CONFIG.raioInteracao` |
 | Intervalo dos clientes por reputação | `CONFIG.intervaloClientesReputacao` |
-| Cestas disponíveis para entrada (sem cesta, cliente passa pela calçada) | `CONFIG.quantidadeCestas` |
+| Cestas iniciais e cestas adicionadas pela melhoria do nível 8 (sem cesta, cliente passa pela calçada) | `CONFIG.quantidadeCestas` e `CONFIG.cestasPorMelhoria` |
 | Valor de venda | `PRODUTOS.tomate.preco`, por exemplo |
 | Crescimento | `PRODUTOS.tomate.tempoCrescimento` |
 | Posições da horta e da loja | `horta`, `coleta`, `prateleira` e `reposicao` de cada produto |

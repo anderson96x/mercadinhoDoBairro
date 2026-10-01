@@ -214,8 +214,9 @@ export class Simulacao {
     return this.reputacao < 45 ? ruim : this.reputacao < 75 || this.estado.estatisticas.clientes < 10 ? media : this.reputacao < 90 ? boa - 1 : boa;
   }
   get cestasEmUso() { return this.clientes.filter(c => c.cestaReservada).length; }
-  get cestasDisponiveis() { return Math.max(0, CONFIG.quantidadeCestas - this.cestasEmUso); }
-  get cestasNoSuporte() { return Math.max(0, CONFIG.quantidadeCestas - this.clientes.filter(c => c.temCesta).length); }
+  get totalCestas() { return CONFIG.quantidadeCestas + CONFIG.cestasPorMelhoria * this.estado.melhorias.cestasExtras; }
+  get cestasDisponiveis() { return Math.max(0, this.totalCestas - this.cestasEmUso); }
+  get cestasNoSuporte() { return Math.max(0, this.totalCestas - this.clientes.filter(c => c.temCesta).length); }
   get clienteEmAtendimento() {
     const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
     const jogadorNoCaixa = this.estado.jogador.sentadoCaixa && distancia(this.estado.jogador, CONFIG.cadeiraCaixa) < 0.01;

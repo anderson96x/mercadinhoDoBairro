@@ -29,6 +29,31 @@ test('sem cestas, clientes atravessam a calçada sem entrar na loja', () => {
   assert.equal(sim.cestasDisponiveis, 1);
 });
 
+test('no nível 8, compra de R$ 100 amplia de cinco para dez clientes com cesta e persiste', () => {
+  const sim = new Simulacao();
+  sim.estado.dinheiro = 100;
+  assert.equal(sim.comprarMelhoria('cestasExtras').sucesso, false);
+  sim.estado.estatisticas.clientes = 7 * CONFIG.clientesPorNivel;
+  assert.equal(sim.nivel, 8);
+  assert.equal(sim.comprarMelhoria('cestasExtras').sucesso, true);
+  assert.equal(sim.estado.dinheiro, 0);
+  assert.equal(sim.totalCestas, 10);
+  assert.equal(sim.cestasNoSuporte, 10);
+  assert.equal(sim.comprarMelhoria('cestasExtras').sucesso, false);
+  for (let i = 0; i < 10; i++) {
+    assert.equal(sim.criarCliente(), true);
+    Object.assign(sim.clientes.at(-1), { x: i - 2, z: 7.2, temCesta: true });
+    assert.equal(sim.clientes.at(-1).cestaReservada, true);
+  }
+  assert.equal(sim.cestasDisponiveis, 0);
+  assert.equal(sim.cestasNoSuporte, 0);
+  assert.equal(sim.criarCliente(), true);
+  assert.equal(sim.clientes.at(-1).fase, 'passando');
+  const restaurada = new Simulacao(sim.estado);
+  assert.equal(restaurada.totalCestas, 10);
+  assert.equal(restaurada.cestasDisponiveis, 10);
+});
+
 test('cliente pega a cesta ao entrar e ela volta ao suporte no checkout', () => {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
   sim.estado.produtos.tomate.prateleira = 10;
