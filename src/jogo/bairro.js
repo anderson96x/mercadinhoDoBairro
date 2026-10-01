@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PALETAS } from './personalizacao.js';
-import { ALA_PRODUCAO, ALA_LEITE } from './configuracao.js';
+import { ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = [
@@ -190,7 +190,23 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   for (let x = 12.2; x < 15.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, areaLeite.z);
   for (let z = -5.8; z < 6.6; z += 1.2) chao(5, areaLeite.w, 0.008, 0.018, 0xc8bfae, areaLeite.x, 0.23, z);
   const paredesAlaLeite = new THREE.Group(); alaLeite.add(paredesAlaLeite); destino = paredesAlaLeite;
+  const paredeLateralLeite = new THREE.Group(); paredesAlaLeite.add(paredeLateralLeite);
   for (const p of ALA_LEITE.paredes) {
+    destino = p.x === 15.1 ? paredeLateralLeite : paredesAlaLeite;
+    bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
+    bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
+    if (p.z !== 6.7) rodape(p);
+  }
+  const areaTrigo = ALA_TRIGO.piso;
+  const alaTrigo = new THREE.Group(); grupo.add(alaTrigo); destino = alaTrigo;
+  alaTrigo.name = 'ala-trigo'; alaTrigo.visible = false;
+  chao(3, areaTrigo.w, 0.2, areaTrigo.d, 0xc4b9a5, areaTrigo.x, 0.06, areaTrigo.z);
+  chao(4, areaTrigo.w, 0.07, 12.4, 0xe3dcc8, areaTrigo.x, 0.19, areaTrigo.z, 'piso');
+  decorarPiso(15.8, 2);
+  for (let x = 15.2; x < 18.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, areaTrigo.z);
+  for (let z = -5.8; z < 6.6; z += 1.2) chao(5, areaTrigo.w, 0.008, 0.018, 0xc8bfae, areaTrigo.x, 0.23, z);
+  const paredesAlaTrigo = new THREE.Group(); alaTrigo.add(paredesAlaTrigo); destino = paredesAlaTrigo;
+  for (const p of ALA_TRIGO.paredes) {
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
@@ -206,6 +222,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   for (const y of [1.25, 2.65]) bloco(0.08, 0.08, 11.8, 0xe7b65a, 12.35, y, 0.4);
   const andaimeLeite = andaime.clone(); grupo.add(andaimeLeite);
   andaimeLeite.name = 'andaime-leite'; andaimeLeite.position.x = 3; andaimeLeite.visible = false;
+  const andaimeTrigo = andaime.clone(); grupo.add(andaimeTrigo);
+  andaimeTrigo.name = 'andaime-trigo'; andaimeTrigo.position.x = 6; andaimeTrigo.visible = false;
   destino = grupo;
   for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) {
     destino = p.lateral ? lateral : grupo;
@@ -319,13 +337,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     atualizarEstagio(estagio, dt = 0) {
       if (estagioAnterior !== undefined && estagio > estagioAnterior) progresso = 0;
       estagioAnterior = estagio;
-      const duracao = estagio >= ALA_LEITE.indice ? ALA_LEITE.duracaoConstrucao : ALA_PRODUCAO.duracaoConstrucao;
+      const duracao = estagio >= ALA_TRIGO.indice ? ALA_TRIGO.duracaoConstrucao : estagio >= ALA_LEITE.indice ? ALA_LEITE.duracaoConstrucao : ALA_PRODUCAO.duracaoConstrucao;
       progresso = Math.min(1, progresso + dt / duracao);
       const progressoOvos = estagio >= ALA_LEITE.indice ? 1 : progresso;
       const piso = THREE.MathUtils.smoothstep(progressoOvos, 0, 0.5);
       const paredes = THREE.MathUtils.smoothstep(progressoOvos, 0.35, 0.8);
       const equipamentos = THREE.MathUtils.smoothstep(progresso, 0.7, 1);
-      const pisoLeite = THREE.MathUtils.smoothstep(progresso, 0, 0.5);
+      const progressoLeite = estagio >= ALA_TRIGO.indice ? 1 : progresso;
+      const pisoLeite = THREE.MathUtils.smoothstep(progressoLeite, 0, 0.5);
+      const pisoTrigo = THREE.MathUtils.smoothstep(progresso, 0, 0.5);
       ala.visible = !!estagio;
       ala.scale.x = Math.max(0.001, piso);
       ala.position.x = 9.1 * (1 - ala.scale.x);
@@ -335,19 +355,29 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       alaLeite.visible = estagio >= ALA_LEITE.indice;
       alaLeite.scale.x = Math.max(0.001, pisoLeite);
       alaLeite.position.x = 12.1 * (1 - alaLeite.scale.x);
-      paredesAlaLeite.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progresso, 0.35, 0.8));
+      paredesAlaLeite.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progressoLeite, 0.35, 0.8));
+      paredeLateralLeite.visible = estagio < ALA_TRIGO.indice || progresso < 0.8;
+      paredeLateralLeite.position.x = estagio >= ALA_TRIGO.indice ? areaTrigo.w * pisoTrigo : 0;
+      alaTrigo.visible = estagio >= ALA_TRIGO.indice;
+      alaTrigo.scale.x = Math.max(0.001, pisoTrigo);
+      alaTrigo.position.x = 15.1 * (1 - alaTrigo.scale.x);
+      paredesAlaTrigo.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progresso, 0.35, 0.8));
       lateral.visible = !estagio || (estagio === ALA_PRODUCAO.indice && progresso < 0.8);
       lateral.position.x = estagio ? area.w * piso : 0;
-      const largura = (estagio ? area.w * piso : 0) + (estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0);
+      const largura = (estagio ? area.w * piso : 0) + (estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0) + (estagio >= ALA_TRIGO.indice ? areaTrigo.w * pisoTrigo : 0);
       rodapeFrontal.scale.x = 1 + largura / 8.9;
       rodapeFrontal.position.x = 4.65 + largura / 2;
       andaime.visible = estagio === ALA_PRODUCAO.indice && progresso > 0 && progresso < 0.95;
       andaime.position.x = -area.w * (1 - piso);
       andaime.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
-      andaimeLeite.visible = estagio >= ALA_LEITE.indice && progresso > 0 && progresso < 0.95;
+      andaimeLeite.visible = estagio === ALA_LEITE.indice && progresso > 0 && progresso < 0.95;
       andaimeLeite.position.x = 3 - areaLeite.w * (1 - pisoLeite);
       andaimeLeite.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
+      andaimeTrigo.visible = estagio >= ALA_TRIGO.indice && progresso > 0 && progresso < 0.95;
+      andaimeTrigo.position.x = 6 - areaTrigo.w * (1 - pisoTrigo);
+      andaimeTrigo.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
       arvoreLateral.position.x = estagio >= ALA_LEITE.indice ? 3 * pisoLeite : 0;
+      arvoreLateral.visible = estagio < ALA_TRIGO.indice;
       return estagio ? equipamentos : 0;
     },
     animarPorta(abertura) {

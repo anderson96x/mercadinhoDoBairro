@@ -23,6 +23,7 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 - [x] Set the helper's minimum level to 6, independently of the egg expansion; retain helpers already purchased in older saves. Helper speed requires the helper.
 - [x] Implement eggs at level 4 through a farm chicken coop and compact shelf extension, independently of helper availability.
 - [ ] Add a level-5 milk expansion for R$ 800 with a cow, caretaker, glass bottles, and a new shelf. Milk sells for R$ 20. Implementation and build are complete; gameplay routes and visual layout still need hands-on validation.
+- [x] Add the level-7 wheat plot between the coop and curral for R$ 400, with a new animated store wing and shelf. Wheat sells for R$ 5; the helper carries it in the wooden crate. Automated purchase, route, stocking, sale, and reload checks pass.
 - [x] Implement a staged store footprint shared by the scene, collision map, pathfinding, fixed world/camera bounds, and save data.
   - A stage defines its prerequisite, price, active floor, walls, stations, paths, and unlocked products.
   - Done when buying an expansion changes the physical map and existing actors remain in reachable positions.
@@ -39,9 +40,9 @@ Baseline before P0: levels continue indefinitely; the last unlock is at level 5.
 | Levels | Store stage | Main addition | Elapsed target |
 | --- | --- | --- | ---: |
 | 1–2 | Compact produce stall | Learn the loop; tomatoes and cashier | 5 min |
-| 3–7 | Produce and dairy wings | Corn at level 3; eggs at level 4; cow and milk at level 5; helper at level 6 | 21 min |
+| 3–7 | Produce and dairy wings | Corn at level 3; eggs at level 4; cow and milk at level 5; helper at level 6; wheat at level 7 | 21 min |
 | 8–11 | Refrigerated wing | Cheese, storage | 45 min |
-| 12–15 | Bakery frontage | Wheat, bread, worker specialization | 77 min |
+| 12–15 | Bakery frontage | Bread, worker specialization | 77 min |
 | 16–20 | Neighborhood supermarket | Loading area, mixed orders, final expansion | 129 min |
 
 - [ ] Define level rewards and visible milestones for every level, including a clear completion state at level 20.

@@ -1,6 +1,6 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
-import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE } from './configuracao.js';
+import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO } from './configuracao.js';
 import { buscarCaminho } from './navegacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
@@ -60,7 +60,8 @@ export function validarEstado(dados) {
     const compradaAntes = m.nivelMinimoLegado && nivelSalvo >= m.nivelMinimoLegado && dados.melhorias?.[m.id] > 0;
     base.melhorias[m.id] = numero(dados.melhorias?.[m.id], liberada || compradaAntes ? m.max : 0);
   }
-  base.estagioLoja = base.melhorias[ALA_LEITE.id] ? ALA_LEITE.indice
+  base.estagioLoja = base.melhorias[ALA_TRIGO.id] ? ALA_TRIGO.indice
+    : base.melhorias[ALA_LEITE.id] ? ALA_LEITE.indice
     : base.melhorias[ALA_PRODUCAO.id] ? ALA_PRODUCAO.indice : 0;
   if (base.melhorias[ALA_PRODUCAO.id]) {
     base.producao.progressoOvo = Number.isFinite(dados.producao?.progressoOvo) ? limitar(dados.producao.progressoOvo, 0, ALA_PRODUCAO.tempoOvo) : 0;
@@ -72,9 +73,10 @@ export function validarEstado(dados) {
   }
   for (const [id, p] of Object.entries(PRODUTOS)) {
     const salvo = dados.produtos?.[id];
-    const liberado = p.liberado || base.melhorias[id] > 0
+    const liberado = Boolean(p.liberado || base.melhorias[id] > 0
       || (base.melhorias[ALA_PRODUCAO.id] && ALA_PRODUCAO.produtos.includes(id))
-      || (base.melhorias[ALA_LEITE.id] && ALA_LEITE.produtos.includes(id));
+      || (base.melhorias[ALA_LEITE.id] && ALA_LEITE.produtos.includes(id))
+      || (base.melhorias[ALA_TRIGO.id] && ALA_TRIGO.produtos.includes(id)));
     base.produtos[id] = {
       liberado, horta: liberado ? numero(salvo?.horta ?? (p.origem === 'horta' ? p.capacidadeHorta : 0), p.capacidadeHorta) : 0,
       prateleira: liberado ? numero(salvo?.prateleira, p.capacidadePrateleira) : 0, crescimento: 0,
@@ -159,7 +161,7 @@ export class Simulacao {
     }
     this.missaoAnterior = this.missao().indice;
   }
-  get limitesMundo() { return this.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.limites : this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
+  get limitesMundo() { return this.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.limites : this.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.limites : this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
   get capacidade() { return CONFIG.capacidadeInicial + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + (velocidadeJogadorAtiva ? this.estado.melhorias.velocidade * 0.2 : 0)); }
   get ajudanteContratado() { return ajudanteAtivo && !!this.estado.melhorias.ajudante; }
@@ -330,10 +332,15 @@ export class Simulacao {
     }
     this.estado.melhorias[id]++;
     if (m.tipo === 'expansao') {
-      const ala = id === ALA_LEITE.id ? ALA_LEITE : ALA_PRODUCAO;
+      const ala = id === ALA_TRIGO.id ? ALA_TRIGO : id === ALA_LEITE.id ? ALA_LEITE : ALA_PRODUCAO;
       this.estado.estagioLoja = Math.max(this.estado.estagioLoja, ala.indice);
-      for (const produto of ala.produtos) this.estado.produtos[produto].liberado = true;
-      this.emitir('expansao', { texto: id === ALA_LEITE.id
+      for (const produto of ala.produtos) {
+        this.estado.produtos[produto].liberado = true;
+        if (PRODUTOS[produto].origem === 'horta') this.estado.produtos[produto].horta = PRODUTOS[produto].capacidadeHorta;
+      }
+      this.emitir('expansao', { texto: id === ALA_TRIGO.id
+        ? 'Plantação de trigo pronta! Colha o trigo ao lado do galinheiro e do curral e abasteça a nova prateleira.'
+        : id === ALA_LEITE.id
         ? 'Curral pronto! Recolha o leite em garrafas de vidro e abasteça a nova prateleira.'
         : 'Galinheiro pronto na fazenda! Colete os ovos e abasteça a nova prateleira.' });
     }
@@ -377,6 +384,11 @@ export class Simulacao {
         : this.estado.produtos.leite.prateleira < 1
           ? { titulo: 'Leve leite à prateleira', texto: 'Recolha as garrafas de vidro no curral e abasteça a nova prateleira.', destino: this.estado.jogador.inventario.includes('leite') ? 'prateleiraLeite' : 'leite' }
           : { titulo: 'Atenda o bairro', texto: 'O leite já está à venda. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
+      const orientacaoTrigo = !this.estado.melhorias.alaTrigo
+        ? { titulo: 'Abra a plantação de trigo', texto: 'Compre a ala do trigo no escritório por R$ 400.', destino: 'escritorio' }
+        : this.estado.produtos.trigo.prateleira < 1
+          ? { titulo: 'Abasteça a prateleira de trigo', texto: 'Colha o trigo entre o galinheiro e o curral e leve-o à nova prateleira.', destino: this.estado.jogador.inventario.includes('trigo') ? 'prateleiraTrigo' : 'trigo' }
+          : { titulo: 'Atenda o bairro', texto: 'O trigo já está à venda por R$ 5. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacoesNivel = {
         2: {
           titulo: 'Seu mercadinho pode crescer',
@@ -393,8 +405,9 @@ export class Simulacao {
         6: this.ajudanteContratado
           ? { titulo: 'Atenda o bairro', texto: 'O Repositor cuida das prateleiras. Continue atendendo seus clientes.', destino: 'caixa', exibir: false }
           : { titulo: 'Contrate o Repositor', texto: 'Vá ao escritório e contrate o Repositor por R$ 900 para abastecer as prateleiras.', destino: 'escritorio' },
+        7: orientacaoTrigo,
       };
-      const orientacaoNivel = orientacoesNivel[this.nivel] || {};
+      const orientacaoNivel = orientacoesNivel[this.nivel] || (this.nivel > 7 ? orientacaoTrigo : {});
       return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa'), exibir: orientacaoNivel.exibir ?? Boolean(orientacaoNivel.titulo) };
     }
     const indice = MISSOES.findIndex(m => (this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) < m.alvo);
@@ -417,9 +430,14 @@ export class Simulacao {
       { ...PRODUTOS.ovos.prateleira, w: 2.3, d: 1.65 }
     );
     if (this.estado.estagioLoja >= ALA_LEITE.indice) caixas.push(
-      ...ALA_LEITE.paredes,
+      ...ALA_LEITE.paredes.filter(p => this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1),
       { ...PRODUTOS.leite.horta, ...PRODUTOS.leite.curral },
       { ...PRODUTOS.leite.prateleira, w: 2.3, d: 1.65 }
+    );
+    if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(
+      ...ALA_TRIGO.paredes,
+      { ...PRODUTOS.trigo.horta, w: 2.5, d: 3.6 },
+      { ...PRODUTOS.trigo.prateleira, w: 2.3, d: 1.65 }
     );
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;

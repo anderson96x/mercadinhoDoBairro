@@ -4,7 +4,7 @@ import { ColetaBancoVisual } from './coleta-banco.js';
 import { AssaltoVisual } from './assalto-visual.js';
 import { BANCO } from './banco.js';
 import * as THREE from 'three';
-import { CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE } from './configuracao.js';
+import { CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
@@ -18,7 +18,7 @@ const pertoDaEstacao = (ator, centro, largura, profundidade) => Math.hypot(
   Math.max(0, Math.abs(ator.z - centro.z) - profundidade / 2)
 ) < CONFIG.raioInteracao;
 function estacaoDesbloqueada(id, estado) {
-  const estagioNecessario = id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : 0;
+  const estagioNecessario = id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : 0;
   return !!estado.produtos[id]?.liberado && estado.estagioLoja >= estagioNecessario;
 }
 function material(cor) {
@@ -57,6 +57,15 @@ export function criarProduto(id, escala = 1) {
     const gargalo = cilindro(grupo, 0.075, 0.09, 0.14, 0xd8e8e4, 0, 0.25, 0); gargalo.material = vidroLeite;
     cilindro(grupo, 0.08, 0.08, 0.045, 0x478e6a, 0, 0.34, 0);
     caixa(grupo, 0.27, 0.085, 0.015, 0x8ac4a7, 0, 0.02, 0.14);
+  } else if (id === 'trigo') {
+    for (const [x, z, altura] of [[-0.09, 0, 0.5], [0.06, -0.06, 0.57], [0.14, 0.07, 0.46]]) {
+      cilindro(grupo, 0.018, 0.025, altura, 0x78963e, x, -0.12, z, 5);
+      grupo.add(objeto(new THREE.ConeGeometry(0.105, 0.31, 6), 0xe4bc57, x, altura / 2 + 0.01, z));
+      for (const lado of [-1, 1]) {
+        const folha = esfera(grupo, 0.1, 0x86a64a, x + lado * 0.08, -0.19, z, 1.1, 0.17, 0.33);
+        folha.rotation.z = lado * 0.55;
+      }
+    }
   } else {
     esfera(grupo, 0.14, 0xffd22e, 0, 0, 0, 0.7, 1.5, 0.7);
     const folha = esfera(grupo, 0.12, 0x38a447, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;
@@ -699,12 +708,12 @@ export class Cena {
       const x = id === 'ovos' ? h.x - 0.58 + i % 2 * 1.16 : id === 'leite' ? h.x + 0.85 + i % 4 * 0.3 : h.x - 0.65 + i % 2 * 1.25;
       const z = id === 'ovos' ? h.z - 0.72 + Math.floor(i / 2) * 0.47 : id === 'leite' ? h.z + 0.7 + Math.floor(i / 4) * 0.25 : h.z - 1.18 + Math.floor(i / 2) * 0.78;
       if (id === 'ovos') cilindro(grupo, 0.27, 0.3, 0.09, 0xc29153, x, 1.02, z);
-      else if (id !== 'leite') {
+      else if (id !== 'leite' && id !== 'trigo') {
         cilindro(grupo, 0.035, 0.035, 0.6, 0x35a84a, x, 0.72, z, 6);
         const f1 = esfera(grupo, 0.22, 0x65c158, x - 0.12, 0.67, z, 1.5, 0.35, 0.8); f1.rotation.z = -0.25;
         const f2 = esfera(grupo, 0.22, 0x3cad4b, x + 0.12, 0.83, z, 1.5, 0.35, 0.8); f2.rotation.z = 0.3;
       }
-      const fruto = criarProduto(id, 1.6); fruto.position.set(x, id === 'leite' ? 0.69 : 1, z); grupo.add(fruto); frutos.push(fruto);
+      const fruto = criarProduto(id, 1.6); fruto.position.set(x, id === 'leite' ? 0.69 : id === 'trigo' ? 0.82 : 1, z); grupo.add(fruto); frutos.push(fruto);
     }
     const s = p.prateleira;
     caixa(grupo, 2.3, 0.65, 1.65, 0xd98b43, s.x, 0.53, s.z);
@@ -731,7 +740,7 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const camera = this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const altura = this.mobile ? 18.8 : Math.max(camera.alturaDesktop, 37 / proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
@@ -754,7 +763,7 @@ export class Cena {
     this.alvoCamera.set(x, 0, z);
   }
   baseCamera() {
-    const camera = this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     return this.mobile ? this.sim.estado.jogador : camera;
   }
   projetar(ponto) {
@@ -1178,11 +1187,11 @@ export class Cena {
     }
     for (const [id, objetos] of Object.entries(this.produtos)) {
       const estado = e.produtos[id];
-      const construcao = id === 'ovos' && e.estagioLoja >= ALA_LEITE.indice ? 1 : equipamentoAla;
-      objetos.grupo.visible = estacaoDesbloqueada(id, e) && (!['ovos', 'leite'].includes(id) || construcao > 0);
-      if (['ovos', 'leite'].includes(id)) objetos.grupo.scale.y = Math.max(0.001, construcao);
+      const construcao = (id === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (id === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) ? 1 : equipamentoAla;
+      objetos.grupo.visible = estacaoDesbloqueada(id, e) && (!['ovos', 'leite', 'trigo'].includes(id) || construcao > 0);
+      if (['ovos', 'leite', 'trigo'].includes(id)) objetos.grupo.scale.y = Math.max(0.001, construcao);
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
-      objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = (id === 'leite' ? 0.69 : 1) + Math.sin(tempo * 2 + i) * 0.025; });
+      objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = (id === 'leite' ? 0.69 : id === 'trigo' ? 0.82 : 1) + Math.sin(tempo * 2 + i) * 0.025; });
       const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
         .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);
       objetos.frutas.forEach((f, i) => { f.visible = i < estado.prateleira && !emTransito.some(r => r.lugar === i); });
@@ -1200,8 +1209,8 @@ export class Cena {
     }
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
-      const construcao = produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice ? 1 : equipamentoAla;
-      if (produto && (!estacaoDesbloqueada(produto, e) || (['ovos', 'leite'].includes(produto) && construcao < 1))) { el.hidden = true; continue; }
+      const construcao = (produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (produto === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) ? 1 : equipamentoAla;
+      if (produto && (!estacaoDesbloqueada(produto, e) || (['ovos', 'leite', 'trigo'].includes(produto) && construcao < 1))) { el.hidden = true; continue; }
       const estacao = PRODUTOS[produto]?.[tipo === 'horta' ? 'horta' : 'prateleira'];
       const perto = tipo === 'horta'
         ? pertoDaEstacao(e.jogador, estacao, PRODUTOS[produto].curral?.w ?? 2.5, PRODUTOS[produto].curral?.d ?? 3.6)

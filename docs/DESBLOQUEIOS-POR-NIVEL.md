@@ -10,6 +10,7 @@
 | 4 | Ala dos ovos | R$ 500 | R$ 15 por ovo |
 | 5 | Ala do leite | R$ 800 | R$ 20 por garrafa |
 | 6 | Repositor | R$ 900 | — |
+| 7 | Ala do trigo | R$ 400 | R$ 5 por trigo |
 
 
 ## Desativadas
