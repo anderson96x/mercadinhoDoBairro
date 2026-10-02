@@ -96,6 +96,38 @@ export const PRODUTOS = {
     cliente: { x: 16.55, z: 1.2 },
     pontosCompra: [{ x: 16.55, z: 1.2 }, { x: 15.7, z: 1.2 }, { x: 17.3, z: 1.2 }], liberado: false
   },
+  morango: {
+    nome: 'Morango', plural: 'Morangos', cor: 0xe74769, preco: 16, origem: 'horta', nivelMinimo: 11,
+    tempoCrescimento: 3.4, capacidadeHorta: 8, capacidadePrateleira: 12,
+    horta: { x: 3.3, z: -12.5 }, coleta: { x: 3.3, z: -10.1 },
+    prateleira: { x: 10.6, z: -8.5 }, reposicao: { x: 10.6, z: -10.2 },
+    cliente: { x: 10.6, z: -6.85 },
+    pontosCompra: [{ x: 10.6, z: -6.85 }, { x: 11.5, z: -6.85 }, { x: 12.3, z: -8.5 }], liberado: false
+  },
+  mel: {
+    nome: 'Mel', plural: 'Potes de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 12,
+    tempoCrescimento: 5, capacidadeHorta: 8, capacidadePrateleira: 12,
+    horta: { x: 6.9, z: -12.5 }, coleta: { x: 6.9, z: -10.1 },
+    prateleira: { x: 16.4, z: -8.5 }, reposicao: { x: 16.4, z: -10.2 },
+    cliente: { x: 16.4, z: -6.85 },
+    pontosCompra: [{ x: 16.4, z: -6.85 }, { x: 15.5, z: -6.85 }, { x: 14.7, z: -8.5 }], liberado: false
+  },
+  queijo: {
+    nome: 'Queijo', plural: 'Queijos', cor: 0xf5cd61, preco: 18, origem: 'oficina', nivelMinimo: 13,
+    capacidadeHorta: 8, capacidadePrateleira: 12,
+    horta: { x: 3.3, z: -8 }, coleta: { x: 3.3, z: -9.6 }, curral: { w: 2.5, d: 1.6 },
+    prateleira: { x: 10.6, z: -13.5 }, reposicao: { x: 10.6, z: -11.8 },
+    cliente: { x: 10.6, z: -11.8 },
+    pontosCompra: [{ x: 10.6, z: -11.8 }, { x: 11.5, z: -11.8 }, { x: 12.3, z: -13.5 }], liberado: false
+  },
+  geleia: {
+    nome: 'Geleia', plural: 'Potes de geleia', cor: 0xb94470, preco: 30, origem: 'oficina', nivelMinimo: 15,
+    capacidadeHorta: 9, capacidadePrateleira: 12,
+    horta: { x: 6.9, z: -8 }, coleta: { x: 6.9, z: -9.6 }, curral: { w: 2.5, d: 1.6 },
+    prateleira: { x: 16.4, z: -13.5 }, reposicao: { x: 16.4, z: -11.8 },
+    cliente: { x: 16.4, z: -11.8 },
+    pontosCompra: [{ x: 16.4, z: -11.8 }, { x: 15.5, z: -11.8 }, { x: 14.7, z: -13.5 }], liberado: false
+  },
   pao: {
     nome: 'Pão', plural: 'Pães', cor: 0xc87833, preco: 10, origem: 'padaria',
     capacidadeHorta: 0, capacidadePrateleira: 18,
@@ -157,9 +189,33 @@ export const ALA_PADARIA = {
   tempoMoagem: 1.8, tempoForno: 2.3, paesPorTrigo: 3
 };
 
+// O anexo usa o terreno ao fundo; o vão substitui a parede dos ovos.
+export const ALA_ARTESANAL = {
+  id: 'alaArtesanal', indice: 5, nivelMinimo: 11, custo: 1200, produtos: ['morango'],
+  piso: { x: 13.6, z: -10.75, w: 9, d: 9.5 },
+  paredes: [
+    { x: 13.6, z: -15.5, w: 9, d: 0.28, h: 1.2 },
+    { x: 9.1, z: -10.75, w: 0.28, d: 9.5, h: 0.65 },
+    { x: 18.1, z: -10.75, w: 0.28, d: 9.5, h: 0.65 }
+  ],
+  camera: { x: 3.2, z: -3.5, alturaDesktop: 38 }, duracaoConstrucao: 4
+};
+
+export const OFICINAS = {
+  queijo: { melhoria: 'queijaria', nome: 'Queijaria', ingredientes: { leite: 1 }, rendimento: 2, segundos: 5, capacidadeEntrada: 8 },
+  geleia: { melhoria: 'cozinhaGeleia', nome: 'Cozinha de geleias', ingredientes: { morango: 2, mel: 1 }, rendimento: 3, segundos: 6, capacidadeEntrada: 8 }
+};
+
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
+  { id: 'logistica', titulo: 'Cesta de trabalho', descricao: 'Carregue 8 produtos e ande 15% mais rápido para cuidar de uma loja maior.', custo: 400, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 10 },
+  { id: 'alaArtesanal', titulo: 'Ala artesanal e estufa', descricao: 'Amplie a loja para o terreno ao fundo e construa uma estufa de morangos. Colha e abasteça a nova banca: R$ 16 por morango.', custo: ALA_ARTESANAL.custo, icone: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
+  { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa colmeias ao lado da estufa. Colete potes de mel e abasteça a banca: R$ 24 por pote.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 12, requisitoMelhoria: 'alaArtesanal' },
+  { id: 'queijaria', titulo: 'Queijaria', descricao: 'Entregue leite à queijaria perto da estufa. Cada garrafa rende 2 queijos de R$ 18. Recolha os queijos e abasteça a banca.', custo: 1600, icone: 'queijo', max: 1, tipo: 'construcao', produto: 'queijo', categoria: 'mercado', nivelMinimo: 13, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaLeite'] },
+  { id: 'irrigacao', titulo: 'Irrigação da fazenda', descricao: 'Instale irrigadores em todas as hortas: as colheitas crescem 25% mais rápido.', custo: 650, icone: 'folha', max: 1, categoria: 'mercado', nivelMinimo: 14, requisitoMelhoria: 'alaArtesanal' },
+  { id: 'equipeAgil', titulo: 'Reposição ágil', descricao: 'O repositor anda 30% mais rápido e prioriza as bancas vazias da loja ampliada.', custo: 500, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: 14, requisitoMelhoria: 'ajudante' },
+  { id: 'cozinhaGeleia', titulo: 'Cozinha de geleias', descricao: 'Combine 2 morangos e 1 mel para fazer 3 geleias de R$ 30. Entregue os ingredientes, recolha os potes e abasteça a banca.', custo: 2200, icone: 'geleia', max: 1, tipo: 'construcao', produto: 'geleia', categoria: 'mercado', nivelMinimo: 15, requisitoMelhoria: 'apiario' },
   { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho. Cada unidade vale R$ 10.', custo: 350, icone: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 3 },
   { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa um galinheiro na fazenda e amplie a loja para a prateleira de ovos. Colete os ovos e abasteça a prateleira.', custo: ALA_PRODUCAO.custo, icone: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
   { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa um curral com vaca na fazenda e amplie a loja com um refrigerador de leite em garrafas de vidro.', custo: ALA_LEITE.custo, icone: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },

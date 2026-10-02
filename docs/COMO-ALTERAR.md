@@ -60,6 +60,16 @@ O navegador do celular acompanha o personagem com a câmera; em telas largas, mo
 
 O painel de melhorias lê o catálogo. Não é preciso criar um novo botão manualmente.
 
+## Receitas e fase artesanal (níveis 10 a 15)
+
+`ALA_ARTESANAL` define piso, paredes e câmera do anexo ao fundo. A parede traseira da ala dos ovos vira uma passagem; simulação e geometria aplicam a mesma abertura. Produtos novos têm `nivelMinimo`, modelo próprio em `Cena.construirArtesanal()` e melhoria de `tipo: 'construcao'` com o campo `produto`.
+
+`OFICINAS` define ingredientes por lote, rendimento, duração e capacidade de entrada. O estado `oficinas[id]` guarda ingredientes, progresso e total produzido. A saída usa `produtos[id].horta`, compartilhando coleta, inventário e reposição com o restante do jogo. `atualizarProducao()` só consome ingredientes quando há um lote completo e espaço para toda a saída. O jogador entrega insumos ao se aproximar; o repositor transporta os produtos prontos.
+
+O campo salvo `apresentado` evita demanda dos novos produtos antes do primeiro abastecimento. Depois da estreia, a demanda continua mesmo se a banca ficar vazia. Preserve esse campo ao migrar partidas.
+
+Para verificar essa fase isoladamente: `node --test tests/artesanal.test.js`. Os testes cobrem compras, receitas, pausa, migração, rotas, reposição e vendas reais no caixa.
+
 ## Cuidados com o salvamento
 
 - Salve apenas dados serializáveis; objetos 3D, áudio e elementos da página não entram no estado.

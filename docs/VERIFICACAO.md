@@ -1,5 +1,14 @@
 # Verificação da versão 0.1.0
 
+## Progressão artesanal até o nível 15 — 01/10/2026
+
+- **15 testes novos passaram** em `tests/artesanal.test.js`: desbloqueios por nível, custo e requisitos, capacidade, produção renovável, receitas com conservação dos ingredientes, armazenamento cheio, pausa, salvamento, objetivos, vendas, rotas e repositor.
+- Dez clientes simultâneos percorreram a loja ampliada, compraram produtos, pagaram e devolveram todas as cestas no teste de circulação. Esse teste mantém as bancas abastecidas para isolar a navegação; não mede o ritmo de uma partida humana.
+- Suíte completa: **132 testes, 118 passaram e 14 falharam**. As mesmas 14 falhas foram reproduzidas em uma cópia limpa de `HEAD` antes das alterações (117 testes, 103 passaram). São expectativas antigas de objetivos, níveis, melhorias desativadas, restauração e aparência dos padeiros; nenhuma falha nova permaneceu.
+- `npm run build`: concluído, com o aviso já existente de pacote JavaScript maior que 500 kB.
+- Build aberto no Edge headless com uma partida de nível 15: cena e interface conferidas em **1440 × 1000** e **390 × 844**, sem exceções JavaScript. No tamanho móvel, não houve rolagem horizontal. O enquadramento desktop inclui o anexo e a fazenda; no celular, a câmera mantém o acompanhamento do personagem.
+- A verificação em navegador cobre carregamento e apresentação da cena. Desempenho e gestos em aparelho físico e o ritmo de uma partida humana completa até o nível 15 não foram medidos.
+
 ## Galinheiro e extensão compacta — 29/09/2026
 
 - `npm test`: 86 testes passaram, incluindo produção sem insumos, capacidade do galinheiro, coleta, reposição, venda, rotas e migração de salvamentos.

@@ -1,0 +1,10 @@
+.item.morango, .melhoria-icone.alaArtesanal { background: #f9dce3; color: #bd3c5b; }
+.item.mel, .melhoria-icone.apiario { background: #faeac1; color: #a77415; }
+.item.queijo, .melhoria-icone.queijaria { background: #f8edbd; color: #9e771d; }
+.item.geleia, .melhoria-icone.cozinhaGeleia { background: #f0d9e5; color: #9d3c65; }
+.etiqueta-morango b { color: #bd3c5b; }
+.etiqueta-mel b { color: #a77415; }
+.etiqueta-queijo b { color: #9e771d; }
+.etiqueta-geleia b { color: #9d3c65; }
+.etiqueta-queijo, .etiqueta-geleia { max-width: min(320px, 80vw); white-space: normal; line-height: 1.5; }
+.melhoria .requisito-melhoria { color: #9a6f39; margin-top: 5px; }

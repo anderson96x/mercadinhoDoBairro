@@ -1,6 +1,6 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
-import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
+import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho } from './navegacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
@@ -31,11 +31,14 @@ export function estadoInicial() {
     personalizacao: { ...PERSONALIZACAO_PADRAO },
     melhorias: Object.fromEntries(MELHORIAS.map(m => [m.id, 0])),
     estagioLoja: 0,
+    oficinas: Object.fromEntries(Object.entries(OFICINAS).map(([id, receita]) => [id, {
+      ingredientes: Object.fromEntries(Object.keys(receita.ingredientes).map(item => [item, 0])), progresso: 0, produzidos: 0
+    }])),
     producao: { progressoOvo: 0, ovosProduzidos: 0, progressoLeite: 0, leitesProduzidos: 0,
       trigoPadaria: 0, farinha: 0, progressoMoagem: 0, progressoForno: 0, paesProduzidos: 0 },
     funcionarios: { ajudante: { x: -1.8, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false } },
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
-      liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0, crescimentoMelhorado: false
+      liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0, crescimentoMelhorado: false, apresentado: false
     }])),
     melhoriaPendente: null,
     satisfacoesRecentes: [],
@@ -61,7 +64,12 @@ export function validarEstado(dados) {
     const compradaAntes = m.nivelMinimoLegado && nivelSalvo >= m.nivelMinimoLegado && dados.melhorias?.[m.id] > 0;
     base.melhorias[m.id] = numero(dados.melhorias?.[m.id], liberada || compradaAntes ? m.max : 0);
   }
-  base.estagioLoja = base.melhorias[ALA_PADARIA.id] ? ALA_PADARIA.indice
+  // As novas construções dependem de instalações existentes, inclusive ao restaurar.
+  for (const m of MELHORIAS.filter(m => m.nivelMinimo >= 10)) {
+    if ([m.requisitoMelhoria, ...(m.requisitos || [])].filter(Boolean).some(id => !base.melhorias[id])) base.melhorias[m.id] = 0;
+  }
+  base.estagioLoja = base.melhorias[ALA_ARTESANAL.id] ? ALA_ARTESANAL.indice
+    : base.melhorias[ALA_PADARIA.id] ? ALA_PADARIA.indice
     : base.melhorias[ALA_TRIGO.id] ? ALA_TRIGO.indice
     : base.melhorias[ALA_LEITE.id] ? ALA_LEITE.indice
     : base.melhorias[ALA_PRODUCAO.id] ? ALA_PRODUCAO.indice : 0;
@@ -85,12 +93,23 @@ export function validarEstado(dados) {
       || (base.melhorias[ALA_PRODUCAO.id] && ALA_PRODUCAO.produtos.includes(id))
       || (base.melhorias[ALA_LEITE.id] && ALA_LEITE.produtos.includes(id))
       || (base.melhorias[ALA_TRIGO.id] && ALA_TRIGO.produtos.includes(id))
-      || (base.melhorias[ALA_PADARIA.id] && ALA_PADARIA.produtos.includes(id)));
+      || (base.melhorias[ALA_PADARIA.id] && ALA_PADARIA.produtos.includes(id))
+      || (base.melhorias[ALA_ARTESANAL.id] && ALA_ARTESANAL.produtos.includes(id))
+      || MELHORIAS.some(m => m.produto === id && base.melhorias[m.id]));
     base.produtos[id] = {
       liberado, horta: liberado ? numero(salvo?.horta ?? (p.origem === 'horta' ? p.capacidadeHorta : 0), p.capacidadeHorta) : 0,
-      prateleira: liberado ? numero(salvo?.prateleira, p.capacidadePrateleira) : 0, crescimento: 0,
+      prateleira: liberado ? numero(salvo?.prateleira, p.capacidadePrateleira) : 0,
+      apresentado: liberado && (salvo?.apresentado === true || salvo?.prateleira > 0),
+      crescimento: liberado && p.tempoCrescimento && Number.isFinite(salvo?.crescimento) ? limitar(salvo.crescimento, 0, p.tempoCrescimento) : 0,
       crescimentoMelhorado: fertilizanteAtivo && p.origem === 'horta' && nivelSalvo >= 4 && salvo?.crescimentoMelhorado === true
     };
+  }
+  for (const [id, receita] of Object.entries(OFICINAS)) {
+    if (!base.produtos[id].liberado) continue;
+    const salvo = dados.oficinas?.[id], oficina = base.oficinas[id];
+    for (const ingrediente of Object.keys(receita.ingredientes)) oficina.ingredientes[ingrediente] = numero(salvo?.ingredientes?.[ingrediente], receita.capacidadeEntrada);
+    oficina.progresso = Number.isFinite(salvo?.progresso) ? limitar(salvo.progresso, 0, receita.segundos) : 0;
+    oficina.produzidos = numero(salvo?.produzidos);
   }
   base.melhorias.fertilizante = Object.values(base.produtos).filter(p => p.crescimentoMelhorado).length;
   if (fertilizanteAtivo && nivelSalvo >= 4 && dados.melhoriaPendente === 'fertilizante' && base.melhorias.fertilizante < MELHORIAS.find(m => m.id === 'fertilizante').max) base.melhoriaPendente = 'fertilizante';
@@ -104,7 +123,7 @@ export function validarEstado(dados) {
   base.satisfacoesRecentes = Array.isArray(dados.satisfacoesRecentes)
     ? dados.satisfacoesRecentes.filter(item => satisfacoesValidas.includes(item)).slice(-CONFIG.tamanhoHistoricoReputacao) : [];
   base.jogador.inventario = Array.isArray(dados.jogador?.inventario)
-    ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + (capacidadeExtraAtiva ? 4 * base.melhorias.mochila : 0)) : [];
+    ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + 4 * base.melhorias.logistica + (capacidadeExtraAtiva ? 4 * base.melhorias.mochila : 0)) : [];
   const ajudanteSalvo = dados.funcionarios?.ajudante;
   if (base.melhorias.ajudante && ajudanteSalvo) {
     const produto = base.produtos[ajudanteSalvo.produto]?.liberado ? ajudanteSalvo.produto : 'tomate';
@@ -171,10 +190,10 @@ export class Simulacao {
     this.missaoAnterior = this.missao().indice;
   }
   get limitesMundo() { return this.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.limites : this.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.limites : this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
-  get capacidade() { return CONFIG.capacidadeInicial + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
-  get velocidade() { return CONFIG.velocidadeInicial * (1 + (velocidadeJogadorAtiva ? this.estado.melhorias.velocidade * 0.2 : 0)); }
+  get capacidade() { return CONFIG.capacidadeInicial + 4 * this.estado.melhorias.logistica + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
+  get velocidade() { return CONFIG.velocidadeInicial * (1 + 0.15 * this.estado.melhorias.logistica + (velocidadeJogadorAtiva ? this.estado.melhorias.velocidade * 0.2 : 0)); }
   get ajudanteContratado() { return ajudanteAtivo && !!this.estado.melhorias.ajudante; }
-  get velocidadeAjudante() { return 2.8 * (velocidadeAjudanteAtiva && this.estado.melhorias.velocidadeAjudante ? CONFIG.multiplicadorVelocidadeAjudante : 1); }
+  get velocidadeAjudante() { return 2.8 * (1 + 0.3 * this.estado.melhorias.equipeAgil) * (velocidadeAjudanteAtiva && this.estado.melhorias.velocidadeAjudante ? CONFIG.multiplicadorVelocidadeAjudante : 1); }
   get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / CONFIG.clientesPorNivel); }
   get progressoClientes() { return this.estado.estatisticas.clientes % CONFIG.clientesPorNivel; }
   get reputacao() {
@@ -319,9 +338,10 @@ export class Simulacao {
     if (m.ativa === false) return { disponivel: false, motivo: 'Essa melhoria estará disponível em breve.' };
     const nivelMinimo = m.nivelMinimo || 1;
     if (this.nivel < nivelMinimo) return { disponivel: false, motivo: `Essa melhoria é liberada no nível ${nivelMinimo}.`, nivelMinimo };
-    if (m.requisitoMelhoria && !this.estado.melhorias[m.requisitoMelhoria]) {
-      const motivo = id === ALA_PADARIA.id ? 'Abra a ala do trigo antes de construir a padaria.' : 'Contrate o repositor antes de melhorar sua velocidade.';
-      return { disponivel: false, motivo, requisitoMelhoria: m.requisitoMelhoria };
+    const requisito = [m.requisitoMelhoria, ...(m.requisitos || [])].filter(Boolean).find(item => !this.estado.melhorias[item]);
+    if (requisito) {
+      const titulo = MELHORIAS.find(item => item.id === requisito).titulo;
+      return { disponivel: false, motivo: `Compre ${titulo} antes de ${m.titulo}.`, requisitoMelhoria: requisito };
     }
     if (id === ALA_PADARIA.id && !this.estado.melhorias.alaProducao) {
       return { disponivel: false, motivo: 'Construa a ala dos ovos antes de abrir a padaria.', requisitoMelhoria: 'alaProducao' };
@@ -345,13 +365,15 @@ export class Simulacao {
     }
     this.estado.melhorias[id]++;
     if (m.tipo === 'expansao') {
-      const ala = id === ALA_PADARIA.id ? ALA_PADARIA : id === ALA_TRIGO.id ? ALA_TRIGO : id === ALA_LEITE.id ? ALA_LEITE : ALA_PRODUCAO;
+      const ala = id === ALA_ARTESANAL.id ? ALA_ARTESANAL : id === ALA_PADARIA.id ? ALA_PADARIA : id === ALA_TRIGO.id ? ALA_TRIGO : id === ALA_LEITE.id ? ALA_LEITE : ALA_PRODUCAO;
       this.estado.estagioLoja = Math.max(this.estado.estagioLoja, ala.indice);
       for (const produto of ala.produtos) {
         this.estado.produtos[produto].liberado = true;
         if (PRODUTOS[produto].origem === 'horta') this.estado.produtos[produto].horta = PRODUTOS[produto].capacidadeHorta;
       }
-      this.emitir('expansao', { texto: id === ALA_PADARIA.id
+      this.emitir('expansao', { texto: id === ALA_ARTESANAL.id
+        ? 'Ala artesanal aberta! Colha morangos na estufa ao fundo e abasteça a banca na nova ala.'
+        : id === ALA_PADARIA.id
         ? `Padaria aberta! Cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${PRODUTOS.pao.preco}. Deixe o trigo na caixa à esquerda do balcão de vidro.`
         : id === ALA_TRIGO.id
         ? 'Plantação de trigo pronta! Colha o trigo ao lado do galinheiro e do curral e abasteça a nova prateleira.'
@@ -363,6 +385,7 @@ export class Simulacao {
       this.estado.produtos[id].liberado = true;
       this.estado.produtos[id].horta = PRODUTOS[id].capacidadeHorta;
     }
+    if (m.tipo === 'construcao') this.estado.produtos[m.produto].liberado = true;
     this.emitir('melhoria', { id, texto: id === ALA_PADARIA.id
       ? `Padaria: cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${PRODUTOS.pao.preco}.`
       : m.titulo });
@@ -430,7 +453,26 @@ export class Simulacao {
         7: orientacaoTrigo,
         9: orientacaoPadaria,
       };
-      const orientacaoNivel = orientacoesNivel[this.nivel] || (this.nivel > 9 ? orientacaoPadaria : this.nivel > 7 ? orientacaoTrigo : {});
+      let orientacaoNivel = orientacoesNivel[this.nivel] || (this.nivel > 9 ? orientacaoPadaria : this.nivel > 7 ? orientacaoTrigo : {});
+      if (this.nivel >= 10) {
+        const proxima = MELHORIAS.filter(m => m.nivelMinimo >= 10 && m.nivelMinimo <= this.nivel && !this.estado.melhorias[m.id])
+          .sort((a, b) => a.nivelMinimo - b.nivelMinimo)[0];
+        const novoProduto = Object.entries(PRODUTOS).find(([id, p]) => p.nivelMinimo >= 11 && this.estado.produtos[id].liberado && !this.estado.produtos[id].apresentado && !this.estado.produtos[id].prateleira);
+        orientacaoNivel = proxima
+          ? { titulo: proxima.titulo, texto: `${proxima.descricao} Compre no escritório por R$ ${proxima.custo.toLocaleString('pt-BR')}.`, destino: 'escritorio' }
+          : { titulo: 'O sabor do bairro', texto: 'Cuide das colheitas, prepare receitas e mantenha as bancas abastecidas. Seu mercadinho chegou à fase artesanal!', destino: 'caixa', exibir: false };
+        if (novoProduto) {
+          const [id, produto] = novoProduto, receita = OFICINAS[id];
+          const carregando = this.estado.jogador.inventario.includes(id);
+          const faltante = receita && !this.estado.produtos[id].horta && Object.keys(receita.ingredientes).find(item => this.estado.oficinas[id].ingredientes[item] < receita.ingredientes[item]);
+          const temIngrediente = faltante && this.estado.jogador.inventario.includes(faltante);
+          orientacaoNivel = {
+            titulo: `Primeira banca de ${produto.nome.toLocaleLowerCase('pt-BR')}`,
+            texto: receita ? `${MELHORIAS.find(m => m.id === receita.melhoria).descricao}` : `Colete ${produto.plural.toLocaleLowerCase('pt-BR')} e abasteça a banca na ala ao fundo da loja. O repositor também pode ajudar.`,
+            destino: carregando ? `prateleira-${id}` : faltante && !temIngrediente ? `coleta-${faltante}` : `coleta-${id}`
+          };
+        }
+      }
       return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa'), exibir: orientacaoNivel.exibir ?? Boolean(orientacaoNivel.titulo) };
     }
     const indice = MISSOES.findIndex(m => (this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) < m.alvo);
@@ -447,7 +489,7 @@ export class Simulacao {
       ...PAREDES_LOJA.filter(p => !p.lateral || !this.estado.estagioLoja), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA
     ];
     if (this.estado.produtos.milho.liberado) caixas.push({ ...PRODUTOS.milho.horta, w: 2.2, d: 3.3 }, { ...PRODUTOS.milho.prateleira, w: 2.2, d: 1.7 });
-    if (this.estado.estagioLoja) caixas.push(...ALA_PRODUCAO.paredes.filter(p => this.estado.estagioLoja < ALA_LEITE.indice || p.x !== 12.1));
+    if (this.estado.estagioLoja) caixas.push(...ALA_PRODUCAO.paredes.filter(p => (this.estado.estagioLoja < ALA_LEITE.indice || p.x !== 12.1) && (!this.estado.melhorias.alaArtesanal || p.z !== -6)));
     if (this.estado.melhorias.alaProducao) caixas.push(
       { ...PRODUTOS.ovos.horta, w: 2.1, d: 2.2 },
       { ...PRODUTOS.ovos.prateleira, w: 2.3, d: 1.65 }
@@ -468,6 +510,13 @@ export class Simulacao {
       { x: 8.55, z: 5.25, w: 1.1, d: 1.1 },
       { x: 12.4, z: 5.25, w: 1.2, d: 1.25 }
     );
+    if (this.estado.melhorias.alaArtesanal) caixas.push(...ALA_ARTESANAL.paredes);
+    for (const [id, p] of Object.entries(PRODUTOS).filter(([, p]) => p.nivelMinimo >= 11)) {
+      if (this.estado.produtos[id].liberado) caixas.push(
+        { ...p.horta, w: p.curral?.w ?? 2.5, d: p.curral?.d ?? 3.6 },
+        { ...p.prateleira, w: 2.45, d: 1.8 }
+      );
+    }
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
@@ -576,7 +625,7 @@ export class Simulacao {
       const p = PRODUTOS[id];
       if (estoque.liberado && p.origem === 'horta' && estoque.horta < p.capacidadeHorta) {
         estoque.crescimento += dt;
-        const tempoCrescimento = p.tempoCrescimento * (estoque.crescimentoMelhorado ? CONFIG.multiplicadorCrescimentoMelhorado : 1);
+        const tempoCrescimento = p.tempoCrescimento * (this.estado.melhorias.irrigacao ? 0.75 : 1) * (estoque.crescimentoMelhorado ? CONFIG.multiplicadorCrescimentoMelhorado : 1);
         if (estoque.crescimento >= tempoCrescimento) { estoque.horta++; estoque.crescimento = 0; }
       }
     }
@@ -591,6 +640,20 @@ export class Simulacao {
   interagir() {
     const jogador = this.estado.jogador;
     this.atividade = jogador.sentadoEscritorio ? 'Usando o computador…' : '';
+    for (const [id, receita] of Object.entries(OFICINAS)) {
+      if (!this.estado.produtos[id].liberado || !pertoEstacao(jogador, PRODUTOS[id].horta, 2.5, 1.6)) continue;
+      const oficina = this.estado.oficinas[id];
+      const indice = jogador.inventario.findIndex(item => receita.ingredientes[item] && oficina.ingredientes[item] < receita.capacidadeEntrada);
+      if (indice >= 0) {
+        this.atividade = `Entregando ingredientes · ${receita.nome}`;
+        if (this.tempo >= this.proximaInteracao) {
+          const [ingrediente] = jogador.inventario.splice(indice, 1);
+          oficina.ingredientes[ingrediente]++;
+          this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
+        }
+        return;
+      }
+    }
     if (this.estado.melhorias.alaPadaria && pertoEstacao(jogador, ALA_PADARIA.entrada, 1.2, 1.15)) {
       const indice = jogador.inventario.indexOf('trigo');
       if (indice >= 0 && this.estado.producao.trigoPadaria < ALA_PADARIA.capacidadeTrigo) {
@@ -612,7 +675,7 @@ export class Simulacao {
         if (indice >= 0 && e.prateleira < p.capacidadePrateleira) {
           this.atividade = id === 'leite' ? 'Abastecendo o refrigerador…' : 'Abastecendo a prateleira…';
           if (this.tempo >= this.proximaInteracao) {
-            jogador.inventario.splice(indice, 1); e.prateleira++; this.estado.estatisticas.repostos++;
+            jogador.inventario.splice(indice, 1); e.prateleira++; e.apresentado = true; this.estado.estatisticas.repostos++;
             this.reposicoes.set(jogador, { id, indice, lugar: e.prateleira - 1 });
             this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
             this.emitir('reposicao', { id, ponto: p.prateleira });
@@ -621,7 +684,7 @@ export class Simulacao {
       }
       if (pertoEstacao(jogador, p.horta, p.curral?.w ?? 2.5, p.curral?.d ?? 3.6)) {
         if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Inventário cheio · leve os produtos à prateleira'; continue; }
-        if (!e.horta) { this.atividade = 'A colheita está crescendo…'; continue; }
+        if (!e.horta) { this.atividade = OFICINAS[id] ? 'Entregue os ingredientes e aguarde a produção' : id === 'mel' ? 'As abelhas estão produzindo mel…' : 'A colheita está crescendo…'; continue; }
         this.atividade = `Colhendo ${p.plural.toLocaleLowerCase('pt-BR')}…`;
         if (this.tempo >= this.proximaInteracao) {
           e.horta--; jogador.inventario.push(id); this.estado.estatisticas.colhidos++;
@@ -633,6 +696,29 @@ export class Simulacao {
   }
   atualizarProducao(dt) {
     if (!this.estado.estagioLoja) return;
+    const mel = this.estado.produtos.mel;
+    if (mel.liberado && mel.horta < PRODUTOS.mel.capacidadeHorta) {
+      mel.crescimento += dt;
+      while (mel.crescimento >= PRODUTOS.mel.tempoCrescimento && mel.horta < PRODUTOS.mel.capacidadeHorta) {
+        mel.crescimento -= PRODUTOS.mel.tempoCrescimento; mel.horta++;
+      }
+    }
+    for (const [id, receita] of Object.entries(OFICINAS)) {
+      const estoque = this.estado.produtos[id], oficina = this.estado.oficinas[id];
+      if (!estoque.liberado || estoque.horta + receita.rendimento > PRODUTOS[id].capacidadeHorta) continue;
+      const podeProduzir = () => Object.entries(receita.ingredientes).every(([item, quantidade]) => oficina.ingredientes[item] >= quantidade);
+      if (!podeProduzir()) continue;
+      oficina.progresso += dt;
+      while (oficina.progresso >= receita.segundos && podeProduzir() && estoque.horta + receita.rendimento <= PRODUTOS[id].capacidadeHorta) {
+        oficina.progresso -= receita.segundos;
+        for (const [item, quantidade] of Object.entries(receita.ingredientes)) oficina.ingredientes[item] -= quantidade;
+        estoque.horta += receita.rendimento;
+        oficina.produzidos += receita.rendimento;
+        if (oficina.produzidos === receita.rendimento) this.emitir('melhoria', { texto: `${PRODUTOS[id].plural} prontos! Recolha na ${receita.nome.toLocaleLowerCase('pt-BR')} e abasteça a banca.` });
+      }
+      // Não acumula tempo de produção sem ingredientes ou espaço para outro lote.
+      oficina.progresso = Math.min(oficina.progresso, receita.segundos);
+    }
     const p = this.estado.producao;
     if (this.estado.melhorias.alaProducao && this.estado.produtos.ovos.horta < PRODUTOS.ovos.capacidadeHorta) {
       p.progressoOvo += dt;
@@ -679,7 +765,9 @@ export class Simulacao {
     const cestaReservada = this.cestasDisponiveis > 0;
     const pedirOvos = this.estado.producao.ovosProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.ovosVendidos >= 10 ? 3 : 4) === 0;
     const pedirLeite = this.estado.producao.leitesProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.leitesVendidos >= 10 ? 4 : 5) === 0;
-    const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado && (id !== 'ovos' || pedirOvos) && (id !== 'leite' || pedirLeite));
+    const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado
+      && (!PRODUTOS[id].nivelMinimo || this.estado.produtos[id].apresentado || this.estado.produtos[id].prateleira > 0)
+      && (id !== 'ovos' || pedirOvos) && (id !== 'leite' || pedirLeite));
     const inicioProdutos = (this.proximaId - 1) % disponiveis.length;
     const prioridade = pedirLeite ? 'leite' : pedirOvos ? 'ovos' : null;
     const produtosDesejados = prioridade
@@ -912,7 +1000,7 @@ export class Simulacao {
     } else if (this.caminharCliente(a, p.reposicao, dt, this.velocidadeAjudante) && a.temporizador <= 0) {
       if (a.inventario.length && e.prateleira < p.capacidadePrateleira) {
         const indice = a.inventario.length - 1;
-        e.prateleira++; a.inventario.pop(); a.temporizador = 0.4;
+        e.prateleira++; e.apresentado = true; a.inventario.pop(); a.temporizador = 0.4;
         this.reposicoes.set(a, { id: a.produto, indice, lugar: e.prateleira - 1 });
       }
       if (!a.inventario.length) {

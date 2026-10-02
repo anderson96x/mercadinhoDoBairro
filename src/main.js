@@ -2,6 +2,7 @@ import './interface/estilos.css';
 import './interface/clientes.css';
 import './interface/progresso.css';
 import './interface/banco.css';
+import './interface/artesanal.css';
 import '@fontsource/dm-sans/latin-400.css';
 import '@fontsource/dm-sans/latin-500.css';
 import '@fontsource/dm-sans/latin-600.css';
@@ -159,7 +160,11 @@ try {
         if (evento.tipo === 'assaltoConcluido') gravar();
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
-        if (evento.tipo === 'nivel') { ui.subiuDeNivel(evento.nivel); ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${evento.nivel === 6 ? ' Dica: contrate o Repositor no escritório por R$ 900.' : evento.nivel === 7 ? ' Dica: abra a ala do trigo no escritório por R$ 400.' : evento.nivel === 9 ? ' Dica: abra a padaria no escritório por R$ 1.400. Cada trigo rende 3 pães de R$ 10.' : ''}`); }
+        if (evento.tipo === 'nivel') {
+          ui.subiuDeNivel(evento.nivel);
+          const novidades = MELHORIAS.filter(m => m.ativa !== false && m.nivelMinimo === evento.nivel).map(m => m.titulo);
+          ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${novidades.length ? ` No escritório: ${novidades.join(' e ')}.` : ''}`);
+        }
         if (evento.tipo === 'melhoria') ui.mensagem(evento.texto);
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
         if (['expansao', 'ovoPronto', 'leitePronto', 'paoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
