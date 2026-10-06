@@ -73,7 +73,15 @@ text{font-family:Arial,sans-serif;fill:#294439}.heading{font-size:36px;font-weig
 <rect x="514.8" y="704.8" width="361.2" height="50.4" fill="#efe4d4" rx="6"/>
 <rect x="514.8" y="755.2" width="140" height="64.39999999999999" fill="#e7decd" rx="4"/>
 <path d="M383.2,464 L724.8,464 L724.8,424.79999999999995" class="wall"/>
-<path d="M724.8,352 L724.8,198 L976.8000000000001,198 L976.8000000000001,819.6 L475.6,819.6" class="wall"/>
+<path d="M724.8,352 L724.8,198 L780.8,198" class="wall"/>
+<path d="M881.5999999999999,198 L976.8000000000001,198 L976.8000000000001,318.40000000000003" class="wall"/>
+<path d="M976.8000000000001,374.40000000000003 L976.8000000000001,587.2" class="wall"/>
+<path d="M976.8000000000001,676.8 L976.8000000000001,819.6 L475.6,819.6" class="wall"/>
+<line x1="780.8" y1="198" x2="881.5999999999999" y2="198" stroke="#8d70a5" stroke-width="5" stroke-dasharray="7 4"/>
+<line x1="976.8000000000001" y1="318.40000000000003" x2="976.8000000000001" y2="374.40000000000003" stroke="#8d70a5" stroke-width="5" stroke-dasharray="7 4"/>
+<line x1="976.8000000000001" y1="587.2" x2="976.8000000000001" y2="676.8" stroke="#8d70a5" stroke-width="5" stroke-dasharray="7 4"/>
+<text x="831.2" y="189.59999999999997" class="tiny" text-anchor="middle">PAINEL REMOVÍVEL / FUNDO</text>
+<text x="988" y="632" class="label" >→</text>
 <path d="M391.6,819.6 L383.2,819.6 L383.2,693.6" class="wall"/>
 <path d="M383.2,609.6 L383.2,464" class="wall"/>
 <rect x="383.2" y="464" width="117.60000000000001" height="112" fill="#e2e2d8" />
@@ -102,10 +110,10 @@ text{font-family:Arial,sans-serif;fill:#294439}.heading{font-size:36px;font-weig
 <rect x="626.8" y="511.59999999999997" width="95.2" height="61.60000000000001" fill="#dcb095" rx="4" stroke="#8c9585" stroke-width="1.3"/>
 <text x="674.4" y="539.4" class="small" text-anchor="middle">PADARIA</text>
 <text x="674.4" y="554.4" class="tiny" text-anchor="middle">produção + balcão · N9</text>
-<rect x="940.3999999999999" y="500.4" width="33.6" height="112" fill="#b8d9db" rx="4" stroke="#8c9585" stroke-width="1.3"/>
-<g transform="translate(957.1999999999999,556.4) rotate(-90)">
+<rect x="834" y="503.20000000000005" width="33.6" height="89.60000000000001" fill="#b8d9db" rx="4" stroke="#8c9585" stroke-width="1.3"/>
+<g transform="translate(850.8,548) rotate(-90)">
 <text x="0" y="-2" class="small" text-anchor="middle">LEITE</text>
-<text x="0" y="12" class="tiny" text-anchor="middle">N5</text>
+<text x="0" y="12" class="tiny" text-anchor="middle">ilha · N5</text>
 </g>
 <rect x="808.8" y="382.80000000000007" width="61.60000000000001" height="39.199999999999996" fill="#dfa3a4" rx="4" stroke="#8c9585" stroke-width="1.3"/>
 <text x="839.5999999999999" y="399.40000000000003" class="small" text-anchor="middle">MORANGOS</text>
@@ -113,15 +121,15 @@ text{font-family:Arial,sans-serif;fill:#294439}.heading{font-size:36px;font-weig
 <rect x="808.8" y="254" width="61.60000000000001" height="39.199999999999996" fill="#e7c682" rx="4" stroke="#8c9585" stroke-width="1.3"/>
 <text x="839.5999999999999" y="270.59999999999997" class="small" text-anchor="middle">MEL</text>
 <text x="839.5999999999999" y="285.59999999999997" class="tiny" text-anchor="middle">N12</text>
-<rect x="940.3999999999999" y="231.59999999999997" width="33.6" height="84" fill="#b8d9db" rx="4" stroke="#8c9585" stroke-width="1.3"/>
-<g transform="translate(957.1999999999999,273.59999999999997) rotate(-90)">
+<rect x="898.4000000000001" y="231.59999999999997" width="33.6" height="84" fill="#b8d9db" rx="4" stroke="#8c9585" stroke-width="1.3"/>
+<g transform="translate(915.2,273.59999999999997) rotate(-90)">
 <text x="0" y="-2" class="small" text-anchor="middle">QUEIJOS</text>
-<text x="0" y="12" class="tiny" text-anchor="middle">N13</text>
+<text x="0" y="12" class="tiny" text-anchor="middle">ilha · N13</text>
 </g>
-<rect x="940.3999999999999" y="366" width="33.6" height="72.8" fill="#c5b0cb" rx="4" stroke="#8c9585" stroke-width="1.3"/>
-<g transform="translate(957.1999999999999,402.40000000000003) rotate(-90)">
+<rect x="898.4000000000001" y="366" width="33.6" height="72.8" fill="#c5b0cb" rx="4" stroke="#8c9585" stroke-width="1.3"/>
+<g transform="translate(915.2,402.40000000000003) rotate(-90)">
 <text x="0" y="-2" class="small" text-anchor="middle">GELEIAS</text>
-<text x="0" y="12" class="tiny" text-anchor="middle">N15</text>
+<text x="0" y="12" class="tiny" text-anchor="middle">ilha · N15</text>
 </g>
 <rect x="629.6" y="514.4" width="21" height="14" fill="#8b9a93" />
 <rect x="696.8" y="514.4" width="21" height="14" fill="#8b9a93" />
@@ -155,14 +163,14 @@ text{font-family:Arial,sans-serif;fill:#294439}.heading{font-size:36px;font-weig
 <text x="694" y="714.6" class="small" text-anchor="middle">FILA CONTIDA · ATÉ 10 CLIENTES</text>
 <text x="769.5999999999999" y="794.4" class="small" text-anchor="middle">FRENTE LIVRE / RESERVA FUTURA</text>
 <text x="876" y="221.8" class="small" text-anchor="middle">ALA ARTESANAL · N11–15</text>
-<path d="M433.6,870 L433.6,749.6 L464.4,688 L478.4,671.2 L839.5999999999999,671.2 L904,671.2 L904,226 L800.4000000000001,226 L800.4000000000001,469.6" class="customer"/>
+<path d="M433.6,870 L433.6,749.6 L464.4,688 L478.4,671.2 L839.5999999999999,671.2 L951.5999999999999,671.2 L951.5999999999999,226 L800.4000000000001,226 L800.4000000000001,469.6" class="customer"/>
 <path d="M800.4000000000001,469.6 L800.4000000000001,598.4 L509.2,598.4 L509.2,679.6" class="customer"/>
-<path d="M904,671.2 L904,730 L870.4000000000001,730" class="customer"/>
+<path d="M951.5999999999999,671.2 L951.5999999999999,730 L870.4000000000001,730" class="customer"/>
 <path d="M531.6,758 L512,802.8 L433.6,802.8 L433.6,870" class="customer"/>
 <path d="M296.4,296 L296.4,654.4 L414,654.4 L414,612.4" class="staff"/>
 <path d="M296.4,357.59999999999997 L752.8,357.59999999999997 L752.8,220.40000000000003" class="staff"/>
 <path d="M752.8,357.59999999999997 L752.8,486.4 L514.8,486.4" class="staff"/>
-<path d="M752.8,486.4 L904,486.4 L904,536.8" class="staff"/>
+<path d="M752.8,486.4 L817.2,486.4 L817.2,536.8" class="staff"/>
 <path d="M414,654.4 L478.4,654.4 L478.4,590 L666,590" class="staff"/>
 <path d="M752.8,273.59999999999997 L797.5999999999999,273.59999999999997" class="staff"/>
 <path d="M752.8,402.40000000000003 L797.5999999999999,402.40000000000003" class="staff"/>
@@ -181,10 +189,10 @@ text{font-family:Arial,sans-serif;fill:#294439}.heading{font-size:36px;font-weig
 <line x1="1080" y1="175" x2="1080" y2="1040" stroke="#dedfd7"/>
 <text x="1110" y="202" class="eyebrow" >O QUE MUDA</text>
 <text x="1110" y="250" class="eyebrow" >01</text>
-<text x="1110" y="275" class="label" >Uma leitura simples</text>
-<text x="1110" y="301" class="note" >Hortifruti no primeiro salão.</text>
-<text x="1110" y="321" class="note" >Laticínios na parede direita.</text>
-<text x="1110" y="341" class="note" >Artesanais no anexo ao fundo.</text>
+<text x="1110" y="275" class="label" >Móveis independentes</text>
+<text x="1110" y="301" class="note" >Leite e queijo em ilhas frias.</text>
+<text x="1110" y="321" class="note" >Nenhum expositor depende</text>
+<text x="1110" y="341" class="note" >da parede de uma futura ala.</text>
 <text x="1110" y="383" class="eyebrow" >02</text>
 <text x="1110" y="408" class="label" >Um percurso contínuo</text>
 <text x="1110" y="434" class="note" >Dois corredores conectam o</text>
@@ -201,10 +209,10 @@ text{font-family:Arial,sans-serif;fill:#294439}.heading{font-size:36px;font-weig
 <text x="1110" y="720" class="note" >faixa de fundo e acesso lateral.</text>
 <text x="1110" y="740" class="note" >Trechos de venda são compartilhados.</text>
 <text x="1110" y="782" class="eyebrow" >05</text>
-<text x="1110" y="807" class="label" >O mesmo caráter</text>
-<text x="1110" y="833" class="note" >Madeira clara, piso creme,</text>
-<text x="1110" y="853" class="note" >verde profundo e paredes baixas</text>
-<text x="1110" y="873" class="note" >para preservar a vista do jogo.</text>
+<text x="1110" y="807" class="label" >Crescimento aberto</text>
+<text x="1110" y="833" class="note" >Painéis removíveis à direita</text>
+<text x="1110" y="853" class="note" >e ao fundo. Corredores livres</text>
+<text x="1110" y="873" class="note" >conectam as próximas alas.</text>
 <text x="1110" y="962" class="eyebrow" >ESQUEMA PARA O JOGO</text>
 <text x="1110" y="987" class="note" >u = unidade de coordenada.</text>
 <text x="1110" y="1009" class="note" >Sem conversão para metros.</text>

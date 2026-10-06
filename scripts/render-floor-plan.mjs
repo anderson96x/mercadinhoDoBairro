@@ -9,11 +9,11 @@ const fixtures = [
   { id: 'ovos', label: 'OVOS', sub: 'N4', x: 7, z: 0, w: 2.2, d: 1.4, color: '#eee0bd' },
   { id: 'trigo', label: 'TRIGO', sub: 'N7', x: 11.2, z: 0, w: 2.2, d: 1.4, color: '#dfc084' },
   { id: 'pao', label: 'PADARIA', sub: 'produção + balcão · N9', x: 7.3, z: -3.2, w: 3.4, d: 2.2, color: '#dcb095' },
-  { id: 'leite', label: 'LEITE', sub: 'N5', x: 17.4, z: -2.7, w: 1.2, d: 4, color: '#b8d9db', vertical: true },
+  { id: 'leite', label: 'LEITE', sub: 'ilha · N5', x: 13.6, z: -3, w: 1.2, d: 3.2, color: '#b8d9db', vertical: true },
   { id: 'morango', label: 'MORANGOS', sub: 'N11', x: 13.2, z: -8.2, w: 2.2, d: 1.4, color: '#dfa3a4' },
   { id: 'mel', label: 'MEL', sub: 'N12', x: 13.2, z: -12.8, w: 2.2, d: 1.4, color: '#e7c682' },
-  { id: 'queijo', label: 'QUEIJOS', sub: 'N13', x: 17.4, z: -12.8, w: 1.2, d: 3, color: '#b8d9db', vertical: true },
-  { id: 'geleia', label: 'GELEIAS', sub: 'N15', x: 17.4, z: -8.2, w: 1.2, d: 2.6, color: '#c5b0cb', vertical: true },
+  { id: 'queijo', label: 'QUEIJOS', sub: 'ilha · N13', x: 15.9, z: -12.8, w: 1.2, d: 3, color: '#b8d9db', vertical: true },
+  { id: 'geleia', label: 'GELEIAS', sub: 'ilha · N15', x: 15.9, z: -8.2, w: 1.2, d: 2.6, color: '#c5b0cb', vertical: true },
 ];
 
 // Verify the design's rectangles, independently of the live game's navigation.
@@ -30,6 +30,19 @@ for (let i = 0; i < fixtures.length; i++) for (let j = i + 1; j < fixtures.lengt
 }
 const aisle = fixtures.find(f => f.id === 'tomate').z - 0.7 - (fixtures.find(f => f.id === 'milho').z + 0.7);
 if (aisle < 1.6 - 1e-8) throw new Error('Produce cross-aisle too narrow');
+for (const f of fixtures.filter(f => ['queijo', 'geleia'].includes(f.id))) {
+  if (18.1 - (f.x + f.w / 2) < 1.6 - 1e-8) throw new Error(`Expansion corridor blocked by ${f.id}`);
+}
+const reservedApproaches = [
+  { name: 'east main hall', minX: 14.5, maxX: 18.1, minZ: -1.6, maxZ: 1.6 },
+  { name: 'east artisan hall', minX: 16.5, maxX: 18.1, minZ: -11.2, maxZ: -9.2 },
+  { name: 'rear artisan hall', minX: 11.1, maxX: 14.7, minZ: -15.5, maxZ: -14.3 },
+];
+for (const r of reservedApproaches) for (const f of fixtures) {
+  if (f.x + f.w / 2 > r.minX && f.x - f.w / 2 < r.maxX &&
+      f.z + f.d / 2 > r.minZ && f.z - f.d / 2 < r.maxZ)
+    throw new Error(`Expansion approach ${r.name} blocked by ${f.id}`);
+}
 
 const parts = [];
 const add = s => parts.push(s);
@@ -92,7 +105,15 @@ rect(1.6,4.4,5,2.3,'#e7decd','rx="4"');
 
 // Cut walls only where the doors/gates are intended.
 path([[-3.1,-6],[9.1,-6],[9.1,-7.4]],'wall');
-path([[9.1,-10],[9.1,-15.5],[18.1,-15.5],[18.1,6.7],[0.2,6.7]],'wall');
+path([[9.1,-10],[9.1,-15.5],[11.1,-15.5]],'wall');
+path([[14.7,-15.5],[18.1,-15.5],[18.1,-11.2]],'wall');
+path([[18.1,-9.2],[18.1,-1.6]],'wall');
+path([[18.1,1.6],[18.1,6.7],[0.2,6.7]],'wall');
+// Closed removable panels until a future wing is actually purchased.
+for (const [a,b] of [[[11.1,-15.5],[14.7,-15.5]],[[18.1,-11.2],[18.1,-9.2]],[[18.1,-1.6],[18.1,1.6]]])
+  line(...a,...b,'stroke="#8d70a5" stroke-width="5" stroke-dasharray="7 4"');
+text(X(12.9),Y(-15.8),'PAINEL REMOVÍVEL / FUNDO','tiny','text-anchor="middle"');
+text(X(18.5),Y(0),'→','label');
 path([[-2.8,6.7],[-3.1,6.7],[-3.1,2.2]],'wall');
 path([[-3.1,-0.8],[-3.1,-6]],'wall');
 // Office with opening to the west working passage.
@@ -130,15 +151,15 @@ text(X(10.7),Y(5.8),'FRENTE LIVRE / RESERVA FUTURA','small','text-anchor="middle
 text(X(14.5),Y(-14.65),'ALA ARTESANAL · N11–15','small','text-anchor="middle"');
 
 // Customer loop leaves the entrance and queue independent of product approaches.
-path([[-1.3,8.5],[-1.3,4.2],[-0.2,2],[0.3,1.4],[13.2,1.4],[15.5,1.4],[15.5,-14.5],[11.8,-14.5],[11.8,-5.8]],'customer');
+path([[-1.3,8.5],[-1.3,4.2],[-0.2,2],[0.3,1.4],[13.2,1.4],[17.2,1.4],[17.2,-14.5],[11.8,-14.5],[11.8,-5.8]],'customer');
 path([[11.8,-5.8],[11.8,-1.2],[1.4,-1.2],[1.4,1.7]],'customer');
-path([[15.5,1.4],[15.5,3.5],[14.3,3.5]],'customer');
+path([[17.2,1.4],[17.2,3.5],[14.3,3.5]],'customer');
 path([[2.2,4.5],[1.5,6.1],[-1.3,6.1],[-1.3,8.5]],'customer');
 // Farm-to-store spine plus controlled shared branches into the sales floor.
 path([[-6.2,-12],[-6.2,0.8],[-2,0.8],[-2,-0.7]],'staff');
 path([[-6.2,-9.8],[10.1,-9.8],[10.1,-14.7]],'staff');
 path([[10.1,-9.8],[10.1,-5.2],[1.6,-5.2]],'staff');
-path([[10.1,-5.2],[15.5,-5.2],[15.5,-3.4]],'staff');
+path([[10.1,-5.2],[12.4,-5.2],[12.4,-3.4]],'staff');
 path([[-2,0.8],[0.3,0.8],[0.3,-1.5],[7,-1.5]],'staff');
 path([[10.1,-12.8],[11.7,-12.8]],'staff');
 path([[10.1,-8.2],[11.7,-8.2]],'staff');
@@ -159,11 +180,11 @@ add(`<text transform="translate(${X(20.3)},${Y(-4.4)}) rotate(-90)" class="dimte
 add('<line x1="1080" y1="175" x2="1080" y2="1040" stroke="#dedfd7"/>');
 text(1110,202,'O QUE MUDA','eyebrow');
 const notes = [
-  ['01','Uma leitura simples',['Hortifruti no primeiro salão.','Laticínios na parede direita.','Artesanais no anexo ao fundo.']],
+  ['01','Móveis independentes',['Leite e queijo em ilhas frias.','Nenhum expositor depende','da parede de uma futura ala.']],
   ['02','Um percurso contínuo',['Dois corredores conectam o','anexo: o cliente entra, explora','e retorna sem um beco sem saída.']],
   ['03','Uma frente organizada',['Cestas fora do vão da porta.','Fila em faixa própria; caixa','próximo à entrada e à saída.']],
   ['04','Reposição mais legível',['Espinha de serviço na fazenda,','faixa de fundo e acesso lateral.','Trechos de venda são compartilhados.']],
-  ['05','O mesmo caráter',['Madeira clara, piso creme,','verde profundo e paredes baixas','para preservar a vista do jogo.']],
+  ['05','Crescimento aberto',['Painéis removíveis à direita','e ao fundo. Corredores livres','conectam as próximas alas.']],
 ];
 notes.forEach(([n,title,lines],i) => {
   const y=250+i*133;
@@ -190,8 +211,8 @@ const stages = [
   { title: '01 / NÍVEIS 1–2', level: 2, right: 9.1, lines: ['Loja inicial · 12,2 × 12,7 u', 'Tomates; contratação do caixa no N2.', 'Cinco cestas. Escritório e entrada fixos.'] },
   { title: '02 / NÍVEL 3', level: 3, right: 9.1, lines: ['Mesmo piso · sem ampliação', 'Milho: horta e segunda banca.', 'Corredores já preparados para crescer.'] },
   { title: '03 / NÍVEL 4', level: 4, right: 12.1, lines: ['Primeira extensão · +3 u à direita', 'Ala dos ovos + galinheiro.', 'A banca de ovos prolonga a linha de venda.'] },
-  { title: '04 / NÍVEIS 5–6', level: 6, right: 15.1, lines: ['Segunda extensão · +3 u à direita', 'Leite no N5; repositor no N6.', 'Refrigerador temporário na ala do leite.'] },
-  { title: '05 / NÍVEIS 7–10', level: 10, right: 18.1, lines: ['Terceira extensão · +3 u à direita', 'N7 trigo · N8 dez cestas · N9 padaria.', 'N10 cesta de trabalho; leite na posição final.'] },
+  { title: '04 / NÍVEIS 5–6', level: 6, right: 15.1, lines: ['Segunda extensão · +3 u à direita', 'Leite no N5; repositor no N6.', 'Ilha fria independente da parede.'] },
+  { title: '05 / NÍVEIS 7–10', level: 10, right: 18.1, lines: ['Terceira extensão · +3 u à direita', 'N7 trigo · N8 dez cestas · N9 padaria.', 'N10 cesta de trabalho; leite permanece.'] },
   { title: '06 / NÍVEIS 11–15', level: 15, right: 18.1, annex: true, lines: ['Anexo ao fundo · +9 × 9,5 u', 'N11 morango · N12 mel · N13 queijo.', 'N14 irrigação/equipe ágil · N15 geleia.'] },
 ];
 const unlock = { tomate: 1, milho: 3, ovos: 4, leite: 5, trigo: 7, pao: 9, morango: 11, mel: 12, queijo: 13, geleia: 15 };
@@ -215,7 +236,7 @@ for (let i=0;i<stages.length;i++) {
   stageParts.push(`<text x="${sx(-2.7)}" y="${sy(-3.7)}" class="mini">ESCRITÓRIO</text>`);
   if(stage.annex) box(9.1,-15.5,2,11.1,'#d8e9e4');
   for (const fixture of fixtures.filter(f=>unlock[f.id]<=stage.level)) {
-    const f=fixture.id==='leite'&&stage.level<7 ? {...fixture,x:13.6,z:-3} : fixture;
+    const f=fixture;
     const north=f.z< -6;
     if(f.x+f.w/2>stage.right||f.x-f.w/2<(north?9.1:-3.1)||f.z-f.d/2<(north?-15.5:-6)||f.z+f.d/2>6.7)
       throw new Error(`Fixture outside stage ${stage.level}: ${f.id}`);
@@ -232,4 +253,57 @@ for (let i=0;i<stages.length;i++) {
 }
 stageParts.push('<text x="42" y="1155" class="sub">Pontilhado = envelope futuro apenas neste estudo. Níveis e compras seguem DESBLOQUEIOS-POR-NIVEL.md.</text></svg>');
 writeFileSync(new URL('../docs/PLANTA-LOJA-ETAPAS.svg', import.meta.url), stageParts.join('\n'),'utf8');
-console.log('Growth plan generated: every unlocked product fits its purchase stage, including temporary milk placement.');
+console.log('Growth plan generated: every unlocked product fits its purchase stage; milk stays in place from level 5.');
+
+// Future land is a design option, outside the current world bounds.
+const future = [`<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1000" viewBox="0 0 1440 1000" role="img" aria-labelledby="title desc">
+<title id="title">Mercadinho — plano de crescimento aberto</title><desc id="desc">O núcleo até o nível 15 pode crescer à direita por dois módulos e ao fundo por outro. As ligações ficam alinhadas a corredores livres, com painéis removíveis e expositores independentes.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#294439}.h{font-size:32px;font-weight:bold}.sub{font-size:15px;fill:#63766b}.label{font-size:15px;font-weight:bold}.note{font-size:14px}.tiny{font-size:11px}</style>
+<rect width="1440" height="1000" fill="#faf9f5"/>
+<text x="42" y="60" class="h">Uma base para continuar crescendo</text>
+<text x="42" y="92" class="sub">Reservas conceituais de terreno · Sem níveis, preços ou produtos novos definidos.</text>`];
+const fx=x=>118+(x+3.1)*24, fy=z=>155+(z+25)*24;
+const fb=(x,z,w,d,fill,extra='')=>future.push(`<rect x="${fx(x)}" y="${fy(z)}" width="${w*24}" height="${d*24}" fill="${fill}" ${extra}/>`);
+const ft=(x,z,value,cls='label')=>future.push(`<text x="${fx(x)}" y="${fy(z)}" class="${cls}" text-anchor="middle">${value}</text>`);
+const fl=(a,b,extra)=>future.push(`<path d="M${fx(a[0])},${fy(a[1])}L${fx(b[0])},${fy(b[1])}" fill="none" ${extra}/>`);
+fb(-3.1,-6,21.2,12.7,'#f4f0e5','stroke="#315c49" stroke-width="3"');
+fb(9.1,-15.5,9,9.5,'#f4f0e5','stroke="#315c49" stroke-width="3"');
+fb(18.1,-6,9,12.7,'#e5eddb','stroke="#8d70a5" stroke-width="2" stroke-dasharray="8 5"');
+fb(18.1,-15.5,9,9.5,'#e5eddb','stroke="#8d70a5" stroke-width="2" stroke-dasharray="8 5"');
+fb(9.1,-25,9,9.5,'#e5eddb','stroke="#8d70a5" stroke-width="2" stroke-dasharray="8 5"');
+fb(16.5,-15.5,1.6,18.1,'#d8e9e4');
+fb(-3.1,-6,4.2,4,'#d8ddd1');
+for(const f of fixtures) fb(f.x-f.w/2,f.z-f.d/2,f.w,f.d,f.color,'stroke="#819385" stroke-width="1"');
+for(const [a,b] of [[[18.1,-1.6],[18.1,1.6]],[[18.1,-11.2],[18.1,-9.2]],[[11.1,-15.5],[14.7,-15.5]]])
+  fl(a,b,'stroke="#8d70a5" stroke-width="6" stroke-dasharray="7 4"');
+// Connecting both eastern modules creates a return loop once both are built.
+future.push(`<path d="M${fx(17.2)},${fy(0)}H${fx(22.6)}V${fy(-10.2)}H${fx(17.2)}" fill="none" stroke="#b16d36" stroke-width="3" stroke-dasharray="6 4"/>`);
+fl([12.9,-14.5],[12.9,-21],'stroke="#b16d36" stroke-width="3" stroke-dasharray="6 4"');
+ft(22.6,4.4,'MÓDULO A · 9 × 12,7 u');
+ft(22.6,5.5,'Novos departamentos','note');
+ft(22.6,-13.2,'MÓDULO B · 9 × 9,5 u');
+ft(22.6,-12,'Ligação com A e com o anexo','note');
+ft(13.6,-23,'MÓDULO C · 9 × 9,5 u');
+ft(13.6,-21.9,'Expansão posterior','note');
+ft(6.5,3.2,'NÚCLEO ATUAL · N1–15');
+ft(6.5,4.5,'Entrada, escritório e caixa estáveis','note');
+ft(4,-10.8,'FAZENDA E OFICINAS','label');
+ft(4,-9.5,'Permanecem a oeste','note');
+future.push(`<text x="1020" y="180" class="label">REGRAS DE CRESCIMENTO</text>`);
+const futureNotes=[
+  '1. Corredor antes dos móveis.',
+  '2. Ilhas frias sem parede de apoio.',
+  '3. Fechamentos removíveis.',
+  '4. Novos módulos de 3 u de largura.',
+  '5. Ampliar por compras futuras.',
+  '6. Repetir conexões nas novas bordas.',
+];
+futureNotes.forEach((v,i)=>future.push(`<text x="1020" y="${218+i*36}" class="note">${v}</text>`));
+future.push(`<text x="1020" y="480" class="label">TERRENO TAMBÉM CRESCE</text>
+<text x="1020" y="513" class="note">A e B ultrapassam o limite x atual.</text>
+<text x="1020" y="539" class="note">C ultrapassa o limite z atual.</text>
+<text x="1020" y="579" class="note">Exigem ampliar terreno, câmera,</text>
+<text x="1020" y="605" class="note">calçada, navegação e salvamento.</text>
+<text x="42" y="953" class="sub">Verde claro = reserva futura · Roxo = painel removível · Azul = corredor reservado · Escala 24 px/u</text></svg>`);
+writeFileSync(new URL('../docs/PLANTA-LOJA-CRESCIMENTO.svg',import.meta.url),future.join('\n'),'utf8');
+console.log('Future growth plan generated: eastern corridor 1.6 u; three clear expansion approaches; three reserved modules beyond current land.');

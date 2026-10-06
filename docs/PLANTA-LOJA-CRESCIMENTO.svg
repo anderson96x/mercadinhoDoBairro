@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1000" viewBox="0 0 1440 1000" role="img" aria-labelledby="title desc">
+<title id="title">Mercadinho — plano de crescimento aberto</title><desc id="desc">O núcleo até o nível 15 pode crescer à direita por dois módulos e ao fundo por outro. As ligações ficam alinhadas a corredores livres, com painéis removíveis e expositores independentes.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#294439}.h{font-size:32px;font-weight:bold}.sub{font-size:15px;fill:#63766b}.label{font-size:15px;font-weight:bold}.note{font-size:14px}.tiny{font-size:11px}</style>
+<rect width="1440" height="1000" fill="#faf9f5"/>
+<text x="42" y="60" class="h">Uma base para continuar crescendo</text>
+<text x="42" y="92" class="sub">Reservas conceituais de terreno · Sem níveis, preços ou produtos novos definidos.</text>
+<rect x="118" y="611" width="508.79999999999995" height="304.79999999999995" fill="#f4f0e5" stroke="#315c49" stroke-width="3"/>
+<rect x="410.79999999999995" y="383" width="216" height="228" fill="#f4f0e5" stroke="#315c49" stroke-width="3"/>
+<rect x="626.8000000000001" y="611" width="216" height="304.79999999999995" fill="#e5eddb" stroke="#8d70a5" stroke-width="2" stroke-dasharray="8 5"/>
+<rect x="626.8000000000001" y="383" width="216" height="228" fill="#e5eddb" stroke="#8d70a5" stroke-width="2" stroke-dasharray="8 5"/>
+<rect x="410.79999999999995" y="155" width="216" height="228" fill="#e5eddb" stroke="#8d70a5" stroke-width="2" stroke-dasharray="8 5"/>
+<rect x="588.4000000000001" y="383" width="38.400000000000006" height="434.40000000000003" fill="#d8e9e4" />
+<rect x="118" y="611" width="100.80000000000001" height="96" fill="#d8ddd1" />
+<rect x="233.2" y="738.2" width="52.800000000000004" height="33.599999999999994" fill="#efab8c" stroke="#819385" stroke-width="1"/>
+<rect x="233.2" y="666.2" width="52.800000000000004" height="33.599999999999994" fill="#e7d68b" stroke="#819385" stroke-width="1"/>
+<rect x="334" y="738.2" width="52.800000000000004" height="33.599999999999994" fill="#eee0bd" stroke="#819385" stroke-width="1"/>
+<rect x="434.79999999999995" y="738.2" width="52.800000000000004" height="33.599999999999994" fill="#dfc084" stroke="#819385" stroke-width="1"/>
+<rect x="326.79999999999995" y="651.8" width="81.6" height="52.800000000000004" fill="#dcb095" stroke="#819385" stroke-width="1"/>
+<rect x="504.40000000000003" y="644.5999999999999" width="28.799999999999997" height="76.80000000000001" fill="#b8d9db" stroke="#819385" stroke-width="1"/>
+<rect x="482.79999999999995" y="541.4000000000001" width="52.800000000000004" height="33.599999999999994" fill="#dfa3a4" stroke="#819385" stroke-width="1"/>
+<rect x="482.79999999999995" y="431" width="52.800000000000004" height="33.599999999999994" fill="#e7c682" stroke="#819385" stroke-width="1"/>
+<rect x="559.6" y="411.79999999999995" width="28.799999999999997" height="72" fill="#b8d9db" stroke="#819385" stroke-width="1"/>
+<rect x="559.6" y="527" width="28.799999999999997" height="62.400000000000006" fill="#c5b0cb" stroke="#819385" stroke-width="1"/>
+<path d="M626.8000000000001,716.5999999999999L626.8000000000001,793.4000000000001" fill="none" stroke="#8d70a5" stroke-width="6" stroke-dasharray="7 4"/>
+<path d="M626.8000000000001,486.20000000000005L626.8000000000001,534.2" fill="none" stroke="#8d70a5" stroke-width="6" stroke-dasharray="7 4"/>
+<path d="M458.79999999999995,383L545.2,383" fill="none" stroke="#8d70a5" stroke-width="6" stroke-dasharray="7 4"/>
+<path d="M605.2,755H734.8000000000001V510.20000000000005H605.2" fill="none" stroke="#b16d36" stroke-width="3" stroke-dasharray="6 4"/>
+<path d="M502,407L502,251" fill="none" stroke="#b16d36" stroke-width="3" stroke-dasharray="6 4"/>
+<text x="734.8000000000001" y="860.5999999999999" class="label" text-anchor="middle">MÓDULO A · 9 × 12,7 u</text>
+<text x="734.8000000000001" y="887" class="note" text-anchor="middle">Novos departamentos</text>
+<text x="734.8000000000001" y="438.20000000000005" class="label" text-anchor="middle">MÓDULO B · 9 × 9,5 u</text>
+<text x="734.8000000000001" y="467" class="note" text-anchor="middle">Ligação com A e com o anexo</text>
+<text x="518.8" y="203" class="label" text-anchor="middle">MÓDULO C · 9 × 9,5 u</text>
+<text x="518.8" y="229.40000000000003" class="note" text-anchor="middle">Expansão posterior</text>
+<text x="348.4" y="831.8" class="label" text-anchor="middle">NÚCLEO ATUAL · N1–15</text>
+<text x="348.4" y="863" class="note" text-anchor="middle">Entrada, escritório e caixa estáveis</text>
+<text x="288.4" y="495.79999999999995" class="label" text-anchor="middle">FAZENDA E OFICINAS</text>
+<text x="288.4" y="527" class="note" text-anchor="middle">Permanecem a oeste</text>
+<text x="1020" y="180" class="label">REGRAS DE CRESCIMENTO</text>
+<text x="1020" y="218" class="note">1. Corredor antes dos móveis.</text>
+<text x="1020" y="254" class="note">2. Ilhas frias sem parede de apoio.</text>
+<text x="1020" y="290" class="note">3. Fechamentos removíveis.</text>
+<text x="1020" y="326" class="note">4. Novos módulos de 3 u de largura.</text>
+<text x="1020" y="362" class="note">5. Ampliar por compras futuras.</text>
+<text x="1020" y="398" class="note">6. Repetir conexões nas novas bordas.</text>
+<text x="1020" y="480" class="label">TERRENO TAMBÉM CRESCE</text>
+<text x="1020" y="513" class="note">A e B ultrapassam o limite x atual.</text>
+<text x="1020" y="539" class="note">C ultrapassa o limite z atual.</text>
+<text x="1020" y="579" class="note">Exigem ampliar terreno, câmera,</text>
+<text x="1020" y="605" class="note">calçada, navegação e salvamento.</text>
+<text x="42" y="953" class="sub">Verde claro = reserva futura · Roxo = painel removível · Azul = corredor reservado · Escala 24 px/u</text></svg>

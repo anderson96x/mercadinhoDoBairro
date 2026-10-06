@@ -82,7 +82,7 @@
 <text transform="translate(198.8,835)" text-anchor="middle" dominant-baseline="middle" class="f">MILHO</text>
 <rect x="236" y="862.6" width="26.400000000000002" height="16.799999999999997" fill="#eee0bd" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(249.2,871)" text-anchor="middle" dominant-baseline="middle" class="f">OVOS</text>
-<rect x="321.20000000000005" y="811" width="14.399999999999999" height="48" fill="#b8d9db" stroke="#8b9585" stroke-width="0.6"/>
+<rect x="321.20000000000005" y="815.8" width="14.399999999999999" height="38.400000000000006" fill="#b8d9db" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(328.4,835) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">LEITE</text>
 <rect x="184.4" y="902.2" width="76.80000000000001" height="21.6" fill="#efe4d4" />
 <rect x="190.4" y="928" width="32.400000000000006" height="12" fill="#c4c9be" />
@@ -96,7 +96,7 @@
 <path d="M149.6,970.6V919" stroke="#b16d36" stroke-width="2"/><text x="131.6" y="982.6" class="mini">ENTRADA FIXA</text>
 <text x="64" y="1005" class="n">Segunda extensão · +3 u à direita</text>
 <text x="64" y="1030" class="n">Leite no N5; repositor no N6.</text>
-<text x="64" y="1055" class="n">Refrigerador temporário na ala do leite.</text>
+<text x="64" y="1055" class="n">Ilha fria independente da parede.</text>
 <rect x="504" y="619" width="438" height="471" rx="12" fill="#fff" stroke="#e1e3d9"/><text x="526" y="652" class="t">05 / NÍVEIS 7–10</text>
 <path d="M590,799H736.4V685H844.4000000000001V951.4H590Z" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>
 <rect x="590" y="799" width="254.40000000000003" height="152.39999999999998" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
@@ -112,8 +112,8 @@
 <text transform="translate(761.6,871)" text-anchor="middle" dominant-baseline="middle" class="f">TRIGO</text>
 <rect x="694.4" y="819.4" width="40.8" height="26.400000000000002" fill="#dcb095" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(714.8,832.6)" text-anchor="middle" dominant-baseline="middle" class="f">PADARIA</text>
-<rect x="828.8" y="814.6" width="14.399999999999999" height="48" fill="#b8d9db" stroke="#8b9585" stroke-width="0.6"/>
-<text transform="translate(836,838.6) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">LEITE</text>
+<rect x="783.2" y="815.8" width="14.399999999999999" height="38.400000000000006" fill="#b8d9db" stroke="#8b9585" stroke-width="0.6"/>
+<text transform="translate(790.4,835) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">LEITE</text>
 <rect x="646.4" y="902.2" width="154.8" height="21.6" fill="#efe4d4" />
 <rect x="652.4" y="928" width="32.400000000000006" height="12" fill="#c4c9be" />
 <rect x="630.8" y="927.4" width="12" height="12" fill="#c6c9af" />
@@ -131,7 +131,7 @@
 <path d="M611.6,970.6V919" stroke="#b16d36" stroke-width="2"/><text x="593.6" y="982.6" class="mini">ENTRADA FIXA</text>
 <text x="526" y="1005" class="n">Terceira extensão · +3 u à direita</text>
 <text x="526" y="1030" class="n">N7 trigo · N8 dez cestas · N9 padaria.</text>
-<text x="526" y="1055" class="n">N10 cesta de trabalho; leite na posição final.</text>
+<text x="526" y="1055" class="n">N10 cesta de trabalho; leite permanece.</text>
 <rect x="966" y="619" width="438" height="471" rx="12" fill="#fff" stroke="#e1e3d9"/><text x="988" y="652" class="t">06 / NÍVEIS 11–15</text>
 <path d="M1052,799H1198.4V685H1306.4V951.4H1052Z" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>
 <rect x="1052" y="799" width="254.40000000000003" height="152.39999999999998" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
@@ -149,16 +149,16 @@
 <text transform="translate(1223.6,871)" text-anchor="middle" dominant-baseline="middle" class="f">TRIGO</text>
 <rect x="1156.4" y="819.4" width="40.8" height="26.400000000000002" fill="#dcb095" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(1176.8,832.6)" text-anchor="middle" dominant-baseline="middle" class="f">PADARIA</text>
-<rect x="1290.8" y="814.6" width="14.399999999999999" height="48" fill="#b8d9db" stroke="#8b9585" stroke-width="0.6"/>
-<text transform="translate(1298,838.6) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">LEITE</text>
+<rect x="1245.2" y="815.8" width="14.399999999999999" height="38.400000000000006" fill="#b8d9db" stroke="#8b9585" stroke-width="0.6"/>
+<text transform="translate(1252.4,835) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">LEITE</text>
 <rect x="1234.4" y="764.2" width="26.400000000000002" height="16.799999999999997" fill="#dfa3a4" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(1247.6,772.6)" text-anchor="middle" dominant-baseline="middle" class="f">MORANGOS</text>
 <rect x="1234.4" y="709" width="26.400000000000002" height="16.799999999999997" fill="#e7c682" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(1247.6,717.4)" text-anchor="middle" dominant-baseline="middle" class="f">MEL</text>
-<rect x="1290.8" y="699.4" width="14.399999999999999" height="36" fill="#b8d9db" stroke="#8b9585" stroke-width="0.6"/>
-<text transform="translate(1298,717.4) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">QUEIJOS</text>
-<rect x="1290.8" y="757" width="14.399999999999999" height="31.200000000000003" fill="#c5b0cb" stroke="#8b9585" stroke-width="0.6"/>
-<text transform="translate(1298,772.6) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">GELEIAS</text>
+<rect x="1272.8" y="699.4" width="14.399999999999999" height="36" fill="#b8d9db" stroke="#8b9585" stroke-width="0.6"/>
+<text transform="translate(1280,717.4) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">QUEIJOS</text>
+<rect x="1272.8" y="757" width="14.399999999999999" height="31.200000000000003" fill="#c5b0cb" stroke="#8b9585" stroke-width="0.6"/>
+<text transform="translate(1280,772.6) rotate(-90)" text-anchor="middle" dominant-baseline="middle" class="f">GELEIAS</text>
 <rect x="1108.4" y="902.2" width="154.8" height="21.6" fill="#efe4d4" />
 <rect x="1114.4" y="928" width="32.400000000000006" height="12" fill="#c4c9be" />
 <rect x="1092.8" y="927.4" width="12" height="12" fill="#c6c9af" />
