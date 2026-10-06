@@ -232,9 +232,12 @@ export class Interface {
   }
   renderizarPainel() {
     const tipo = this.tipoPainel;
-    const titulos = { escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
+    const titulos = { lixeira: 'Descartar produtos', escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
     let conteudo = '';
-    if (tipo === 'escritorio') {
+    if (tipo === 'lixeira') {
+      const inventario = this.sim.estado.jogador.inventario;
+      conteudo = `<p class="painel-subtitulo">Escolha o que jogar fora. Produtos descartados não rendem dinheiro e não podem ser recuperados.</p>${Object.entries(PRODUTOS).filter(([id]) => inventario.includes(id)).map(([id, p]) => `<button class="botao-secundario" data-descartar="${id}">${icone(id)} Descartar 1 ${p.nome.toLocaleLowerCase('pt-BR')} · ${inventario.filter(item => item === id).length} no inventário</button>`).join('')}<button class="botao-principal" data-descartar="tudo" ${inventario.length ? '' : 'disabled'}>Esvaziar inventário (${inventario.length})</button><button class="botao-secundario" data-fechar>Voltar à loja</button>`;
+    } else if (tipo === 'escritorio') {
       const aberta = this.sim.estado.lojaAberta;
       conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho sem sair do escritório.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
       const banco = this.sim.estado.banco;
@@ -316,6 +319,14 @@ export class Interface {
     }
     this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : tipo === 'dev' ? 'dev' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
     this.el('painel').querySelectorAll('[data-fechar]').forEach(b => b.onclick = () => this.fechar());
+    this.el('painel').querySelectorAll('[data-descartar]').forEach(b => b.onclick = () => {
+      const resultado = this.acoes.descartar(b.dataset.descartar === 'tudo' ? null : b.dataset.descartar);
+      if (!resultado.sucesso) { this.mensagem(resultado.motivo); return; }
+      this.atualizar();
+      if (this.sim.estado.jogador.inventario.length) this.renderizarPainel();
+      else this.fechar();
+      this.mensagem(`${resultado.quantidade} ${resultado.quantidade === 1 ? 'produto descartado' : 'produtos descartados'}.`);
+    });
     this.el('painel').querySelectorAll('[data-aba-melhoria]').forEach(b => b.onclick = () => {
       this.abaMelhorias = b.dataset.abaMelhoria;
       this.renderizarPainel();

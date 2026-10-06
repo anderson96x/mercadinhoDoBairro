@@ -53,6 +53,8 @@ export const CONFIG = {
   clienteCaixa: { x: 2.2, z: 3.5 },
   cadeiraCaixa: { x: 3.45, z: 6.05 },
   cadeiraEscritorio: ESCRITORIO.cadeira,
+  // Encostada na face externa do escritório e na face interna da parede do fundo.
+  lixeira: { x: ESCRITORIO.limites.maxX + 0.09 + 0.42, z: ESCRITORIO.limites.minZ + 0.14 + 0.41, w: 0.84, d: 0.82 },
   areaFuncionarioCaixa: { x: 3.45, z: 6.05, w: 0.8, d: 0.9 },
   anguloCaixa: Math.PI,
   anguloEscritorio: Math.PI,

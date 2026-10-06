@@ -627,10 +627,27 @@ export class Simulacao {
     const missao = this.missao();
     if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: `Próximo passo: ${missao.titulo}` }); this.missaoAnterior = missao.indice; }
   }
+  pertoDaLixeira() {
+    const jogador = this.estado.jogador, objeto = CONFIG.lixeira;
+    return distanciaEstacao(jogador, objeto) < CONFIG.raioInteracao &&
+      segmentoLivre(jogador, pontoMaisProximo(jogador, objeto), this.obstaculos().filter(o => o !== objeto));
+  }
+  descartarInventario(id = null) {
+    if (!this.pertoDaLixeira()) return { sucesso: false, motivo: 'Aproxime-se da lixeira.' };
+    const inventario = this.estado.jogador.inventario;
+    const indice = id === null ? -1 : inventario.indexOf(id);
+    if (!inventario.length || (id !== null && indice < 0)) return { sucesso: false, motivo: 'Não há esse item no inventário.' };
+    const quantidade = id === null ? inventario.length : 1;
+    if (id === null) inventario.splice(0);
+    else inventario.splice(indice, 1);
+    return { sucesso: true, quantidade };
+  }
   interagir() {
     const jogador = this.estado.jogador;
     this.atividade = jogador.sentadoEscritorio ? 'Usando o computador…' : '';
     if (jogador.sentadoEscritorio || jogador.sentado) return;
+    const pertoLixeira = this.pertoDaLixeira();
+    if (!pertoLixeira) this.lixeiraVisitada = false;
     const candidatos = [];
     const obstaculos = this.obstaculos();
     for (const [id, p] of Object.entries(PRODUTOS)) {
@@ -644,6 +661,14 @@ export class Simulacao {
     }
     candidatos.sort((a, b) => a.distancia - b.distancia);
     const alvo = candidatos[0];
+    if (pertoLixeira && (!alvo || distanciaEstacao(jogador, CONFIG.lixeira) < alvo.distancia)) {
+      this.atividade = jogador.inventario.length ? 'Lixeira · pare para descartar produtos' : 'Lixeira · inventário vazio';
+      if (!jogador.andando && jogador.inventario.length && !this.lixeiraVisitada) {
+        this.lixeiraVisitada = true;
+        this.emitir('lixeira');
+      }
+      return;
+    }
     // Proteção para novos móveis que venham a ser configurados com alcance ambíguo.
     if (!alvo || (candidatos[1] && candidatos[1].distancia - alvo.distancia < 0.1)) return;
     const { id, tipo } = alvo, p = PRODUTOS[id], e = this.estado.produtos[id];

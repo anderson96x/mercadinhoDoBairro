@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { PALETAS } from './personalizacao.js';
-import { ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL } from './configuracao.js';
+import { CONFIG, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = [
@@ -40,7 +40,8 @@ export function angulosPortasEntrada(abertura) {
 
 export const MOBILIARIO_LOJA = [
   ESCRITORIO.mesa,
-  ESCRITORIO.estante
+  ESCRITORIO.estante,
+  CONFIG.lixeira
 ];
 
 // Objetos baixos ou estreitos da calçada também precisam participar da
@@ -294,6 +295,43 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     for (let j = 0; j < 5; j++) bloco(0.13, 0.3, 0.17, [0x78998a,0xd8b57d,0xc67e64][j % 3], 0.26, 0.75 + i * 0.49, -0.65 + j * 0.28);
   }
   destino = grupo;
+  // Contentor verde com tampa, pega e duas rodas no canto entre escritório e fundo.
+  const lixeira = new THREE.Group(); lixeira.name = 'lixeira';
+  lixeira.position.set(CONFIG.lixeira.x, 0.23, CONFIG.lixeira.z); grupo.add(lixeira);
+  const corpoLixeira = new THREE.BoxGeometry(0.7, 1.02, 0.68);
+  const verticesLixeira = corpoLixeira.attributes.position;
+  for (let i = 0; i < verticesLixeira.count; i++) {
+    if (verticesLixeira.getY(i) < 0) {
+      verticesLixeira.setX(i, verticesLixeira.getX(i) * 0.78);
+      verticesLixeira.setZ(i, verticesLixeira.getZ(i) * 0.78);
+    }
+  }
+  corpoLixeira.computeVertexNormals();
+  const corpo = new THREE.Mesh(corpoLixeira, new THREE.MeshStandardMaterial({ color: 0x285b32, roughness: 0.72 }));
+  corpo.position.y = 0.69; corpo.castShadow = true; corpo.receiveShadow = true; lixeira.add(corpo);
+  caixa(lixeira, 0.78, 0.09, 0.76, 0x29372c, 0, 1.2, 0);
+  const contornoTampa = new THREE.Shape();
+  contornoTampa.moveTo(-0.35, -0.34); contornoTampa.lineTo(0.35, -0.34);
+  contornoTampa.lineTo(0.35, 0.34); contornoTampa.lineTo(-0.35, 0.34); contornoTampa.closePath();
+  const tampa = new THREE.Mesh(new THREE.ExtrudeGeometry(contornoTampa, {
+    depth: 0.035, bevelEnabled: true, bevelThickness: 0.035, bevelSize: 0.035, bevelSegments: 2, steps: 1
+  }), new THREE.MeshStandardMaterial({ color: 0x32673c, roughness: 0.68 }));
+  tampa.rotation.x = -Math.PI / 2; tampa.position.y = 1.29;
+  tampa.castShadow = true; tampa.receiveShadow = true; lixeira.add(tampa);
+  for (const x of [-0.24, 0.24]) {
+    caixa(lixeira, 0.12, 0.07, 0.13, 0x285b32, x, 1.27, -0.32);
+    caixa(lixeira, 0.045, 0.08, 0.075, 0x285b32, x, 1.38, -0.23);
+  }
+  caixa(lixeira, 0.52, 0.045, 0.075, 0x285b32, 0, 1.42, -0.23);
+  const eixo = cilindro(lixeira, 0.035, 0.035, 0.73, 0x424740, 0, 0.16, -0.23);
+  eixo.rotation.z = Math.PI / 2;
+  for (const x of [-0.36, 0.36]) {
+    const roda = cilindro(lixeira, 0.16, 0.16, 0.12, 0x29302b, x, 0.16, -0.23);
+    roda.rotation.z = Math.PI / 2;
+    const cubo = cilindro(lixeira, 0.065, 0.065, 0.125, 0x51594f, x, 0.16, -0.23);
+    cubo.rotation.z = Math.PI / 2;
+  }
+  for (const x of [-0.2, 0.2]) caixa(lixeira, 0.13, 0.12, 0.16, 0x285b32, x, 0.12, 0.23);
   cilindro(grupo, 0.15, 0.11, 0.25, 0xc07a42, -2.3, 0.36, PORTA_ESCRITORIO.z - 0.3);
   esfera(grupo, 0.25, 0x4bb356, -2.3, 0.65, PORTA_ESCRITORIO.z - 0.3, 0.8, 1.3, 0.8);
   // Vitrine e portas duplas que abrem quando um cliente atravessa o vão.

@@ -93,6 +93,11 @@ function reiniciar() {
   window.location.reload();
 }
 const ui = new Interface(sim, {
+  descartar: id => {
+    const resultado = sim.descartarInventario(id);
+    if (resultado.sucesso) gravar();
+    return resultado;
+  },
   depositarBanco: () => {
     const resultado = sim.solicitarDeposito();
     if (resultado.sucesso) gravar();
@@ -169,6 +174,7 @@ try {
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
         if (['expansao', 'ovoPronto', 'leitePronto', 'paoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
         if (evento.tipo === 'escritorio') ui.abrir('escritorio');
+        if (evento.tipo === 'lixeira') ui.abrir('lixeira');
       }
       if (agora >= proximaUI) { ui.atualizar(); proximaUI = agora + 100; }
     } else acumulado = 0;
