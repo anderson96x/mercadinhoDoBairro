@@ -95,7 +95,6 @@ test('padaria fica ao fundo e tem dois padeiros de avental e chapéu branco', ()
   assert.ok(frutas.every(pao => pao.position.y > tampo.position.y + 0.02));
   assert.ok(grupo.getObjectByName('entrega-trigo-padaria').position.x < PRODUTOS.pao.prateleira.x);
   assert.equal(visual.produtos.pao.trigosRecebidos.length, ALA_PADARIA.capacidadeTrigo);
-  assert.ok(grupo.getObjectByName('area-padeiros'));
   const triturador = grupo.getObjectByName('triturador-padaria');
   assert.ok(triturador.position.x < PRODUTOS.pao.prateleira.x);
   assert.ok(new THREE.Box3().setFromObject(triturador).max.y < 2);

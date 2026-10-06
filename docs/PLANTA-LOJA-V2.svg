@@ -86,8 +86,8 @@ text{font-family:Arial,sans-serif;fill:#294439}.heading{font-size:36px;font-weig
 <text x="962.5" y="725" class="label" >→</text>
 <path d="M355,892.5 L347.5,892.5 L347.5,780" class="wall"/>
 <path d="M347.5,705 L347.5,517.5" class="wall"/>
-<rect x="347.5" y="575" width="105" height="100" fill="#e2e2d8" />
-<path d="M347.5,575 L452.5,575 L452.5,675 L425,675" class="wall"/>
+<rect x="347.5" y="517.5" width="105" height="157.5" fill="#e2e2d8" />
+<path d="M347.5,517.5 L452.5,517.5 L452.5,675 L425,675" class="wall"/>
 <path d="M390,675 L347.5,675" class="wall"/>
 <rect x="372.5" y="595" width="52.5" height="22.5" fill="#c8b999" rx="5" stroke="#86978a" stroke-width="1"/>
 <text x="398.75" y="603.25" class="small" text-anchor="middle">MESA</text>

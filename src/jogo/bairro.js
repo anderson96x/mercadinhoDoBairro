@@ -1,19 +1,19 @@
 import * as THREE from 'three';
 import { PALETAS } from './personalizacao.js';
-import { ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL } from './configuracao.js';
+import { ALTURA_PAREDE_BAIXA, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = [
   { x: 3, z: -8.3, w: 12.2, d: 0.28, h: 2.8 },
-  { x: 9.1, z: -0.8, w: 0.28, d: 15, h: 0.75, lateral: true },
+  { x: 9.1, z: -0.8, w: 0.28, d: 15, h: ALTURA_PAREDE_BAIXA, lateral: true },
   { x: -3.1, z: -4.55, w: 0.28, d: 7.5, h: 2.8 },
   { x: -3.1, z: 4.45, w: 0.28, d: 4.5, h: 2.8 },
-  { x: 4.65, z: 6.7, w: 8.9, d: 0.28, h: 0.65 }
+  { x: 4.65, z: 6.7, w: 8.9, d: 0.28, h: ALTURA_PAREDE_BAIXA }
 ];
 
 export const PAREDES_ESCRITORIO = [
-  { x: -1, z: -6, w: 4.2, d: 0.18, h: 1.45 },
-  { x: 1.1, z: -4, w: 0.18, d: 4, h: 1.45 },
+  // O fundo e a lateral esquerda usam as paredes externas, sem divisória duplicada.
+  { x: 1.1, z: -5.15, w: 0.18, d: 6.3, h: 1.45 },
   { x: -2.25, z: -2, w: 1.7, d: 0.18, h: 1.45 },
   { x: 0.55, z: -2, w: 1.1, d: 0.18, h: 1.45 }
 ];
@@ -213,7 +213,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const passagemTrigo = new THREE.Group(); paredesAlaTrigo.add(passagemTrigo);
   for (const p of ALA_TRIGO.paredes) {
     destino = p.passagemArtesanal ? passagemTrigo : paredesAlaTrigo;
-    const parede = bloco(p.w, p.h, p.d, p.painelExpansao ? 0xb6cfc2 : 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, p.painelExpansao ? null : 'parede');
+    const parede = bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     if (p.painelExpansao) parede.name = 'painel-expansao-lateral';
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
@@ -226,9 +226,10 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   for (let x = 9.2; x < 21; x += 1.2) chao(5, 0.018, 0.008, areaArtesanal.d - 0.1, 0xc8bfae, x, 0.23, areaArtesanal.z);
   for (let z = -19.4; z < -8.3; z += 1.2) chao(5, areaArtesanal.w - 0.1, 0.008, 0.018, 0xc8bfae, areaArtesanal.x, 0.23, z);
   for (const p of ALA_ARTESANAL.paredes) {
-    const parede = bloco(p.w, p.h, p.d, p.painelExpansao ? 0xb6cfc2 : 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, p.painelExpansao ? null : 'parede');
+    const parede = bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     if (p.painelExpansao) parede.name = 'painel-expansao-artesanal';
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
+    rodape(p);
   }
   for (const x of [9.25, 20.95]) bloco(0.12, 2.3, 0.2, 0x286750, x, 1.38, -8.3, 'principal');
   bloco(11.82, 0.28, 0.22, 0xe7b65a, 15.1, 2.6, -8.3, 'destaque');
@@ -261,7 +262,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   bloco(0.34, 0.22, 3.15, 0x286750, -3.1, 3.02, 0.7, 'principal');
   for (let x = -5; x < -3.3; x += 0.55) chao(3, 0.43, 0.06, 1.6, 0xd6c7ac, x, 0.16, 0.7);
   // Escritório no canto esquerdo, com paredes e porta à meia altura para manter o interior visível.
-  chao(6, 3.85, 0.012, 3.8, 0xd5c2d5, -1, 0.241, -3.95);
+  chao(6, 3.85, 0.012, 6.1, 0xd5c2d5, -1, 0.241, -5.1);
   for (const x of [-1.4, 0]) bloco(0.09, 1.25, 0.23, 0x286750, x, 0.855, -2, 'principal');
   const porta = new THREE.Group(); porta.position.set(POSICAO_PORTA_ESCRITORIO.fechada, 0.23, -2); grupo.add(porta); destino = porta;
   bloco(1.32, 1.22, 0.09, 0x286750, 0.7, 0.61, 0, 'principal');

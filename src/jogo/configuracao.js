@@ -1,4 +1,6 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
+export const ALTURA_PAREDE_BAIXA = 0.75;
+
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
@@ -154,8 +156,8 @@ export const ALA_PRODUCAO = {
   duracaoConstrucao: 4,
   paredes: [
     { x: 10.6, z: -8.3, w: 3, d: 0.28, h: 2.8 },
-    { x: 10.6, z: 6.7, w: 3, d: 0.28, h: 0.65 },
-    { x: 12.1, z: -0.8, w: 0.28, d: 15, h: 0.75 }
+    { x: 10.6, z: 6.7, w: 3, d: 0.28, h: ALTURA_PAREDE_BAIXA },
+    { x: 12.1, z: -0.8, w: 0.28, d: 15, h: ALTURA_PAREDE_BAIXA }
   ],
   estacoes: { galinheiro: PRODUTOS.ovos.horta, prateleira: PRODUTOS.ovos.prateleira },
   tempoOvo: 3.5
@@ -168,8 +170,8 @@ export const ALA_LEITE = {
   duracaoConstrucao: 4,
   paredes: [
     { x: 13.6, z: -8.3, w: 3, d: 0.28, h: 2.8, passagemArtesanal: true },
-    { x: 13.6, z: 6.7, w: 3, d: 0.28, h: 0.65 },
-    { x: 15.1, z: -0.8, w: 0.28, d: 15, h: 0.75 }
+    { x: 13.6, z: 6.7, w: 3, d: 0.28, h: ALTURA_PAREDE_BAIXA },
+    { x: 15.1, z: -0.8, w: 0.28, d: 15, h: ALTURA_PAREDE_BAIXA }
   ],
   tempoLeite: 4.5
 };
@@ -181,10 +183,10 @@ export const ALA_TRIGO = {
   duracaoConstrucao: 4,
   paredes: [
     { x: 18.1, z: -8.3, w: 6, d: 0.28, h: 2.8, passagemArtesanal: true },
-    { x: 18.1, z: 6.7, w: 6, d: 0.28, h: 0.65 },
-    { x: 21.1, z: -4.95, w: 0.28, d: 6.7, h: 0.75 },
-    { x: 21.1, z: 0, w: 0.28, d: 3.2, h: 0.75, painelExpansao: true },
-    { x: 21.1, z: 4.15, w: 0.28, d: 5.1, h: 0.75 }
+    { x: 18.1, z: 6.7, w: 6, d: 0.28, h: ALTURA_PAREDE_BAIXA },
+    { x: 21.1, z: -4.95, w: 0.28, d: 6.7, h: ALTURA_PAREDE_BAIXA },
+    { x: 21.1, z: 0, w: 0.28, d: 3.2, h: ALTURA_PAREDE_BAIXA, painelExpansao: true },
+    { x: 21.1, z: 4.15, w: 0.28, d: 5.1, h: ALTURA_PAREDE_BAIXA }
   ]
 };
 export const ALA_PADARIA = {
@@ -200,14 +202,14 @@ export const ALA_ARTESANAL = {
   id: 'alaArtesanal', indice: 5, nivelMinimo: 11, custo: 1200, produtos: ['morango'],
   piso: { x: 15.1, z: -13.9, w: 12, d: 11.2 },
   paredes: [
-    { x: 10.1, z: -19.5, w: 2, d: 0.28, h: 1.2 },
-    { x: 12.9, z: -19.5, w: 3.6, d: 0.28, h: 1.2, painelExpansao: true },
-    { x: 17.9, z: -19.5, w: 6.4, d: 0.28, h: 1.2 },
-    { x: 9.1, z: -16.75, w: 0.28, d: 5.5, h: 0.65 },
-    { x: 9.1, z: -9.5, w: 0.28, d: 2.4, h: 0.65 },
-    { x: 21.1, z: -17.35, w: 0.28, d: 4.3, h: 0.65 },
-    { x: 21.1, z: -14.2, w: 0.28, d: 2, h: 0.65, painelExpansao: true },
-    { x: 21.1, z: -10.75, w: 0.28, d: 4.9, h: 0.65 }
+    { x: 10.1, z: -19.5, w: 2, d: 0.28, h: ALTURA_PAREDE_BAIXA },
+    { x: 12.9, z: -19.5, w: 3.6, d: 0.28, h: ALTURA_PAREDE_BAIXA, painelExpansao: true },
+    { x: 17.9, z: -19.5, w: 6.4, d: 0.28, h: ALTURA_PAREDE_BAIXA },
+    { x: 9.1, z: -16.75, w: 0.28, d: 5.5, h: ALTURA_PAREDE_BAIXA },
+    { x: 9.1, z: -9.5, w: 0.28, d: 2.4, h: ALTURA_PAREDE_BAIXA },
+    { x: 21.1, z: -17.35, w: 0.28, d: 4.3, h: ALTURA_PAREDE_BAIXA },
+    { x: 21.1, z: -14.2, w: 0.28, d: 2, h: ALTURA_PAREDE_BAIXA, painelExpansao: true },
+    { x: 21.1, z: -10.75, w: 0.28, d: 4.9, h: ALTURA_PAREDE_BAIXA }
   ],
   camera: { x: 4.2, z: -5, alturaDesktop: 43 }, duracaoConstrucao: 4
 };

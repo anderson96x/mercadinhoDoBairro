@@ -682,14 +682,6 @@ export class Cena {
       cesta.position.set(0, 0.31 + i * 0.055, (i - 2) * 0.075);
       cesta.scale.setScalar(0.78); suporteCestas.add(cesta); return cesta;
     });
-    this.marcasFila = Array.from({ length: CONFIG.quantidadeCestas + CONFIG.cestasPorMelhoria }, (_, i) => {
-      const grupo = new THREE.Group(); this.cena.add(grupo);
-      const x = CONFIG.clienteCaixa.x + i * CONFIG.espacoClientes;
-      for (const z of [-0.36, 0.36]) caixa(grupo, 0.76, 0.009, 0.035, 0xbda276, x, 0.24, CONFIG.clienteCaixa.z + z);
-      for (const dx of [-0.38, 0.38]) caixa(grupo, 0.035, 0.009, 0.72, 0xbda276, x + dx, 0.24, CONFIG.clienteCaixa.z);
-      grupo.visible = i < this.sim.totalCestas;
-      return grupo;
-    });
     // Caixa e esteira, com produtos e recibo visíveis de perto.
     caixa(c, 1.35, 0.95, 2.7, 0x747b80, 5.5, 0.65, 4.1);
     caixa(c, 1.53, 0.17, 2.9, 0xc9cdcf, 5.5, 1.2, 4.1);
@@ -895,9 +887,6 @@ export class Cena {
   construirPadaria() {
     const p = PRODUTOS.pao.prateleira;
     const grupo = new THREE.Group(); grupo.name = 'padaria'; this.cena.add(grupo);
-    const area = new THREE.Group(); area.name = 'area-padeiros'; grupo.add(area);
-    caixa(area, 3.4, 0.018, 2.95, 0xdac5a0, p.x, 0.245, -3.75);
-    for (const x of [p.x - 1.7, p.x + 1.7]) caixa(area, 0.035, 0.035, 2.95, 0xb98657, x, 0.268, -3.75);
     // O vidro é o próprio tampo: não há bandeja nem prateleira acima dele.
     const baseMadeira = caixa(grupo, 3.3, 0.52, 0.8, 0x936238, p.x, 0.49, p.z);
     baseMadeira.name = 'base-madeira-padaria';
@@ -1431,7 +1420,6 @@ export class Cena {
     this.deslocamentoCamera.set(alvo.x - base.x, 0, alvo.z - base.z);
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     const equipamentoAla = this.bairro.atualizarEstagio(e.estagioLoja, dt);
-    this.marcasFila.forEach((marca, i) => { marca.visible = i < sim.totalCestas; });
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
     this.alertaCaixa.visible = e.banco.noCaixa >= BANCO.limite;
     this.alertaCaixa.position.set(CONFIG.balcao.x, 2.7 + Math.sin(sim.tempo * 5) * 0.08, CONFIG.balcao.z);
@@ -1631,6 +1619,17 @@ export class Cena {
       const perto = estacao && distanciaEstacao(e.jogador, estacao) < CONFIG.raioInteracao + 0.3;
       if (!perto) { el.hidden = true; continue; }
       const pos = this.projetar(ponto);
+      if (produto === 'pao') {
+        // A projeção do balcão coincide com a entrega de trigo nesta câmera.
+        // Mantém o estoque legível sem cobrir o jogador, inclusive no celular.
+        el.hidden = false;
+        const cabeca = this.projetar({ ...e.jogador, y: 2.1 });
+        const pes = this.projetar({ ...e.jogador, y: 0.23 });
+        const meiaLarguraJogador = 0.7 * this.w / (this.camera.right - this.camera.left) + 6;
+        const cruzaJogador = Math.abs(pos.x - cabeca.x) < el.offsetWidth / 2 + meiaLarguraJogador
+          && pos.y > cabeca.y - 8 && pos.y - el.offsetHeight < pes.y + 8;
+        if (cruzaJogador) pos.y = cabeca.y - 10;
+      }
       el.hidden = pos.x < 25 || pos.x > this.w - 25 || pos.y < (this.mobile ? 200 : 120) || pos.y > this.h - 100;
       el.style.transform = `translate(${pos.x}px,${pos.y}px) translate(-50%,-100%)`;
       const detalhe = el.lastElementChild;

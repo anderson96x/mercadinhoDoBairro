@@ -6,7 +6,7 @@ A planta está implementada no jogo. A coleta, a entrega de ingredientes e a rep
 
 O desenho usa coordenadas do jogo, sem equivalência com metros. [Etapas de expansão](PLANTA-LOJA-ETAPAS.svg) e [crescimento futuro](PLANTA-LOJA-CRESCIMENTO.svg) acompanham a mesma configuração.
 
-Capturas: [loja inicial](previews/loja-n1.png), [leite no N5](previews/loja-n5.png), [loja no N15](previews/loja-n15.png) e [celular](previews/loja-n15-mobile.png).
+Capturas: [loja inicial](previews/loja-n1.png), [leite no N5](previews/loja-n5.png), [loja no N15](previews/loja-n15.png), [celular](previews/loja-n15-mobile.png) e [escritório com paredes alinhadas](previews/escritorio.png).
 
 ## Organização e dimensões
 
@@ -14,13 +14,13 @@ O terreno aumentou para **40 × 37 u**, centrado em `(4; -4)`. A câmera e a nav
 
 A loja começa com **12,2 × 15 u**, apenas tomates e a infraestrutura inicial. O salão completo ocupa `x=-3,1…21,1`, `z=-8,3…6,7`, com **24,2 × 15 u**. O anexo artesanal ocupa `x=9,1…21,1`, `z=-19,5…-8,3`, com **12 × 11,2 u**. Área final aproximada: **363 + 134,4 = 497,4 u²**, pelas linhas centrais das paredes.
 
-- Entrada, cestas, escritório e caixa conservam suas posições.
+- Entrada, cestas, mesa do escritório e caixa conservam suas posições. O escritório usa as paredes externas ao fundo e à esquerda; sua divisória lateral e piso vão até o fundo do salão em `z=-8,3`, sem uma parede interna duplicada em `z=-6`.
 - Tomate e milho têm **2,2 u livres** entre bancas; tomate, ovos e trigo têm **2 u** entre as bordas da mesma fileira.
 - A padaria fica mais ao fundo, separada das bancas da frente e da entrega de trigo.
 - Leite e queijo continuam em **ilhas frias independentes das paredes**. O leite permanece no mesmo lugar do N5 em diante.
 - Morango, mel, queijo e geleia ocupam um anexo mais largo e profundo. Há 3,1 u entre a borda das bancas centrais e a borda das ilhas laterais; o corredor externo tem 2,5 u até a linha da parede.
 - Fazenda e oficinas foram afastadas entre si e da loja. Estufa e apiário ficam em `z=-17`; queijaria e cozinha em `z=-11,4`. O acesso de serviço do anexo fica em `x=9,1`, `z=-14…-10,7`.
-- A fila mantém dez posições possíveis, de `(2,2; 3,5)` a `(12,55; 3,5)`, com 1,15 u entre centros. Antes da compra de cestas extras, são cinco.
+- A fila mantém dez posições possíveis, de `(2,2; 3,5)` a `(12,55; 3,5)`, com 1,15 u entre centros, sem marcações no piso. Antes da compra de cestas extras, são cinco. Os números nas plantas indicam posições de espera apenas na documentação.
 
 ## Móveis implementados
 
@@ -64,7 +64,7 @@ Pisos e equipamentos futuros permanecem ocultos até a compra correspondente. A 
 | B: continuação dos artesanais | `x=21,1…30,1`, `z=-19,5…-8,3` | `x=21,1`, `z=-15,2…-13,2` |
 | C: continuação ao fundo | `x=9,1…21,1`, `z=-30,7…-19,5` | `z=-19,5`, `x=11,1…14,7` |
 
-Os painéis continuam fechados e com colisão. As reservas não adicionam compras ou produtos ao jogo atual. Quando novos departamentos forem definidos, ampliar novamente terreno, limites, câmera, rua/calçada, navegação e migração dos salvamentos. Cada ampliação deve prolongar os corredores e reservar a conexão seguinte antes de colocar móveis.
+Os painéis continuam fechados e com colisão, usando o mesmo acabamento das paredes. O perímetro baixo da fachada, lateral direita e anexo tem altura uniforme de 0,75 u, com tampo e rodapé verdes contínuos. As reservas não adicionam compras ou produtos ao jogo atual. Quando novos departamentos forem definidos, ampliar novamente terreno, limites, câmera, rua/calçada, navegação e migração dos salvamentos. Cada ampliação deve prolongar os corredores e reservar a conexão seguinte antes de colocar móveis.
 
 ## Interação e validação
 

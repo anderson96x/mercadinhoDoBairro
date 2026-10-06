@@ -8,7 +8,7 @@
 <rect x="42" y="126" width="438" height="471" rx="12" fill="#fff" stroke="#e1e3d9"/><text x="64" y="159" class="t">01 / NÍVEIS 1–2</text>
 <path d="M128,278.4H274.4V144H418.40000000000003V458.4H128Z" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>
 <rect x="128" y="278.4" width="146.39999999999998" height="180" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
-<rect x="128" y="306" width="50.400000000000006" height="48" fill="#d8ddd1" stroke="#8b9c8d"/>
+<rect x="128" y="278.4" width="50.400000000000006" height="75.6" fill="#d8ddd1" stroke="#8b9c8d"/>
 <text x="132.8" y="333.6" class="mini">ESCRITÓRIO</text>
 <rect x="185.6" y="369.6" width="26.400000000000002" height="16.799999999999997" fill="#efab8c" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(198.8,378)" text-anchor="middle" dominant-baseline="middle" class="f">TOMATES</text>
@@ -28,7 +28,7 @@
 <rect x="504" y="126" width="438" height="471" rx="12" fill="#fff" stroke="#e1e3d9"/><text x="526" y="159" class="t">02 / NÍVEL 3</text>
 <path d="M590,278.4H736.4V144H880.4000000000001V458.4H590Z" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>
 <rect x="590" y="278.4" width="146.39999999999998" height="180" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
-<rect x="590" y="306" width="50.400000000000006" height="48" fill="#d8ddd1" stroke="#8b9c8d"/>
+<rect x="590" y="278.4" width="50.400000000000006" height="75.6" fill="#d8ddd1" stroke="#8b9c8d"/>
 <text x="594.8" y="333.6" class="mini">ESCRITÓRIO</text>
 <rect x="647.6" y="369.6" width="26.400000000000002" height="16.799999999999997" fill="#efab8c" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(660.8,378)" text-anchor="middle" dominant-baseline="middle" class="f">TOMATES</text>
@@ -50,7 +50,7 @@
 <rect x="966" y="126" width="438" height="471" rx="12" fill="#fff" stroke="#e1e3d9"/><text x="988" y="159" class="t">03 / NÍVEL 4</text>
 <path d="M1052,278.4H1198.4V144H1342.4V458.4H1052Z" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>
 <rect x="1052" y="278.4" width="182.39999999999998" height="180" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
-<rect x="1052" y="306" width="50.400000000000006" height="48" fill="#d8ddd1" stroke="#8b9c8d"/>
+<rect x="1052" y="278.4" width="50.400000000000006" height="75.6" fill="#d8ddd1" stroke="#8b9c8d"/>
 <text x="1056.8" y="333.6" class="mini">ESCRITÓRIO</text>
 <rect x="1109.6" y="369.6" width="26.400000000000002" height="16.799999999999997" fill="#efab8c" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(1122.8,378)" text-anchor="middle" dominant-baseline="middle" class="f">TOMATES</text>
@@ -74,7 +74,7 @@
 <rect x="42" y="619" width="438" height="471" rx="12" fill="#fff" stroke="#e1e3d9"/><text x="64" y="652" class="t">04 / NÍVEIS 5–6</text>
 <path d="M128,771.4H274.4V637H418.40000000000003V951.4H128Z" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>
 <rect x="128" y="771.4" width="218.39999999999998" height="180" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
-<rect x="128" y="799" width="50.400000000000006" height="48" fill="#d8ddd1" stroke="#8b9c8d"/>
+<rect x="128" y="771.4" width="50.400000000000006" height="75.6" fill="#d8ddd1" stroke="#8b9c8d"/>
 <text x="132.8" y="826.6" class="mini">ESCRITÓRIO</text>
 <rect x="185.6" y="862.6" width="26.400000000000002" height="16.799999999999997" fill="#efab8c" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(198.8,871)" text-anchor="middle" dominant-baseline="middle" class="f">TOMATES</text>
@@ -100,7 +100,7 @@
 <rect x="504" y="619" width="438" height="471" rx="12" fill="#fff" stroke="#e1e3d9"/><text x="526" y="652" class="t">05 / NÍVEIS 7–10</text>
 <path d="M590,771.4H736.4V637H880.4000000000001V951.4H590Z" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>
 <rect x="590" y="771.4" width="290.40000000000003" height="180" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
-<rect x="590" y="799" width="50.400000000000006" height="48" fill="#d8ddd1" stroke="#8b9c8d"/>
+<rect x="590" y="771.4" width="50.400000000000006" height="75.6" fill="#d8ddd1" stroke="#8b9c8d"/>
 <text x="594.8" y="826.6" class="mini">ESCRITÓRIO</text>
 <rect x="647.6" y="862.6" width="26.400000000000002" height="16.799999999999997" fill="#efab8c" stroke="#8b9585" stroke-width="0.6"/>
 <text transform="translate(660.8,871)" text-anchor="middle" dominant-baseline="middle" class="f">TOMATES</text>
@@ -136,7 +136,7 @@
 <path d="M1052,771.4H1198.4V637H1342.4V951.4H1052Z" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>
 <rect x="1052" y="771.4" width="290.40000000000003" height="180" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
 <rect x="1198.4" y="637" width="144" height="134.39999999999998" fill="#f4f0e5" stroke="#315c49" stroke-width="2"/>
-<rect x="1052" y="799" width="50.400000000000006" height="48" fill="#d8ddd1" stroke="#8b9c8d"/>
+<rect x="1052" y="771.4" width="50.400000000000006" height="75.6" fill="#d8ddd1" stroke="#8b9c8d"/>
 <text x="1056.8" y="826.6" class="mini">ESCRITÓRIO</text>
 <rect x="1198.4" y="637" width="24" height="133.2" fill="#d8e9e4" />
 <rect x="1109.6" y="862.6" width="26.400000000000002" height="16.799999999999997" fill="#efab8c" stroke="#8b9585" stroke-width="0.6"/>
