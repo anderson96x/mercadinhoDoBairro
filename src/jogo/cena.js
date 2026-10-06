@@ -1650,10 +1650,10 @@ export class Cena {
       el.hidden = pos.x < 25 || pos.x > this.w - 25 || pos.y < (this.mobile ? 200 : 120) || pos.y > this.h - 100;
       el.style.transform = `translate(${pos.x}px,${pos.y}px) translate(-50%,-100%)`;
       const detalhe = el.lastElementChild;
+      detalhe.hidden = tipo === 'horta' && !!OFICINAS[produto];
       if (tipo === 'horta' && OFICINAS[produto]) {
-        const receita = OFICINAS[produto], oficina = e.oficinas[produto];
-        const ingredientes = Object.entries(receita.ingredientes).map(([id, qtd]) => `${PRODUTOS[id].nome}: ${oficina.ingredientes[id]}/${qtd}`).join(' · ');
-        detalhe.textContent = `${ingredientes} → ${receita.rendimento} ${PRODUTOS[produto].plural.toLocaleLowerCase('pt-BR')} · ${e.produtos[produto].horta} prontos · ${Math.floor(oficina.progresso / receita.segundos * 100)}%`;
+        // Os detalhes de fabricação ficam no painel fixo de produção.
+        detalhe.textContent = '';
       }
       else if (tipo === 'horta') detalhe.textContent = `${e.produtos[produto].horta} para colher`;
       else if (tipo === 'loja') detalhe.textContent = `${e.produtos[produto].prateleira} / ${PRODUTOS[produto].capacidadePrateleira}`;

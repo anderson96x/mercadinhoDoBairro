@@ -4,6 +4,7 @@ import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
 import { BANCO, statusColeta } from '../jogo/banco.js';
 import { statusAssalto } from '../jogo/assalto.js';
 import { atualizarPainelClientes } from './clientes.js';
+import { atualizarPainelProducao } from './producao.js';
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
   { id: 'mercado', titulo: 'Mercado' },
@@ -46,6 +47,13 @@ export class Interface {
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
         </aside>
         <div id="atividade" role="status"></div>
+        <aside class="painel-producao" id="painel-producao" aria-label="Produção artesanal" hidden>
+          <details id="producao-detalhes">
+            <summary><span>Produção</span><span id="producao-resumo">0 prontos</span><span class="producao-seta" aria-hidden="true">⌃</span></summary>
+            <div id="lista-producao" class="lista-producao"></div>
+            <p class="producao-dica">Entregue os ingredientes e recolha os produtos nas oficinas.</p>
+          </details>
+        </aside>
         <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Arraste para andar · botão direito ou dois dedos para mover o mapa</span></span></div>
         <footer class="rodape">
           <div class="inventario" id="inventario" hidden><div class="inventario-conteudo"><div class="inventario-titulo"><b id="nivel-inventario">Inventário</b><span id="capacidade">${this.sim.estado.jogador.inventario.length} / ${this.sim.capacidade}</span></div><div id="itens"></div></div></div>
@@ -64,6 +72,7 @@ export class Interface {
         <dialog id="painel" aria-labelledby="painel-titulo"><div id="painel-conteudo"></div></dialog>
       </main>`;
     this.el = id => document.getElementById(id);
+    this.el('producao-detalhes').open = window.innerWidth > 700;
     this.el('saldo').previousElementSibling.textContent = 'SALDO DISPONÍVEL';
     const dinheiroCaixa = document.createElement('div'); dinheiroCaixa.id = 'dinheiro-caixa'; dinheiroCaixa.className = 'dinheiro-caixa';
     this.el('saldo').closest('.saldo').append(dinheiroCaixa);
@@ -104,6 +113,7 @@ export class Interface {
   atualizar() {
     const s = this.sim, e = s.estado, m = s.missao();
     this.atualizarBanco();
+    atualizarPainelProducao(this.el('painel-producao'), e);
     const identidade = JSON.stringify(e.personalizacao);
     if (identidade !== this.ultimaIdentidade) {
       const marca = document.querySelector('.marca h1');

@@ -6,5 +6,45 @@
 .etiqueta-mel b { color: #a77415; }
 .etiqueta-queijo b { color: #9e771d; }
 .etiqueta-geleia b { color: #9d3c65; }
-.etiqueta-queijo, .etiqueta-geleia { max-width: min(320px, 80vw); white-space: normal; line-height: 1.5; }
+.etiqueta-queijo, .etiqueta-geleia { line-height: 1.5; }
 .melhoria .requisito-melhoria { color: #9a6f39; margin-top: 5px; }
+
+.painel-producao {
+  position: absolute; left: max(28px, env(safe-area-inset-left)); bottom: 112px;
+  z-index: 6; width: 280px; border: 1px solid #e2e6d9; border-radius: 17px;
+  background: #fffcefef; box-shadow: 0 8px 28px #25452b20; color: var(--ui-texto);
+}
+.painel-producao summary {
+  display: flex; align-items: center; gap: 10px; padding: 13px 15px;
+  cursor: pointer; list-style: none; font-family: 'Outfit', sans-serif; font-weight: 700;
+}
+.painel-producao summary::-webkit-details-marker { display: none; }
+.painel-producao summary:focus-visible { outline: 3px solid #f1aa32; outline-offset: 3px; border-radius: 17px; }
+#producao-resumo { margin-left: auto; font: 600 11px 'DM Sans', sans-serif; color: #657c60; }
+.producao-seta { font-size: 19px; transform: rotate(180deg); }
+.painel-producao details[open] .producao-seta { transform: none; }
+.lista-producao { display: grid; gap: 10px; padding: 0 12px; max-height: max(110px, calc(100dvh - 410px)); overflow-y: auto; overscroll-behavior: contain; }
+.producao-cartao { padding: 11px; border-radius: 12px; background: #fff; border: 1px solid #e7e8dd; }
+.producao-cartao-topo { display: flex; gap: 7px; align-items: center; margin-bottom: 11px; }
+.producao-cartao-topo > .icone { width: 22px; height: 22px; }
+.producao-cartao h3 { font-size: 13px; flex: 1; }
+.producao-cartao.geleia h3 { color: #9d3c65; }
+.producao-cartao.queijo h3 { color: #9e771d; }
+.producao-prontos { font-size: 10px; font-weight: 700; white-space: nowrap; border-radius: 6px; padding: 4px 5px; background: #edf3e5; color: #46683e; }
+.producao-ingredientes { display: grid; gap: 6px; }
+.producao-ingredientes > span { display: flex; gap: 6px; align-items: center; font-size: 11px; }
+.producao-ingredientes .icone { width: 17px; height: 17px; }
+.producao-ingredientes b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.producao-ingredientes .faltando b { color: #a76537; }
+.producao-receita { color: #7b8473; font-size: 10px; margin: 9px 0; }
+.producao-status { display: flex; justify-content: space-between; gap: 8px; font-size: 10px; color: #65765c; }
+.producao-cartao progress { display: block; width: 100%; height: 5px; margin-top: 6px; border: 0; border-radius: 6px; overflow: hidden; background: #e7ebdf; accent-color: #4f8961; }
+.producao-cartao progress::-webkit-progress-bar { background: #e7ebdf; }
+.producao-cartao progress::-webkit-progress-value { background: #4f8961; border-radius: 6px; }
+.producao-cartao progress::-moz-progress-bar { background: #4f8961; }
+.producao-dica { padding: 10px 15px 13px; font-size: 10px; line-height: 1.4; color: #7b8473; }
+@media (max-width: 700px) {
+  .painel-producao { left: 14px; bottom: max(205px, calc(env(safe-area-inset-bottom) + 190px)); width: min(280px, calc(100vw - 28px)); border-radius: 14px; }
+  .painel-producao summary { padding: 10px 13px; font-size: 14px; }
+  .lista-producao { max-height: max(100px, calc(100dvh - 450px)); }
+}
