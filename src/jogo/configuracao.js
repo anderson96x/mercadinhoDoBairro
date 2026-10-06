@@ -1,5 +1,11 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
 export const ALTURA_PAREDE_BAIXA = 0.75;
+export const ESCRITORIO = {
+  limites: { minX: -3.1, maxX: 1.1, minZ: -8.3, maxZ: -4.8 },
+  mesa: { x: -0.8, z: -7.65, w: 2.7, d: 0.85 },
+  estante: { x: -2.65, z: -7.25, w: 0.45, d: 1.7 },
+  cadeira: { x: -0.9, z: -6.55 }
+};
 
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
@@ -46,7 +52,7 @@ export const CONFIG = {
   acessoCaixa: { x: 1.55, z: 5.25 },
   clienteCaixa: { x: 2.2, z: 3.5 },
   cadeiraCaixa: { x: 3.45, z: 6.05 },
-  cadeiraEscritorio: { x: -0.9, z: -3.5 },
+  cadeiraEscritorio: ESCRITORIO.cadeira,
   areaFuncionarioCaixa: { x: 3.45, z: 6.05, w: 0.8, d: 0.9 },
   anguloCaixa: Math.PI,
   anguloEscritorio: Math.PI,

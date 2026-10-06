@@ -1,10 +1,12 @@
 import { writeFileSync } from 'node:fs';
-import { CONFIG, PRODUTOS, ALA_PADARIA } from '../src/jogo/configuracao.js';
+import { CONFIG, PRODUTOS, ALA_PADARIA, ESCRITORIO } from '../src/jogo/configuracao.js';
 import { geometriaEstacao, intervaloEstacoes } from '../src/jogo/estacoes.js';
 
 // Concept drawing only: coordinates use the game's x/z units, not metres.
 const S = 25, ox = 425, oy = 725;
 const X = x => ox + x * S, Y = z => oy + z * S;
+const office = ESCRITORIO.limites;
+const officeWidth = office.maxX - office.minX, officeDepth = office.maxZ - office.minZ;
 const fixtures = [
   { id: 'tomate', label: 'TOMATES', sub: 'N1', x: 2.8, z: 0, w: 2.2, d: 1.4, color: '#efab8c' },
   { id: 'milho', label: 'MILHO', sub: 'N3', x: 2.8, z: -3, w: 2.2, d: 1.4, color: '#e7d68b' },
@@ -124,13 +126,15 @@ text(X(21.5),Y(0),'→','label');
 path([[-2.8,6.7],[-3.1,6.7],[-3.1,2.2]],'wall');
 path([[-3.1,-0.8],[-3.1,-8.3]],'wall');
 // Office with opening to the west working passage.
-rect(-3.1,-8.3,4.2,6.3,'#e2e2d8');
-path([[-3.1,-8.3],[1.1,-8.3],[1.1,-2],[0,-2]],'wall');
-path([[-1.4,-2],[-3.1,-2]],'wall');
-block(-2.1,-5.2,2.1,0.9,'MESA','computador','#c8b999');
-text(X(-1),Y(-3.2),'ESCRITÓRIO','small','text-anchor="middle"');
+rect(office.minX,office.minZ,officeWidth,officeDepth,'#e2e2d8');
+path([[office.minX,office.minZ],[office.maxX,office.minZ],[office.maxX,office.maxZ],[0,office.maxZ]],'wall');
+path([[-1.4,office.maxZ],[office.minX,office.maxZ]],'wall');
+const mesaEscritorio = ESCRITORIO.mesa, estanteEscritorio = ESCRITORIO.estante;
+block(mesaEscritorio.x - mesaEscritorio.w / 2, mesaEscritorio.z - mesaEscritorio.d / 2, mesaEscritorio.w, mesaEscritorio.d, 'MESA', 'computador', '#c8b999');
+rect(estanteEscritorio.x - estanteEscritorio.w / 2, estanteEscritorio.z - estanteEscritorio.d / 2, estanteEscritorio.w, estanteEscritorio.d, '#a88660');
+text(X(-1),Y(office.maxZ-0.7),'ESCRITÓRIO','small','text-anchor="middle"');
 // Sliding door and artisan staff corridor partition, with shelf access openings.
-line(-1.4,-2,0,-2,'stroke="#397b78" stroke-width="2" stroke-dasharray="4 3"');
+line(-1.4,office.maxZ,0,office.maxZ,'stroke="#397b78" stroke-width="2" stroke-dasharray="4 3"');
 
 
 fixtures.forEach(f => {
@@ -231,8 +235,8 @@ for (let i=0;i<stages.length;i++) {
   stageParts.push(`<path d="${full}" fill="#f6f7f2" stroke="#d8dfd2" stroke-dasharray="4 4"/>`);
   box(-3.1,-8.3,stage.right+3.1,15,'#f4f0e5','stroke="#315c49" stroke-width="2"');
   if(stage.annex) box(9.1,-19.5,12,11.2,'#f4f0e5','stroke="#315c49" stroke-width="2"');
-  box(-3.1,-8.3,4.2,6.3,'#d8ddd1','stroke="#8b9c8d"');
-  stageParts.push(`<text x="${sx(-2.7)}" y="${sy(-3.7)}" class="mini">ESCRITÓRIO</text>`);
+  box(office.minX,office.minZ,officeWidth,officeDepth,'#d8ddd1','stroke="#8b9c8d"');
+  stageParts.push(`<text x="${sx(-2.7)}" y="${sy(office.maxZ-0.8)}" class="mini">ESCRITÓRIO</text>`);
   if(stage.annex) box(9.1,-19.5,2,11.1,'#d8e9e4');
   for (const fixture of fixtures.filter(f=>unlock[f.id]<=stage.level)) {
     const f=fixture;
@@ -271,7 +275,7 @@ fb(21.1,-8.3,9,15,'#e5eddb','stroke="#8d70a5" stroke-width="2" stroke-dasharray=
 fb(21.1,-19.5,9,11.2,'#e5eddb','stroke="#8d70a5" stroke-width="2" stroke-dasharray="8 5"');
 fb(9.1,-30.7,12,11.2,'#e5eddb','stroke="#8d70a5" stroke-width="2" stroke-dasharray="8 5"');
 fb(18.6,-19.5,2.5,22.1,'#d8e9e4');
-fb(-3.1,-8.3,4.2,6.3,'#d8ddd1');
+fb(office.minX,office.minZ,officeWidth,officeDepth,'#d8ddd1');
 for(const f of fixtures) fb(f.x-f.w/2,f.z-f.d/2,f.w,f.d,f.color,'stroke="#819385" stroke-width="1"');
 for(const [a,b] of [[[21.1,-1.6],[21.1,1.6]],[[21.1,-15.2],[21.1,-13.2]],[[11.1,-19.5],[14.7,-19.5]]])
   fl(a,b,'stroke="#8d70a5" stroke-width="6" stroke-dasharray="7 4"');

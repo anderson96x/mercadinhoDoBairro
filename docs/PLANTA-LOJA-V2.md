@@ -14,7 +14,7 @@ O terreno aumentou para **40 × 37 u**, centrado em `(4; -4)`. A câmera e a nav
 
 A loja começa com **12,2 × 15 u**, apenas tomates e a infraestrutura inicial. O salão completo ocupa `x=-3,1…21,1`, `z=-8,3…6,7`, com **24,2 × 15 u**. O anexo artesanal ocupa `x=9,1…21,1`, `z=-19,5…-8,3`, com **12 × 11,2 u**. Área final aproximada: **363 + 134,4 = 497,4 u²**, pelas linhas centrais das paredes.
 
-- Entrada, cestas, mesa do escritório e caixa conservam suas posições. O escritório usa as paredes externas ao fundo e à esquerda; sua divisória lateral e piso vão até o fundo do salão em `z=-8,3`, sem uma parede interna duplicada em `z=-6`.
+- Entrada, cestas e caixa conservam suas posições. O escritório compacto mede `4,2 × 3,5 u`, entre `z=-8,3` e `z=-4,8`, usando as paredes externas ao fundo e à esquerda. A porta e a divisória frontal ficam em `z=-4,8`, liberando `2,8 u` de profundidade para o salão. A mesa fica junto à parede do fundo (`z=-7,65`), a estante ocupa o canto esquerdo (`z=-7,25`) e a cadeira acompanha a mesa (`z=-6,55`), com acesso livre pela porta.
 - Tomate e milho têm **2,2 u livres** entre bancas; tomate, ovos e trigo têm **2 u** entre as bordas da mesma fileira.
 - A padaria fica mais ao fundo, separada das bancas da frente e da entrega de trigo.
 - Leite e queijo continuam em **ilhas frias independentes das paredes**. O leite permanece no mesmo lugar do N5 em diante.
@@ -70,7 +70,7 @@ Os painéis continuam fechados e com colisão, usando o mesmo acabamento das par
 
 O alcance considera o retângulo real da estação, sem exigir um ponto no piso. Paredes ou móveis entre o jogador e o objeto impedem a transferência. Inventário misto abastece somente a banca visitada; oficinas recebem apenas os ingredientes da receita. A escolha atua em uma estação por intervalo.
 
-Os **19 envelopes de coleta e reposição** têm separação superior a duas vezes o raio de interação; portanto, produtos diferentes não compartilham alcance. O teste também verifica todos os lados acessíveis dos objetos, corredor entre estufa e oficina, bloqueio através da parede do escritório e preservação de dinheiro, compras, ingredientes e cargas na migração.
+Os **19 envelopes de coleta e reposição** têm separação superior a duas vezes o raio de interação; portanto, produtos diferentes não compartilham alcance. O teste também verifica todos os lados acessíveis dos objetos, corredor entre estufa e oficina, separação do escritório e acesso ao salão recuperado, e preservação de dinheiro, compras, ingredientes e cargas na migração.
 
 Regenerar as plantas com `node scripts/render-floor-plan.mjs`. Verificar ida e volta de todos os pontos de coleta, reposição e compra nos níveis 1, 3, 4, 5, 7, 9, 11, 12, 13 e 15 com `node scripts/check-store-layout.mjs`. Rodar `npm test` e `npm run build` para conferir circulação com dez clientes, produção, repositor, animações e salvamentos.
 
