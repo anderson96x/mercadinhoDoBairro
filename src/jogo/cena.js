@@ -649,6 +649,18 @@ export class Cena {
     this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, -0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
     this.jogador = personagem(0xf8ecd1, 0xe9b489, true); this.cena.add(this.jogador);
+    // Triângulo voltado para a câmera, exclusivo do jogador e legível em qualquer zoom.
+    this.marcadorJogador = new THREE.Group();
+    this.marcadorJogador.name = 'marcador-jogador';
+    const triangulo = new THREE.Shape();
+    triangulo.moveTo(-0.5, 0.3); triangulo.lineTo(0.5, 0.3); triangulo.lineTo(0, -0.5); triangulo.closePath();
+    const geometriaMarcador = new THREE.ShapeGeometry(triangulo);
+    for (const [cor, escala, ordem] of [[0x173f32, 1, 200], [0xffd45a, 0.74, 201]]) {
+      const parte = new THREE.Mesh(geometriaMarcador, new THREE.MeshBasicMaterial({ color: cor, transparent: true, depthTest: false, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
+      parte.scale.setScalar(escala); parte.renderOrder = ordem; parte.userData.fundo = ordem;
+      this.marcadorJogador.add(parte);
+    }
+    this.cena.add(this.marcadorJogador);
     this.clientes = new Map(); this.retratosClientes = new Map(); this.labels = []; this.alvosHorta = []; this.efeitosCrescimento = [];
     this.raycaster = new THREE.Raycaster(); this.ponteiroRaycast = new THREE.Vector2();
     this.produtos = {};
@@ -1436,6 +1448,11 @@ export class Cena {
     this.animarAtendimento(this.jogador, tempo, atendendoNoCaixa && !e.melhorias.caixa && e.jogador.sentado, progressoCaixa);
     this.animarComputador(this.jogador, tempo, !!e.jogador.sentadoEscritorio);
     if (sim.assaltoNaLoja && !e.melhorias.caixa && e.jogador.sentadoCaixa) this.animarSustoCaixa(this.jogador, tempo);
+    const unidadePorPixel = (this.camera.top - this.camera.bottom) / (this.camera.zoom * this.h);
+    this.marcadorJogador.quaternion.copy(this.camera.quaternion);
+    this.marcadorJogador.scale.setScalar(unidadePorPixel * 22);
+    this.marcadorJogador.position.copy(this.jogador.userData.corpo.localToWorld(new THREE.Vector3(0, 1.7, 0)))
+      .add(new THREE.Vector3(0, unidadePorPixel * 18, 0).applyQuaternion(this.camera.quaternion));
     const embalagem = this.atualizarEmbalagem(sim);
     const paletaAtual = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
     this.cestasEntrada.forEach((cesta, i) => {
