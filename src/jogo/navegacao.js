@@ -1,3 +1,21 @@
+// Interseção exata com retângulos: serve tanto para caminhos como para alcance.
+export function segmentoLivre(inicio, fim, obstaculos, margem = 0) {
+  const dx = fim.x - inicio.x, dz = fim.z - inicio.z;
+  for (const o of obstaculos) {
+    let entrada = 0, saida = 1;
+    for (const [pos, delta, centro, metade] of [[inicio.x, dx, o.x, o.w / 2 + margem], [inicio.z, dz, o.z, o.d / 2 + margem]]) {
+      if (Math.abs(delta) < 1e-9) {
+        if (Math.abs(pos - centro) >= metade) { entrada = 2; break; }
+      } else {
+        const a = (centro - metade - pos) / delta, b = (centro + metade - pos) / delta;
+        entrada = Math.max(entrada, Math.min(a, b)); saida = Math.min(saida, Math.max(a, b));
+      }
+    }
+    if (entrada <= saida) return false;
+  }
+  return true;
+}
+
 // Busca local em grade; cada segmento também respeita o espaço entre pessoas.
 export function buscarCaminho(inicio, destino, livre, limites) {
   if (!livre(destino, destino)) return [];

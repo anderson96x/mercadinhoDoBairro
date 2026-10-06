@@ -155,7 +155,7 @@ test('carro-forte fica na rua, um agente protege a van e o outro recolhe o dinhe
         assert.ok(ponta.x > dobradica.x && ponta.z < dobradica.z, 'a porta abre para fora, dobrando para trás');
         assert.ok(Math.hypot(visual.agentes[1].position.x - ponta.x, visual.agentes[1].position.z - ponta.z) < 0.5, 'o guarda espera ao lado da porta aberta');
       }
-      if (tempo >= 14 && tempo < 17) assert.ok(visual.agentes[0].position.z <= 5.21);
+      if (tempo >= 14 && tempo < 17) assert.ok(visual.agentes[0].position.z <= CONFIG.acessoCaixa.z + 0.01);
     }
     visual.atualizar(null);
     assert.equal(cena.children.length, 0);

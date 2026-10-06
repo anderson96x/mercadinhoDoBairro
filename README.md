@@ -26,14 +26,14 @@ Para testar em um celular na mesma rede Wi-Fi, mantenha o servidor aberto e aces
 | Andar no celular | Toque e segure no cenário; arraste para escolher a direção. Solte para parar. |
 | Andar com o mouse | Clique, segure e arraste no cenário. |
 | Andar pelo teclado | W, A, S, D ou as setas. |
-| Colher | Fique ao lado da horta. |
-| Repor | Fique ao lado da prateleira do mesmo produto. |
+| Colher | Aproxime-se da horta, curral ou oficina pelo lado acessível desejado. |
+| Repor | Aproxime-se da banca ou ilha fria do mesmo produto. |
 | Vender | Sente-se na cadeira do caixa enquanto há clientes esperando. |
 | Melhorar ou personalizar a loja | Sente-se na cadeira do escritório e use o computador. |
 | Pausar | Botão de pausa ou Esc. |
 | Som, ajuda e novo jogo | Menu de pausa. |
 
-O joystick aparece onde você começa a arrastar. O movimento acompanha as direções da tela. As interações são automáticas por proximidade, como na referência.
+O joystick aparece onde você começa a arrastar. O movimento acompanha as direções da tela. As interações continuam automáticas junto aos objetos, por qualquer lado acessível, sem círculos no chão. As hortas, bancas e oficinas ficam mais afastadas para que os alcances de mercadorias diferentes não se cruzem. Paredes impedem interações através delas. Para produzir pão, entregue trigo junto à caixa da padaria.
 
 ## O que já funciona
 
@@ -108,7 +108,9 @@ npm run preview
 
 Comece por [docs/COMO-ALTERAR.md](docs/COMO-ALTERAR.md). A simulação não importa Three.js nem elementos da página, o que permite testar a economia independentemente do visual.
 
-Esta versão tem três produtos e duas etapas físicas da loja. A expansão no nível 4 custa R$ 500: construa o galinheiro na fazenda, colete os ovos e leve-os à prateleira perto dos outros produtos. O terreno já começa maior; apenas a loja recebe uma extensão de 3 unidades. Milho é um produto independente e não é requisito para os ovos. Novos mapas, máquinas, receitas e personagens podem ser adicionados sobre a estrutura atual.
+Esta versão tem dez produtos e ampliações até a ala artesanal. A loja começa pequena: milho no nível 3, extensões de 3 unidades para ovos no nível 4, leite no nível 5 e trigo no nível 7, padaria no nível 9 e anexo artesanal no nível 11. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
+
+O novo [layout da loja](docs/PLANTA-LOJA-V2.md) organiza bancas alinhadas, padaria ao fundo, fila marcada para cinco ou dez clientes e ilhas frias de leite e queijo. O leite mantém a mesma posição desde o nível 5. Painéis removíveis reservam futuras conexões; as próximas alas ainda dependem de conteúdo e ampliação do terreno. Salvamentos antigos preservam dinheiro, produtos, receitas e funcionários, com posições recuperadas em locais livres.
 
 ## Créditos e dependências
 

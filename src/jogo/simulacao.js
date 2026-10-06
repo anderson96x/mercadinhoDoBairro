@@ -1,7 +1,8 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
-import { buscarCaminho } from './navegacao.js';
+import { buscarCaminho, segmentoLivre } from './navegacao.js';
+import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
@@ -14,17 +15,9 @@ const velocidadeJogadorAtiva = MELHORIAS.find(m => m.id === 'velocidade')?.ativa
 const ajudanteAtivo = MELHORIAS.find(m => m.id === 'ajudante')?.ativa !== false;
 const velocidadeAjudanteAtiva = MELHORIAS.find(m => m.id === 'velocidadeAjudante')?.ativa !== false;
 
-// Mede a distância à borda do objeto, permitindo interagir por qualquer lado.
-function pertoEstacao(ator, centro, largura, profundidade) {
-  return Math.hypot(
-    Math.max(0, Math.abs(ator.x - centro.x) - largura / 2),
-    Math.max(0, Math.abs(ator.z - centro.z) - profundidade / 2)
-  ) < CONFIG.raioInteracao;
-}
-
 export function estadoInicial() {
   return {
-    versao: CONFIG.versaoSalvamento, dinheiro: CONFIG.dinheiroInicial,
+    versao: CONFIG.versaoSalvamento, versaoLayout: CONFIG.versaoLayout, dinheiro: CONFIG.dinheiroInicial,
     banco: estadoBanco(),
     lojaAberta: true,
     jogador: { ...CONFIG.inicio, inventario: [] },
@@ -124,6 +117,10 @@ export function validarEstado(dados) {
     ? dados.satisfacoesRecentes.filter(item => satisfacoesValidas.includes(item)).slice(-CONFIG.tamanhoHistoricoReputacao) : [];
   base.jogador.inventario = Array.isArray(dados.jogador?.inventario)
     ? dados.jogador.inventario.filter(id => base.produtos[id]?.liberado).slice(0, CONFIG.capacidadeInicial + 4 * base.melhorias.logistica + (capacidadeExtraAtiva ? 4 * base.melhorias.mochila : 0)) : [];
+  if (dados.versaoLayout === CONFIG.versaoLayout && Number.isFinite(dados.jogador?.x) && Number.isFinite(dados.jogador?.z)) {
+    base.jogador.x = limitar(dados.jogador.x, CONFIG.limiteMundo.minX, CONFIG.limiteMundo.maxX);
+    base.jogador.z = limitar(dados.jogador.z, CONFIG.limiteMundo.minZ, CONFIG.limiteMundo.maxZ);
+  }
   const ajudanteSalvo = dados.funcionarios?.ajudante;
   if (base.melhorias.ajudante && ajudanteSalvo) {
     const produto = base.produtos[ajudanteSalvo.produto]?.liberado ? ajudanteSalvo.produto : 'tomate';
@@ -140,7 +137,7 @@ export function validarEstado(dados) {
       angulo: Number.isFinite(ajudanteSalvo.angulo) ? limitar(ajudanteSalvo.angulo, -Math.PI, Math.PI) : 0
     };
     if (!base.funcionarios.ajudante.inventario.length) base.funcionarios.ajudante.destino = 'horta';
-    if (ajudanteSalvo.x > 12 || ajudanteSalvo.z < -6) Object.assign(base.funcionarios.ajudante, PRODUTOS.ovos.coleta);
+    if (dados.versaoLayout !== CONFIG.versaoLayout) Object.assign(base.funcionarios.ajudante, PRODUTOS[produto].coleta);
   }
   // Retomar em um ponto livre evita que mudanças futuras no mapa prendam o jogador.
   base.som = dados.som === true;
@@ -170,6 +167,8 @@ export class Simulacao {
     this.tempoEsperaAssalto = ASSALTO.espera;
     this.aleatorio = Math.random;
     this.ajudante = this.estado.funcionarios.ajudante;
+    this.liberarPosicao(this.estado.jogador);
+    this.liberarPosicao(this.ajudante);
     if (this.estado.banco.assalto && Array.isArray(salvo?.clientesAssalto)) {
       const fases = ['chegando', 'pegandoCesta', 'comprando', 'indoCaixa', 'fila', 'saindo'];
       this.clientes = salvo.clientesAssalto.filter(c => c && Number.isFinite(c.x) && Number.isFinite(c.z)
@@ -186,6 +185,7 @@ export class Simulacao {
       });
       this.proximaId = this.clientes.length + 1;
       this.proximaOrdemFila = Math.max(0, ...this.clientes.map(c => Number(c.ordemFila) || 0)) + 1;
+      for (const cliente of this.clientes) this.liberarPosicao(cliente);
     }
     this.missaoAnterior = this.missao().indice;
   }
@@ -389,6 +389,8 @@ export class Simulacao {
     this.emitir('melhoria', { id, texto: id === ALA_PADARIA.id
       ? `Padaria: cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${PRODUTOS.pao.preco}.`
       : m.titulo });
+    for (const ator of [this.estado.jogador, this.ajudante, ...this.clientes]) this.liberarPosicao(ator);
+    this.caminhosClientes = new WeakMap();
     return { sucesso: true, dinheiro: this.estado.dinheiro };
   }
   aplicarFertilizante(id) {
@@ -482,43 +484,41 @@ export class Simulacao {
   }
   obstaculos() {
     const caixas = [
-      { ...PRODUTOS.tomate.horta, w: 2.2, d: 3.3 },
-      { ...PRODUTOS.tomate.prateleira, w: 2.2, d: 1.7 },
-      { ...CONFIG.balcao, w: 2.7, d: 1.35 },
+      { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
       ...PAREDES_LOJA.filter(p => !p.lateral || !this.estado.estagioLoja), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA
     ];
-    if (this.estado.produtos.milho.liberado) caixas.push({ ...PRODUTOS.milho.horta, w: 2.2, d: 3.3 }, { ...PRODUTOS.milho.prateleira, w: 2.2, d: 1.7 });
-    if (this.estado.estagioLoja) caixas.push(...ALA_PRODUCAO.paredes.filter(p => (this.estado.estagioLoja < ALA_LEITE.indice || p.x !== 12.1) && (!this.estado.melhorias.alaArtesanal || p.z !== -6)));
-    if (this.estado.melhorias.alaProducao) caixas.push(
-      { ...PRODUTOS.ovos.horta, w: 2.1, d: 2.2 },
-      { ...PRODUTOS.ovos.prateleira, w: 2.3, d: 1.65 }
-    );
+    if (this.estado.estagioLoja) caixas.push(...ALA_PRODUCAO.paredes.filter(p => (this.estado.estagioLoja < ALA_LEITE.indice || p.x !== 12.1) && (!this.estado.melhorias.alaArtesanal || p.z !== -8.3)));
     if (this.estado.estagioLoja >= ALA_LEITE.indice) caixas.push(
-      ...ALA_LEITE.paredes.filter(p => this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1),
-      { ...PRODUTOS.leite.horta, ...PRODUTOS.leite.curral },
-      { ...PRODUTOS.leite.prateleira, w: 2.3, d: 1.15 }
+      ...ALA_LEITE.paredes.filter(p => (this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1) && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal))
     );
     if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(
-      ...ALA_TRIGO.paredes,
-      { ...PRODUTOS.trigo.horta, w: 2.5, d: 3.6 },
-      { ...PRODUTOS.trigo.prateleira, w: 2.3, d: 1.65 }
+      ...ALA_TRIGO.paredes.filter(p => !this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)
     );
     if (this.estado.melhorias.alaPadaria) caixas.push(
-      { ...PRODUTOS.pao.prateleira, w: 3.45, d: 1.35 },
-      { ...ALA_PADARIA.entrada, w: 1.2, d: 1.15 },
-      { x: 8.55, z: 5.25, w: 1.1, d: 1.1 },
-      { x: 12.4, z: 5.25, w: 1.2, d: 1.25 }
+      ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno
     );
     if (this.estado.melhorias.alaArtesanal) caixas.push(...ALA_ARTESANAL.paredes);
-    for (const [id, p] of Object.entries(PRODUTOS).filter(([, p]) => p.nivelMinimo >= 11)) {
-      if (this.estado.produtos[id].liberado) caixas.push(
-        { ...p.horta, w: p.curral?.w ?? 2.5, d: p.curral?.d ?? 3.6 },
-        { ...p.prateleira, w: 2.45, d: 1.8 }
-      );
+    for (const [id, p] of Object.entries(PRODUTOS)) {
+      if (!this.estado.produtos[id].liberado) continue;
+      caixas.push(p.prateleira);
+      if (id !== 'pao') caixas.push(geometriaEstacao(id, 'coleta'));
     }
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
+  }
+  liberarPosicao(ator) {
+    const limites = this.limitesMundo, obstaculos = this.obstaculos();
+    const livre = p => p.x >= limites.minX && p.x <= limites.maxX && p.z >= limites.minZ && p.z <= limites.maxZ &&
+      !obstaculos.some(o => Math.abs(p.x - o.x) < o.w / 2 + 0.32 && Math.abs(p.z - o.z) < o.d / 2 + 0.32);
+    if (livre(ator)) return;
+    for (let raio = 0.4; raio <= 4; raio += 0.4) {
+      for (let i = 0; i < 16; i++) {
+        const p = { x: ator.x + Math.cos(i * Math.PI / 8) * raio, z: ator.z + Math.sin(i * Math.PI / 8) * raio };
+        if (livre(p)) { Object.assign(ator, p); return; }
+      }
+    }
+    Object.assign(ator, CONFIG.inicio);
   }
   obstaculosCliente(ator) {
     const caixas = [...this.obstaculos(), ...MOBILIARIO_CALCADA];
@@ -546,7 +546,7 @@ export class Simulacao {
   }
   caminharCliente(ator, ponto, dt, velocidade = 2.4) {
     ator.andando = false;
-    if (distancia(ator, ponto) < 0.025) return true;
+    if (distancia(ator, ponto) < 0.025) { ator.x = ponto.x; ator.z = ponto.z; return true; }
     if (!dt) return false;
     const obstaculos = this.obstaculosCliente(ator);
     const livre = (inicio, fim) => {
@@ -562,19 +562,7 @@ export class Simulacao {
         const t = comprimento ? limitar(((outro.x - inicio.x) * dx + (outro.z - inicio.z) * dz) / comprimento, 0, 1) : 0;
         return Math.hypot(inicio.x + t * dx - outro.x, inicio.z + t * dz - outro.z) < CONFIG.distanciaClientes - 1e-6;
       })) return false;
-      for (const o of obstaculos) {
-        let entrada = 0, saida = 1;
-        for (const [pos, delta, centro, metade] of [[inicio.x, dx, o.x, o.w / 2 + 0.3], [inicio.z, dz, o.z, o.d / 2 + 0.3]]) {
-          if (Math.abs(delta) < 1e-9) {
-            if (Math.abs(pos - centro) >= metade) { entrada = 2; break; }
-          } else {
-            const a = (centro - metade - pos) / delta, b = (centro + metade - pos) / delta;
-            entrada = Math.max(entrada, Math.min(a, b)); saida = Math.min(saida, Math.max(a, b));
-          }
-        }
-        if (entrada <= saida) return false;
-      }
-      return true;
+      return segmentoLivre(inicio, fim, obstaculos, 0.32);
     };
     let alvo = ponto;
     if (!livre(ator, ponto)) {
@@ -583,7 +571,9 @@ export class Simulacao {
         rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livre, this.limitesMundo), recalcular: this.tempo + 0.6 };
         this.caminhosClientes.set(ator, rota);
       }
-      while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) rota.pontos.shift();
+      while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) {
+        Object.assign(ator, rota.pontos.shift());
+      }
       if (!rota.pontos.length) return false;
       alvo = rota.pontos[0];
     } else this.caminhosClientes.delete(ator);
@@ -640,8 +630,25 @@ export class Simulacao {
   interagir() {
     const jogador = this.estado.jogador;
     this.atividade = jogador.sentadoEscritorio ? 'Usando o computador…' : '';
-    for (const [id, receita] of Object.entries(OFICINAS)) {
-      if (!this.estado.produtos[id].liberado || !pertoEstacao(jogador, PRODUTOS[id].horta, 2.5, 1.6)) continue;
+    if (jogador.sentadoEscritorio || jogador.sentado) return;
+    const candidatos = [];
+    const obstaculos = this.obstaculos();
+    for (const [id, p] of Object.entries(PRODUTOS)) {
+      if (!this.estado.produtos[id].liberado) continue;
+      for (const tipo of id === 'pao' ? ['reposicao'] : ['coleta', 'reposicao']) {
+        const objeto = geometriaEstacao(id, tipo), d = distanciaEstacao(jogador, objeto);
+        if (d >= CONFIG.raioInteracao) continue;
+        const outros = obstaculos.filter(o => o.x !== objeto.x || o.z !== objeto.z || o.w !== objeto.w || o.d !== objeto.d);
+        if (segmentoLivre(jogador, pontoMaisProximo(jogador, objeto), outros)) candidatos.push({ id, tipo, distancia: d });
+      }
+    }
+    candidatos.sort((a, b) => a.distancia - b.distancia);
+    const alvo = candidatos[0];
+    // Proteção para novos móveis que venham a ser configurados com alcance ambíguo.
+    if (!alvo || (candidatos[1] && candidatos[1].distancia - alvo.distancia < 0.1)) return;
+    const { id, tipo } = alvo, p = PRODUTOS[id], e = this.estado.produtos[id];
+    const receita = OFICINAS[id];
+    if (tipo === 'coleta' && receita) {
       const oficina = this.estado.oficinas[id];
       const indice = jogador.inventario.findIndex(item => receita.ingredientes[item] && oficina.ingredientes[item] < receita.capacidadeEntrada);
       if (indice >= 0) {
@@ -654,7 +661,7 @@ export class Simulacao {
         return;
       }
     }
-    if (this.estado.melhorias.alaPadaria && pertoEstacao(jogador, ALA_PADARIA.entrada, 1.2, 1.15)) {
+    if (id === 'pao') {
       const indice = jogador.inventario.indexOf('trigo');
       if (indice >= 0 && this.estado.producao.trigoPadaria < ALA_PADARIA.capacidadeTrigo) {
         this.atividade = 'Entregando trigo aos padeiros…';
@@ -665,12 +672,9 @@ export class Simulacao {
           this.emitir('trigoPadaria', { ponto: ALA_PADARIA.entrada });
         }
       } else if (indice >= 0) this.atividade = 'Estoque de trigo da padaria cheio';
+      return;
     }
-    for (const [id, p] of Object.entries(PRODUTOS)) {
-      if (id === 'pao') continue;
-      const e = this.estado.produtos[id];
-      if (!e.liberado) continue;
-      if (pertoEstacao(jogador, p.prateleira, 2.45, 1.8)) {
+      if (tipo === 'reposicao') {
         const indice = jogador.inventario.indexOf(id);
         if (indice >= 0 && e.prateleira < p.capacidadePrateleira) {
           this.atividade = id === 'leite' ? 'Abastecendo o refrigerador…' : 'Abastecendo a prateleira…';
@@ -682,9 +686,9 @@ export class Simulacao {
           }
         } else if (e.prateleira >= p.capacidadePrateleira && indice >= 0) this.atividade = id === 'leite' ? 'Refrigerador cheio' : 'Prateleira cheia';
       }
-      if (pertoEstacao(jogador, p.horta, p.curral?.w ?? 2.5, p.curral?.d ?? 3.6)) {
-        if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Inventário cheio · leve os produtos à prateleira'; continue; }
-        if (!e.horta) { this.atividade = OFICINAS[id] ? 'Entregue os ingredientes e aguarde a produção' : id === 'mel' ? 'As abelhas estão produzindo mel…' : 'A colheita está crescendo…'; continue; }
+      if (tipo === 'coleta') {
+        if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Inventário cheio · leve os produtos à prateleira'; return; }
+        if (!e.horta) { this.atividade = OFICINAS[id] ? 'Entregue os ingredientes e aguarde a produção' : id === 'mel' ? 'As abelhas estão produzindo mel…' : 'A colheita está crescendo…'; return; }
         this.atividade = `Colhendo ${p.plural.toLocaleLowerCase('pt-BR')}…`;
         if (this.tempo >= this.proximaInteracao) {
           e.horta--; jogador.inventario.push(id); this.estado.estatisticas.colhidos++;
@@ -692,7 +696,6 @@ export class Simulacao {
           this.emitir('colheita', { id, ponto: p.coleta });
         }
       }
-    }
   }
   atualizarProducao(dt) {
     if (!this.estado.estagioLoja) return;

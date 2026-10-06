@@ -129,7 +129,7 @@ test('carro preto acelera na rua e um assaltante corre até o caixa', () => {
     if (assaltante.visible) {
       assert.ok(!obstaculos.some(o => Math.abs(assaltante.position.x - o.x) < o.w / 2 + 0.22 && Math.abs(assaltante.position.z - o.z) < o.d / 2 + 0.22), `rota em ${tempo.toFixed(1)}s`);
     }
-    if (tempo >= ASSALTO.coleta && tempo < ASSALTO.retirada) assert.ok(assaltante.position.z <= 5.21);
+    if (tempo >= ASSALTO.coleta && tempo < ASSALTO.retirada) assert.ok(assaltante.position.z <= 5.26);
   }
   assert.ok((visual.inicio + 1.3) / ASSALTO.chegada > 5, 'chegada é mais rápida que o trânsito normal');
   visual.atualizar(null);

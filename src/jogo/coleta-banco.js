@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CONFIG } from './configuracao.js';
 import { RUA } from './bairro.js';
 import { BANCO } from './banco.js';
 
@@ -165,7 +166,7 @@ export class ColetaBancoVisual {
       const rota = guarda
         ? [{ x: -0.15, z: 9.58 }, { x: -0.15, z: 8.55 }]
         : [{ x: -0.15, z: 9.58 }, { x: -0.15, z: 9.15 }, { x: -1.3, z: 8.4 },
-          { x: -1.3, z: 6.2 }, { x: 2.7, z: 6.2 }, { x: 2.7, z: 5.2 }];
+          { x: -1.3, z: 6.2 }, { x: CONFIG.acessoCaixa.x, z: 6.2 }, CONFIG.acessoCaixa];
       const voltando = guarda ? t >= BANCO.embarque - 3 : t >= BANCO.retirada;
       const progresso = guarda
         ? voltando ? (t - (BANCO.embarque - 3)) / 2 : (t - BANCO.desembarque - 1) / 2

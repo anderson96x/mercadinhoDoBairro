@@ -337,9 +337,9 @@ for (const ajudante of [false, true]) {
     animar(duracao * 0.34999);
     modelo.updateMatrixWorld(true);
     const mundo = d.produtoNaMao.getWorldPosition(posicao.clone());
-    assert.ok(Math.abs(mundo.x - (PRODUTOS.tomate.prateleira.x - 0.83)) < 0.001);
+    assert.ok(Math.abs(mundo.x - (PRODUTOS.tomate.prateleira.x - 0.78)) < 0.001);
     assert.ok(Math.abs(mundo.y - 1.11) < 0.001);
-    assert.ok(Math.abs(mundo.z - (PRODUTOS.tomate.prateleira.z - 0.5)) < 0.001);
+    assert.ok(Math.abs(mundo.z - (PRODUTOS.tomate.prateleira.z - 0.43)) < 0.001);
     animar(duracao * 0.16);
     assert.equal(d.produtoNaMao.visible, false);
     assert.equal(d.reposicao, null);

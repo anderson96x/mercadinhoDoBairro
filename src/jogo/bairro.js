@@ -4,14 +4,15 @@ import { ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL } from '
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = [
-  { x: 3, z: -6, w: 12.2, d: 0.28, h: 2.8 },
-  { x: 9.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75, lateral: true },
-  { x: -3.1, z: -3.4, w: 0.28, d: 5.2, h: 2.8 },
+  { x: 3, z: -8.3, w: 12.2, d: 0.28, h: 2.8 },
+  { x: 9.1, z: -0.8, w: 0.28, d: 15, h: 0.75, lateral: true },
+  { x: -3.1, z: -4.55, w: 0.28, d: 7.5, h: 2.8 },
   { x: -3.1, z: 4.45, w: 0.28, d: 4.5, h: 2.8 },
   { x: 4.65, z: 6.7, w: 8.9, d: 0.28, h: 0.65 }
 ];
 
 export const PAREDES_ESCRITORIO = [
+  { x: -1, z: -6, w: 4.2, d: 0.18, h: 1.45 },
   { x: 1.1, z: -4, w: 0.18, d: 4, h: 1.45 },
   { x: -2.25, z: -2, w: 1.7, d: 0.18, h: 1.45 },
   { x: 0.55, z: -2, w: 1.1, d: 0.18, h: 1.45 }
@@ -49,7 +50,7 @@ export const MOBILIARIO_CALCADA = [
 ];
 
 export const RUA = Object.freeze({
-  minX: -15, maxX: 18,
+  minX: -15, maxX: 23,
   faixas: Object.freeze([
     Object.freeze({ z: 10.35, direcao: -1 }),
     Object.freeze({ z: 12.55, direcao: 1 })
@@ -118,7 +119,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   );
   chao(0, 120, 0.3, 120, 0x78c85a, 0, -0.5, 0);
   // O terreno inteiro existe desde o início; as construções ocupam espaço nele depois.
-  chao(1, 35, 0.3, 32, 0x62b94b, 1.5, -0.2, -1.5);
+  chao(1, 40, 0.3, 37, 0x62b94b, 4, -0.2, -4);
   // Manchas suaves quebram o tapete verde sem criar obstaculos no terreno.
   for (const [x, z, rx, rz, cor] of [
     [-10.8, -8.4, 1.2, 0.7, 0x69bd4f], [-5.3, -4.8, 1.1, 0.6, 0x67b94d],
@@ -136,49 +137,49 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     grupo.add(mancha);
   }
   criarDetalhesGrama(grupo);
-  chao(2, 35, 0.08, 4.4, 0x48525e, 1.5, 0, 11.3);
-  chao(3, 35, 0.18, 2.5, 0xe0bc8c, 1.5, 0.04, 7.95);
-  bloco(35, 0.22, 0.16, 0xf3e5ce, 1.5, 0.07, 9.18);
-  for (let x = -14; x < 18; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
+  chao(2, 40, 0.08, 4.4, 0x48525e, 4, 0, 11.3);
+  chao(3, 40, 0.18, 2.5, 0xe0bc8c, 4, 0.04, 7.95);
+  bloco(40, 0.22, 0.16, 0xf3e5ce, 4, 0.07, 9.18);
+  for (let x = -14; x < 24; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
   // A faixa atravessa a rua inteira, de uma calçada à outra.
   for (let z = 9.5; z < 13.5; z += 0.35) chao(4, 2.2, 0.012, 0.18, 0xf7eddb, -1.3, 0.052, z);
-  for (let x = -14.5; x < 18; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
-  for (const z of [7.25, 7.95, 8.65]) chao(4, 35, 0.01, 0.015, 0xbeb19a, 1.5, 0.136, z);
-  for (let i = 0; i < 38; i++) {
+  for (let x = -14.5; x < 24; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
+  for (const z of [7.25, 7.95, 8.65]) chao(4, 40, 0.01, 0.015, 0xbeb19a, 4, 0.136, z);
+  for (let i = 0; i < 48; i++) {
     if (i % 3 !== 1) continue;
     const x = -14.7 + i * 0.8;
     for (const z of [7.6, 8.3]) chao(4, 0.77, 0.004, 0.67, 0xe7c89e, x, 0.133, z);
   }
   const decorarPiso = (primeiraColuna, colunas) => {
     for (let i = 0; i < colunas; i++) {
-      for (let j = 0; j < 10; j++) {
+      for (let j = 0; j < 12; j++) {
         if ((i + j * 2) % 3 === 0) {
-          chao(4, 1.16, 0.004, 1.16, 0xe7dfcd, primeiraColuna + i * 1.2, 0.227, -5.2 + j * 1.2, { nome: 'piso', tom: 0.025 });
+          chao(4, 1.16, 0.004, 1.16, 0xe7dfcd, primeiraColuna + i * 1.2, 0.227, -7.5 + j * 1.2, { nome: 'piso', tom: 0.025 });
         }
       }
     }
   };
   // Os pisos se encontram em x = 9.1, com a mesma altura e malha de azulejos.
-  chao(3, 12.2, 0.2, 12.7, 0xc4b9a5, 3, 0.06, 0.35);
-  chao(4, 12.2, 0.07, 12.4, 0xe3dcc8, 3, 0.19, 0.35, 'piso');
+  chao(3, 12.2, 0.2, 15, 0xc4b9a5, 3, 0.06, -0.8);
+  chao(4, 12.2, 0.07, 14.7, 0xe3dcc8, 3, 0.19, -0.8, 'piso');
   decorarPiso(-2.2, 9);
-  for (let x = -2.8; x < 9; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, 0.35);
-  for (let z = -5.8; z < 6.6; z += 1.2) chao(5, 12.2, 0.008, 0.018, 0xc8bfae, 3, 0.23, z);
+  for (let x = -2.8; x < 9; x += 1.2) chao(5, 0.018, 0.008, 14.65, 0xc8bfae, x, 0.23, -0.8);
+  for (let z = -8.1; z < 6.6; z += 1.2) chao(5, 12.2, 0.008, 0.018, 0xc8bfae, 3, 0.23, z);
   const area = ALA_PRODUCAO.piso;
   const ala = new THREE.Group(); grupo.add(ala); destino = ala;
   ala.name = 'ala-producao';
   ala.visible = false;
   chao(3, area.w, 0.2, area.d, 0xc4b9a5, area.x, 0.06, area.z);
-  chao(4, area.w, 0.07, 12.4, 0xe3dcc8, area.x, 0.19, area.z, 'piso');
+  chao(4, area.w, 0.07, area.d - 0.3, 0xe3dcc8, area.x, 0.19, area.z, 'piso');
   decorarPiso(9.8, 2);
-  for (let x = 9.2; x < 12.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, area.z);
-  for (let z = -5.8; z < 6.6; z += 1.2) chao(5, area.w, 0.008, 0.018, 0xc8bfae, area.x, 0.23, z);
+  for (let x = 9.2; x < 12.1; x += 1.2) chao(5, 0.018, 0.008, area.d - 0.35, 0xc8bfae, x, 0.23, area.z);
+  for (let z = -8.1; z < 6.6; z += 1.2) chao(5, area.w, 0.008, 0.018, 0xc8bfae, area.x, 0.23, z);
   const paredesAla = new THREE.Group(); ala.add(paredesAla); destino = paredesAla;
   const paredeLateralOvos = new THREE.Group(); paredesAla.add(paredeLateralOvos);
   const passagemArtesanal = new THREE.Group(); paredesAla.add(passagemArtesanal);
   passagemArtesanal.name = 'parede-passagem-artesanal';
   for (const p of ALA_PRODUCAO.paredes) {
-    destino = p.z === -6 ? passagemArtesanal : p.x === 12.1 ? paredeLateralOvos : paredesAla;
+    destino = p.z === -8.3 ? passagemArtesanal : p.x === 12.1 ? paredeLateralOvos : paredesAla;
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
@@ -187,14 +188,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const alaLeite = new THREE.Group(); grupo.add(alaLeite); destino = alaLeite;
   alaLeite.name = 'ala-leite'; alaLeite.visible = false;
   chao(3, areaLeite.w, 0.2, areaLeite.d, 0xc4b9a5, areaLeite.x, 0.06, areaLeite.z);
-  chao(4, areaLeite.w, 0.07, 12.4, 0xe3dcc8, areaLeite.x, 0.19, areaLeite.z, 'piso');
+  chao(4, areaLeite.w, 0.07, areaLeite.d - 0.3, 0xe3dcc8, areaLeite.x, 0.19, areaLeite.z, 'piso');
   decorarPiso(12.8, 2);
-  for (let x = 12.2; x < 15.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, areaLeite.z);
-  for (let z = -5.8; z < 6.6; z += 1.2) chao(5, areaLeite.w, 0.008, 0.018, 0xc8bfae, areaLeite.x, 0.23, z);
+  for (let x = 12.2; x < 15.1; x += 1.2) chao(5, 0.018, 0.008, areaLeite.d - 0.35, 0xc8bfae, x, 0.23, areaLeite.z);
+  for (let z = -8.1; z < 6.6; z += 1.2) chao(5, areaLeite.w, 0.008, 0.018, 0xc8bfae, areaLeite.x, 0.23, z);
   const paredesAlaLeite = new THREE.Group(); alaLeite.add(paredesAlaLeite); destino = paredesAlaLeite;
   const paredeLateralLeite = new THREE.Group(); paredesAlaLeite.add(paredeLateralLeite);
+  const passagemLeite = new THREE.Group(); paredesAlaLeite.add(passagemLeite);
   for (const p of ALA_LEITE.paredes) {
-    destino = p.x === 15.1 ? paredeLateralLeite : paredesAlaLeite;
+    destino = p.passagemArtesanal ? passagemLeite : p.x === 15.1 ? paredeLateralLeite : paredesAlaLeite;
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
@@ -203,13 +205,16 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const alaTrigo = new THREE.Group(); grupo.add(alaTrigo); destino = alaTrigo;
   alaTrigo.name = 'ala-trigo'; alaTrigo.visible = false;
   chao(3, areaTrigo.w, 0.2, areaTrigo.d, 0xc4b9a5, areaTrigo.x, 0.06, areaTrigo.z);
-  chao(4, areaTrigo.w, 0.07, 12.4, 0xe3dcc8, areaTrigo.x, 0.19, areaTrigo.z, 'piso');
-  decorarPiso(15.8, 2);
-  for (let x = 15.2; x < 18.1; x += 1.2) chao(5, 0.018, 0.008, 12.35, 0xc8bfae, x, 0.23, areaTrigo.z);
-  for (let z = -5.8; z < 6.6; z += 1.2) chao(5, areaTrigo.w, 0.008, 0.018, 0xc8bfae, areaTrigo.x, 0.23, z);
+  chao(4, areaTrigo.w, 0.07, areaTrigo.d - 0.3, 0xe3dcc8, areaTrigo.x, 0.19, areaTrigo.z, 'piso');
+  decorarPiso(15.8, 5);
+  for (let x = 15.2; x < 21.1; x += 1.2) chao(5, 0.018, 0.008, areaTrigo.d - 0.35, 0xc8bfae, x, 0.23, areaTrigo.z);
+  for (let z = -8.1; z < 6.6; z += 1.2) chao(5, areaTrigo.w, 0.008, 0.018, 0xc8bfae, areaTrigo.x, 0.23, z);
   const paredesAlaTrigo = new THREE.Group(); alaTrigo.add(paredesAlaTrigo); destino = paredesAlaTrigo;
+  const passagemTrigo = new THREE.Group(); paredesAlaTrigo.add(passagemTrigo);
   for (const p of ALA_TRIGO.paredes) {
-    bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
+    destino = p.passagemArtesanal ? passagemTrigo : paredesAlaTrigo;
+    const parede = bloco(p.w, p.h, p.d, p.painelExpansao ? 0xb6cfc2 : 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, p.painelExpansao ? null : 'parede');
+    if (p.painelExpansao) parede.name = 'painel-expansao-lateral';
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
   }
@@ -218,14 +223,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const areaArtesanal = ALA_ARTESANAL.piso;
   chao(3, areaArtesanal.w, 0.2, areaArtesanal.d, 0xc4b9a5, areaArtesanal.x, 0.06, areaArtesanal.z);
   chao(4, areaArtesanal.w, 0.07, areaArtesanal.d, 0xe9e2ce, areaArtesanal.x, 0.19, areaArtesanal.z, 'piso');
-  for (let x = 9.2; x < 18; x += 1.2) chao(5, 0.018, 0.008, 9.4, 0xc8bfae, x, 0.23, areaArtesanal.z);
-  for (let z = -15.4; z < -6; z += 1.2) chao(5, 8.9, 0.008, 0.018, 0xc8bfae, areaArtesanal.x, 0.23, z);
+  for (let x = 9.2; x < 21; x += 1.2) chao(5, 0.018, 0.008, areaArtesanal.d - 0.1, 0xc8bfae, x, 0.23, areaArtesanal.z);
+  for (let z = -19.4; z < -8.3; z += 1.2) chao(5, areaArtesanal.w - 0.1, 0.008, 0.018, 0xc8bfae, areaArtesanal.x, 0.23, z);
   for (const p of ALA_ARTESANAL.paredes) {
-    bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
+    const parede = bloco(p.w, p.h, p.d, p.painelExpansao ? 0xb6cfc2 : 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, p.painelExpansao ? null : 'parede');
+    if (p.painelExpansao) parede.name = 'painel-expansao-artesanal';
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
   }
-  for (const x of [9.25, 11.95]) bloco(0.12, 2.3, 0.2, 0x286750, x, 1.38, -6, 'principal');
-  bloco(2.82, 0.28, 0.22, 0xe7b65a, 10.6, 2.6, -6, 'destaque');
+  for (const x of [9.25, 20.95]) bloco(0.12, 2.3, 0.2, 0x286750, x, 1.38, -8.3, 'principal');
+  bloco(11.82, 0.28, 0.22, 0xe7b65a, 15.1, 2.6, -8.3, 'destaque');
   const lateral = new THREE.Group(); grupo.add(lateral);
   const andaime = new THREE.Group(); grupo.add(andaime); destino = andaime;
   andaime.name = 'andaime';
@@ -238,7 +244,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const andaimeLeite = andaime.clone(); grupo.add(andaimeLeite);
   andaimeLeite.name = 'andaime-leite'; andaimeLeite.position.x = 3; andaimeLeite.visible = false;
   const andaimeTrigo = andaime.clone(); grupo.add(andaimeTrigo);
-  andaimeTrigo.name = 'andaime-trigo'; andaimeTrigo.position.x = 6; andaimeTrigo.visible = false;
+  andaimeTrigo.name = 'andaime-trigo'; andaimeTrigo.position.x = 9; andaimeTrigo.visible = false;
   destino = grupo;
   for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) {
     destino = p.lateral ? lateral : grupo;
@@ -316,7 +322,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     }
   }
   // Cerca e árvores enquadram a área de cultivo.
-  for (let z = -15.8; z <= 6; z += 1.3) {
+  for (let z = -21; z <= 6; z += 1.3) {
     bloco(0.13, 0.9, 0.13, 0xa8733f, -11.6, 0.5, z);
     bloco(0.1, 0.12, 1.35, 0xd29a5b, -11.6, 0.7, z + 0.62);
   }
@@ -365,6 +371,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       artesanal.visible = estagio >= ALA_ARTESANAL.indice;
       artesanal.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progresso, 0, 0.8));
       passagemArtesanal.visible = estagio < ALA_ARTESANAL.indice;
+      passagemLeite.visible = estagio < ALA_ARTESANAL.indice;
+      passagemTrigo.visible = estagio < ALA_ARTESANAL.indice;
       ala.visible = !!estagio;
       ala.scale.x = Math.max(0.001, piso);
       ala.position.x = 9.1 * (1 - ala.scale.x);
@@ -393,7 +401,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       andaimeLeite.position.x = 3 - areaLeite.w * (1 - pisoLeite);
       andaimeLeite.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
       andaimeTrigo.visible = estagio === ALA_TRIGO.indice && progresso > 0 && progresso < 0.95;
-      andaimeTrigo.position.x = 6 - areaTrigo.w * (1 - pisoTrigo);
+      andaimeTrigo.position.x = 9 - areaTrigo.w * (1 - pisoTrigo);
       andaimeTrigo.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
       arvoreLateral.position.x = estagio >= ALA_LEITE.indice ? 3 * pisoLeite : 0;
       arvoreLateral.visible = estagio < ALA_TRIGO.indice;

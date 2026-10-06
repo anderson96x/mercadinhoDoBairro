@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CONFIG } from './configuracao.js';
 import { criarCarro } from './trafego.js';
 import { pontoRota } from './coleta-banco.js';
 import { RUA } from './bairro.js';
@@ -103,7 +104,7 @@ export class AssaltoVisual {
     ator.visible = t >= A.desembarque && t < A.embarque;
     const porta = { x: -1.3, z: 6.7 };
     const fora = [{ x: -1.8, z: 9.65 }, { x: -1.8, z: 8.4 }, porta];
-    const dentro = [porta, { x: porta.x, z: 6.2 }, { x: 2.7, z: 6.2 }, { x: 2.7, z: 5.2 }];
+    const dentro = [porta, { x: porta.x, z: 6.2 }, { x: CONFIG.acessoCaixa.x, z: 6.2 }, CONFIG.acessoCaixa];
     let rota, progresso;
     if (t < A.entrada) { rota = fora; progresso = (t - A.desembarque) / (A.entrada - A.desembarque); }
     else if (t < A.retirada) { rota = dentro; progresso = (t - A.entrada) / (A.coleta - A.entrada); }

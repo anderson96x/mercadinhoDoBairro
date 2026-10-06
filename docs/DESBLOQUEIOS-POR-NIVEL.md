@@ -1,5 +1,7 @@
 # Desbloqueios por nível
 
+O [novo layout](PLANTA-LOJA-V2.md) está implementado sem alterar os níveis, custos ou receitas abaixo. O leite usa uma ilha fria desde o nível 5; a padaria fica ao fundo do salão. As interações automáticas funcionam junto aos objetos, por qualquer lado acessível. Bancas, hortas e oficinas foram afastadas; o terreno e o piso aumentaram para evitar coleta ou reposição de mercadorias vizinhas, sem círculos no chão.
+
 ## Disponíveis
 
 | Nível | Melhoria ou produto | Custo | Preço de venda por unidade |

@@ -33,7 +33,7 @@ test('estações futuras não aparecem nem criam marcações antes da compra', (
   assert.equal(visualComLeite.produtos.leite.grupo.visible, true);
 });
 
-test('refrigerador de leite fica junto à parede e mantém acesso pela frente', () => {
+test('ilha de leite tem quatro faces acabadas e acesso livre desde o nível 5', () => {
   const sim = new Simulacao();
   sim.estado.estagioLoja = ALA_LEITE.indice;
   sim.estado.melhorias.alaProducao = 1;
@@ -43,11 +43,14 @@ test('refrigerador de leite fica junto à parede e mantém acesso pela frente', 
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, alvosHorta: [], criarLabel() {} };
   Cena.prototype.construirEstacao.call(visual, 'leite', PRODUTOS.leite);
   const { refrigerador, frutas } = visual.produtos.leite;
-  assert.equal(refrigerador.portas.length, 2);
-  const tamanho = new THREE.Box3().setFromObject(refrigerador.portas[0].parent).getSize(new THREE.Vector3());
-  assert.ok(tamanho.y > tamanho.x && tamanho.y > tamanho.z);
-  assert.ok(frutas[0].position.y > frutas[4].position.y, 'o primeiro leite abastecido aparece na prateleira superior');
-  assert.ok(PRODUTOS.leite.prateleira.z < -5 && PRODUTOS.leite.reposicao.z > PRODUTOS.leite.prateleira.z);
+  assert.equal(refrigerador.grupo.name, 'ilha-fria-leite');
+  const bounds = new THREE.Box3().setFromObject(refrigerador.grupo);
+  const tamanho = bounds.getSize(new THREE.Vector3());
+  assert.ok(tamanho.y < tamanho.z, 'ilha baixa deixa o salão visível');
+  assert.ok(tamanho.x <= PRODUTOS.leite.prateleira.w + 0.001);
+  assert.ok(tamanho.z <= PRODUTOS.leite.prateleira.d + 0.001);
+  assert.ok(frutas.every(f => f.position.y === frutas[0].position.y));
+  assert.ok(bounds.max.x < 15.1 - 0.8, 'não depende da parede removida na próxima expansão');
   for (const ponto of [PRODUTOS.leite.reposicao, ...PRODUTOS.leite.pontosCompra]) {
     const ator = { x: -1.3, z: 4.9, andando: false };
     let chegou = false;
@@ -109,6 +112,7 @@ test('o ajudante salvo na antiga ala traseira retoma na fazenda com sua carga', 
   const sim = new Simulacao(); abrirAla(sim);
   sim.estado.melhorias.ajudante = 1;
   Object.assign(sim.ajudante, { x: 3.3, z: -7.55, produto: 'ovos', destino: 'prateleira', inventario: ['ovos'] });
+  delete sim.estado.versaoLayout;
   const retomado = new Simulacao(structuredClone(sim.estado));
   assert.equal(retomado.ajudante.x, PRODUTOS.ovos.coleta.x);
   assert.equal(retomado.ajudante.z, PRODUTOS.ovos.coleta.z);
@@ -139,6 +143,7 @@ test('save da antiga área lateral mantém ovos e compras e reposiciona ajudante
   // Campos legados são descartados; ovos e carga continuam disponíveis.
   Object.assign(sim.estado.producao, { milhoNoMoinho: 5, racao: 3, progressoRacao: 1 });
   Object.assign(sim.ajudante, { x: 14.3, z: -2.65, produto: 'ovos', destino: 'prateleira', inventario: ['ovos'] });
+  delete sim.estado.versaoLayout;
   const retomado = new Simulacao(structuredClone(sim.estado));
   assert.equal(retomado.estado.producao.progressoOvo, 0);
   assert.equal(retomado.estado.producao.ovosProduzidos, 0);
@@ -176,11 +181,11 @@ test('controles de desenvolvimento elevam nível e reputação e persistem no sa
   assert.equal(retomado.aumentarReputacaoDev(), 100);
 });
 
-test('galinheiro exige nível 5 sem depender de milho e preserva o terreno', () => {
+test('galinheiro exige nível 4 sem depender de milho e preserva o terreno', () => {
   const sim = new Simulacao();
   sim.estado.dinheiro = 2000;
-  assert.match(sim.comprarMelhoria('alaProducao').motivo, /nível 5/);
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
+  assert.match(sim.comprarMelhoria('alaProducao').motivo, /nível 4/);
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
 
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, true);
   assert.equal(sim.estado.estagioLoja, 1);
@@ -189,12 +194,12 @@ test('galinheiro exige nível 5 sem depender de milho e preserva o terreno', () 
   assert.equal(sim.limitesMundo.minZ, CONFIG.limiteMundo.minZ);
   assert.equal(sim.limitesMundo.maxX, ALA_PRODUCAO.limites.maxX);
   assert.deepEqual(sim.limitesMundo, CONFIG.limiteMundo);
-  assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
-  assert.equal(sim.estado.dinheiro, 1200);
+  assert.equal(sim.comprarMelhoria('ajudante').sucesso, false);
+  assert.equal(sim.estado.dinheiro, 1500);
   const salvo = validarEstado(structuredClone(sim.estado));
   assert.equal(salvo.estagioLoja, 1);
   assert.equal(salvo.produtos.ovos.liberado, true);
-  assert.equal(salvo.melhorias.ajudante, 1);
+  assert.equal(salvo.melhorias.ajudante, 0);
 });
 
 test('galinhas produzem ovos sem insumos, que podem ser coletados e vendidos', () => {
@@ -216,9 +221,10 @@ test('galinhas produzem ovos sem insumos, que podem ser coletados e vendidos', (
   sim.interagir();
   assert.equal(sim.estado.produtos.ovos.prateleira, 1);
   assert.deepEqual(sim.estado.jogador.inventario, []);
-  assert.equal(sim.missao().titulo, 'Contrate ajuda para repor');
+  assert.equal(sim.missao().titulo, 'Atenda o bairro');
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 5;
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
-  assert.equal(sim.missao().titulo, 'Mantenha a ala funcionando');
+  assert.equal(sim.missao().titulo, 'Atenda o bairro');
   const retomado = new Simulacao(structuredClone(sim.estado));
   assert.equal(retomado.estado.produtos.ovos.prateleira, 1);
   assert.equal(retomado.estado.producao.ovosProduzidos, 1);
@@ -276,6 +282,8 @@ test('ajudante leva os ovos do galinheiro à prateleira sem precisar de insumos'
 test('salvar durante a viagem preserva a carga e o destino do ajudante', () => {
   const sim = new Simulacao();
   abrirAla(sim);
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 5;
+  sim.estado.dinheiro = 900;
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
   Object.assign(sim.ajudante, { ...PRODUTOS.ovos.coleta, produto: 'ovos', destino: 'prateleira', inventario: ['ovos', 'ovos'] });
   const retomado = new Simulacao(structuredClone(sim.estado));

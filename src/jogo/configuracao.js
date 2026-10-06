@@ -2,6 +2,7 @@
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
+  versaoLayout: 3,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -34,22 +35,23 @@ export const CONFIG = {
   maxClientes: 5,
   espacoClientes: 1.15,
   distanciaClientes: 1.05,
-  limiteMundo: { minX: -13.8, maxX: 17.5, minZ: -16, maxZ: 9 },
-  // Bordas do terreno visível (35 x 32, centrado em 1.5, -1.5).
-  limiteCamera: { minX: -16, maxX: 19, minZ: -17.5, maxZ: 14.5 },
+  limiteMundo: { minX: -13.8, maxX: 22.5, minZ: -21, maxZ: 9 },
+  // Bordas do terreno visível (40 x 37, centrado em 4, -4).
+  limiteCamera: { minX: -16, maxX: 24, minZ: -22.5, maxZ: 14.5 },
   inicio: { x: -1.8, z: 3.4 },
-  caixa: { x: 3.5, z: 5.1 },
-  balcao: { x: 3.5, z: 4.1 },
-  clienteCaixa: { x: 3.5, z: 2.5 },
-  cadeiraCaixa: { x: 3.5, z: 5.7 },
+  caixa: { x: 3.45, z: 6.05 },
+  balcao: { x: 3.45, z: 5.25 },
+  acessoCaixa: { x: 1.55, z: 5.25 },
+  clienteCaixa: { x: 2.2, z: 3.5 },
+  cadeiraCaixa: { x: 3.45, z: 6.05 },
   cadeiraEscritorio: { x: -0.9, z: -3.5 },
-  areaFuncionarioCaixa: { x: 3.5, z: 5.7, w: 0.8, d: 1.9 },
+  areaFuncionarioCaixa: { x: 3.45, z: 6.05, w: 0.8, d: 0.9 },
   anguloCaixa: Math.PI,
   anguloEscritorio: Math.PI,
   entrada: { x: -1.3, z: 8.4 },
   portaEntrada: { x: -1.3, z: 6.7 },
-  cestas: { x: 1.6, z: 4.9 },
-  pontoCestasCliente: { x: 0.65, z: 4.9 },
+  cestas: { x: 0.8, z: 5.2 },
+  pontoCestasCliente: { x: -0.05, z: 5.2 },
   extremosCalcada: [{ x: -10.3, z: 8.4 }, { x: 10.3, z: 8.4 }],
   anguloCamera: Math.PI / 4,
   cameraIsometrica: { x: 18, y: 18, z: 18 }
@@ -60,81 +62,81 @@ export const PRODUTOS = {
     nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 5, origem: 'horta',
     tempoCrescimento: 1.8, capacidadeHorta: 8, capacidadePrateleira: 12,
     horta: { x: -9, z: -2.8 }, coleta: { x: -7.4, z: -1.7 },
-    prateleira: { x: 3, z: -0.5 }, reposicao: { x: 2, z: 1.2 },
-    cliente: { x: 4, z: 1.2 },
-    pontosCompra: [{ x: 4, z: 1.2 }, { x: 3, z: 1.2 }, { x: 2, z: 1.2 }, { x: 4.6, z: -0.5 }, { x: 1.4, z: -0.5 }], liberado: true
+    prateleira: { x: 2.8, z: 0, w: 2.2, d: 1.4 }, reposicao: { x: 2.8, z: -1.3 },
+    cliente: { x: 2.8, z: 1.3 },
+    pontosCompra: [{ x: 2.8, z: 1.3 }, { x: 1.9, z: 1.3 }, { x: 3.7, z: 1.3 }, { x: 1.1, z: 0 }, { x: 4.5, z: 0 }], liberado: true
   },
   milho: {
     nome: 'Milho', plural: 'Milhos', cor: 0xf6c844, preco: 10, origem: 'horta',
     tempoCrescimento: 2.8, capacidadeHorta: 8, capacidadePrateleira: 12,
     horta: { x: -9, z: 3.4 }, coleta: { x: -7.4, z: 3.4 },
-    prateleira: { x: 6.5, z: -3.8 }, reposicao: { x: 5.5, z: -2.1 },
-    cliente: { x: 7.5, z: -2.1 },
-    pontosCompra: [{ x: 7.5, z: -2.1 }, { x: 6.5, z: -2.1 }, { x: 5.5, z: -2.1 }, { x: 8, z: -3.8 }, { x: 5, z: -3.8 }], liberado: false
+    prateleira: { x: 2.8, z: -3.6, w: 2.2, d: 1.4 }, reposicao: { x: 4.5, z: -3.6 },
+    cliente: { x: 2.8, z: -2.3 },
+    pontosCompra: [{ x: 2.8, z: -2.3 }, { x: 1.9, z: -2.3 }, { x: 3.7, z: -2.3 }], liberado: false
   },
   ovos: {
     nome: 'Ovo', plural: 'Ovos', cor: 0xf8e6bf, preco: 15, origem: 'galinheiro',
     capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -9, z: -7.2 }, coleta: { x: -7.4, z: -6.7 },
-    prateleira: { x: 10, z: -0.5 }, reposicao: { x: 10, z: 1.2 },
-    cliente: { x: 10, z: 1.2 },
-    pontosCompra: [{ x: 10, z: 1.2 }, { x: 9.1, z: 1.2 }, { x: 10.9, z: 1.2 }], liberado: false
+    horta: { x: -9, z: -8.3 }, coleta: { x: -7.4, z: -7.8 },
+    prateleira: { x: 7, z: 0, w: 2.2, d: 1.4 }, reposicao: { x: 7, z: -1.3 },
+    cliente: { x: 7, z: 1.3 },
+    pontosCompra: [{ x: 7, z: 1.3 }, { x: 6.1, z: 1.3 }, { x: 7.9, z: 1.3 }], liberado: false
   },
   leite: {
     nome: 'Leite', plural: 'Garrafas de leite', cor: 0xf4f5e8, preco: 20, origem: 'curral',
     capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -2, z: -12.5 }, coleta: { x: -1.8, z: -10.15 }, curral: { w: 4.2, d: 3.2 },
-    prateleira: { x: 13.55, z: -5.35 }, reposicao: { x: 13.55, z: -3.85 },
-    cliente: { x: 13.55, z: -3.85 },
-    pontosCompra: [{ x: 13.55, z: -3.85 }, { x: 12.7, z: -3.85 }, { x: 14.35, z: -3.85 }], liberado: false
+    horta: { x: -2.4, z: -17 }, coleta: { x: -2.2, z: -14.65 }, curral: { w: 4.2, d: 3.2 },
+    prateleira: { x: 13.6, z: -4.2, w: 1.2, d: 3.2 }, reposicao: { x: 12.4, z: -4.2 },
+    cliente: { x: 12.4, z: -4.2 },
+    pontosCompra: [{ x: 12.4, z: -4.2 }, { x: 12.4, z: -5.2 }, { x: 12.4, z: -3.2 }], liberado: false
   },
   trigo: {
     nome: 'Trigo', plural: 'Espigas de trigo', cor: 0xe4bc57, preco: 5, origem: 'horta',
     tempoCrescimento: 3.2, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -8.8, z: -12.4 }, coleta: { x: -7.25, z: -10.1 },
-    prateleira: { x: 16.55, z: -0.5 }, reposicao: { x: 16.55, z: 1.2 },
-    cliente: { x: 16.55, z: 1.2 },
-    pontosCompra: [{ x: 16.55, z: 1.2 }, { x: 15.7, z: 1.2 }, { x: 17.3, z: 1.2 }], liberado: false
+    horta: { x: -8.8, z: -14.3 }, coleta: { x: -7.25, z: -12 },
+    prateleira: { x: 11.2, z: 0, w: 2.2, d: 1.4 }, reposicao: { x: 11.2, z: -1.3 },
+    cliente: { x: 11.2, z: 1.3 },
+    pontosCompra: [{ x: 11.2, z: 1.3 }, { x: 10.3, z: 1.3 }, { x: 12.1, z: 1.3 }], liberado: false
   },
   morango: {
     nome: 'Morango', plural: 'Morangos', cor: 0xe74769, preco: 16, origem: 'horta', nivelMinimo: 11,
     tempoCrescimento: 3.4, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: 3.3, z: -12.5 }, coleta: { x: 3.3, z: -10.1 },
-    prateleira: { x: 10.6, z: -8.5 }, reposicao: { x: 10.6, z: -10.2 },
-    cliente: { x: 10.6, z: -6.85 },
-    pontosCompra: [{ x: 10.6, z: -6.85 }, { x: 11.5, z: -6.85 }, { x: 12.3, z: -8.5 }], liberado: false
+    horta: { x: 2.9, z: -17 }, coleta: { x: 2.9, z: -14.6 },
+    prateleira: { x: 13.2, z: -10.9, w: 2.2, d: 1.4 }, reposicao: { x: 11.5, z: -10.9 },
+    cliente: { x: 13.2, z: -9.6 },
+    pontosCompra: [{ x: 13.2, z: -9.6 }, { x: 12.3, z: -9.6 }, { x: 14.1, z: -9.6 }], liberado: false
   },
   mel: {
     nome: 'Mel', plural: 'Potes de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 12,
     tempoCrescimento: 5, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: 6.9, z: -12.5 }, coleta: { x: 6.9, z: -10.1 },
-    prateleira: { x: 16.4, z: -8.5 }, reposicao: { x: 16.4, z: -10.2 },
-    cliente: { x: 16.4, z: -6.85 },
-    pontosCompra: [{ x: 16.4, z: -6.85 }, { x: 15.5, z: -6.85 }, { x: 14.7, z: -8.5 }], liberado: false
+    horta: { x: 7.3, z: -17 }, coleta: { x: 7.3, z: -14.6 },
+    prateleira: { x: 13.2, z: -16, w: 2.2, d: 1.4 }, reposicao: { x: 11.5, z: -16 },
+    cliente: { x: 13.2, z: -14.7 },
+    pontosCompra: [{ x: 13.2, z: -14.7 }, { x: 12.3, z: -14.7 }, { x: 14.1, z: -14.7 }], liberado: false
   },
   queijo: {
     nome: 'Queijo', plural: 'Queijos', cor: 0xf5cd61, preco: 18, origem: 'oficina', nivelMinimo: 13,
     capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: 3.3, z: -8 }, coleta: { x: 3.3, z: -9.6 }, curral: { w: 2.5, d: 1.6 },
-    prateleira: { x: 10.6, z: -13.5 }, reposicao: { x: 10.6, z: -11.8 },
-    cliente: { x: 10.6, z: -11.8 },
-    pontosCompra: [{ x: 10.6, z: -11.8 }, { x: 11.5, z: -11.8 }, { x: 12.3, z: -13.5 }], liberado: false
+    horta: { x: 2.6, z: -11.4 }, coleta: { x: 2.6, z: -10.05 }, curral: { w: 2.65, d: 1.75 },
+    prateleira: { x: 18, z: -16, w: 1.2, d: 3 }, reposicao: { x: 19.2, z: -16 },
+    cliente: { x: 19.2, z: -16 },
+    pontosCompra: [{ x: 19.2, z: -16 }, { x: 19.2, z: -16.9 }, { x: 19.2, z: -15.1 }], liberado: false
   },
   geleia: {
     nome: 'Geleia', plural: 'Potes de geleia', cor: 0xb94470, preco: 30, origem: 'oficina', nivelMinimo: 15,
     capacidadeHorta: 9, capacidadePrateleira: 12,
-    horta: { x: 6.9, z: -8 }, coleta: { x: 6.9, z: -9.6 }, curral: { w: 2.5, d: 1.6 },
-    prateleira: { x: 16.4, z: -13.5 }, reposicao: { x: 16.4, z: -11.8 },
-    cliente: { x: 16.4, z: -11.8 },
-    pontosCompra: [{ x: 16.4, z: -11.8 }, { x: 15.5, z: -11.8 }, { x: 14.7, z: -13.5 }], liberado: false
+    horta: { x: 7.3, z: -11.4 }, coleta: { x: 7.3, z: -10.05 }, curral: { w: 2.65, d: 1.75 },
+    prateleira: { x: 18, z: -10.9, w: 1.2, d: 2.6 }, reposicao: { x: 19.2, z: -10.9 },
+    cliente: { x: 19.2, z: -10.9 },
+    pontosCompra: [{ x: 19.2, z: -10.9 }, { x: 19.2, z: -11.7 }, { x: 19.2, z: -10.1 }], liberado: false
   },
   pao: {
     nome: 'Pão', plural: 'Pães', cor: 0xc87833, preco: 10, origem: 'padaria',
     capacidadeHorta: 0, capacidadePrateleira: 18,
-    horta: { x: 7.75, z: 4.1 }, coleta: { x: 7.75, z: 2.7 },
-    prateleira: { x: 10.4, z: 3.85 }, reposicao: { x: 7.75, z: 2.7 },
-    cliente: { x: 10.4, z: 2.15 },
-    pontosCompra: [{ x: 9.5, z: 2.15 }, { x: 10.4, z: 2.15 }, { x: 11.3, z: 2.15 }], liberado: false
+    horta: { x: 6.2, z: -6.95 }, coleta: { x: 5.15, z: -6.95 },
+    prateleira: { x: 7.6, z: -4.2, w: 3.4, d: 0.9 }, reposicao: { x: 5.15, z: -6.95 },
+    cliente: { x: 7.6, z: -3.15 },
+    pontosCompra: [{ x: 7.6, z: -3.15 }, { x: 6.7, z: -3.15 }, { x: 8.5, z: -3.15 }], liberado: false
   }
 };
 
@@ -147,13 +149,13 @@ export const NIVEL_PADARIA = 9;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
   limites: { ...CONFIG.limiteMundo },
-  piso: { x: 10.6, z: 0.35, w: 3, d: 12.7 },
+  piso: { x: 10.6, z: -0.8, w: 3, d: 15 },
   camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
   duracaoConstrucao: 4,
   paredes: [
-    { x: 10.6, z: -6, w: 3, d: 0.28, h: 2.8 },
+    { x: 10.6, z: -8.3, w: 3, d: 0.28, h: 2.8 },
     { x: 10.6, z: 6.7, w: 3, d: 0.28, h: 0.65 },
-    { x: 12.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75 }
+    { x: 12.1, z: -0.8, w: 0.28, d: 15, h: 0.75 }
   ],
   estacoes: { galinheiro: PRODUTOS.ovos.horta, prateleira: PRODUTOS.ovos.prateleira },
   tempoOvo: 3.5
@@ -161,44 +163,53 @@ export const ALA_PRODUCAO = {
 export const ALA_LEITE = {
   id: 'alaLeite', indice: 2, nivelMinimo: NIVEL_LEITE, custo: 800, produtos: ['leite'],
   limites: { ...CONFIG.limiteMundo },
-  piso: { x: 13.6, z: 0.35, w: 3, d: 12.7 },
+  piso: { x: 13.6, z: -0.8, w: 3, d: 15 },
   camera: { x: 2, z: -0.5, alturaDesktop: 31 },
   duracaoConstrucao: 4,
   paredes: [
-    { x: 13.6, z: -6, w: 3, d: 0.28, h: 2.8 },
+    { x: 13.6, z: -8.3, w: 3, d: 0.28, h: 2.8, passagemArtesanal: true },
     { x: 13.6, z: 6.7, w: 3, d: 0.28, h: 0.65 },
-    { x: 15.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75 }
+    { x: 15.1, z: -0.8, w: 0.28, d: 15, h: 0.75 }
   ],
   tempoLeite: 4.5
 };
 export const ALA_TRIGO = {
   id: 'alaTrigo', indice: 3, nivelMinimo: NIVEL_TRIGO, custo: 400, produtos: ['trigo'],
   limites: { ...CONFIG.limiteMundo },
-  piso: { x: 16.6, z: 0.35, w: 3, d: 12.7 },
-  camera: { x: 3.2, z: -0.5, alturaDesktop: 34 },
+  piso: { x: 18.1, z: -0.8, w: 6, d: 15 },
+  camera: { x: 4.2, z: -2, alturaDesktop: 37 },
   duracaoConstrucao: 4,
   paredes: [
-    { x: 16.6, z: -6, w: 3, d: 0.28, h: 2.8 },
-    { x: 16.6, z: 6.7, w: 3, d: 0.28, h: 0.65 },
-    { x: 18.1, z: 0.35, w: 0.28, d: 12.7, h: 0.75 }
+    { x: 18.1, z: -8.3, w: 6, d: 0.28, h: 2.8, passagemArtesanal: true },
+    { x: 18.1, z: 6.7, w: 6, d: 0.28, h: 0.65 },
+    { x: 21.1, z: -4.95, w: 0.28, d: 6.7, h: 0.75 },
+    { x: 21.1, z: 0, w: 0.28, d: 3.2, h: 0.75, painelExpansao: true },
+    { x: 21.1, z: 4.15, w: 0.28, d: 5.1, h: 0.75 }
   ]
 };
 export const ALA_PADARIA = {
   id: 'alaPadaria', indice: 4, nivelMinimo: NIVEL_PADARIA, custo: 1400, produtos: ['pao'],
-  entrada: { x: 7.75, z: 4.1 }, capacidadeTrigo: 12,
+  entrada: { ...PRODUTOS.pao.horta, w: 0.65, d: 0.6 },
+  moinho: { x: 6.45, z: -5.9, w: 0.85, d: 0.85 },
+  forno: { x: 8.7, z: -5.9, w: 1.05, d: 1.15 }, capacidadeTrigo: 12,
   tempoMoagem: 1.8, tempoForno: 2.3, paesPorTrigo: 3
 };
 
 // O anexo usa o terreno ao fundo; o vão substitui a parede dos ovos.
 export const ALA_ARTESANAL = {
   id: 'alaArtesanal', indice: 5, nivelMinimo: 11, custo: 1200, produtos: ['morango'],
-  piso: { x: 13.6, z: -10.75, w: 9, d: 9.5 },
+  piso: { x: 15.1, z: -13.9, w: 12, d: 11.2 },
   paredes: [
-    { x: 13.6, z: -15.5, w: 9, d: 0.28, h: 1.2 },
-    { x: 9.1, z: -10.75, w: 0.28, d: 9.5, h: 0.65 },
-    { x: 18.1, z: -10.75, w: 0.28, d: 9.5, h: 0.65 }
+    { x: 10.1, z: -19.5, w: 2, d: 0.28, h: 1.2 },
+    { x: 12.9, z: -19.5, w: 3.6, d: 0.28, h: 1.2, painelExpansao: true },
+    { x: 17.9, z: -19.5, w: 6.4, d: 0.28, h: 1.2 },
+    { x: 9.1, z: -16.75, w: 0.28, d: 5.5, h: 0.65 },
+    { x: 9.1, z: -9.5, w: 0.28, d: 2.4, h: 0.65 },
+    { x: 21.1, z: -17.35, w: 0.28, d: 4.3, h: 0.65 },
+    { x: 21.1, z: -14.2, w: 0.28, d: 2, h: 0.65, painelExpansao: true },
+    { x: 21.1, z: -10.75, w: 0.28, d: 4.9, h: 0.65 }
   ],
-  camera: { x: 3.2, z: -3.5, alturaDesktop: 38 }, duracaoConstrucao: 4
+  camera: { x: 4.2, z: -5, alturaDesktop: 43 }, duracaoConstrucao: 4
 };
 
 export const OFICINAS = {

@@ -75,20 +75,23 @@ test('pão entra na demanda normal e clientes que o pedem levam pelo menos três
   assert.equal(sim.estado.produtos.pao.prateleira, 15);
 });
 
-test('vitrine fica em frente aos ovos e tem dois padeiros de avental e chapéu branco', () => {
+test('padaria fica ao fundo e tem dois padeiros de avental e chapéu branco', () => {
   const visual = { cena: new THREE.Scene(), produtos: {}, sim: new Simulacao(), criarLabel() {} };
   Cena.prototype.construirPadaria.call(visual);
   const { grupo, padeiros, frutas } = visual.produtos.pao;
   assert.equal(grupo.name, 'padaria');
   assert.equal(padeiros.length, 2);
   assert.equal(frutas.length, PRODUTOS.pao.capacidadePrateleira);
-  assert.ok(PRODUTOS.pao.prateleira.z > PRODUTOS.ovos.prateleira.z);
+  assert.ok(PRODUTOS.pao.prateleira.z < PRODUTOS.ovos.prateleira.z);
   const vitrine = grupo.getObjectByName('vitrine-paes');
   assert.ok(vitrine);
   assert.equal(vitrine.children.filter(item => item.name === 'tampo-paes').length, 1);
   const tampo = vitrine.getObjectByName('tampo-paes');
   assert.equal(tampo.material.transparent, true);
-  assert.equal(vitrine.children.filter(item => item.geometry?.parameters?.width > 2 && item.geometry?.parameters?.depth > 1).length, 1);
+  assert.equal(vitrine.children.filter(item => item.name === 'tampo-paes').length, 1);
+  const bounds = new THREE.Box3().setFromObject(vitrine);
+  assert.ok(bounds.max.x - bounds.min.x <= PRODUTOS.pao.prateleira.w);
+  assert.ok(bounds.max.z - bounds.min.z <= PRODUTOS.pao.prateleira.d);
   assert.ok(frutas.every(pao => pao.position.y > tampo.position.y + 0.02));
   assert.ok(grupo.getObjectByName('entrega-trigo-padaria').position.x < PRODUTOS.pao.prateleira.x);
   assert.equal(visual.produtos.pao.trigosRecebidos.length, ALA_PADARIA.capacidadeTrigo);
@@ -142,9 +145,9 @@ test('os dois padeiros caminham entre entrega, máquinas e vitrine', () => {
   assert.ok(padaria.padeiros[0].userData.cargaPadaria.children.length > 0);
   assert.ok(padaria.padeiros[1].userData.cargaPadaria.children.length > 0);
   assert.ok(maquinas[0].x > inicio[0].x);
-  assert.ok(maquinas[1].x > inicio[1].x);
-  assert.ok(vitrine[1].z < maquinas[1].z);
-  assert.ok(vitrine[0].x > maquinas[0].x);
+  assert.ok(maquinas[1].distanceTo(inicio[1]) > 0.2);
+  assert.ok(vitrine[1].z > maquinas[1].z);
+  assert.ok(vitrine[0].z > maquinas[0].z, 'o moedor avança para entregar a farinha');
 });
 
 test('construir a padaria mantém a ala do trigo pronta durante a animação', () => {
