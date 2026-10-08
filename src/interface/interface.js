@@ -51,7 +51,7 @@ export class Interface {
           <details id="producao-detalhes">
             <summary><span>Produção</span><span id="producao-resumo">0 prontos</span><span class="producao-seta" aria-hidden="true">⌃</span></summary>
             <div id="lista-producao" class="lista-producao"></div>
-            <p class="producao-dica">Entregue os ingredientes e recolha os produtos nas oficinas.</p>
+            <p class="producao-dica">Entregue trigo à padaria ou ingredientes às oficinas para produzir.</p>
           </details>
         </aside>
         <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Arraste para andar · botão direito ou dois dedos para mover o mapa</span></span></div>

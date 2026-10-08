@@ -28,6 +28,7 @@
 .producao-cartao-topo { display: flex; gap: 7px; align-items: center; margin-bottom: 11px; }
 .producao-cartao-topo > .icone { width: 22px; height: 22px; }
 .producao-cartao h3 { font-size: 13px; flex: 1; }
+.producao-cartao.pao h3 { color: #a65d2b; }
 .producao-cartao.geleia h3 { color: #9d3c65; }
 .producao-cartao.queijo h3 { color: #9e771d; }
 .producao-prontos { font-size: 10px; font-weight: 700; white-space: nowrap; border-radius: 6px; padding: 4px 5px; background: #edf3e5; color: #46683e; }
