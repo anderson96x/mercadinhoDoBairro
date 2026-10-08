@@ -28,13 +28,13 @@ O [novo layout](PLANTA-LOJA-V2.md) está implementado sem alterar os níveis, cu
 - A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 15 é o último marco de conteúdo; a loja pode continuar funcionando e subindo de nível depois dele.
 - A cesta de trabalho prepara o jogador para viagens maiores sem mudar o começo do jogo.
 - A ala artesanal exige a padaria. Ela acrescenta um salão ao fundo da loja, conectado por uma passagem na ala dos ovos, e uma estufa ao lado do curral. As outras alas continuam funcionando durante a construção.
-- Morangos crescem a cada 3,4 segundos; as colmeias produzem um pote de mel a cada 5 segundos. Cada origem guarda até 8 unidades. Colete e abasteça as bancas na nova ala.
+- Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Colete e abasteça as bancas na nova ala.
 - A queijaria exige a ala artesanal e a ala do leite. Entregue **1 leite → 2 queijos**, em 5 segundos. O lote vale R$ 36, contra R$ 20 pela garrafa de leite vendida diretamente.
 - A cozinha de geleias exige o apiário. Entregue **2 morangos + 1 mel → 3 geleias**, em 6 segundos. O lote vale R$ 90, contra R$ 56 pelos ingredientes vendidos diretamente.
 - Para entregar ingredientes, aproxime-se da oficina carregando-os. Cada ingrediente tem estoque de entrada de até 8 unidades. A etiqueta mostra ingredientes disponíveis, receita, progresso e produtos prontos. Depois, recolha o lote e leve-o à banca. O repositor também coleta e abastece produtos prontos; o jogador fornece os ingredientes das receitas.
 - Uma oficina cheia pausa a produção sem consumir ingredientes: até 8 queijos ou 9 geleias aguardam coleta. As bancas comportam 12 unidades de cada produto.
 - Os quatro novos produtos entram nos pedidos **após o primeiro abastecimento**. Depois disso, continue repondo para atender à demanda.
-- A irrigação atende tomate, milho, trigo e morango. As oficinas, colmeias, galinheiro e curral mantêm seus tempos próprios.
+- A irrigação atende tomate, milho, trigo e morango. As oficinas, a colmeia, o galinheiro e o curral mantêm seus tempos próprios.
 - Compras, estoques, ingredientes e progresso das receitas são salvos. Partidas anteriores recebem as novas construções bloqueadas, preservando o progresso existente.
 
 ## Desativadas

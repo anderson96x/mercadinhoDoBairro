@@ -227,7 +227,7 @@ test('save anterior ganha campos padrão; save novo preserva oficinas e valida v
   for (const id of novos) assert.equal(salvo.produtos[id].liberado, true);
 });
 
-test('estufa, colmeias, oficinas e produtos têm modelos próprios', () => {
+test('estufa, colmeia, oficinas e produtos têm modelos próprios', () => {
   const visual = { cena: new THREE.Scene(), sim: abrir(), produtos: {}, criarLabel() {} };
   for (const id of novos) {
     Cena.prototype.construirArtesanal.call(visual, id, PRODUTOS[id]);
@@ -236,7 +236,7 @@ test('estufa, colmeias, oficinas e produtos têm modelos próprios', () => {
     assert.equal(visual.produtos[id].frutos.length, PRODUTOS[id].capacidadeHorta);
     assert.ok(criarProduto(id).children.length > 1);
   }
-  assert.equal(visual.produtos.mel.abelhas.length, 2);
+  assert.equal(visual.produtos.mel.abelhas.length, 5);
   assert.ok(visual.produtos.queijo.grupo.userData.mexedor);
   assert.ok(visual.produtos.morango.irrigador);
 });

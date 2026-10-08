@@ -117,7 +117,7 @@ export const PRODUTOS = {
     pontosCompra: [{ x: 13.2, z: -9.6 }, { x: 12.3, z: -9.6 }, { x: 14.1, z: -9.6 }], liberado: false
   },
   mel: {
-    nome: 'Mel', plural: 'Potes de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 12,
+    nome: 'Mel', plural: 'Garrafas de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 12,
     tempoCrescimento: 5, capacidadeHorta: 8, capacidadePrateleira: 12,
     horta: { x: 7.3, z: -17.2 }, coleta: { x: 7.3, z: -14.8 },
     prateleira: { x: 13.2, z: -16, w: 2.2, d: 1.4 }, reposicao: { x: 11.5, z: -16 },
@@ -232,7 +232,7 @@ export const OFICINAS = {
 export const MELHORIAS = [
   { id: 'logistica', titulo: 'Cesta de trabalho', descricao: 'Carregue 8 produtos e ande 15% mais rápido para cuidar de uma loja maior.', custo: 400, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 10 },
   { id: 'alaArtesanal', titulo: 'Ala artesanal e estufa', descricao: 'Amplie a loja para o terreno ao fundo e construa uma estufa de morangos. Colha e abasteça a nova banca.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
-  { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa colmeias ao lado da estufa. Colete potes de mel e abasteça a banca.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 12, requisitoMelhoria: 'alaArtesanal' },
+  { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa uma colmeia ao lado da estufa. Recolha as garrafas de mel na bandeja e abasteça a banca.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 12, requisitoMelhoria: 'alaArtesanal' },
   { id: 'queijaria', titulo: 'Queijaria', descricao: 'Entregue leite à queijaria perto da estufa. Cada garrafa rende 2 queijos. Recolha os queijos e abasteça a banca.', custo: 1600, icone: 'queijo', max: 1, tipo: 'construcao', produto: 'queijo', categoria: 'mercado', nivelMinimo: 13, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaLeite'] },
   { id: 'irrigacao', titulo: 'Irrigação da fazenda', descricao: 'Instale irrigadores em todas as hortas: as colheitas crescem 25% mais rápido.', custo: 650, icone: 'folha', max: 1, categoria: 'mercado', nivelMinimo: 14, requisitoMelhoria: 'alaArtesanal' },
   { id: 'equipeAgil', titulo: 'Reposição ágil', descricao: 'O repositor anda 30% mais rápido e prioriza as bancas vazias da loja ampliada.', custo: 500, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: 14, requisitoMelhoria: 'ajudante' },
