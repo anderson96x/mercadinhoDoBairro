@@ -8,6 +8,8 @@
 .etiqueta-geleia b { color: #9d3c65; }
 .etiqueta-queijo, .etiqueta-geleia { line-height: 1.5; }
 .melhoria .requisito-melhoria { color: #9a6f39; margin-top: 5px; }
+.melhoria .preco-venda-melhoria { display: block; margin-top: 7px; color: #7c8474; font-size: 12px; line-height: 1.35; font-weight: 100; }
+.melhoria .preco-venda-melhoria + .nivel-melhoria { margin-top: 4px; }
 
 .painel-producao {
   position: absolute; left: max(28px, env(safe-area-inset-left)); bottom: 112px;
