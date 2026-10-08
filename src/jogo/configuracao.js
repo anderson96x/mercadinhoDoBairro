@@ -111,7 +111,7 @@ export const PRODUTOS = {
   morango: {
     nome: 'Morango', plural: 'Morangos', cor: 0xe74769, preco: 16, origem: 'horta', nivelMinimo: 11,
     tempoCrescimento: 3.4, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: 2.9, z: -17 }, coleta: { x: 2.9, z: -14.6 },
+    horta: { x: 2.9, z: -17.2 }, coleta: { x: 2.9, z: -14.8 },
     prateleira: { x: 13.2, z: -10.9, w: 2.2, d: 1.4 }, reposicao: { x: 11.5, z: -10.9 },
     cliente: { x: 13.2, z: -9.6 },
     pontosCompra: [{ x: 13.2, z: -9.6 }, { x: 12.3, z: -9.6 }, { x: 14.1, z: -9.6 }], liberado: false
@@ -119,7 +119,7 @@ export const PRODUTOS = {
   mel: {
     nome: 'Mel', plural: 'Potes de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 12,
     tempoCrescimento: 5, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: 7.3, z: -17 }, coleta: { x: 7.3, z: -14.6 },
+    horta: { x: 7.3, z: -17.2 }, coleta: { x: 7.3, z: -14.8 },
     prateleira: { x: 13.2, z: -16, w: 2.2, d: 1.4 }, reposicao: { x: 11.5, z: -16 },
     cliente: { x: 13.2, z: -14.7 },
     pontosCompra: [{ x: 13.2, z: -14.7 }, { x: 12.3, z: -14.7 }, { x: 14.1, z: -14.7 }], liberado: false
@@ -127,7 +127,7 @@ export const PRODUTOS = {
   queijo: {
     nome: 'Queijo', plural: 'Queijos', cor: 0xf5cd61, preco: 18, origem: 'oficina', nivelMinimo: 13,
     capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: 2.6, z: -11.4 }, coleta: { x: 2.6, z: -10.05 }, curral: { w: 2.65, d: 1.75 },
+    horta: { x: 2.6, z: -10.5 }, coleta: { x: 2.6, z: -9.15 }, curral: { w: 2.65, d: 1.75 },
     prateleira: { x: 18, z: -16, w: 1.2, d: 3 }, reposicao: { x: 19.2, z: -16 },
     cliente: { x: 19.2, z: -16 },
     pontosCompra: [{ x: 19.2, z: -16 }, { x: 19.2, z: -16.9 }, { x: 19.2, z: -15.1 }], liberado: false
@@ -135,7 +135,7 @@ export const PRODUTOS = {
   geleia: {
     nome: 'Geleia', plural: 'Potes de geleia', cor: 0xb94470, preco: 30, origem: 'oficina', nivelMinimo: 15,
     capacidadeHorta: 9, capacidadePrateleira: 12,
-    horta: { x: 7.3, z: -11.4 }, coleta: { x: 7.3, z: -10.05 }, curral: { w: 2.65, d: 1.75 },
+    horta: { x: 7.3, z: -10.5 }, coleta: { x: 7.3, z: -9.15 }, curral: { w: 2.65, d: 1.75 },
     prateleira: { x: 18, z: -10.9, w: 1.2, d: 2.6 }, reposicao: { x: 19.2, z: -10.9 },
     cliente: { x: 19.2, z: -10.9 },
     pontosCompra: [{ x: 19.2, z: -10.9 }, { x: 19.2, z: -11.7 }, { x: 19.2, z: -10.1 }], liberado: false

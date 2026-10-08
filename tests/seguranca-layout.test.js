@@ -75,6 +75,17 @@ test('passagem entre estufa e oficina não entrega ingredientes nem recolhe lote
   assert.equal(sim.estado.produtos.queijo.horta,2);
 });
 
+test('fontes artesanais ficam longe das oficinas correspondentes', () => {
+  for (const [origem, oficina] of [['morango', 'queijo'], ['mel', 'geleia']]) {
+    const areaOrigem = geometriaEstacao(origem, 'coleta');
+    const areaOficina = geometriaEstacao(oficina, 'coleta');
+    assert.ok(intervaloEstacoes(areaOrigem, areaOficina) >= 4,
+      `${origem} e ${oficina}: corredor de coleta deve ter pelo menos 4 unidades`);
+    assert.ok(distanciaEstacao(PRODUTOS[origem].coleta, areaOficina) >= 3,
+      `${origem}: ponto de coleta muito perto da oficina ${oficina}`);
+  }
+});
+
 test('coleta e reposição funcionam em todos os lados acessíveis dos objetos', () => {
   for (const id of Object.keys(PRODUTOS)) {
     for (const tipo of id === 'pao' ? ['reposicao'] : ['coleta', 'reposicao']) {

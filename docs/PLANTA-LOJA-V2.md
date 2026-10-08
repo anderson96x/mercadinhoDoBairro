@@ -6,7 +6,7 @@ A planta está implementada no jogo. A coleta, a entrega de ingredientes e a rep
 
 O desenho usa coordenadas do jogo, sem equivalência com metros. [Etapas de expansão](PLANTA-LOJA-ETAPAS.svg) e [crescimento futuro](PLANTA-LOJA-CRESCIMENTO.svg) acompanham a mesma configuração.
 
-Capturas: [loja inicial](previews/loja-n1.png), [leite no N5](previews/loja-n5.png), [loja no N15](previews/loja-n15.png), [celular](previews/loja-n15-mobile.png) e [escritório com paredes alinhadas](previews/escritorio.png).
+Capturas de referência (anteriores ao novo espaçamento das oficinas): [loja inicial](previews/loja-n1.png), [leite no N5](previews/loja-n5.png), [loja no N15](previews/loja-n15.png), [celular](previews/loja-n15-mobile.png) e [escritório com paredes alinhadas](previews/escritorio.png).
 
 ## Organização e dimensões
 
@@ -19,7 +19,7 @@ A loja começa com **12,2 × 15 u**, apenas tomates e a infraestrutura inicial. 
 - A padaria fica mais ao fundo, separada das bancas da frente e da entrega de trigo.
 - Leite e queijo continuam em **ilhas frias independentes das paredes**. O leite permanece no mesmo lugar do N5 em diante.
 - Morango, mel, queijo e geleia ocupam um anexo mais largo e profundo. Há 3,1 u entre a borda das bancas centrais e a borda das ilhas laterais; o corredor externo tem 2,5 u até a linha da parede.
-- Fazenda e oficinas foram afastadas entre si e da loja. Estufa e apiário ficam em `z=-17`; queijaria e cozinha em `z=-11,4`. O acesso de serviço do anexo fica em `x=9,1`, `z=-14…-10,7`.
+- Fazenda e oficinas foram afastadas entre si e da loja. Estufa e apiário ficam em `z=-17,2`; queijaria e cozinha em `z=-10,5`. O corredor entre suas bordas mede pelo menos **4 u**, para distinguir a coleta da entrega de ingredientes. O acesso de serviço do anexo fica em `x=9,1`, `z=-14…-10,7`.
 - A fila mantém dez posições possíveis, de `(2,2; 3,5)` a `(12,55; 3,5)`, com 1,15 u entre centros, sem marcações no piso. Antes da compra de cestas extras, são cinco. Os números nas plantas indicam posições de espera apenas na documentação.
 
 ## Móveis implementados
@@ -74,6 +74,6 @@ Os **19 envelopes de coleta e reposição** têm separação superior a duas vez
 
 Regenerar as plantas com `node scripts/render-floor-plan.mjs`. Verificar ida e volta de todos os pontos de coleta, reposição e compra nos níveis 1, 3, 4, 5, 7, 9, 11, 12, 13 e 15 com `node scripts/check-store-layout.mjs`. Rodar `npm test` e `npm run build` para conferir circulação com dez clientes, produção, repositor, animações e salvamentos.
 
-Validação concluída: **139 testes passam**, assim como a compilação e as rotas de ida e volta em todos os níveis verificados. As capturas cobrem N1, N5 e N15 no desktop e N15 em celular, sem exceções JavaScript.
+Validação concluída: **146 testes passam**, assim como a compilação e as rotas de ida e volta em todos os níveis verificados.
 
-O renderizador alternativo utiliza os mesmos modelos e posições. As capturas de desktop e celular são verificações em navegador; toque em aparelho físico ainda não foi medido.
+O renderizador alternativo utiliza os mesmos modelos e posições. As capturas existentes são anteriores a este ajuste; toque em aparelho físico ainda não foi medido.
