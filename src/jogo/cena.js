@@ -9,6 +9,7 @@ import { CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
+import { atualizarMarcha, animarPernas } from './marcha.js';
 import { icone } from '../interface/icones.js';
 
 const ZOOM_MINIMO = 0.7;
@@ -548,10 +549,11 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
   const corSapato = uniformizado ? 0x242628 : (visual?.corSapato ?? 0xf8f0dc);
   const afastamentoPernas = corpulento ? 0.24 : 0.15;
   const larguraPerna = corpulento ? 0.27 : 0.19;
-  const pernaE = caixa(corpo, larguraPerna, 0.36, 0.22, corCalca, -afastamentoPernas, 0.28, 0);
-  const pernaD = caixa(corpo, larguraPerna, 0.36, 0.22, corCalca, afastamentoPernas, 0.28, 0);
-  const peE = caixa(corpo, 0.22, 0.12, 0.32, corSapato, -afastamentoPernas, 0.09, 0.06);
-  const peD = caixa(corpo, 0.22, 0.12, 0.32, corSapato, afastamentoPernas, 0.09, 0.06);
+  const pernaE = caixa(g, larguraPerna, 0.36, 0.22, corCalca, -afastamentoPernas, 0.28, 0);
+  const pernaD = caixa(g, larguraPerna, 0.36, 0.22, corCalca, afastamentoPernas, 0.28, 0);
+  const peE = caixa(g, 0.22, 0.12, 0.32, corSapato, -afastamentoPernas, 0.09, 0.06);
+  const peD = caixa(g, 0.22, 0.12, 0.32, corSapato, afastamentoPernas, 0.09, 0.06);
+  const coxasMarcha = [-afastamentoPernas, afastamentoPernas].map(x => caixa(g, larguraPerna, 0.19, 0.22, corCalca, x, 0.39, 0));
   const coxas = [-afastamentoPernas, afastamentoPernas].map(x => caixa(corpo, larguraPerna, 0.19, 0.34, corCalca, x, 0.43, 0.13));
   coxas.forEach(coxa => { coxa.visible = false; });
   const torso = objeto(new THREE.CapsuleGeometry(0.24, 0.22, 3, 8), cor, 0, 0.73, 0);
@@ -603,7 +605,7 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
   const carga = new THREE.Group(); cesta.add(carga);
   const produtoNaMao = new THREE.Group(); corpo.add(produtoNaMao);
   const uniforme = uniformizado ? { camisa: [torso, bracoE.userData.superior, bracoD.userData.superior, ...(barriga ? [barriga] : [])], chapeu, paletaAplicada: null } : null;
-  g.userData = { corpo, torso, barriga, corpulento, pernaE, pernaD, peE, peD, coxas, bracoE, bracoD, cesta, visualCestaNormal, caixaMadeira, usandoCaixaMadeira: false, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0, jogador, funcao, uniforme };
+  g.userData = { corpo, torso, barriga, corpulento, pernaE, pernaD, peE, peD, coxas, coxasMarcha, bracoE, bracoD, cesta, visualCestaNormal, caixaMadeira, usandoCaixaMadeira: false, carga, produtoNaMao, inventario: null, coleta: null, sentar: 0, jogador, funcao, uniforme };
   posicionarBraco(bracoE, cesta.userData.pega.clone().add(cesta.position));
   posicionarBraco(bracoD, new THREE.Vector3(0.4, 0.65, 0.32));
   return g;
@@ -1245,18 +1247,18 @@ export class Cena {
       ? Math.atan2(fonte.x - ator.x, fonte.z - ator.z)
       : ator.angulo ?? Math.PI / 4;
     const delta = Math.atan2(Math.sin(alvo - modelo.rotation.y), Math.cos(alvo - modelo.rotation.y));
-    modelo.rotation.y += delta * Math.min(1, dt * 12);
-    const balanco = ator.andando ? Math.sin(tempo * 13) : 0;
+    modelo.rotation.y += delta * (1 - Math.exp(-12 * dt));
+    const marcha = atualizarMarcha(d, ator, dt);
     const dtPose = ator.sentadoEscritorio && dt === 0 ? 1 / 60 : dt;
     d.sentar = THREE.MathUtils.clamp(d.sentar + (ator.sentado ? 1 : -1) * dtPose * 3, 0, 1);
     const sentado = d.sentar * d.sentar * (3 - 2 * d.sentar);
-    d.corpo.position.y = (ator.andando ? Math.abs(balanco) * 0.05 : Math.sin(tempo * 2) * 0.012) * (1 - sentado) + 0.08 * sentado;
-    d.pernaE.rotation.x = balanco * 0.55 * (1 - sentado); d.pernaD.rotation.x = -balanco * 0.55 * (1 - sentado);
-    for (const perna of [d.pernaE, d.pernaD]) {
-      perna.position.y = 0.28 - 0.05 * sentado; perna.position.z = 0.3 * sentado;
-    }
-    for (const pe of [d.peE, d.peD]) { pe.position.y = 0.09 - 0.06 * sentado; pe.position.z = 0.06 + 0.3 * sentado; }
-    d.coxas.forEach(coxa => { coxa.visible = sentado > 0; coxa.scale.z = sentado; });
+    const intensidade = marcha.intensidade * (1 - sentado);
+    const balanco = Math.sin(marcha.fase) * intensidade;
+    d.corpo.position.y = Math.sin(tempo * 2) * 0.008 * (1 - marcha.intensidade) * (1 - sentado)
+      + (1 - Math.cos(marcha.fase * 2)) * 0.014 * intensidade + 0.08 * sentado;
+    d.corpo.rotation.set(Math.min(marcha.velocidade / 4.3, 1.3) * 0.045 * intensidade,
+      balanco * 0.035, -balanco * 0.025);
+    animarPernas(d, sentado);
     if (d.jogador) d.cesta.position.set(0, 0.42, 0.5);
     else {
       const posicaoCarregada = new THREE.Vector3(0, d.corpulento ? 0.2 : 0.26, d.corpulento ? 0.72 : 0.58)
@@ -1321,9 +1323,9 @@ export class Cena {
       || d.funcao === 'ajudante'
     );
     if (semCarga) {
-      const oscilacaoBraco = balanco * 0.16;
-      const maoLivreE = new THREE.Vector3(d.bracoE.userData.ombro.x, 0.46, oscilacaoBraco);
-      const maoLivreD = new THREE.Vector3(d.bracoD.userData.ombro.x, 0.46, -oscilacaoBraco);
+      const oscilacaoBraco = Math.cos(marcha.fase - 0.18) * intensidade * 0.19;
+      const maoLivreE = new THREE.Vector3(d.bracoE.userData.ombro.x, 0.46 + Math.max(0, oscilacaoBraco) * 0.18, -oscilacaoBraco);
+      const maoLivreD = new THREE.Vector3(d.bracoD.userData.ombro.x, 0.46 + Math.max(0, -oscilacaoBraco) * 0.18, oscilacaoBraco);
       posicionarBraco(d.bracoE, maoLivreE);
       posicionarBraco(d.bracoD, maoLivreD);
       return;
@@ -1344,8 +1346,8 @@ export class Cena {
   }
   animarComputador(modelo, tempo, ativo) {
     const d = modelo.userData;
-    d.corpo.rotation.x = ativo ? -0.06 : 0;
     if (!ativo) return;
+    d.corpo.rotation.x = -0.06;
     const teclaE = Math.max(0, Math.sin(tempo * 12)) * 0.055;
     const teclaD = Math.max(0, Math.sin(tempo * 12 + Math.PI)) * 0.055;
     posicionarBraco(d.bracoE, new THREE.Vector3(-0.25, 0.69 - teclaE, 0.76 + teclaE));
