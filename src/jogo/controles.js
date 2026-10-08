@@ -1,9 +1,9 @@
 export class Controles {
-  constructor(superficie, joystick, moverCamera = () => {}) {
+  constructor(superficie, joystick, moverCamera = () => {}, ajustarZoom = () => {}) {
     this.teclas = new Set(); this.vetor = { x: 0, y: 0 }; this.ponteiro = null;
     this.superficie = superficie; this.joystick = joystick; this.bloqueado = false;
-    this.moverCamera = moverCamera; this.ponteiroCamera = null;
-    this.toques = new Map(); this.arrastandoComDoisDedos = false;
+    this.moverCamera = moverCamera; this.ajustarZoom = ajustarZoom; this.ponteiroCamera = null;
+    this.toques = new Map(); this.arrastandoComDoisDedos = false; this.ultimoGesto = null;
     this.origem = { x: 0, y: 0 };
     const usadas = ['w', 'a', 's', 'd', 'arrowup', 'arrowleft', 'arrowdown', 'arrowright'];
     window.addEventListener('keydown', e => {
@@ -18,6 +18,11 @@ export class Controles {
     window.addEventListener('keyup', e => this.teclas.delete(e.key.toLowerCase()));
     window.addEventListener('blur', () => this.limpar());
     superficie.addEventListener('contextmenu', e => e.preventDefault());
+    superficie.addEventListener('wheel', e => {
+      if (this.bloqueado) return;
+      e.preventDefault();
+      this.ajustarZoom(Math.exp(-e.deltaY * 0.001));
+    }, { passive: false });
     superficie.addEventListener('pointerdown', e => {
       if (this.bloqueado) return;
       if (e.pointerType === 'touch') {
@@ -25,6 +30,7 @@ export class Controles {
         superficie.setPointerCapture(e.pointerId);
         if (this.toques.size > 1) {
           this.arrastandoComDoisDedos = true;
+          this.ultimoGesto = this.gestoDoisDedos();
           this.pararJoystick();
           e.preventDefault();
           return;
@@ -45,10 +51,16 @@ export class Controles {
     superficie.addEventListener('pointermove', e => {
       const toque = this.toques.get(e.pointerId);
       if (toque) {
-        const dx = e.clientX - toque.x, dy = e.clientY - toque.y;
         toque.x = e.clientX; toque.y = e.clientY;
         if (this.arrastandoComDoisDedos) {
-          if (!this.bloqueado && this.toques.size > 1) this.moverCamera(dx, dy);
+          if (!this.bloqueado && this.toques.size > 1) {
+            const gesto = this.gestoDoisDedos();
+            if (this.ultimoGesto) {
+              this.moverCamera(gesto.x - this.ultimoGesto.x, gesto.y - this.ultimoGesto.y);
+              if (this.ultimoGesto.distancia > 0) this.ajustarZoom(gesto.distancia / this.ultimoGesto.distancia);
+            }
+            this.ultimoGesto = gesto;
+          }
           return;
         }
       }
@@ -65,6 +77,7 @@ export class Controles {
     });
     const soltar = e => {
       if (this.toques.delete(e.pointerId)) {
+        this.ultimoGesto = this.toques.size > 1 ? this.gestoDoisDedos() : null;
         if (this.arrastandoComDoisDedos && this.toques.size === 0) this.arrastandoComDoisDedos = false;
         if (this.arrastandoComDoisDedos) return;
       }
@@ -75,8 +88,12 @@ export class Controles {
     superficie.addEventListener('pointercancel', soltar);
     superficie.addEventListener('lostpointercapture', soltar);
   }
+  gestoDoisDedos() {
+    const [a, b] = [...this.toques.values()];
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, distancia: Math.hypot(a.x - b.x, a.y - b.y) };
+  }
   limpar() {
-    this.teclas.clear(); this.ponteiroCamera = null; this.toques.clear(); this.arrastandoComDoisDedos = false;
+    this.teclas.clear(); this.ponteiroCamera = null; this.toques.clear(); this.arrastandoComDoisDedos = false; this.ultimoGesto = null;
     this.pararJoystick();
   }
   pararJoystick() {

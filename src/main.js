@@ -119,7 +119,8 @@ const ui = new Interface(sim, {
 try {
   cena = new Cena(document.getElementById('mundo'), sim);
   ui.retratosClientes = cena.retratosClientes;
-  controles = new Controles(document.getElementById('mundo'), document.getElementById('joystick'), (dx, dy) => cena.moverCamera(dx, dy));
+  controles = new Controles(document.getElementById('mundo'), document.getElementById('joystick'),
+    (dx, dy) => cena.moverCamera(dx, dy), fator => cena.ajustarZoom(fator));
   const mundo = document.getElementById('mundo');
   mundo.addEventListener('pointermove', e => { if (sim.estado.melhoriaPendente === 'fertilizante') ui.moverCursorHorta(e.clientX, e.clientY); });
   mundo.addEventListener('click', e => {

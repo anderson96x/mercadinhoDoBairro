@@ -11,6 +11,8 @@ import { PALETAS } from './personalizacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { icone } from '../interface/icones.js';
 
+const ZOOM_MINIMO = 0.7;
+const ZOOM_MAXIMO = 2;
 const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
 const materiais = new Map();
 const vidroLeite = new THREE.MeshPhysicalMaterial({ color: 0xd8eeed, transparent: true, opacity: 0.48, roughness: 0.08, metalness: 0, depthWrite: false, side: THREE.DoubleSide });
@@ -613,6 +615,7 @@ export class Cena {
     this.tempoVisual = 0;
     this.cena = new THREE.Scene(); this.cena.background = new THREE.Color(0x78c85a);
     this.camera = new THREE.OrthographicCamera(-18, 18, 12, -12, 0.1, 100);
+    this.camera.zoom = ZOOM_MAXIMO;
     const superficie = document.createElement('canvas');
     const contexto = superficie.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
     this.renderer = contexto
@@ -623,7 +626,7 @@ export class Cena {
     this.renderer.shadowMap.enabled = true; this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping; this.renderer.toneMappingExposure = 1.5;
-    this.renderer.domElement.setAttribute('aria-label', 'Mercadinho em 3D. Arraste para andar; use o botão direito, Shift e arraste, ou dois dedos para mover o mapa.');
+    this.renderer.domElement.setAttribute('aria-label', 'Mercadinho em 3D. Arraste para andar; use o botão direito, Shift e arraste, ou dois dedos para mover o mapa. Use a roda do mouse ou pinça para ajustar o zoom.');
     container.prepend(this.renderer.domElement);
     this.cena.add(new THREE.HemisphereLight(0xfff4dc, 0x70a85d, 2.55));
     const sol = new THREE.DirectionalLight(0xffebc9, 2.8); sol.position.set(-8, 22, 13); sol.castShadow = true;
@@ -674,7 +677,10 @@ export class Cena {
     posicionarBraco(this.caixeiro.userData.bracoD, new THREE.Vector3(0.34, 0.45, 0));
     this.ajudante = personagem(0xf2b349, 0xdba271, false, [0x858b91, 0xaeb4ba], null, 'ajudante'); this.cena.add(this.ajudante);
     this.ultimoEstagioCamera = simulacao.estado.estagioLoja;
-    this.redimensionar(); window.addEventListener('resize', () => this.redimensionar());
+    this.redimensionar();
+    const baseInicial = this.baseCamera();
+    this.alvoCamera.set(baseInicial.x, 0, baseInicial.z);
+    window.addEventListener('resize', () => this.redimensionar());
   }
   construirMundo() {
     const suporte = new THREE.Group(); suporte.position.set(CONFIG.balcao.x, 0, CONFIG.balcao.z); suporte.rotation.y = Math.PI / 2; this.cena.add(suporte);
@@ -1135,14 +1141,25 @@ export class Cena {
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.w, this.h);
   }
+  ajustarZoom(fator) {
+    if (!Number.isFinite(fator) || fator <= 0) return;
+    const zoom = THREE.MathUtils.clamp(this.camera.zoom * fator, ZOOM_MINIMO, ZOOM_MAXIMO);
+    if (zoom === this.camera.zoom) return;
+    const baseAnterior = this.baseCamera();
+    this.camera.zoom = zoom;
+    const baseAtual = this.baseCamera();
+    this.deslocamentoCamera.x += baseAnterior.x - baseAtual.x;
+    this.deslocamentoCamera.z += baseAnterior.z - baseAtual.z;
+    this.camera.updateProjectionMatrix();
+  }
   moverCamera(dx, dy) {
     if (!dx && !dy || !this.w || !this.h) return;
     // Converte o arrasto na tela para deslocamento no plano do terreno.
     const horizontal = new THREE.Vector3(1, 0, 0).applyQuaternion(this.camera.quaternion);
     const vertical = new THREE.Vector3(0, 1, 0).applyQuaternion(this.camera.quaternion);
     const direcao = new THREE.Vector3(0, 0, -1).applyQuaternion(this.camera.quaternion);
-    const deslocamento = horizontal.multiplyScalar(dx * (this.camera.right - this.camera.left) / this.w)
-      .add(vertical.multiplyScalar(-dy * (this.camera.top - this.camera.bottom) / this.h));
+    const deslocamento = horizontal.multiplyScalar(dx * (this.camera.right - this.camera.left) / (this.w * this.camera.zoom))
+      .add(vertical.multiplyScalar(-dy * (this.camera.top - this.camera.bottom) / (this.h * this.camera.zoom)));
     deslocamento.addScaledVector(direcao, -deslocamento.y / direcao.y);
     const base = this.baseCamera();
     const limites = CONFIG.limiteCamera;
@@ -1153,7 +1170,9 @@ export class Cena {
   }
   baseCamera() {
     const camera = this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
-    return this.mobile ? this.sim.estado.jogador : camera;
+    const jogador = this.sim.estado.jogador;
+    const acompanhamento = this.mobile ? 1 : THREE.MathUtils.clamp((this.camera.zoom - 1) / (ZOOM_MAXIMO - 1), 0, 1);
+    return { x: THREE.MathUtils.lerp(camera.x, jogador.x, acompanhamento), z: THREE.MathUtils.lerp(camera.z, jogador.z, acompanhamento) };
   }
   projetar(ponto) {
     const p = new THREE.Vector3(ponto.x, ponto.y ?? 1.5, ponto.z).project(this.camera);
