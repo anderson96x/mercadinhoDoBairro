@@ -379,7 +379,7 @@ export class Simulacao {
         : id === ALA_PADARIA.id
         ? `Padaria aberta! Cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${PRODUTOS.pao.preco}. Deixe o trigo na caixa à esquerda do balcão de vidro.`
         : id === ALA_TRIGO.id
-        ? 'Plantação de trigo pronta! Colha o trigo ao lado do galinheiro e do curral e abasteça a nova prateleira.'
+        ? 'Plantação de trigo pronta! Colha o trigo atrás do milho e abasteça sua seção na banca de hortifruti.'
         : id === ALA_LEITE.id
         ? 'Curral pronto! Recolha o leite em garrafas de vidro e abasteça o novo refrigerador.'
         : 'Galinheiro pronto na fazenda! Colete os ovos e abasteça a nova prateleira.' });
@@ -391,6 +391,8 @@ export class Simulacao {
     if (m.tipo === 'construcao') this.estado.produtos[m.produto].liberado = true;
     this.emitir('melhoria', { id, texto: id === ALA_PADARIA.id
       ? `Padaria: cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${PRODUTOS.pao.preco}.`
+      : id === 'milho'
+      ? 'Milho liberado! Saia pela porta dos fundos. O novo canteiro fica atrás dos tomates; abasteça sua seção na banca de hortifruti.'
       : m.titulo });
     for (const ator of [this.estado.jogador, this.ajudante, ...this.clientes]) this.liberarPosicao(ator);
     this.caminhosClientes = new WeakMap();
@@ -411,7 +413,7 @@ export class Simulacao {
   missao() {
     const s = this.estado.estatisticas;
     if (!s.clientes) {
-      if (s.colhidos < 4) return { indice: 0, titulo: 'Colha seus primeiros tomates', texto: 'Saia pela porta dos fundos e vá à horta à esquerda. Pegue 4 tomates.', valor: s.colhidos, alvo: 4, destino: 'horta' };
+      if (s.colhidos < 4) return { indice: 0, titulo: 'Colha seus primeiros tomates', texto: 'Saia pela porta dos fundos e vá à horta atrás da loja. Pegue 4 tomates.', valor: s.colhidos, alvo: 4, destino: 'horta' };
       if (s.repostos < 4) return { indice: 1, titulo: 'Abasteça a banca', texto: 'Leve 4 tomates à banca de madeira junto à parede esquerda da loja. Aproxime-se pelo corredor.', valor: s.repostos, alvo: 4, destino: 'prateleira' };
       return { indice: 2, titulo: 'Faça a primeira venda', texto: 'Sente-se no caixa quando um cliente chegar.', valor: 0, alvo: 1, destino: 'caixa' };
     }

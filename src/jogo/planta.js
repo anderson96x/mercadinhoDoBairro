@@ -15,6 +15,17 @@ export const PLANTA_INICIAL = {
   }
 };
 
+// Painel N3: milho alinhado ao tomate, mais ao fundo (z menor).
+// A coluna inteira fica atrás da loja; trigo reserva o próximo canteiro no N7.
+export const FAZENDAS_HORTIFRUTI = Object.fromEntries(['tomate', 'milho', 'trigo'].map((id, indice) => {
+  const tomate = PLANTA_INICIAL.fazendaTomate;
+  return [id, {
+    horta: { x: tomate.horta.x, z: tomate.horta.z - indice * 4.5 },
+    canteiro: { ...tomate.canteiro },
+    coleta: { x: tomate.coleta.x, z: tomate.coleta.z - indice * 4.5 }
+  }];
+}));
+
 export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 
 export function paredesPlantaInicial(alturaBaixa) {

@@ -4,12 +4,14 @@ import { PLANTA_INICIAL, PRODUTOS_HORTIFRUTI } from '../src/jogo/planta.js';
 import { PAREDES_LOJA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from '../src/jogo/bairro.js';
 import { geometriaEstacao } from '../src/jogo/estacoes.js';
 
-// Only the implemented new-plan milestone is generated. V2 images stay historical.
+// Generate implemented new-plan milestones; V2 images stay historical.
+function renderizarPlanta(nivel) {
+const ativos = nivel >= 3 ? ['tomate', 'milho'] : ['tomate'];
 const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" role="img" aria-labelledby="title desc">
-<title id="title">Nova planta — nível 1</title><desc id="desc">Terreno quadrado, salão inicial de 14 por 16 unidades, escritório ao fundo, banca de tomates na esquerda, caixa frontal e porta posterior para a horta.</desc>
+<title id="title">Nova planta — nível ${nivel}</title><desc id="desc">Terreno quadrado, salão de 14 por 16 unidades, escritório ao fundo, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. ${nivel >= 3 ? 'Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.' : 'Somente tomate disponível.'}</desc>
 <style>text{font-family:Arial,sans-serif;fill:#294439}.title{font-size:30px;font-weight:bold}.label{font-size:13px;font-weight:bold}.note{font-size:15px}.small{font-size:11px}.wall{fill:#315c49}.route{fill:none;stroke:#bf743a;stroke-width:3;stroke-dasharray:7 5}</style>
 <rect width="1200" height="1000" fill="#faf9f5"/>
-<text x="48" y="54" class="title">Mercadinho do Bairro · nível 1</text>
+<text x="48" y="54" class="title">Mercadinho do Bairro · nível ${nivel}</text>
 <text x="48" y="85" class="note">Nova planta · 2 u por cm anotado · cresce somente após as compras</text>`];
 const scale = 19, X = x => 370 + x * scale, Y = z => 615 + z * scale;
 const rect = (p, color, extra = '') => parts.push(`<rect x="${X(p.x - p.w / 2)}" y="${Y(p.z - p.d / 2)}" width="${p.w * scale}" height="${p.d * scale}" fill="${color}" ${extra}/>`);
@@ -33,26 +35,31 @@ rect({ ...CONFIG.balcao, w: 2.9, d: 1.53 }, '#aeb9b5');
 text(CONFIG.balcao.x, CONFIG.balcao.z, 'CAIXA', 'small');
 rect({ ...CONFIG.cadeiraCaixa, w: 0.6, d: 0.6 }, '#74858d');
 const tomate = PRODUTOS.tomate;
-rect(tomate.prateleira, '#cc9d78', 'stroke="#91603c"');
-for (let i = 0; i < 12; i++) parts.push(`<circle cx="${X(tomate.prateleira.x - 0.4 + i % 3 * 0.4)}" cy="${Y(tomate.prateleira.z - 0.75 + Math.floor(i / 3) * 0.5)}" r="3" fill="#ef5a42"/>`);
-text(-2.1, 1.15, 'TOMATES', 'small');
-rect(geometriaEstacao('tomate', 'coleta'), '#b77e50', 'stroke="#805634"');
-text(tomate.horta.x, tomate.horta.z, 'HORTA', 'small');
+for (const id of ativos) {
+  const p = PRODUTOS[id], cor = `#${p.cor.toString(16).padStart(6, '0')}`;
+  rect(p.prateleira, '#cc9d78', 'stroke="#91603c"');
+  for (let i = 0; i < 12; i++) parts.push(`<circle cx="${X(p.prateleira.x - 0.4 + i % 3 * 0.4)}" cy="${Y(p.prateleira.z - 0.75 + Math.floor(i / 3) * 0.5)}" r="3" fill="${cor}"/>`);
+  text(p.prateleira.x + 2.1, p.prateleira.z, p.nome.toLocaleUpperCase('pt-BR'), 'small');
+  rect(geometriaEstacao(id, 'coleta'), '#b77e50', 'stroke="#805634"');
+  for (let i = 0; i < 8; i++) parts.push(`<circle cx="${X(p.horta.x - 1.1 + i % 4 * 2.2 / 3)}" cy="${Y(p.horta.z - 0.55 + Math.floor(i / 4) * 1.1)}" r="4" fill="${cor}"/>`);
+  text(p.horta.x, p.horta.z - p.canteiro.d / 2 - 0.4, p.nome.toLocaleUpperCase('pt-BR'), 'small');
+}
 path([{ x: 0.8, z: -1 }, { x: CONFIG.portaProducao.x, z: -8.4 }, { x: CONFIG.portaProducao.x, z: tomate.coleta.z }, tomate.coleta]);
+if (nivel >= 3) path([{ x: -5.8, z: tomate.coleta.z }, { x: -5.8, z: PRODUTOS.milho.coleta.z }, PRODUTOS.milho.coleta]);
 text(CONFIG.portaProducao.x, -11.25, 'PORTA DE PRODUÇÃO · 3 u', 'small');
 text(CONFIG.portaEntrada.x, 8.5, 'ENTRADA DUPLA', 'small');
 for (let i = 0; i < 5; i++) parts.push(`<circle cx="${X(CONFIG.clienteCaixa.x + i * CONFIG.espacoClientes)}" cy="${Y(CONFIG.clienteCaixa.z)}" r="4" fill="#b79069"/>`);
-for (const id of PRODUTOS_HORTIFRUTI.slice(1)) {
+for (const id of PRODUTOS_HORTIFRUTI.filter(id => !ativos.includes(id))) {
   rect(PRODUTOS[id].prateleira, 'none', 'stroke="#b6b9a9" stroke-dasharray="4 3"');
 }
 text(13, -19, 'TERRENO RESERVADO', 'small');
 text(3.9, -1.3, 'SALÃO · 14 × 16 u');
 parts.push('<path d="M860 140V900" stroke="#dedfd7"/>');
 const notes = [
-  'IMPLEMENTADO NO NÍVEL 1',
+  `IMPLEMENTADO NO NÍVEL ${nivel}`,
   'Salão inicial: 7 × 8 cm → 14 × 16 u.',
   'Terreno: 20 × 20 cm → 40 × 40 u.',
-  'Tomates na banca junto à esquerda.',
+  nivel >= 3 ? 'Tomate + milho na mesma banca.' : 'Tomates na banca junto à esquerda.',
   'Escritório e lixeira ao fundo.',
   'Entrada frontal e acesso posterior.',
   'Caixa com acesso livre à cadeira.',
@@ -69,10 +76,12 @@ const notes = [
   'ESCOPO DESTA ETAPA',
   'Departamentos posteriores ainda',
   'mantêm as ampliações anteriores.',
-  'O novo salão final fica para N9.',
+  nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
   'u = unidade do jogo; rua em +z.'
 ];
 notes.forEach((value, i) => parts.push(`<text x="885" y="${165 + i * 31}" class="${[0, 9, 17].includes(i) ? 'label' : 'note'}">${value}</text>`));
 parts.push('<text x="48" y="966" class="small">Gerado da configuração do jogo · Traço laranja: percurso de produção · Círculos: posições de fila apenas na documentação</text></svg>');
-writeFileSync(new URL('../docs/PLANTA-LOJA-N1.svg', import.meta.url), parts.join('\n'), 'utf8');
-console.log('Generated docs/PLANTA-LOJA-N1.svg from the implemented level 1 geometry.');
+writeFileSync(new URL(`../docs/PLANTA-LOJA-N${nivel}.svg`, import.meta.url), parts.join('\n'), 'utf8');
+console.log(`Generated docs/PLANTA-LOJA-N${nivel}.svg from the implemented level ${nivel} geometry.`);
+}
+for (const nivel of [1, 3]) renderizarPlanta(nivel);

@@ -1,5 +1,5 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
-import { PLANTA_INICIAL, compartimentoHortifruti } from './planta.js';
+import { PLANTA_INICIAL, FAZENDAS_HORTIFRUTI, compartimentoHortifruti } from './planta.js';
 export const ALTURA_PAREDE_BAIXA = 0.75;
 export const ESCRITORIO = {
   limites: { minX: -3.1, maxX: 1.1, minZ: -9.3, maxZ: -5.8 },
@@ -11,7 +11,7 @@ export const ESCRITORIO = {
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 5,
+  versaoLayout: 6,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -44,7 +44,7 @@ export const CONFIG = {
   maxClientes: 5,
   espacoClientes: 1.15,
   distanciaClientes: 1.05,
-  limiteMundo: { minX: -13.8, maxX: 22.5, minZ: -21, maxZ: 9 },
+  limiteMundo: { minX: -13.8, maxX: 22.5, minZ: -24.5, maxZ: 9 },
   limiteCamera: { minX: -16, maxX: 24, minZ: -25.5, maxZ: 14.5 },
   inicio: { x: 0.2, z: 3.4 },
   portaProducao: PLANTA_INICIAL.portaProducao,
@@ -78,7 +78,7 @@ export const PRODUTOS = {
   milho: {
     nome: 'Milho', plural: 'Milhos', cor: 0xf6c844, preco: 10, origem: 'horta',
     tempoCrescimento: 2.8, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -9, z: 3.4 }, coleta: { x: -7.4, z: 3.4 },
+    ...FAZENDAS_HORTIFRUTI.milho,
     ...compartimentoHortifruti('milho'), liberado: false
   },
   ovos: {
@@ -100,7 +100,7 @@ export const PRODUTOS = {
   trigo: {
     nome: 'Trigo', plural: 'Espigas de trigo', cor: 0xe4bc57, preco: 5, origem: 'horta',
     tempoCrescimento: 3.2, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -8.8, z: -17.6 }, coleta: { x: -8.8, z: -15.25 },
+    ...FAZENDAS_HORTIFRUTI.trigo,
     ...compartimentoHortifruti('trigo'), liberado: false
   },
   morango: {
@@ -230,10 +230,10 @@ export const MELHORIAS = [
   { id: 'irrigacao', titulo: 'Irrigação da fazenda', descricao: 'Instale irrigadores em todas as hortas: as colheitas crescem 25% mais rápido.', custo: 650, icone: 'folha', max: 1, categoria: 'mercado', nivelMinimo: 14, requisitoMelhoria: 'alaArtesanal' },
   { id: 'equipeAgil', titulo: 'Reposição ágil', descricao: 'O repositor anda 30% mais rápido e prioriza as bancas vazias da loja ampliada.', custo: 500, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: 14, requisitoMelhoria: 'ajudante' },
   { id: 'cozinhaGeleia', titulo: 'Cozinha de geleias', descricao: 'Combine 2 morangos e 1 mel para fazer 3 geleias. Entregue os ingredientes, recolha os potes e abasteça a banca.', custo: 2200, icone: 'geleia', max: 1, tipo: 'construcao', produto: 'geleia', categoria: 'mercado', nivelMinimo: 15, requisitoMelhoria: 'apiario' },
-  { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra a horta e a prateleira de milho.', custo: 350, icone: 'milho', produto: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 3 },
+  { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra o canteiro de milho atrás dos tomates e acrescente sua seção à banca de hortifruti.', custo: 350, icone: 'milho', produto: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 3 },
   { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa um galinheiro na fazenda e amplie a loja para a prateleira de ovos. Colete os ovos e abasteça a prateleira.', custo: ALA_PRODUCAO.custo, icone: 'ovos', produto: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
   { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa um curral com vaca na fazenda e amplie a loja com um refrigerador de leite em garrafas de vidro.', custo: ALA_LEITE.custo, icone: 'leite', produto: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },
-  { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra a plantação ao lado dos ovos e do leite e amplie a loja com uma prateleira de trigo.', custo: ALA_TRIGO.custo, icone: 'trigo', produto: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
+  { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra o último canteiro atrás da loja, acrescente a seção de trigo ao hortifruti e amplie a loja.', custo: ALA_TRIGO.custo, icone: 'trigo', produto: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
   { id: 'alaPadaria', titulo: 'Padaria', descricao: 'Cada trigo rende 3 pães. Deixe o trigo na caixa à esquerda do balcão.', custo: ALA_PADARIA.custo, icone: 'pao', produto: 'pao', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_PADARIA, requisitoMelhoria: 'alaTrigo' },
   { id: 'cestasExtras', titulo: 'Mais cestas para clientes', descricao: 'Adicione 5 cestas para receber mais 5 clientes na loja ao mesmo tempo.', custo: 100, icone: 'cesta', max: 1, categoria: 'mercado', nivelMinimo: 8 },
   { id: 'mochila', titulo: 'Mais capacidade', descricao: 'Carregue mais 4 produtos por viagem.', custo: 25, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 1, ativa: false },

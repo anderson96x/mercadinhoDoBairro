@@ -1,5 +1,7 @@
 # Nova planta — nível 1
 
+Registro da entrega N1. Para a etapa atual de milho, a reserva do trigo, os limites caminháveis e a migração V6, consulte [PLANTA-LOJA-N3.md](PLANTA-LOJA-N3.md).
+
 Implementada em 14/10/2026, com a posição da horta corrigida após comparar diretamente o painel N1–2 do desenho original. A horta de tomates fica inteiramente atrás da parede do fundo, na faixa posterior esquerda. A referência visual enviada depois pelo jogador definiu um canteiro compacto de **3,6 × 2,5 u**, com as mesmas oito plantas, mais próximo do escritório. Esta entrega implementa o início da loja e a banca modular; os demais painéis ainda serão adaptados. As expansões laterais e o anexo dos níveis posteriores continuam funcionando na geometria anterior, conectados ao salão inicial novo.
 
 ![Planta técnica do nível 1](PLANTA-LOJA-N1.svg)

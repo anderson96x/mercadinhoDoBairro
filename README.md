@@ -4,7 +4,7 @@ Um jogo de gerenciamento de mercadinho, em português, para navegador de computa
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. O cenário e os personagens são construídos por código, com visual 3D simples e original. Não usa imagens, áudios ou código extraídos de My Mini Mart.
 
-O nível 1 usa a [nova planta inicial](docs/PLANTA-LOJA-N1.md): salão de 14 × 16 u, acesso à horta pela porta dos fundos e banca de madeira junto à esquerda. Comece com tomates; milho, trigo e morango acrescentam seções após suas compras. As etapas posteriores da nova planta continuam pendentes.
+O nível 1 usa a [nova planta inicial](docs/PLANTA-LOJA-N1.md): salão de 14 × 16 u, acesso à horta pela porta dos fundos e banca de madeira junto à esquerda. No [nível 3](docs/PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro atrás do tomate e uma seção à banca. As duas hortas ficam inteiramente atrás da loja. Trigo e morango também acrescentam seções após suas compras; as etapas posteriores da nova planta continuam pendentes.
 
 ## Jogar e desenvolver
 
@@ -112,7 +112,7 @@ Comece por [docs/COMO-ALTERAR.md](docs/COMO-ALTERAR.md). A simulação não impo
 
 Esta versão tem dez produtos e ampliações até a ala artesanal. A loja começa pequena: milho no nível 3, extensões de 3 unidades para ovos no nível 4, leite no nível 5 e trigo no nível 7, padaria no nível 9 e anexo artesanal no nível 11. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
 
-O [layout inicial](docs/PLANTA-LOJA-N1.md) segue a nova planta, com a horta inteiramente atrás da loja na faixa posterior esquerda. As ampliações posteriores ainda conservam a organização anterior, com padaria ao fundo e ilhas frias. A fila tem cinco ou dez posições, sem marcações no piso. Salvamentos anteriores migram para a versão espacial 5, preservando progresso e recuperando atores em locais livres.
+O [layout inicial](docs/PLANTA-LOJA-N1.md) e o [milho no N3](docs/PLANTA-LOJA-N3.md) seguem a nova planta, com os canteiros inteiramente atrás da loja. As ampliações posteriores ainda conservam a organização anterior, com padaria ao fundo e ilhas frias. A fila tem cinco ou dez posições, sem marcações no piso. Salvamentos anteriores migram para a versão espacial 6, preservando progresso e recuperando atores em locais livres.
 
 ## Créditos e dependências
 

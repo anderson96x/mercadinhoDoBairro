@@ -1,5 +1,14 @@
 # Verificação da versão 0.1.0
 
+## Nova planta — nível 3 (milho) — 14/10/2026
+
+- [Entrega N3](PLANTA-LOJA-N3.md): milho em `(-9,2; -17,2)`, alinhado atrás dos tomates preservados em `(-9,2; -12,7)`. Os dois canteiros compactos medem 3,6 × 2,5 u, ficam inteiramente atrás da loja e mantêm 2 u livres entre si. A reserva do trigo foi deslocada para trás do milho; continua bloqueada até a compra própria. O salão não aumenta ao comprar milho.
+- **170 testes passaram**, sem falhas. Cinco casos novos comparam o painel N3 do SVG original, validam nível/custo e compra única, conferem as oito espigas dentro do canteiro e as seções visíveis, percorrem colheita → reposição → duas vendas manuais com devolução das cestas e migram um save V5 com milho comprado e cargas preservadas para V6. As regressões de N1 e dos níveis posteriores também passaram.
+- `node scripts/check-store-layout.mjs`: rotas de coleta, reposição, compra e retorno ao caixa passaram nos níveis **1, 3, 4, 5, 7, 9, 11, 12, 13 e 15**; os 19 alvos mantêm a separação entre móveis independentes.
+- `npm run build`: concluído; permanece o aviso existente de pacote JavaScript maior que 500 kB. `node scripts/render-floor-plan.mjs`: gerou [N1](PLANTA-LOJA-N1.svg) e [N3](PLANTA-LOJA-N3.svg) da configuração real.
+- Edge headless: [desktop 1440 × 1000](previews/nova-planta-n3.png), [vista geral](previews/nova-planta-n3-geral.png), [móvel 390 × 844](previews/nova-planta-n3-mobile.png) e [Canvas 2D forçado](previews/nova-planta-n3-canvas.png). Nenhuma exceção JavaScript; largura móvel do documento igual à viewport, 390 px. Partida de preparação isolada com caixa e milho comprados, colheita e reposição de quatro unidades de cada produto e tempo para regeneração das hortas. Nenhum salvamento pessoal foi usado.
+- As capturas verificam carregamento e apresentação; gestos e desempenho em aparelho físico e uma partida humana prolongada não foram medidos. A adaptação completa dos demais painéis continua pendente.
+
 ## Nova planta — nível 1 — 14/10/2026
 
 - Referência visual posterior: canteiro de tomates compactado para **3,6 × 2,5 u**, com oito plantas, atrás da loja. Após os pedidos de afastá-lo da parede e movê-lo mais à esquerda, passou para `(-9,2; -12,7)`, com coleta em `(-9,2; -10,9)`. As plantas têm margem de 0,7 u até as bordas e os volumes dos tomates ficam inteiramente dentro da terra. A cerca tem âncora independente para manter sua posição durante ajustes do canteiro. O jogador confirmou que a referência se aplica somente ao canteiro. Os **36 testes de N1, segurança espacial e personagens**, as rotas de todos os níveis e o build passaram com essa geometria. [Close-up atualizado](previews/horta-tomates.png).

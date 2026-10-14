@@ -1,6 +1,6 @@
 # Desbloqueios por nível
 
-O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. O leite continua em ilha fria e a padaria no fundo; as demais etapas espaciais ainda usam as expansões anteriores. O acesso de produção passou para a porta dos fundos.
+O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. O leite continua em ilha fria e a padaria no fundo; as demais etapas espaciais ainda usam as expansões anteriores.
 
 ## Disponíveis
 

@@ -1,8 +1,10 @@
 # Plano de implementação da nova planta do mercadinho
 
-Data: 13/10/2026. **Status atualizado em 14/10/2026: implementação parcial, nível 1 concluído.**
+Data: 13/10/2026. **Status atualizado em 14/10/2026: implementação parcial, níveis 1 e 3 concluídos.**
 
 Este documento descreve a substituição completa do layout pela planta enviada. A entrega do nível 1 está registrada em [PLANTA-LOJA-N1.md](PLANTA-LOJA-N1.md): salão inicial, terreno, escritório, acessos, caixa, banca modular e migração espacial. As caixas abaixo representam o plano completo até N15 e continuam pendentes quando ainda exigem etapas posteriores. A ampliação principal somente no N9 e a remoção do anexo antigo ainda não foram implementadas.
+
+A entrega do [nível 3](PLANTA-LOJA-N3.md) acrescenta milho atrás do tomate, mantendo os dois canteiros inteiramente atrás da loja, sem produção ao lado da parede esquerda. A banca ganha somente a seção comprada e o salão não aumenta. A reserva do trigo foi deslocada para trás do milho para evitar sobreposição nos níveis posteriores. A versão espacial atual é 6; saves anteriores preservam compras, estoques e cargas.
 
 Leitura espacial confirmada no painel N1–2: a horta de tomates ocupa a faixa posterior esquerda, inteiramente atrás da parede do fundo. A primeira entrega manteve incorretamente as coordenadas da horta lateral antiga; a correção está na versão espacial 5, com verificação da posição contra o SVG original. A imagem posterior enviada pelo jogador definiu um canteiro compacto de 3,6 × 2,5 u, mais próximo do escritório e com oito plantas.
 
@@ -27,7 +29,7 @@ Premissa de escopo: manter os dez produtos, identificadores de compras, níveis,
 | Padaria | Balcão e equipamentos no fundo do salão atual | Área de venda junto à parede direita do salão ampliado. Equipamentos internos precisam ser acomodados. |
 | Queijo | Oficina externa e ilha fria no anexo | Produção externa atrás do escritório; venda na área “Deli”, abaixo da padaria na lateral direita. |
 | Mel e geleia | Bancas separadas no anexo | Conjunto compartilhado na frente, à direita; a geleia aparece no N15. |
-| Fazenda | Fontes distribuídas pela lateral e fundo | Tomate, milho e trigo em sequência na esquerda; galinheiro, curral e morango na faixa posterior; apiário abaixo do morango. |
+| Fazenda | Fontes distribuídas pela lateral e fundo | Tomate, milho e trigo em sequência na faixa posterior, todos atrás da loja; galinheiro, curral e morango também ao fundo; apiário abaixo do morango. |
 | Cozinha de geleias | Oficina externa ao lado da queijaria | Produção externa junto à parede posterior da loja, aproximadamente atrás da região de ovos/leite. |
 | Escritório | Canto posterior esquerdo | Mesmo papel e posição relativa; redimensionar conforme a nova escala e preservar acesso ao computador. |
 | Acessos | Entrada frontal e acesso lateral à fazenda; acesso lateral do anexo | Entrada dupla frontal à esquerda e porta dupla posterior para a produção. Há outro símbolo junto ao escritório que exige interpretação. |
@@ -166,7 +168,7 @@ Estas pendências não impedem a elaboração deste plano. Devem ser resolvidas 
 
 ### Passo 7 — Reposicionar produção e manter as cadeias completas
 
-- [ ] Distribuir hortas de tomate, milho e trigo na esquerda; galinheiro, curral e estufa na faixa posterior; apiário abaixo da estufa.
+- [ ] Distribuir hortas de tomate, milho e trigo inteiramente atrás da loja; galinheiro, curral e estufa na faixa posterior; apiário abaixo da estufa.
 - [ ] Posicionar queijaria atrás do escritório e cozinha de geleias atrás da região de ovos/leite, com espaço real para entrega e coleta.
 - [ ] Garantir caminho externo entre todas as fontes, as oficinas e a porta posterior; a abertura de uma oficina não pode isolar fontes antigas.
 - [ ] Acomodar entrada de trigo, moinho, forno, balcão e movimentos dos padeiros na nova padaria da lateral direita.

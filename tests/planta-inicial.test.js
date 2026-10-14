@@ -119,7 +119,7 @@ test('save V3 migra uma vez, preserva estoques e cargas e recupera os dois atore
   const salvo = structuredClone(sim.estado); salvo.versaoLayout = 3;
   Object.assign(salvo.jogador, { x: -3.1, z: 0.7 });
   const migrado = new Simulacao(salvo);
-  assert.equal(migrado.estado.versaoLayout, 5);
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
   assert.equal(migrado.estado.dinheiro, sim.estado.dinheiro);
   assert.equal(migrado.estado.produtos.tomate.prateleira, 7);
   assert.deepEqual(migrado.estado.jogador.inventario, ['tomate', 'milho']);
@@ -135,7 +135,7 @@ test('save V4 da horta lateral migra sem perder cargas e não reaplica a recuper
   Object.assign(sim.estado.jogador, { x: -7.4, z: -1.7, inventario: ['tomate', 'tomate'] });
   sim.estado.produtos.tomate.horta = 3; sim.estado.produtos.tomate.prateleira = 6;
   const migrado = new Simulacao(structuredClone(sim.estado));
-  assert.equal(migrado.estado.versaoLayout, 5);
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
   assert.deepEqual(migrado.estado.jogador.inventario, ['tomate', 'tomate']);
   assert.equal(migrado.estado.produtos.tomate.horta, 3);
   assert.equal(migrado.estado.produtos.tomate.prateleira, 6);
