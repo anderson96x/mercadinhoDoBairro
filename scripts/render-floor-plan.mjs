@@ -55,6 +55,14 @@ if (nivel >= 4) {
   path([{ x: CONFIG.portaProducao.x, z: tomate.coleta.z }, { x: CONFIG.portaProducao.x, z: ovos.coleta.z }, ovos.coleta]);
 }
 text(CONFIG.portaProducao.x, -11.25, 'PORTA DE PRODUÇÃO · 3 u', 'small');
+if (nivel >= 5) {
+  const leite = PRODUTOS.leite;
+  rect(leite.prateleira, '#d3e6e3', 'stroke="#63868d"');
+  text(leite.prateleira.x, leite.prateleira.z + 1.2, 'LEITE', 'small');
+  rect(geometriaEstacao('leite', 'coleta'), '#bed19d', 'stroke="#9b6a43"');
+  text(leite.horta.x, leite.horta.z, 'CURRAL', 'small');
+  path([{ x: CONFIG.portaProducao.x, z: tomate.coleta.z }, { x: CONFIG.portaProducao.x, z: leite.coleta.z }, leite.coleta]);
+}
 text(CONFIG.portaEntrada.x, 8.5, 'ENTRADA DUPLA', 'small');
 for (let i = 0; i < 5; i++) parts.push(`<circle cx="${X(CONFIG.clienteCaixa.x + i * CONFIG.espacoClientes)}" cy="${Y(CONFIG.clienteCaixa.z)}" r="4" fill="#b79069"/>`);
 for (const id of PRODUTOS_HORTIFRUTI.filter(id => !ativos.includes(id))) {
@@ -68,7 +76,7 @@ const notes = [
   'Salão inicial: 7 × 8 cm → 14 × 16 u.',
   'Terreno: 20 × 20 cm → 40 × 40 u.',
   nivel >= 3 ? 'Tomate + milho na mesma banca.' : 'Tomates na banca junto à esquerda.',
-  nivel >= 4 ? 'Ovos na parede do fundo.' : 'Escritório e lixeira ao fundo.',
+  nivel >= 5 ? 'Ovos + leite na parede do fundo.' : nivel >= 4 ? 'Ovos na parede do fundo.' : 'Escritório e lixeira ao fundo.',
   'Entrada frontal e acesso posterior.',
   'Caixa com acesso livre à cadeira.',
   'Cinco cestas e cinco lugares de fila.',
@@ -84,7 +92,7 @@ const notes = [
   'ESCOPO DESTA ETAPA',
   'Departamentos posteriores ainda',
   'mantêm as ampliações anteriores.',
-  nivel >= 4 ? 'N4: galinheiro atrás da loja.' : nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
+  nivel >= 5 ? 'N5: curral ao lado do galinheiro.' : nivel >= 4 ? 'N4: galinheiro atrás da loja.' : nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
   'u = unidade do jogo; rua em +z.'
 ];
 notes.forEach((value, i) => parts.push(`<text x="885" y="${165 + i * 31}" class="${[0, 9, 17].includes(i) ? 'label' : 'note'}">${value}</text>`));
@@ -92,4 +100,4 @@ parts.push('<text x="48" y="966" class="small">Gerado da configuração do jogo 
 writeFileSync(new URL(`../docs/PLANTA-LOJA-N${nivel}.svg`, import.meta.url), parts.join('\n'), 'utf8');
 console.log(`Generated docs/PLANTA-LOJA-N${nivel}.svg from the implemented level ${nivel} geometry.`);
 }
-for (const nivel of [1, 3, 4]) renderizarPlanta(nivel);
+for (const nivel of [1, 3, 4, 5]) renderizarPlanta(nivel);

@@ -1,5 +1,5 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
-import { PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti } from './planta.js';
+import { PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
@@ -381,7 +381,7 @@ export class Simulacao {
         : id === ALA_TRIGO.id
         ? 'Plantação de trigo pronta! Colha o trigo atrás do milho e abasteça sua seção na banca de hortifruti.'
         : id === ALA_LEITE.id
-        ? 'Curral pronto! Recolha o leite em garrafas de vidro e abasteça o novo refrigerador.'
+        ? 'Curral pronto atrás da loja, ao lado do galinheiro! Recolha as garrafas e abasteça o refrigerador junto aos ovos, pela frente.'
         : 'Galinheiro pronto atrás da loja! Saia pela porta dos fundos para coletar ovos e abasteça a estante na parede do fundo, à direita da porta.' });
     }
     if (m.tipo === 'produto') {
@@ -430,7 +430,7 @@ export class Simulacao {
       const orientacaoLeite = !this.estado.melhorias.alaLeite
         ? { titulo: 'Construa o curral', texto: 'Compre a ala do leite no escritório por R$ 800.', destino: 'escritorio' }
         : this.estado.produtos.leite.prateleira < 1
-          ? { titulo: 'Leve leite ao refrigerador', texto: 'Recolha as garrafas de vidro no curral e abasteça o novo refrigerador.', destino: this.estado.jogador.inventario.includes('leite') ? 'prateleiraLeite' : 'leite' }
+          ? { titulo: 'Leve leite ao refrigerador', texto: 'Saia pela porta dos fundos para recolher as garrafas no curral. Abasteça pela frente o refrigerador à direita dos ovos.', destino: this.estado.jogador.inventario.includes('leite') ? 'prateleiraLeite' : 'leite' }
           : { titulo: 'Atenda o bairro', texto: 'O leite já está à venda. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacaoTrigo = !this.estado.melhorias.alaTrigo
         ? { titulo: 'Abra a plantação de trigo', texto: 'Compre a ala do trigo no escritório por R$ 400.', destino: 'escritorio' }
@@ -492,10 +492,10 @@ export class Simulacao {
     const caixas = [
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
-      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_LEITE.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
+      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_TRIGO.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
-    if (this.estado.estagioLoja >= ALA_LEITE.indice) caixas.push(...ALA_PRODUCAO.paredes.filter(p => p.x !== 12.1 && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)));
-    if (this.estado.estagioLoja >= ALA_LEITE.indice) caixas.push(
+    if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(...ALA_PRODUCAO.paredes.filter(p => p.x !== 12.1 && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)));
+    if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(
       ...ALA_LEITE.paredes.filter(p => (this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1) && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal))
     );
     if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(
@@ -658,6 +658,7 @@ export class Simulacao {
     const candidatos = [];
     const obstaculos = this.obstaculos();
     const compartimento = selecionarCompartimentoHortifruti(jogador, this.estado.produtos);
+    const expositorPosterior = selecionarExpositorPosterior(jogador, this.estado.produtos);
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (!this.estado.produtos[id].liberado) continue;
       for (const tipo of id === 'pao' ? ['reposicao'] : ['coleta', 'reposicao']) {
@@ -667,6 +668,7 @@ export class Simulacao {
         // a seção em direção à frente possui a borda; o estoque não muda sozinho.
         const compartilhado = tipo === 'reposicao' && objeto.movel === 'hortifruti';
         if (compartilhado && compartimento !== id) continue;
+        if (tipo === 'reposicao' && objeto.movel === 'parede-frios' && expositorPosterior !== id) continue;
         const outros = obstaculos.filter(o => compartilhado && o.movel === objeto.movel
           ? !(jogador.z >= o.z - o.d / 2 - 1e-8 && jogador.z <= o.z + o.d / 2 + 1e-8)
           : o.x !== objeto.x || o.z !== objeto.z || o.w !== objeto.w || o.d !== objeto.d);

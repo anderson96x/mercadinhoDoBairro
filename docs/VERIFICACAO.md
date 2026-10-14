@@ -1,5 +1,16 @@
 # Verificação da versão 0.1.0
 
+## Nova planta — nível 5 (leite) — 14/10/2026
+
+- Referência posterior do jogador: o expositor baixo foi substituído por [refrigerador vertical de parede](previews/leite-e-ovos-n5.png), com duas portas de vidro, três prateleiras internas, puxadores, cabeçalho vermelho e ventilação inferior. Os 12 lugares foram distribuídos em três níveis; animações e etiqueta ajustadas. **42 testes de N5, expansão e personagens passaram**, incluindo apoio das garrafas e visibilidade por raios através do vidro, assim como o build. Detalhe e vista geral atualizados; móvel/Canvas abaixo registram o expositor baixo anterior. Posição, colisão, estoque e regras de venda foram preservados.
+
+- [Entrega N5](PLANTA-LOJA-N5.md): curral em `(2,6; -21,7)`, inteiramente atrás da loja e à direita do galinheiro; refrigerador de 2,2 × 1,4 u em `(9,45; -8,45)`, junto aos ovos. A compra mantém salão, fachada e paredes iniciais. Vaca, cocho e garrafas cabem no curral de 3,4 × 3,2 u; garrafas no expositor ficam em quatro colunas/três fileiras acima da bandeja fria.
+- **180 testes passaram**, sem falhas. Cinco casos novos verificam o SVG original e modelos, compra N5 por R$ 800 e conservação do salão, seleção exclusiva na divisória de ovos/leite com inventário misto, produção → coleta posterior → reposição → venda por R$ 20 com devolução de cesta e migração V7 → V8 com dinheiro, cargas e produção parcial preservados.
+- `node scripts/check-store-layout.mjs`: rotas passaram nos níveis **1, 3, 4, 5, 7, 9, 11, 12, 13 e 15**. Móveis próximos exigem faixa exclusiva de seleção ou parede contínua; os demais mantêm alcances separados. A reserva legada de morangos foi afastada do corredor do curral; permanece bloqueada no N5.
+- `npm run build`: concluído, com o aviso existente de pacote maior que 500 kB. `node scripts/render-floor-plan.mjs`: gerou N1, N3, N4 e [N5](PLANTA-LOJA-N5.svg).
+- Edge headless, com estado N5 confirmado: [desktop](previews/nova-planta-n5.png), [vista geral](previews/nova-planta-n5-geral.png), [móvel 390 × 844](previews/nova-planta-n5-mobile.png), [Canvas 2D](previews/nova-planta-n5-canvas.png) e [leite junto aos ovos](previews/leite-e-ovos-n5.png). Nenhuma exceção JavaScript; largura móvel do documento e viewport iguais a 390 px. Fixture isolada com caixa/milho/ovos/leite comprados e estoques preparados para inspeção (quatro tomates/milhos e 12 ovos/garrafas); nenhum salvamento pessoal usado.
+- A verificação cobre simulação, carregamento e apresentação. A oclusão aproximada do Canvas e testes humanos prolongados ou de gestos/desempenho em aparelho físico permanecem fora dessa validação. As expansões a partir do trigo ainda aguardam adaptação.
+
 ## Nova planta — nível 4 (ovos) — 14/10/2026
 
 - Ajuste pela referência mais recente: [expositor aberto em degraus](previews/estante-ovos.png), com seis caixotes de madeira inclinados, dois por nível, estrutura escura e base de madeira. Os níveis recuam e sobem; cada um recebe quatro ovos. Teste de visibilidade por raios confirma que nenhum centro de ovo é ocultado pela estrutura na direção da câmera isométrica. Os **42 testes de N4, expansão e personagens passaram** com o novo modelo. Vista geral e detalhe atualizados; capturas móveis/Canvas abaixo registram a variante anterior.

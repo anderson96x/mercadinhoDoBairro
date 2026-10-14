@@ -4,7 +4,7 @@ O início da loja usa a [nova planta N1](PLANTA-LOJA-N1.md), seguida pelo [milho
 
 ## Regras rápidas
 
-O [N4](PLANTA-LOJA-N4.md) usa `PLANTA_OVOS` para o galinheiro posterior e a banca na parede do fundo. `estagioLoja = 1` continua registrando a instalação dos ovos, mas não amplia o salão. Enquanto N5+ conservam a geometria legada, piso lateral e remoção da parede inicial começam somente em `ALA_LEITE.indice`. Verificações de espaçamento permitem alcances próximos apenas quando uma parede contínua cobre toda a projeção compartilhada; não basta bloquear a linha entre os centros. O gerador também produz `PLANTA-LOJA-N4.svg`.
+O [N4](PLANTA-LOJA-N4.md) usa `PLANTA_OVOS` e o [N5](PLANTA-LOJA-N5.md), `PLANTA_LEITE`. Os estágios 1 e 2 registram instalações de equipamentos mantendo o salão inicial. Enquanto N7+ conservam a geometria legada, piso lateral e remoção da parede inicial começam em `ALA_TRIGO.indice`. `selecionarExpositorPosterior()` delimita as faixas de reposição pela frente de ovos e leite; na divisória, ovos têm prioridade estável. Verificações de espaçamento permitem alcances próximos com seleção exclusiva ou parede contínua cobrindo toda a projeção compartilhada. O gerador produz N1, N3, N4 e N5.
 
 Abra `src/jogo/configuracao.js`. Ele concentra os ajustes mais frequentes:
 

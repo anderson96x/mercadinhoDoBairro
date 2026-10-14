@@ -1,5 +1,7 @@
 # Nova planta — nível 4: ovos
 
+Registro da entrega N4. Para o refrigerador vizinho, a seleção de reposição, remoção da extensão N5 e migração V8, consulte [PLANTA-LOJA-N5.md](PLANTA-LOJA-N5.md).
+
 Implementado em 14/10/2026, seguindo o painel N4 do [desenho original](mercadinhoDoBairro.drawio.svg). O galinheiro fica inteiramente atrás da loja, mais ao fundo e à direita do milho. O expositor de ovos fica encostado à parede posterior, à direita da porta de produção. A referência visual mais recente do jogador definiu caixotes abertos inclinados em três degraus, base de madeira e estrutura metálica escura. Cada nível recua e sobe para deixar os ovos visíveis da câmera isométrica. **Comprar ovos mantém o salão de 14 × 16 u**, sua parede lateral, fachada e piso.
 
 ![Planta técnica N4](PLANTA-LOJA-N4.svg)

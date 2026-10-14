@@ -67,7 +67,8 @@ function posicaoProdutoPrateleira(id, p, i) {
     const x = -0.4 + i % 3 * 0.4;
     return new THREE.Vector3(p.x + x, 1.2 - x * 0.14, p.z - 0.75 + Math.floor(i / 3) * 0.5);
   }
-  if (id === 'leite' || id === 'queijo' || id === 'geleia') {
+  if (id === 'leite') return new THREE.Vector3(p.x - 0.75 + i % 4 * 0.5, 0.98 + Math.floor(i / 4) * 0.65, p.z + 0.48);
+  if (id === 'queijo' || id === 'geleia') {
     return new THREE.Vector3(p.x - 0.25 + i % 2 * 0.5, 1.24, p.z - (p.d - 0.7) / 2 + Math.floor(i / 2) * (p.d - 0.7) / 5);
   }
   if (id === 'pao') return new THREE.Vector3(p.x - 1.15 + i % 6 * 0.46, 1.45, p.z - 0.23 + Math.floor(i / 6) * 0.23);
@@ -95,6 +96,7 @@ function percorrerRoteiro(etapas, tempo) {
 }
 
 function criarRefrigerador(pai, ponto, id = 'leite') {
+  if (id === 'leite') return criarRefrigeradorParede(pai, ponto);
   const refrigerador = new THREE.Group();
   refrigerador.name = `ilha-fria-${id}`;
   refrigerador.position.set(ponto.x, 0, ponto.z); pai.add(refrigerador);
@@ -113,6 +115,38 @@ function criarRefrigerador(pai, ponto, id = 'leite') {
     caixa(refrigerador, w, 0.05, 0.055, 0x61a9b5, 0, 1.49, z);
   }
   return { grupo: refrigerador };
+}
+
+function criarRefrigeradorParede(pai, p) {
+  const grupo = new THREE.Group(); grupo.name = 'refrigerador-parede-leite';
+  grupo.position.set(p.x, 0, p.z); pai.add(grupo);
+  const { w, d } = p, frente = d / 2;
+  const base = caixa(grupo, w, 0.42, d - 0.06, 0xe0e8e5, 0, 0.44, -0.03);
+  base.name = 'base-refrigerador-leite';
+  caixa(grupo, w - 0.14, 2.26, 0.1, 0xcbdedb, 0, 1.75, -d / 2 + 0.05);
+  for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) {
+    caixa(grupo, 0.12, 2.28, d, 0xeaf1f0, x, 1.74, 0);
+    caixa(grupo, 0.035, 1.98, 0.035, 0xd4fff5, x * 0.91, 1.7, frente - 0.14);
+  }
+  for (const y of [0.79, 1.44, 2.09]) {
+    const prateleira = caixa(grupo, w - 0.24, 0.07, d - 0.18, 0x9bbab9, 0, y, 0);
+    prateleira.name = 'prateleira-leite';
+  }
+  const vidro = vidroLeite.clone(); vidro.opacity = 0.18;
+  for (const lado of [-1, 1]) {
+    const porta = caixa(grupo, w / 2 - 0.1, 1.96, 0.018, 0xd8eeed, lado * w / 4, 1.71, frente - 0.08);
+    porta.name = 'porta-vidro-leite'; porta.material = vidro;
+    caixa(grupo, 0.045, 0.32, 0.06, 0x526c69, lado * 0.1, 1.5, frente - 0.04);
+  }
+  for (const x of [-w / 2 + 0.055, 0, w / 2 - 0.055])
+    caixa(grupo, 0.055, 2.05, 0.045, 0x718985, x, 1.72, frente - 0.05);
+  for (const y of [0.695, 2.745]) caixa(grupo, w, 0.055, 0.06, 0x718985, 0, y, frente - 0.04);
+  caixa(grupo, w, 0.12, d, 0xeaf1f0, 0, 2.95, 0);
+  caixa(grupo, w, 0.23, 0.14, 0xb73a2d, 0, 2.815, frente - 0.08);
+  const grade = caixa(grupo, w - 0.14, 0.28, 0.025, 0x344b4c, 0, 0.44, frente - 0.025);
+  grade.name = 'grade-refrigerador-leite';
+  for (let i = 0; i < 7; i++) caixa(grupo, w - 0.18, 0.014, 0.018, 0x8d9f9c, 0, 0.335 + i * 0.035, frente - 0.02);
+  return { grupo };
 }
 
 function criarBanca(pai, p, cor = 0xd98b43) {
@@ -867,7 +901,8 @@ export class Cena {
       }
       for (const z of [-d / 2, d / 2]) for (const y of [0.55, 0.9]) caixa(grupo, w, 0.08, 0.07, 0xc18b54, h.x, y, h.z + z);
       for (const x of [-w / 2, w / 2]) for (const y of [0.55, 0.9]) caixa(grupo, 0.07, 0.08, d, 0xc18b54, h.x + x, y, h.z);
-      this.vaca = criarVaca(grupo, h.x - 0.45, h.z - 0.45);
+      this.vaca = criarVaca(grupo, h.x - 0.35, h.z - 0.45);
+      this.vaca.scale.setScalar(0.9);
       const banco = { x: h.x - 0.45, z: h.z + 0.8 };
       this.posicaoCuidadorVaca = banco;
       for (const x of [-0.23, 0.23]) for (const z of [-0.23, 0.23]) caixa(grupo, 0.07, 0.48, 0.07, 0x8f6040, banco.x + x, 0.39, banco.z + z);
@@ -878,7 +913,7 @@ export class Cena {
       this.cuidadorVaca = cuidador;
       cilindro(grupo, 0.17, 0.14, 0.3, 0xa1aaa7, h.x - 0.55, 0.23, h.z - 0.25);
       cilindro(grupo, 0.15, 0.15, 0.015, 0xf4f3e9, h.x - 0.55, 0.385, h.z - 0.25);
-      caixa(grupo, 1.35, 0.28, 0.7, 0xb98250, h.x + 1.3, 0.27, h.z + 0.85);
+      caixa(grupo, 1.35, 0.28, 0.7, 0xb98250, h.x + 0.9, 0.27, h.z + 0.85);
     } else {
       const { w, d } = geometriaEstacao(id, 'coleta');
       caixa(grupo, w, 0.35, d, 0xbd7545, h.x, 0.22, h.z);
@@ -890,7 +925,7 @@ export class Cena {
     const frutos = [];
     for (let i = 0; i < 8; i++) {
       const x = p.canteiro ? h.x - (p.canteiro.w - 1.4) / 2 + i % 4 * (p.canteiro.w - 1.4) / 3
-        : id === 'ovos' ? h.x - 0.58 + i % 2 * 1.16 : id === 'leite' ? h.x + 0.85 + i % 4 * 0.3 : h.x - 0.65 + i % 2 * 1.25;
+        : id === 'ovos' ? h.x - 0.58 + i % 2 * 1.16 : id === 'leite' ? h.x + 0.5 + i % 4 * 0.3 : h.x - 0.65 + i % 2 * 1.25;
       const z = p.canteiro ? h.z - (p.canteiro.d - 1.4) / 2 + Math.floor(i / 4) * (p.canteiro.d - 1.4)
         : id === 'ovos' ? h.z - 0.72 + Math.floor(i / 2) * 0.47 : id === 'leite' ? h.z + 0.7 + Math.floor(i / 4) * 0.25 : h.z - 1.18 + Math.floor(i / 2) * 0.78;
       if (id === 'ovos') cilindro(grupo, 0.27, 0.3, 0.09, 0xc29153, x, 1.02, z);
@@ -920,7 +955,7 @@ export class Cena {
     const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h) : null;
     this.produtos[id] = { grupo, frutos, frutas, galinhas, refrigerador, estante, irrigador };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : id === 'leite' ? 'CURRAL' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
-    this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'ovos' ? 3.1 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
+    this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'ovos' ? 3.1 : id === 'leite' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   construirArtesanal(id, p) {
     const grupo = new THREE.Group(); grupo.name = `estacao-${id}`; this.cena.add(grupo);

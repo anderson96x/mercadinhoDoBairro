@@ -33,10 +33,30 @@ export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 export const PLANTA_OVOS = {
   horta: { x: -2.4, z: -21.7 }, coleta: { x: -2.4, z: -20.05 },
   galinheiro: { w: 2.5, d: 2.2 },
-  prateleira: { x: 7.1, z: -8.45, w: 2.2, d: 1.4 },
+  prateleira: { x: 7.1, z: -8.45, w: 2.2, d: 1.4, movel: 'parede-frios' },
   reposicao: { x: 7.1, z: -7.15 }, cliente: { x: 7.1, z: -7.15 },
   pontosCompra: [-0.8, 0, 0.8].map(dx => ({ x: 7.1 + dx, z: -7.15 }))
 };
+
+// Painel N5–6: curral ao lado do galinheiro, ambos na mesma faixa posterior.
+export const PLANTA_LEITE = {
+  horta: { x: 2.6, z: -21.7 }, coleta: { x: 2.6, z: -19.45 },
+  curral: { w: 3.4, d: 3.2 },
+  prateleira: { x: 9.45, z: -8.45, w: 2.2, d: 1.4, movel: 'parede-frios' },
+  reposicao: { x: 9.45, z: -7.15 }, cliente: { x: 9.45, z: -7.15 },
+  pontosCompra: [-0.65, 0, 0.65].map(dx => ({ x: 9.45 + dx, z: -7.15 }))
+};
+
+export function selecionarExpositorPosterior(ator, produtos) {
+  const ativos = [['ovos', PLANTA_OVOS.prateleira], ['leite', PLANTA_LEITE.prateleira]]
+    .filter(([id]) => produtos[id]?.liberado);
+  return ativos.find(([id, p], i) => {
+    const anterior = ativos[i - 1]?.[1], proximo = ativos[i + 1]?.[1];
+    const minX = anterior ? (anterior.x + anterior.w / 2 + p.x - p.w / 2) / 2 : p.x - p.w / 2;
+    const maxX = proximo ? (p.x + p.w / 2 + proximo.x - proximo.w / 2) / 2 : p.x + p.w / 2;
+    return ator.z >= p.z + p.d / 2 && ator.x >= minX - 1e-8 && ator.x <= maxX + 1e-8;
+  })?.[0];
+}
 
 export function paredesPlantaInicial(alturaBaixa) {
   const l = PLANTA_INICIAL.limites, porta = PLANTA_INICIAL.portaProducao;

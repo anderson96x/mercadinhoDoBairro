@@ -33,7 +33,7 @@ test('estações futuras não aparecem nem criam marcações antes da compra', (
   assert.equal(visualComLeite.produtos.leite.grupo.visible, true);
 });
 
-test('ilha de leite tem quatro faces acabadas e acesso livre desde o nível 5', () => {
+test('refrigerador de parede tem duas portas de vidro, três níveis e acesso frontal desde N5', () => {
   const sim = new Simulacao();
   sim.estado.estagioLoja = ALA_LEITE.indice;
   sim.estado.melhorias.alaProducao = 1;
@@ -43,13 +43,17 @@ test('ilha de leite tem quatro faces acabadas e acesso livre desde o nível 5', 
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, alvosHorta: [], criarLabel() {} };
   Cena.prototype.construirEstacao.call(visual, 'leite', PRODUTOS.leite);
   const { refrigerador, frutas } = visual.produtos.leite;
-  assert.equal(refrigerador.grupo.name, 'ilha-fria-leite');
+  assert.equal(refrigerador.grupo.name, 'refrigerador-parede-leite');
   const bounds = new THREE.Box3().setFromObject(refrigerador.grupo);
   const tamanho = bounds.getSize(new THREE.Vector3());
-  assert.ok(tamanho.y < tamanho.z, 'ilha baixa deixa o salão visível');
+  assert.ok(tamanho.y > 2.7, 'refrigerador vertical como a referência');
   assert.ok(tamanho.x <= PRODUTOS.leite.prateleira.w + 0.001);
   assert.ok(tamanho.z <= PRODUTOS.leite.prateleira.d + 0.001);
-  assert.ok(frutas.every(f => f.position.y === frutas[0].position.y));
+  assert.equal(new Set(frutas.map(f => f.position.y)).size, 3);
+  assert.equal(refrigerador.grupo.children.filter(o => o.name === 'porta-vidro-leite' && o.material.transparent).length, 2);
+  const base = new THREE.Box3().setFromObject(refrigerador.grupo.getObjectByName('base-refrigerador-leite'));
+  const grade = new THREE.Box3().setFromObject(refrigerador.grupo.getObjectByName('grade-refrigerador-leite'));
+  assert.ok(grade.min.z > base.max.z, 'ventilação visível na frente da base');
   assert.ok(bounds.max.x < 15.1 - 0.8, 'não depende da parede removida na próxima expansão');
   for (const ponto of [PRODUTOS.leite.reposicao, ...PRODUTOS.leite.pontosCompra]) {
     const ator = { x: -1.3, z: 4.9, andando: false };
