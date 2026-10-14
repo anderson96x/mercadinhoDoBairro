@@ -59,6 +59,10 @@ function liberarGeometrias(grupo) {
 }
 
 function posicaoProdutoPrateleira(id, p, i) {
+  if (id === 'ovos') {
+    const nivel = Math.floor(i / 4);
+    return new THREE.Vector3(p.x - 0.75 + i % 4 * 0.5, 1.2 + nivel * 0.58, p.z + 0.43 - nivel * 0.4);
+  }
   if (p.movel === 'hortifruti') {
     const x = -0.4 + i % 3 * 0.4;
     return new THREE.Vector3(p.x + x, 1.2 - x * 0.14, p.z - 0.75 + Math.floor(i / 3) * 0.5);
@@ -117,6 +121,37 @@ function criarBanca(pai, p, cor = 0xd98b43) {
   caixa(pai, p.w, 0.13, p.d, 0xffd98a, p.x, 0.91, p.z);
   for (const z of [-p.d / 2 + 0.04, p.d / 2 - 0.04]) caixa(pai, p.w, 0.18, 0.08, cor, p.x, 1.04, p.z + z);
   for (const x of [-p.w / 2 + 0.04, p.w / 2 - 0.04]) caixa(pai, 0.08, 0.18, p.d, cor, p.x + x, 1.04, p.z);
+}
+
+function criarEstanteOvos(pai, p) {
+  const estante = new THREE.Group(); estante.name = 'estante-ovos';
+  estante.position.set(p.x, 0, p.z); pai.add(estante);
+  // Caixotes inclinados em degraus: cada nível recua para deixar os ovos à vista.
+  caixa(estante, p.w, 0.16, p.d, 0x3c4643, 0, 0.31, 0);
+  for (const x of [-p.w / 2 + 0.045, p.w / 2 - 0.045]) {
+    caixa(estante, 0.09, 2.48, 0.09, 0x46514d, x, 1.47, -p.d / 2 + 0.05);
+    caixa(estante, 0.09, 0.82, 0.09, 0x46514d, x, 0.64, p.d / 2 - 0.05);
+    const suporte = caixa(estante, 0.06, 2.17, 0.06, 0x46514d, x, 1.785, 0);
+    suporte.rotation.x = -0.62;
+    caixa(estante, 0.07, 0.56, p.d - 0.14, 0xbb9067, x, 0.65, 0);
+  }
+  for (const x of [-p.w / 4, p.w / 4]) {
+    caixa(estante, p.w / 2 - 0.12, 0.55, 0.07, 0xcda77d, x, 0.65, p.d / 2 - 0.05);
+    for (const y of [0.47, 0.62, 0.77]) caixa(estante, p.w / 2 - 0.16, 0.012, 0.012, 0xb58b63, x, y, p.d / 2 - 0.008);
+  }
+  caixa(estante, p.w, 0.08, 0.08, 0x46514d, 0, 2.67, -p.d / 2 + 0.05);
+  for (let nivel = 0; nivel < 3; nivel++) {
+    const prateleira = new THREE.Group(); prateleira.name = 'prateleira-ovos';
+    prateleira.position.set(0, 0.95 + nivel * 0.58, 0.4 - nivel * 0.4);
+    prateleira.rotation.x = 0.5; estante.add(prateleira);
+    for (const x of [-0.52, 0.52]) {
+      caixa(prateleira, 0.98, 0.06, 0.54, 0xcda77d, x, 0, 0);
+      for (const dx of [-0.46, 0.46]) caixa(prateleira, 0.06, 0.13, 0.54, 0xb8895e, x + dx, 0.065, 0);
+      for (const z of [-0.24, 0.24]) caixa(prateleira, 0.98, 0.11, 0.06, 0xb8895e, x, 0.055, z);
+      caixa(prateleira, 0.22, 0.07, 0.012, 0xffecc0, x, 0.055, 0.276);
+    }
+  }
+  return estante;
 }
 
 function criarSecaoHortifruti(pai, p) {
@@ -868,7 +903,8 @@ export class Cena {
     }
     const s = p.prateleira;
     const refrigerador = id === 'leite' ? criarRefrigerador(grupo, s) : null;
-    if (!refrigerador) criarBanca(grupo, s);
+    const estante = id === 'ovos' ? criarEstanteOvos(grupo, s) : null;
+    if (!refrigerador && !estante) criarBanca(grupo, s);
     const frutas = [];
     for (let i = 0; i < 12; i++) {
       const f = criarProduto(id, id === 'leite' ? 0.8 : 1.25);
@@ -882,9 +918,9 @@ export class Cena {
       f.position.copy(posicaoProdutoPrateleira(id, s, i)); grupo.add(f); frutas.push(f);
     }
     const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h) : null;
-    this.produtos[id] = { grupo, frutos, frutas, galinhas, refrigerador, irrigador };
+    this.produtos[id] = { grupo, frutos, frutas, galinhas, refrigerador, estante, irrigador };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : id === 'leite' ? 'CURRAL' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
-    this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
+    this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'ovos' ? 3.1 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   construirArtesanal(id, p) {
     const grupo = new THREE.Group(); grupo.name = `estacao-${id}`; this.cena.add(grupo);

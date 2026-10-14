@@ -1,5 +1,5 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
-import { PLANTA_INICIAL, FAZENDAS_HORTIFRUTI, compartimentoHortifruti } from './planta.js';
+import { PLANTA_INICIAL, PLANTA_OVOS, FAZENDAS_HORTIFRUTI, compartimentoHortifruti } from './planta.js';
 export const ALTURA_PAREDE_BAIXA = 0.75;
 export const ESCRITORIO = {
   limites: { minX: -3.1, maxX: 1.1, minZ: -9.3, maxZ: -5.8 },
@@ -11,7 +11,7 @@ export const ESCRITORIO = {
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 6,
+  versaoLayout: 7,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -84,10 +84,7 @@ export const PRODUTOS = {
   ovos: {
     nome: 'Ovo', plural: 'Ovos', cor: 0xf8e6bf, preco: 15, origem: 'galinheiro',
     capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -9, z: -8.3 }, coleta: { x: -7.4, z: -7.8 },
-    prateleira: { x: 7, z: 0, w: 2.2, d: 1.4 }, reposicao: { x: 7, z: -1.3 },
-    cliente: { x: 7, z: 1.3 },
-    pontosCompra: [{ x: 7, z: 1.3 }, { x: 6.1, z: 1.3 }, { x: 7.9, z: 1.3 }], liberado: false
+    ...PLANTA_OVOS, liberado: false
   },
   leite: {
     nome: 'Leite', plural: 'Garrafas de leite', cor: 0xf4f5e8, preco: 20, origem: 'curral',
@@ -136,8 +133,8 @@ export const PRODUTOS = {
   pao: {
     nome: 'Pão', plural: 'Pães', cor: 0xc87833, preco: 10, origem: 'padaria',
     capacidadeHorta: 0, capacidadePrateleira: 18,
-    horta: { x: 6.2, z: -6.95 }, coleta: { x: 5.15, z: -6.95 },
-    prateleira: { x: 7.6, z: -4.2, w: 3.4, d: 0.9 }, reposicao: { x: 5.15, z: -6.95 },
+    horta: { x: 5.75, z: -5 }, coleta: { x: 4.7, z: -5 },
+    prateleira: { x: 7.6, z: -4.2, w: 3.4, d: 0.9 }, reposicao: { x: 4.7, z: -5 },
     cliente: { x: 7.6, z: -3.15 },
     pontosCompra: [{ x: 7.6, z: -3.15 }, { x: 6.7, z: -3.15 }, { x: 8.5, z: -3.15 }], liberado: false
   }
@@ -152,6 +149,7 @@ export const NIVEL_PADARIA = 9;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
   limites: { ...CONFIG.limiteMundo },
+  // Faixa legada conservada somente a partir do leite, até adaptar N5+.
   piso: { x: 11.5, z: -1.3, w: 1.2, d: 16 },
   camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
   duracaoConstrucao: 4,
@@ -231,7 +229,7 @@ export const MELHORIAS = [
   { id: 'equipeAgil', titulo: 'Reposição ágil', descricao: 'O repositor anda 30% mais rápido e prioriza as bancas vazias da loja ampliada.', custo: 500, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: 14, requisitoMelhoria: 'ajudante' },
   { id: 'cozinhaGeleia', titulo: 'Cozinha de geleias', descricao: 'Combine 2 morangos e 1 mel para fazer 3 geleias. Entregue os ingredientes, recolha os potes e abasteça a banca.', custo: 2200, icone: 'geleia', max: 1, tipo: 'construcao', produto: 'geleia', categoria: 'mercado', nivelMinimo: 15, requisitoMelhoria: 'apiario' },
   { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra o canteiro de milho atrás dos tomates e acrescente sua seção à banca de hortifruti.', custo: 350, icone: 'milho', produto: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 3 },
-  { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa um galinheiro na fazenda e amplie a loja para a prateleira de ovos. Colete os ovos e abasteça a prateleira.', custo: ALA_PRODUCAO.custo, icone: 'ovos', produto: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
+  { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa o galinheiro atrás da loja e instale a estante de ovos na parede do fundo, à direita da porta de produção.', custo: ALA_PRODUCAO.custo, icone: 'ovos', produto: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
   { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa um curral com vaca na fazenda e amplie a loja com um refrigerador de leite em garrafas de vidro.', custo: ALA_LEITE.custo, icone: 'leite', produto: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },
   { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra o último canteiro atrás da loja, acrescente a seção de trigo ao hortifruti e amplie a loja.', custo: ALA_TRIGO.custo, icone: 'trigo', produto: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
   { id: 'alaPadaria', titulo: 'Padaria', descricao: 'Cada trigo rende 3 pães. Deixe o trigo na caixa à esquerda do balcão.', custo: ALA_PADARIA.custo, icone: 'pao', produto: 'pao', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_PADARIA, requisitoMelhoria: 'alaTrigo' },

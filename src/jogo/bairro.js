@@ -421,9 +421,12 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       estagioAnterior = estagio;
       const duracao = estagio >= ALA_TRIGO.indice ? ALA_TRIGO.duracaoConstrucao : estagio >= ALA_LEITE.indice ? ALA_LEITE.duracaoConstrucao : ALA_PRODUCAO.duracaoConstrucao;
       progresso = Math.min(1, progresso + dt / duracao);
-      const progressoOvos = estagio >= ALA_LEITE.indice ? 1 : progresso;
-      const piso = THREE.MathUtils.smoothstep(progressoOvos, 0, 0.5);
-      const paredes = THREE.MathUtils.smoothstep(progressoOvos, 0.35, 0.8);
+      // N4 instala equipamentos sem ampliar o salão. A faixa legada acompanha
+      // apenas a expansão do leite enquanto N5+ aguardam sua nova planta.
+      const ampliada = estagio >= ALA_LEITE.indice;
+      const progressoFaixa = estagio >= ALA_TRIGO.indice ? 1 : progresso;
+      const piso = THREE.MathUtils.smoothstep(progressoFaixa, 0, 0.5);
+      const paredes = THREE.MathUtils.smoothstep(progressoFaixa, 0.35, 0.8);
       const equipamentos = THREE.MathUtils.smoothstep(progresso, 0.7, 1);
       const progressoLeite = estagio >= ALA_TRIGO.indice ? 1 : progresso;
       const pisoLeite = THREE.MathUtils.smoothstep(progressoLeite, 0, 0.5);
@@ -434,11 +437,11 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       passagemArtesanal.visible = estagio < ALA_ARTESANAL.indice;
       passagemLeite.visible = estagio < ALA_ARTESANAL.indice;
       passagemTrigo.visible = estagio < ALA_ARTESANAL.indice;
-      ala.visible = !!estagio;
+      ala.visible = ampliada;
       ala.scale.x = Math.max(0.001, piso);
       ala.position.x = PLANTA_INICIAL.limites.maxX * (1 - ala.scale.x);
       paredesAla.scale.y = Math.max(0.001, paredes);
-      paredeLateralOvos.visible = estagio === ALA_PRODUCAO.indice || (estagio === ALA_LEITE.indice && progresso < 0.8);
+      paredeLateralOvos.visible = false;
       paredeLateralOvos.position.x = estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0;
       alaLeite.visible = estagio >= ALA_LEITE.indice;
       alaLeite.scale.x = Math.max(0.001, pisoLeite);
@@ -450,13 +453,13 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       alaTrigo.scale.x = Math.max(0.001, pisoTrigo);
       alaTrigo.position.x = 15.1 * (1 - alaTrigo.scale.x);
       paredesAlaTrigo.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progressoTrigo, 0.35, 0.8));
-      lateral.visible = !estagio || (estagio === ALA_PRODUCAO.indice && progresso < 0.8);
-      lateral.position.x = estagio ? area.w * piso : 0;
-      const largura = (estagio ? area.w * piso : 0) + (estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0) + (estagio >= ALA_TRIGO.indice ? areaTrigo.w * pisoTrigo : 0);
+      lateral.visible = !ampliada || (estagio === ALA_LEITE.indice && progresso < 0.8);
+      lateral.position.x = ampliada ? area.w * piso + areaLeite.w * pisoLeite : 0;
+      const largura = (ampliada ? area.w * piso : 0) + (estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0) + (estagio >= ALA_TRIGO.indice ? areaTrigo.w * pisoTrigo : 0);
       const fachada = PAREDES_LOJA.find(p => p.fachada);
       rodapeFrontal.scale.x = 1 + largura / fachada.w;
       rodapeFrontal.position.x = fachada.x + largura / 2;
-      andaime.visible = estagio === ALA_PRODUCAO.indice && progresso > 0 && progresso < 0.95;
+      andaime.visible = false;
       andaime.position.x = -area.w * (1 - piso);
       andaime.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
       andaimeLeite.visible = estagio === ALA_LEITE.indice && progresso > 0 && progresso < 0.95;

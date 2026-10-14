@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG, PRODUTOS, ESCRITORIO } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
-import { geometriaEstacao, intervaloEstacoes, distanciaEstacao } from '../src/jogo/estacoes.js';
+import { geometriaEstacao, intervaloEstacoes, distanciaEstacao, estacoesSeparadasPorParede } from '../src/jogo/estacoes.js';
+import { PAREDES_LOJA } from '../src/jogo/bairro.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function lojaCompleta() {
@@ -14,12 +15,13 @@ function lojaCompleta() {
   return sim;
 }
 
-test('móveis independentes mantêm distância; compartimentos compartilham apenas o hortifruti', () => {
+test('móveis independentes têm alcances separados ou parede contínua; hortifruti compartilha seções', () => {
   const pontos = Object.entries(PRODUTOS).flatMap(([id,p]) => (id === 'pao' ? ['reposicao'] : ['coleta','reposicao'])
     .map(tipo => ({ id, tipo, ...geometriaEstacao(id, tipo) })));
   for(let i=0;i<pontos.length;i++) for(let j=i+1;j<pontos.length;j++) {
     if (pontos[i].tipo === 'reposicao' && pontos[j].tipo === 'reposicao' && pontos[i].movel === 'hortifruti' && pontos[j].movel === 'hortifruti') continue;
-    assert.ok(intervaloEstacoes(pontos[i],pontos[j]) > CONFIG.raioInteracao * 2,
+    assert.ok(intervaloEstacoes(pontos[i],pontos[j]) > CONFIG.raioInteracao * 2
+      || estacoesSeparadasPorParede(pontos[i], pontos[j], PAREDES_LOJA, CONFIG.raioInteracao),
       `${pontos[i].id}/${pontos[i].tipo} e ${pontos[j].id}/${pontos[j].tipo}`);
   }
 });

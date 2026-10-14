@@ -4,6 +4,8 @@ O início da loja usa a [nova planta N1](PLANTA-LOJA-N1.md), seguida pelo [milho
 
 ## Regras rápidas
 
+O [N4](PLANTA-LOJA-N4.md) usa `PLANTA_OVOS` para o galinheiro posterior e a banca na parede do fundo. `estagioLoja = 1` continua registrando a instalação dos ovos, mas não amplia o salão. Enquanto N5+ conservam a geometria legada, piso lateral e remoção da parede inicial começam somente em `ALA_LEITE.indice`. Verificações de espaçamento permitem alcances próximos apenas quando uma parede contínua cobre toda a projeção compartilhada; não basta bloquear a linha entre os centros. O gerador também produz `PLANTA-LOJA-N4.svg`.
+
 Abra `src/jogo/configuracao.js`. Ele concentra os ajustes mais frequentes:
 
 | O que mudar | Onde |

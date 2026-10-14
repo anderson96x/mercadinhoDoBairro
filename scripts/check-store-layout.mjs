@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
-import { geometriaEstacao, intervaloEstacoes } from '../src/jogo/estacoes.js';
+import { geometriaEstacao, intervaloEstacoes, estacoesSeparadasPorParede } from '../src/jogo/estacoes.js';
+import { PAREDES_LOJA } from '../src/jogo/bairro.js';
 
 export function abrirLoja(nivel = 15) {
   const sim = new Simulacao();
@@ -44,7 +45,8 @@ const pads = Object.entries(PRODUTOS).flatMap(([id,p]) =>
   (id === 'pao' ? ['reposicao'] : ['coleta','reposicao']).map(tipo => ({ id, tipo, ...geometriaEstacao(id, tipo) })));
 for (let i=0;i<pads.length;i++) for (let j=i+1;j<pads.length;j++) {
   if (pads[i].tipo === 'reposicao' && pads[j].tipo === 'reposicao' && pads[i].movel === 'hortifruti' && pads[j].movel === 'hortifruti') continue;
-  assert.ok(intervaloEstacoes(pads[i],pads[j]) > CONFIG.raioInteracao * 2,
+  assert.ok(intervaloEstacoes(pads[i],pads[j]) > CONFIG.raioInteracao * 2
+    || estacoesSeparadasPorParede(pads[i], pads[j], PAREDES_LOJA, CONFIG.raioInteracao),
     `Insufficient object spacing: ${pads[i].id}/${pads[i].tipo}, ${pads[j].id}/${pads[j].tipo}`);
 }
-console.log(`${pads.length} interaction targets: independent fixtures stay separated; produce sections share a stand.`);
+console.log(`${pads.length} interaction targets: independent fixtures have separated ranges or a continuous wall; produce sections share a stand.`);

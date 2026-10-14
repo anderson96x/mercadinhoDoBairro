@@ -1,5 +1,7 @@
 # Nova planta — nível 3: milho
 
+Registro da entrega N3. Para ovos, remoção da extensão lateral N4 e migração V7, consulte [PLANTA-LOJA-N4.md](PLANTA-LOJA-N4.md).
+
 Implementado em 14/10/2026, seguindo o painel N3 do [desenho original](mercadinhoDoBairro.drawio.svg). O milho ocupa um novo canteiro alinhado atrás do tomate, mais distante da parede. **As duas hortas ficam inteiramente atrás da loja.** A posição e as dimensões do tomate aprovadas pelo jogador foram preservadas.
 
 ![Planta técnica do nível 3](PLANTA-LOJA-N3.svg)

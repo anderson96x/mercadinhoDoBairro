@@ -4,7 +4,7 @@ Um jogo de gerenciamento de mercadinho, em português, para navegador de computa
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. O cenário e os personagens são construídos por código, com visual 3D simples e original. Não usa imagens, áudios ou código extraídos de My Mini Mart.
 
-O nível 1 usa a [nova planta inicial](docs/PLANTA-LOJA-N1.md): salão de 14 × 16 u, acesso à horta pela porta dos fundos e banca de madeira junto à esquerda. No [nível 3](docs/PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro atrás do tomate e uma seção à banca. As duas hortas ficam inteiramente atrás da loja. Trigo e morango também acrescentam seções após suas compras; as etapas posteriores da nova planta continuam pendentes.
+O nível 1 usa a [nova planta inicial](docs/PLANTA-LOJA-N1.md): salão de 14 × 16 u, acesso à horta pela porta dos fundos e banca de madeira junto à esquerda. No [nível 3](docs/PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro atrás do tomate e uma seção à banca. No [nível 4](docs/PLANTA-LOJA-N4.md), os ovos acrescentam o galinheiro posterior e uma banca na parede do fundo, mantendo o salão inicial. Toda a produção fica atrás da loja. Trigo e morango também acrescentam seções após suas compras; a adaptação espacial de N5+ continua pendente.
 
 ## Jogar e desenvolver
 
@@ -110,9 +110,9 @@ npm run preview
 
 Comece por [docs/COMO-ALTERAR.md](docs/COMO-ALTERAR.md). A simulação não importa Three.js nem elementos da página, o que permite testar a economia independentemente do visual.
 
-Esta versão tem dez produtos e ampliações até a ala artesanal. A loja começa pequena: milho no nível 3, extensões de 3 unidades para ovos no nível 4, leite no nível 5 e trigo no nível 7, padaria no nível 9 e anexo artesanal no nível 11. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
+Esta versão tem dez produtos e ampliações até a ala artesanal. A loja começa pequena: milho no nível 3 e [ovos no nível 4](docs/PLANTA-LOJA-N4.md) acrescentam equipamentos ao salão inicial. Leite no nível 5 e trigo no nível 7 ainda usam expansões legadas, com padaria no nível 9 e anexo artesanal no nível 11. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
 
-O [layout inicial](docs/PLANTA-LOJA-N1.md) e o [milho no N3](docs/PLANTA-LOJA-N3.md) seguem a nova planta, com os canteiros inteiramente atrás da loja. As ampliações posteriores ainda conservam a organização anterior, com padaria ao fundo e ilhas frias. A fila tem cinco ou dez posições, sem marcações no piso. Salvamentos anteriores migram para a versão espacial 6, preservando progresso e recuperando atores em locais livres.
+O [layout inicial](docs/PLANTA-LOJA-N1.md), o [milho no N3](docs/PLANTA-LOJA-N3.md) e os [ovos no N4](docs/PLANTA-LOJA-N4.md) seguem a nova planta, com a produção inteiramente atrás da loja. O N4 mantém o salão de 14 × 16 u e instala a banca de ovos na parede posterior. As ampliações posteriores ainda conservam a organização anterior, com padaria ao fundo e ilhas frias. A fila tem cinco ou dez posições, sem marcações no piso. Salvamentos anteriores migram para a versão espacial 7, preservando progresso e recuperando atores em locais livres.
 
 ## Créditos e dependências
 

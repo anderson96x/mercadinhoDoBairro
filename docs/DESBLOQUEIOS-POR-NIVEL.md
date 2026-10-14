@@ -1,8 +1,10 @@
 # Desbloqueios por nível
 
-O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. O leite continua em ilha fria e a padaria no fundo; as demais etapas espaciais ainda usam as expansões anteriores.
+O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. O leite continua em ilha fria e a padaria no fundo; as etapas espaciais a partir do N5 ainda usam as expansões anteriores.
 
 ## Disponíveis
+
+No [nível 4](PLANTA-LOJA-N4.md), a compra de ovos instala o galinheiro atrás da loja e uma estante alta de três níveis junto à parede posterior, à direita da porta de produção. O salão mantém 14 × 16 u. As galinhas produzem um ovo a cada 3,5 segundos, sem insumos; coleta e reposição continuam manuais ou pelo repositor contratado posteriormente.
 
 | Nível | Melhoria ou produto | Custo | Preço de venda por unidade |
 | --- | --- | --- | --- |

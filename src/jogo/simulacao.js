@@ -382,7 +382,7 @@ export class Simulacao {
         ? 'Plantação de trigo pronta! Colha o trigo atrás do milho e abasteça sua seção na banca de hortifruti.'
         : id === ALA_LEITE.id
         ? 'Curral pronto! Recolha o leite em garrafas de vidro e abasteça o novo refrigerador.'
-        : 'Galinheiro pronto na fazenda! Colete os ovos e abasteça a nova prateleira.' });
+        : 'Galinheiro pronto atrás da loja! Saia pela porta dos fundos para coletar ovos e abasteça a estante na parede do fundo, à direita da porta.' });
     }
     if (m.tipo === 'produto') {
       this.estado.produtos[id].liberado = true;
@@ -423,7 +423,7 @@ export class Simulacao {
       const orientacaoOvos = !this.estado.melhorias.alaProducao
         ? { titulo: 'Construa o galinheiro', texto: 'Compre a ala dos ovos no escritório.', destino: 'escritorio' }
         : this.estado.produtos.ovos.prateleira < 1
-          ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Colete os ovos no galinheiro da fazenda e leve-os à nova prateleira.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos', exibir: false }
+          ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Saia pela porta dos fundos para coletar ovos no galinheiro. Abasteça a estante na parede do fundo, à direita da porta.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos', exibir: false }
           : this.ajudanteContratado
             ? { titulo: 'Mantenha a ala funcionando', texto: 'As galinhas produzem ovos automaticamente. Cuide das prateleiras e atenda o bairro.', destino: 'ovos', exibir: false }
             : { titulo: 'Atenda o bairro', texto: 'Os ovos já estão à venda. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
@@ -492,9 +492,9 @@ export class Simulacao {
     const caixas = [
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
-      ...PAREDES_LOJA.filter(p => !p.lateral || !this.estado.estagioLoja), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
+      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_LEITE.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
-    if (this.estado.estagioLoja) caixas.push(...ALA_PRODUCAO.paredes.filter(p => (this.estado.estagioLoja < ALA_LEITE.indice || p.x !== 12.1) && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)));
+    if (this.estado.estagioLoja >= ALA_LEITE.indice) caixas.push(...ALA_PRODUCAO.paredes.filter(p => p.x !== 12.1 && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)));
     if (this.estado.estagioLoja >= ALA_LEITE.indice) caixas.push(
       ...ALA_LEITE.paredes.filter(p => (this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1) && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal))
     );

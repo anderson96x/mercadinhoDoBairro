@@ -28,6 +28,16 @@ export const FAZENDAS_HORTIFRUTI = Object.fromEntries(['tomate', 'milho', 'trigo
 
 export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 
+// Painel N4: galinheiro acima e à direita do milho; ovos na parede posterior,
+// à direita da porta de produção. A compra mantém o salão inicial.
+export const PLANTA_OVOS = {
+  horta: { x: -2.4, z: -21.7 }, coleta: { x: -2.4, z: -20.05 },
+  galinheiro: { w: 2.5, d: 2.2 },
+  prateleira: { x: 7.1, z: -8.45, w: 2.2, d: 1.4 },
+  reposicao: { x: 7.1, z: -7.15 }, cliente: { x: 7.1, z: -7.15 },
+  pontosCompra: [-0.8, 0, 0.8].map(dx => ({ x: 7.1 + dx, z: -7.15 }))
+};
+
 export function paredesPlantaInicial(alturaBaixa) {
   const l = PLANTA_INICIAL.limites, porta = PLANTA_INICIAL.portaProducao;
   const esquerdaPorta = porta.x - porta.w / 2, direitaPorta = porta.x + porta.w / 2;

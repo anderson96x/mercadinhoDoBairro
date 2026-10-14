@@ -78,7 +78,7 @@ function bairroVisual() {
   return { bairro, ala: cena.getObjectByName('ala-producao'), andaime: cena.getObjectByName('andaime'), rodape: cena.getObjectByName('rodape-frontal') };
 }
 
-test('a loja permanece intacta antes da compra e constrói a ala lateral em etapas', () => {
+test('N4 instala equipamentos em etapas e conserva piso, fachada e parede lateral', () => {
   const { bairro, ala, andaime, rodape } = bairroVisual();
   assert.equal(bairro.atualizarEstagio(0), 0);
   bairro.atualizarEstagio(0, 10);
@@ -88,22 +88,21 @@ test('a loja permanece intacta antes da compra e constrói a ala lateral em etap
   assert.equal(rodape.scale.x, 1);
   assert.equal(bairro.atualizarEstagio(1), 0);
   bairro.atualizarEstagio(1, 1);
-  assert.equal(ala.visible, true);
-  assert.equal(andaime.visible, true);
-  assert.ok(ala.scale.x > 0 && ala.scale.x < 1);
+  assert.equal(ala.visible, false);
+  assert.equal(andaime.visible, false);
   assert.equal(ala.scale.z, 1);
   assert.equal(bairro.atualizarEstagio(1, 3), 1);
   assert.equal(ala.scale.x, 1);
   assert.equal(ala.position.x, 0);
   assert.equal(andaime.visible, false);
-  assert.ok(Math.abs(rodape.position.x - 6.15) < 1e-10);
-  assert.ok(Math.abs(rodape.scale.x - 11.9 / 10.7) < 1e-10);
+  assert.equal(rodape.position.x, 5.55);
+  assert.equal(rodape.scale.x, 1);
 });
 
-test('carregar uma ala comprada mostra a construção pronta sem repetir a animação', () => {
+test('carregar ovos comprados mostra equipamentos prontos sem criar a antiga extensão', () => {
   const { bairro, ala, andaime } = bairroVisual();
   assert.equal(bairro.atualizarEstagio(1), 1);
-  assert.equal(ala.visible, true);
+  assert.equal(ala.visible, false);
   assert.equal(ala.scale.x, 1);
   assert.equal(andaime.visible, false);
 });
@@ -297,12 +296,12 @@ test('salvar durante a viagem preserva a carga e o destino do ajudante', () => {
   assert.deepEqual(retomado.ajudante.inventario, []);
 });
 
-test('a ala bloqueia acesso antes da construção e oferece rotas entre fazenda, ovos e caixa', () => {
+test('N4 conserva a parede lateral e oferece rotas entre fazenda, ovos e caixa', () => {
   const sim = new Simulacao();
   assert.ok(sim.obstaculos().some(o => o.lateral));
   abrirAla(sim);
   assert.ok(!sim.obstaculos().some(o => o.x === ALA_PRODUCAO.piso.x && o.z === ALA_PRODUCAO.piso.z && o.w === ALA_PRODUCAO.piso.w));
-  assert.ok(!sim.obstaculos().some(o => o.lateral));
+  assert.ok(sim.obstaculos().some(o => o.lateral));
   const ator = { x: 5.35, z: -5.1, andando: false };
   for (const alvo of [PRODUTOS.ovos.coleta, PRODUTOS.ovos.cliente, CONFIG.clienteCaixa]) {
     let chegou = false;

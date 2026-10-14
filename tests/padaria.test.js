@@ -82,7 +82,7 @@ test('padaria fica ao fundo e tem dois padeiros de avental e chapéu branco', ()
   assert.equal(grupo.name, 'padaria');
   assert.equal(padeiros.length, 2);
   assert.equal(frutas.length, PRODUTOS.pao.capacidadePrateleira);
-  assert.ok(PRODUTOS.pao.prateleira.z < PRODUTOS.ovos.prateleira.z);
+  assert.ok(PRODUTOS.ovos.prateleira.z < PRODUTOS.pao.prateleira.z, 'ovos ocupam a parede do fundo; padaria mantém sua área legada');
   const vitrine = grupo.getObjectByName('vitrine-paes');
   assert.ok(vitrine);
   assert.equal(vitrine.children.filter(item => item.name === 'tampo-paes').length, 1);
