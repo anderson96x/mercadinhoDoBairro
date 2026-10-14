@@ -1,5 +1,7 @@
 # Planta do Mercadinho do Bairro — mais espaço
 
+> Referência histórica. Em 14/10/2026, o nível 1 foi substituído pela [nova planta inicial](PLANTA-LOJA-N1.md), incluindo hortifruti modular e porta posterior. Este documento descreve a geometria anterior; as etapas posteriores ainda estão em adaptação.
+
 ![Planta atual com circulação ampliada](PLANTA-LOJA-V2.svg)
 
 A planta está implementada no jogo. A coleta, a entrega de ingredientes e a reposição continuam automáticas junto aos objetos, por qualquer lado acessível. Os círculos de interação foram removidos. A separação vem do espaço físico entre móveis e construções, com alcance de **0,9 u a partir da borda real** de cada estação.

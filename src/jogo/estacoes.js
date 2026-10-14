@@ -5,7 +5,7 @@ export function geometriaEstacao(id, tipo) {
   if (id === 'pao') return ALA_PADARIA.entrada;
   const p = PRODUTOS[id];
   return tipo === 'reposicao' ? p.prateleira : {
-    ...p.horta, ...(id === 'ovos' ? { w: 2.5, d: 2.2 } : p.curral ?? { w: 2.5, d: 3.6 })
+    ...p.horta, ...(id === 'ovos' ? { w: 2.5, d: 2.2 } : p.canteiro ?? p.curral ?? { w: 2.5, d: 3.6 })
   };
 }
 

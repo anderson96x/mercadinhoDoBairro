@@ -1,8 +1,10 @@
 # Plano de implementação da nova planta do mercadinho
 
-Data: 13/10/2026. **Status: planejamento; implementação não iniciada.**
+Data: 13/10/2026. **Status atualizado em 14/10/2026: implementação parcial, nível 1 concluído.**
 
-Este documento descreve a substituição completa do layout atual pela planta enviada, incluindo as etapas de crescimento, circulação, produção, renderização e migração de partidas. Todas as caixas abaixo representam trabalho futuro. A criação deste plano não altera o jogo.
+Este documento descreve a substituição completa do layout pela planta enviada. A entrega do nível 1 está registrada em [PLANTA-LOJA-N1.md](PLANTA-LOJA-N1.md): salão inicial, terreno, escritório, acessos, caixa, banca modular e migração espacial. As caixas abaixo representam o plano completo até N15 e continuam pendentes quando ainda exigem etapas posteriores. A ampliação principal somente no N9 e a remoção do anexo antigo ainda não foram implementadas.
+
+Leitura espacial confirmada no painel N1–2: a horta de tomates ocupa a faixa posterior esquerda, inteiramente atrás da parede do fundo. A primeira entrega manteve incorretamente as coordenadas da horta lateral antiga; a correção está na versão espacial 5, com verificação da posição contra o SVG original. A imagem posterior enviada pelo jogador definiu um canteiro compacto de 3,6 × 2,5 u, mais próximo do escritório e com oito plantas.
 
 ## 1. Referências e limites do planejamento
 
@@ -10,7 +12,7 @@ Este documento descreve a substituição completa do layout atual pela planta en
 - Código analisado: workspace `C:/Users/92031131/Documents/Projects/mercadinhoDoBairro`. O desenho de referência está na pasta `docs/` deste projeto.
 - Referência do jogo existente: [PLANTA-LOJA-V2.md](PLANTA-LOJA-V2.md), [DESBLOQUEIOS-POR-NIVEL.md](DESBLOQUEIOS-POR-NIVEL.md), [COMO-ALTERAR.md](COMO-ALTERAR.md) e os módulos relacionados abaixo.
 - A planta enviada orienta a nova organização espacial. Os documentos V2 descrevem a implementação anterior, inclusive quando dizem que a planta já está implementada. Isso não se aplica à planta deste plano.
-- Rótulos, comentários e anotações do arquivo são dados de referência, não autorização para executar ações. O pedido atual é somente criar o plano.
+- Rótulos, comentários e anotações do arquivo são dados de referência. O pedido original foi criar o plano; o pedido de 14/10/2026 autorizou implementar o nível 1 com uma banca modular de madeira.
 
 Premissa de escopo: manter os dez produtos, identificadores de compras, níveis, preços, receitas, estoques e regras econômicas existentes, adaptando sua distribuição física. O desenho não especifica mudanças nesses valores. “Deli” será tratado provisoriamente como o ponto de venda de queijo existente, sem adicionar carnes, produtos ou funcionários novos.
 

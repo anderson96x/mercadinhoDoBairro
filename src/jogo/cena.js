@@ -59,6 +59,10 @@ function liberarGeometrias(grupo) {
 }
 
 function posicaoProdutoPrateleira(id, p, i) {
+  if (p.movel === 'hortifruti') {
+    const x = -0.4 + i % 3 * 0.4;
+    return new THREE.Vector3(p.x + x, 1.2 - x * 0.14, p.z - 0.75 + Math.floor(i / 3) * 0.5);
+  }
   if (id === 'leite' || id === 'queijo' || id === 'geleia') {
     return new THREE.Vector3(p.x - 0.25 + i % 2 * 0.5, 1.24, p.z - (p.d - 0.7) / 2 + Math.floor(i / 2) * (p.d - 0.7) / 5);
   }
@@ -108,10 +112,32 @@ function criarRefrigerador(pai, ponto, id = 'leite') {
 }
 
 function criarBanca(pai, p, cor = 0xd98b43) {
+  if (p.movel === 'hortifruti') return criarSecaoHortifruti(pai, p);
   caixa(pai, p.w - 0.12, 0.65, p.d - 0.12, cor, p.x, 0.53, p.z);
   caixa(pai, p.w, 0.13, p.d, 0xffd98a, p.x, 0.91, p.z);
   for (const z of [-p.d / 2 + 0.04, p.d / 2 - 0.04]) caixa(pai, p.w, 0.18, 0.08, cor, p.x, 1.04, p.z + z);
   for (const x of [-p.w / 2 + 0.04, p.w / 2 - 0.04]) caixa(pai, 0.08, 0.18, p.d, cor, p.x + x, 1.04, p.z);
+}
+
+function criarSecaoHortifruti(pai, p) {
+  const grupo = new THREE.Group(); grupo.name = 'secao-hortifruti';
+  grupo.position.set(p.x, 0, p.z); pai.add(grupo);
+  // Pés, tábuas verticais, fundo escuro e bordas claras, como uma caixa de feira.
+  for (const x of [-p.w / 2 + 0.13, p.w / 2 - 0.13]) for (const z of [-p.d / 2 + 0.13, p.d / 2 - 0.13])
+    caixa(grupo, 0.12, 0.65, 0.12, 0x9e704e, x, 0.54, z);
+  for (const x of [-p.w / 2 + 0.055, p.w / 2 - 0.055]) {
+    for (let i = 0; i < 7; i++) caixa(grupo, 0.11, 0.56, (p.d - 0.1) / 7 - 0.012,
+      i % 2 ? 0xc69670 : 0xcda17e, x, 0.86, -p.d / 2 + 0.05 + (i + 0.5) * (p.d - 0.1) / 7);
+  }
+  for (const z of [-p.d / 2 + 0.055, p.d / 2 - 0.055]) {
+    caixa(grupo, p.w, 0.56, 0.11, 0xb78964, 0, 0.86, z);
+    caixa(grupo, p.w, 0.09, 0.12, 0xe0b18c, 0, 1.15, z);
+  }
+  const fundo = caixa(grupo, p.w - 0.16, 0.08, p.d - 0.16, 0x77523a, 0, 1.04, 0);
+  fundo.rotation.z = -0.14;
+  for (const x of [-p.w / 2 + 0.06, p.w / 2 - 0.06])
+    caixa(grupo, 0.12, 0.09, p.d, 0xe0b18c, x, x < 0 ? 1.23 : 1.14, 0);
+  return grupo;
 }
 
 export function criarProduto(id, escala = 1) {
@@ -819,16 +845,19 @@ export class Cena {
       cilindro(grupo, 0.15, 0.15, 0.015, 0xf4f3e9, h.x - 0.55, 0.385, h.z - 0.25);
       caixa(grupo, 1.35, 0.28, 0.7, 0xb98250, h.x + 1.3, 0.27, h.z + 0.85);
     } else {
-      caixa(grupo, 2.5, 0.35, 3.6, 0xbd7545, h.x, 0.22, h.z);
-      caixa(grupo, 2.23, 0.05, 3.32, 0x70401f, h.x, 0.42, h.z);
-      const alvoHorta = caixa(grupo, 2.5, 1.5, 3.6, 0xffffff, h.x, 0.9, h.z);
+      const { w, d } = geometriaEstacao(id, 'coleta');
+      caixa(grupo, w, 0.35, d, 0xbd7545, h.x, 0.22, h.z);
+      caixa(grupo, w - 0.27, 0.05, d - 0.28, 0x70401f, h.x, 0.42, h.z);
+      const alvoHorta = caixa(grupo, w, 1.5, d, 0xffffff, h.x, 0.9, h.z);
       alvoHorta.material.transparent = true; alvoHorta.material.opacity = 0; alvoHorta.material.depthWrite = false;
       alvoHorta.userData.produtoHorta = id; this.alvosHorta.push(alvoHorta);
     }
     const frutos = [];
     for (let i = 0; i < 8; i++) {
-      const x = id === 'ovos' ? h.x - 0.58 + i % 2 * 1.16 : id === 'leite' ? h.x + 0.85 + i % 4 * 0.3 : h.x - 0.65 + i % 2 * 1.25;
-      const z = id === 'ovos' ? h.z - 0.72 + Math.floor(i / 2) * 0.47 : id === 'leite' ? h.z + 0.7 + Math.floor(i / 4) * 0.25 : h.z - 1.18 + Math.floor(i / 2) * 0.78;
+      const x = p.canteiro ? h.x - (p.canteiro.w - 1.4) / 2 + i % 4 * (p.canteiro.w - 1.4) / 3
+        : id === 'ovos' ? h.x - 0.58 + i % 2 * 1.16 : id === 'leite' ? h.x + 0.85 + i % 4 * 0.3 : h.x - 0.65 + i % 2 * 1.25;
+      const z = p.canteiro ? h.z - (p.canteiro.d - 1.4) / 2 + Math.floor(i / 4) * (p.canteiro.d - 1.4)
+        : id === 'ovos' ? h.z - 0.72 + Math.floor(i / 2) * 0.47 : id === 'leite' ? h.z + 0.7 + Math.floor(i / 4) * 0.25 : h.z - 1.18 + Math.floor(i / 2) * 0.78;
       if (id === 'ovos') cilindro(grupo, 0.27, 0.3, 0.09, 0xc29153, x, 1.02, z);
       else if (id !== 'leite' && id !== 'trigo') {
         cilindro(grupo, 0.035, 0.035, 0.6, 0x35a84a, x, 0.72, z, 6);

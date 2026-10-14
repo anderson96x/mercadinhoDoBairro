@@ -1,4 +1,5 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
+import { PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
@@ -29,7 +30,7 @@ export function estadoInicial() {
     }])),
     producao: { progressoOvo: 0, ovosProduzidos: 0, progressoLeite: 0, leitesProduzidos: 0,
       trigoPadaria: 0, farinha: 0, progressoMoagem: 0, progressoForno: 0, paesProduzidos: 0 },
-    funcionarios: { ajudante: { x: -1.8, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false } },
+    funcionarios: { ajudante: { x: 0.2, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false } },
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0, crescimentoMelhorado: false, apresentado: false
     }])),
@@ -153,6 +154,7 @@ export class Simulacao {
     this.eventos = [];
     this.reposicoes = new WeakMap();
     this.caminhosClientes = new WeakMap();
+    this.trajetosProducao = new WeakMap();
     this.tempo = 0;
     this.proximoCliente = 2;
     this.proximaInteracao = 0;
@@ -177,7 +179,8 @@ export class Simulacao {
         const compras = (Array.isArray(c.compras) ? c.compras : []).filter(p => p && PRODUTOS[p.produto]).map(p => ({
           produto: p.produto, desejado: limitar(Number(p.desejado) || 1, 1, 5), quantidade: limitar(Number(p.quantidade) || 0, 0, 5)
         }));
-        return { ...c, id: i + 1, x: limitar(c.x, -15, 16), z: limitar(c.z, -10, 13),
+        return { ...c, id: i + 1,
+          ...(salvo.versaoLayout === CONFIG.versaoLayout ? { x: limitar(c.x, -15, 16), z: limitar(c.z, -10, 13) } : CONFIG.inicio),
           itens, quantidade: itens.length, compras, compraAtual: 0,
           satisfacao: ['feliz', 'neutro', 'irritado'].includes(c.satisfacao) ? c.satisfacao : null,
           satisfacaoRegistrada: c.satisfacaoRegistrada === true && ['feliz', 'neutro', 'irritado'].includes(c.satisfacao),
@@ -372,7 +375,7 @@ export class Simulacao {
         if (PRODUTOS[produto].origem === 'horta') this.estado.produtos[produto].horta = PRODUTOS[produto].capacidadeHorta;
       }
       this.emitir('expansao', { texto: id === ALA_ARTESANAL.id
-        ? 'Ala artesanal aberta! Colha morangos na estufa ao fundo e abasteça a banca na nova ala.'
+        ? 'Estufa aberta! Colha morangos ao fundo e abasteça a nova seção do hortifruti junto à parede esquerda.'
         : id === ALA_PADARIA.id
         ? `Padaria aberta! Cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${PRODUTOS.pao.preco}. Deixe o trigo na caixa à esquerda do balcão de vidro.`
         : id === ALA_TRIGO.id
@@ -391,6 +394,7 @@ export class Simulacao {
       : m.titulo });
     for (const ator of [this.estado.jogador, this.ajudante, ...this.clientes]) this.liberarPosicao(ator);
     this.caminhosClientes = new WeakMap();
+    this.trajetosProducao = new WeakMap();
     return { sucesso: true, dinheiro: this.estado.dinheiro };
   }
   aplicarFertilizante(id) {
@@ -407,8 +411,8 @@ export class Simulacao {
   missao() {
     const s = this.estado.estatisticas;
     if (!s.clientes) {
-      if (s.colhidos < 4) return { indice: 0, titulo: 'Colha seus primeiros tomates', texto: 'Vá à horta e pegue 4 tomates.', valor: s.colhidos, alvo: 4, destino: 'horta' };
-      if (s.repostos < 4) return { indice: 1, titulo: 'Abasteça a prateleira', texto: 'Leve 4 tomates da horta para a prateleira da loja.', valor: s.repostos, alvo: 4, destino: 'prateleira' };
+      if (s.colhidos < 4) return { indice: 0, titulo: 'Colha seus primeiros tomates', texto: 'Saia pela porta dos fundos e vá à horta à esquerda. Pegue 4 tomates.', valor: s.colhidos, alvo: 4, destino: 'horta' };
+      if (s.repostos < 4) return { indice: 1, titulo: 'Abasteça a banca', texto: 'Leve 4 tomates à banca de madeira junto à parede esquerda da loja. Aproxime-se pelo corredor.', valor: s.repostos, alvo: 4, destino: 'prateleira' };
       return { indice: 2, titulo: 'Faça a primeira venda', texto: 'Sente-se no caixa quando um cliente chegar.', valor: 0, alvo: 1, destino: 'caixa' };
     }
     const recorrente = MISSOES.find(m => m.intervalo);
@@ -470,7 +474,7 @@ export class Simulacao {
           const temIngrediente = faltante && this.estado.jogador.inventario.includes(faltante);
           orientacaoNivel = {
             titulo: `Primeira banca de ${produto.nome.toLocaleLowerCase('pt-BR')}`,
-            texto: receita ? `${MELHORIAS.find(m => m.id === receita.melhoria).descricao}` : `Colete ${produto.plural.toLocaleLowerCase('pt-BR')} e abasteça a banca na ala ao fundo da loja. O repositor também pode ajudar.`,
+            texto: receita ? `${MELHORIAS.find(m => m.id === receita.melhoria).descricao}` : `Colete ${produto.plural.toLocaleLowerCase('pt-BR')} e abasteça ${id === 'morango' ? 'a seção do hortifruti junto à parede esquerda' : 'a banca na ala ao fundo da loja'}. O repositor também pode ajudar.`,
             destino: carregando ? `prateleira-${id}` : faltante && !temIngrediente ? `coleta-${faltante}` : `coleta-${id}`
           };
         }
@@ -486,9 +490,9 @@ export class Simulacao {
     const caixas = [
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
-      ...PAREDES_LOJA.filter(p => !p.lateral || !this.estado.estagioLoja), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA
+      ...PAREDES_LOJA.filter(p => !p.lateral || !this.estado.estagioLoja), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
-    if (this.estado.estagioLoja) caixas.push(...ALA_PRODUCAO.paredes.filter(p => (this.estado.estagioLoja < ALA_LEITE.indice || p.x !== 12.1) && (!this.estado.melhorias.alaArtesanal || p.z !== -8.3)));
+    if (this.estado.estagioLoja) caixas.push(...ALA_PRODUCAO.paredes.filter(p => (this.estado.estagioLoja < ALA_LEITE.indice || p.x !== 12.1) && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)));
     if (this.estado.estagioLoja >= ALA_LEITE.indice) caixas.push(
       ...ALA_LEITE.paredes.filter(p => (this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1) && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal))
     );
@@ -501,9 +505,10 @@ export class Simulacao {
     if (this.estado.melhorias.alaArtesanal) caixas.push(...ALA_ARTESANAL.paredes);
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (!this.estado.produtos[id].liberado) continue;
-      caixas.push(p.prateleira);
+      if (p.prateleira.movel !== 'hortifruti') caixas.push(p.prateleira);
       if (id !== 'pao') caixas.push(geometriaEstacao(id, 'coleta'));
     }
+    caixas.push(...volumesHortifruti(this.estado.produtos));
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
@@ -650,12 +655,19 @@ export class Simulacao {
     if (!pertoLixeira) this.lixeiraVisitada = false;
     const candidatos = [];
     const obstaculos = this.obstaculos();
+    const compartimento = selecionarCompartimentoHortifruti(jogador, this.estado.produtos);
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (!this.estado.produtos[id].liberado) continue;
       for (const tipo of id === 'pao' ? ['reposicao'] : ['coleta', 'reposicao']) {
         const objeto = geometriaEstacao(id, tipo), d = distanciaEstacao(jogador, objeto);
         if (d >= CONFIG.raioInteracao) continue;
-        const outros = obstaculos.filter(o => o.x !== objeto.x || o.z !== objeto.z || o.w !== objeto.w || o.d !== objeto.d);
+        // Cada seção tem uma faixa exclusiva na face do corredor. Na divisória,
+        // a seção em direção à frente possui a borda; o estoque não muda sozinho.
+        const compartilhado = tipo === 'reposicao' && objeto.movel === 'hortifruti';
+        if (compartilhado && compartimento !== id) continue;
+        const outros = obstaculos.filter(o => compartilhado && o.movel === objeto.movel
+          ? !(jogador.z >= o.z - o.d / 2 - 1e-8 && jogador.z <= o.z + o.d / 2 + 1e-8)
+          : o.x !== objeto.x || o.z !== objeto.z || o.w !== objeto.w || o.d !== objeto.d);
         if (segmentoLivre(jogador, pontoMaisProximo(jogador, objeto), outros)) candidatos.push({ id, tipo, distancia: d });
       }
     }
@@ -1018,14 +1030,14 @@ export class Simulacao {
     a.temporizador -= dt;
     if (a.destino === 'horta') {
       // O corredor entre a horta e a loja permanece livre.
-      if (this.caminharCliente(a, p.coleta, dt, this.velocidadeAjudante)) {
+      if (this.caminharProducao(a, p.coleta, dt)) {
         const falta = p.capacidadePrateleira - e.prateleira;
         if (e.horta && falta > a.inventario.length && a.inventario.length < CONFIG.capacidadeAjudante && a.temporizador <= 0) {
           e.horta--; a.inventario.push(a.produto); a.temporizador = 0.5;
         }
         if (a.inventario.length >= Math.min(CONFIG.capacidadeAjudante, falta) || (!e.horta && a.inventario.length)) a.destino = 'prateleira';
       }
-    } else if (this.caminharCliente(a, p.reposicao, dt, this.velocidadeAjudante) && a.temporizador <= 0) {
+    } else if (this.caminharProducao(a, p.reposicao, dt) && a.temporizador <= 0) {
       if (a.inventario.length && e.prateleira < p.capacidadePrateleira) {
         const indice = a.inventario.length - 1;
         e.prateleira++; e.apresentado = true; a.inventario.pop(); a.temporizador = 0.4;
@@ -1035,6 +1047,23 @@ export class Simulacao {
         a.destino = 'horta';
       }
     }
+  }
+  caminharProducao(ator, destino, dt) {
+    let trajeto = this.trajetosProducao.get(ator);
+    if (!trajeto || distancia(trajeto.destino, destino) > 0.1) {
+      const dentro = p => p.x > PLANTA_INICIAL.limites.minX && p.z > CONFIG.portaProducao.z && p.z < CONFIG.portaEntrada.z;
+      const interior = { x: CONFIG.portaProducao.x, z: CONFIG.portaProducao.z + 0.8 };
+      const exterior = { x: CONFIG.portaProducao.x + CONFIG.portaProducao.w / 4, z: CONFIG.portaProducao.z - 1 };
+      const pontos = dentro(ator) === dentro(destino) ? [destino]
+        : dentro(ator) ? [interior, exterior, destino] : [exterior, interior, destino];
+      trajeto = { destino: { ...destino }, pontos };
+      this.trajetosProducao.set(ator, trajeto);
+    }
+    if (this.caminharCliente(ator, trajeto.pontos[0], dt, this.velocidadeAjudante)) {
+      if (trajeto.pontos.length === 1) return true;
+      trajeto.pontos.shift();
+    }
+    return false;
   }
   resumo() {
     return { dinheiro: this.estado.dinheiro, capacidade: this.capacidade, nivel: this.nivel,

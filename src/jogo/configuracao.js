@@ -1,16 +1,17 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
+import { PLANTA_INICIAL, compartimentoHortifruti } from './planta.js';
 export const ALTURA_PAREDE_BAIXA = 0.75;
 export const ESCRITORIO = {
-  limites: { minX: -3.1, maxX: 1.1, minZ: -8.3, maxZ: -4.8 },
-  mesa: { x: -0.8, z: -7.65, w: 2.7, d: 0.85 },
-  estante: { x: -2.65, z: -7.25, w: 0.45, d: 1.7 },
-  cadeira: { x: -0.9, z: -6.55 }
+  limites: { minX: -3.1, maxX: 1.1, minZ: -9.3, maxZ: -5.8 },
+  mesa: { x: -0.8, z: -8.65, w: 2.7, d: 0.85 },
+  estante: { x: -2.65, z: -8.25, w: 0.45, d: 1.7 },
+  cadeira: { x: -0.9, z: -7.55 }
 };
 
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 3,
+  versaoLayout: 5,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -44,12 +45,12 @@ export const CONFIG = {
   espacoClientes: 1.15,
   distanciaClientes: 1.05,
   limiteMundo: { minX: -13.8, maxX: 22.5, minZ: -21, maxZ: 9 },
-  // Bordas do terreno visível (40 x 37, centrado em 4, -4).
-  limiteCamera: { minX: -16, maxX: 24, minZ: -22.5, maxZ: 14.5 },
-  inicio: { x: -1.8, z: 3.4 },
+  limiteCamera: { minX: -16, maxX: 24, minZ: -25.5, maxZ: 14.5 },
+  inicio: { x: 0.2, z: 3.4 },
+  portaProducao: PLANTA_INICIAL.portaProducao,
   caixa: { x: 3.45, z: 6.05 },
-  balcao: { x: 3.45, z: 5.25 },
-  acessoCaixa: { x: 1.55, z: 5.25 },
+  balcao: { x: 3.45, z: 4.65 },
+  acessoCaixa: { x: 1.55, z: 4.65 },
   clienteCaixa: { x: 2.2, z: 3.5 },
   cadeiraCaixa: { x: 3.45, z: 6.05 },
   cadeiraEscritorio: ESCRITORIO.cadeira,
@@ -71,18 +72,14 @@ export const PRODUTOS = {
   tomate: {
     nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 5, origem: 'horta',
     tempoCrescimento: 1.8, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -9, z: -2.8 }, coleta: { x: -7.4, z: -1.7 },
-    prateleira: { x: 2.8, z: 0, w: 2.2, d: 1.4 }, reposicao: { x: 2.8, z: -1.3 },
-    cliente: { x: 2.8, z: 1.3 },
-    pontosCompra: [{ x: 2.8, z: 1.3 }, { x: 1.9, z: 1.3 }, { x: 3.7, z: 1.3 }, { x: 1.1, z: 0 }, { x: 4.5, z: 0 }], liberado: true
+    ...PLANTA_INICIAL.fazendaTomate,
+    ...compartimentoHortifruti('tomate'), liberado: true
   },
   milho: {
     nome: 'Milho', plural: 'Milhos', cor: 0xf6c844, preco: 10, origem: 'horta',
     tempoCrescimento: 2.8, capacidadeHorta: 8, capacidadePrateleira: 12,
     horta: { x: -9, z: 3.4 }, coleta: { x: -7.4, z: 3.4 },
-    prateleira: { x: 2.8, z: -3.6, w: 2.2, d: 1.4 }, reposicao: { x: 4.5, z: -3.6 },
-    cliente: { x: 2.8, z: -2.3 },
-    pontosCompra: [{ x: 2.8, z: -2.3 }, { x: 1.9, z: -2.3 }, { x: 3.7, z: -2.3 }], liberado: false
+    ...compartimentoHortifruti('milho'), liberado: false
   },
   ovos: {
     nome: 'Ovo', plural: 'Ovos', cor: 0xf8e6bf, preco: 15, origem: 'galinheiro',
@@ -103,18 +100,14 @@ export const PRODUTOS = {
   trigo: {
     nome: 'Trigo', plural: 'Espigas de trigo', cor: 0xe4bc57, preco: 5, origem: 'horta',
     tempoCrescimento: 3.2, capacidadeHorta: 8, capacidadePrateleira: 12,
-    horta: { x: -8.8, z: -14.3 }, coleta: { x: -7.25, z: -12 },
-    prateleira: { x: 11.2, z: 0, w: 2.2, d: 1.4 }, reposicao: { x: 11.2, z: -1.3 },
-    cliente: { x: 11.2, z: 1.3 },
-    pontosCompra: [{ x: 11.2, z: 1.3 }, { x: 10.3, z: 1.3 }, { x: 12.1, z: 1.3 }], liberado: false
+    horta: { x: -8.8, z: -17.6 }, coleta: { x: -8.8, z: -15.25 },
+    ...compartimentoHortifruti('trigo'), liberado: false
   },
   morango: {
     nome: 'Morango', plural: 'Morangos', cor: 0xe74769, preco: 16, origem: 'horta', nivelMinimo: 11,
     tempoCrescimento: 3.4, capacidadeHorta: 8, capacidadePrateleira: 12,
     horta: { x: 2.9, z: -17.2 }, coleta: { x: 2.9, z: -14.8 },
-    prateleira: { x: 13.2, z: -10.9, w: 2.2, d: 1.4 }, reposicao: { x: 11.5, z: -10.9 },
-    cliente: { x: 13.2, z: -9.6 },
-    pontosCompra: [{ x: 13.2, z: -9.6 }, { x: 12.3, z: -9.6 }, { x: 14.1, z: -9.6 }], liberado: false
+    ...compartimentoHortifruti('morango'), liberado: false
   },
   mel: {
     nome: 'Mel', plural: 'Garrafas de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 12,
@@ -135,7 +128,7 @@ export const PRODUTOS = {
   geleia: {
     nome: 'Geleia', plural: 'Potes de geleia', cor: 0xb94470, preco: 30, origem: 'oficina', nivelMinimo: 15,
     capacidadeHorta: 9, capacidadePrateleira: 12,
-    horta: { x: 7.3, z: -10.5 }, coleta: { x: 7.3, z: -9.15 }, curral: { w: 2.65, d: 1.75 },
+    horta: { x: 7.3, z: -10.5 }, coleta: { x: 5.6, z: -10.5 }, curral: { w: 2.65, d: 1.75 },
     prateleira: { x: 18, z: -10.9, w: 1.2, d: 2.6 }, reposicao: { x: 19.2, z: -10.9 },
     cliente: { x: 19.2, z: -10.9 },
     pontosCompra: [{ x: 19.2, z: -10.9 }, { x: 19.2, z: -11.7 }, { x: 19.2, z: -10.1 }], liberado: false
@@ -159,13 +152,13 @@ export const NIVEL_PADARIA = 9;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
   limites: { ...CONFIG.limiteMundo },
-  piso: { x: 10.6, z: -0.8, w: 3, d: 15 },
+  piso: { x: 11.5, z: -1.3, w: 1.2, d: 16 },
   camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
   duracaoConstrucao: 4,
   paredes: [
-    { x: 10.6, z: -8.3, w: 3, d: 0.28, h: 2.8 },
-    { x: 10.6, z: 6.7, w: 3, d: 0.28, h: ALTURA_PAREDE_BAIXA },
-    { x: 12.1, z: -0.8, w: 0.28, d: 15, h: ALTURA_PAREDE_BAIXA }
+    { x: 11.5, z: -9.3, w: 1.2, d: 0.28, h: 2.8, passagemArtesanal: true },
+    { x: 11.5, z: 6.7, w: 1.2, d: 0.28, h: ALTURA_PAREDE_BAIXA },
+    { x: 12.1, z: -1.3, w: 0.28, d: 16, h: ALTURA_PAREDE_BAIXA }
   ],
   estacoes: { galinheiro: PRODUTOS.ovos.horta, prateleira: PRODUTOS.ovos.prateleira },
   tempoOvo: 3.5
@@ -173,26 +166,26 @@ export const ALA_PRODUCAO = {
 export const ALA_LEITE = {
   id: 'alaLeite', indice: 2, nivelMinimo: NIVEL_LEITE, custo: 800, produtos: ['leite'],
   limites: { ...CONFIG.limiteMundo },
-  piso: { x: 13.6, z: -0.8, w: 3, d: 15 },
+  piso: { x: 13.6, z: -1.3, w: 3, d: 16 },
   camera: { x: 2, z: -0.5, alturaDesktop: 31 },
   duracaoConstrucao: 4,
   paredes: [
-    { x: 13.6, z: -8.3, w: 3, d: 0.28, h: 2.8, passagemArtesanal: true },
+    { x: 13.6, z: -9.3, w: 3, d: 0.28, h: 2.8, passagemArtesanal: true },
     { x: 13.6, z: 6.7, w: 3, d: 0.28, h: ALTURA_PAREDE_BAIXA },
-    { x: 15.1, z: -0.8, w: 0.28, d: 15, h: ALTURA_PAREDE_BAIXA }
+    { x: 15.1, z: -1.3, w: 0.28, d: 16, h: ALTURA_PAREDE_BAIXA }
   ],
   tempoLeite: 4.5
 };
 export const ALA_TRIGO = {
   id: 'alaTrigo', indice: 3, nivelMinimo: NIVEL_TRIGO, custo: 400, produtos: ['trigo'],
   limites: { ...CONFIG.limiteMundo },
-  piso: { x: 18.1, z: -0.8, w: 6, d: 15 },
+  piso: { x: 18.1, z: -1.3, w: 6, d: 16 },
   camera: { x: 4.2, z: -2, alturaDesktop: 37 },
   duracaoConstrucao: 4,
   paredes: [
-    { x: 18.1, z: -8.3, w: 6, d: 0.28, h: 2.8, passagemArtesanal: true },
+    { x: 18.1, z: -9.3, w: 6, d: 0.28, h: 2.8, passagemArtesanal: true },
     { x: 18.1, z: 6.7, w: 6, d: 0.28, h: ALTURA_PAREDE_BAIXA },
-    { x: 21.1, z: -4.95, w: 0.28, d: 6.7, h: ALTURA_PAREDE_BAIXA },
+    { x: 21.1, z: -5.45, w: 0.28, d: 7.7, h: ALTURA_PAREDE_BAIXA },
     { x: 21.1, z: 0, w: 0.28, d: 3.2, h: ALTURA_PAREDE_BAIXA, painelExpansao: true },
     { x: 21.1, z: 4.15, w: 0.28, d: 5.1, h: ALTURA_PAREDE_BAIXA }
   ]
@@ -231,7 +224,7 @@ export const OFICINAS = {
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
   { id: 'logistica', titulo: 'Cesta de trabalho', descricao: 'Carregue 8 produtos e ande 15% mais rápido para cuidar de uma loja maior.', custo: 400, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 10 },
-  { id: 'alaArtesanal', titulo: 'Ala artesanal e estufa', descricao: 'Amplie a loja para o terreno ao fundo e construa uma estufa de morangos. Colha e abasteça a nova banca.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
+  { id: 'alaArtesanal', titulo: 'Ala artesanal e estufa', descricao: 'Amplie a loja para o terreno ao fundo e construa uma estufa de morangos. Abasteça a nova seção do hortifruti junto à parede esquerda.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
   { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa uma colmeia ao lado da estufa. Recolha as garrafas de mel na bandeja e abasteça a banca.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 12, requisitoMelhoria: 'alaArtesanal' },
   { id: 'queijaria', titulo: 'Queijaria', descricao: 'Entregue leite à queijaria perto da estufa. Cada garrafa rende 2 queijos. Recolha os queijos e abasteça a banca.', custo: 1600, icone: 'queijo', max: 1, tipo: 'construcao', produto: 'queijo', categoria: 'mercado', nivelMinimo: 13, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaLeite'] },
   { id: 'irrigacao', titulo: 'Irrigação da fazenda', descricao: 'Instale irrigadores em todas as hortas: as colheitas crescem 25% mais rápido.', custo: 650, icone: 'folha', max: 1, categoria: 'mercado', nivelMinimo: 14, requisitoMelhoria: 'alaArtesanal' },

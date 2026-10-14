@@ -8,7 +8,7 @@ test('primeiros objetivos seguem as ações reais e continuam após recarregar',
   const sim = new Simulacao();
   assert.equal(sim.missao().titulo, 'Colha seus primeiros tomates');
   sim.estado.estatisticas.colhidos = 4;
-  assert.equal(sim.missao().titulo, 'Abasteça a prateleira');
+  assert.equal(sim.missao().titulo, 'Abasteça a banca');
   sim.estado.estatisticas.repostos = 4;
   assert.equal(sim.missao().titulo, 'Faça a primeira venda');
   sim.estado.estatisticas.clientes = 1;
@@ -369,11 +369,11 @@ test('colheita e reposição funcionam junto ao objeto sem exigir pontos no chã
     const sim = new Simulacao(), p = PRODUTOS[id];
     sim.estado.produtos[id].liberado = true;
     sim.estado.produtos[id].horta = 8;
-    aproximar(sim, { x: p.horta.x, z: p.horta.z - 2.3 });
+    aproximar(sim, { x: p.horta.x, z: p.horta.z - (p.canteiro?.d ?? 3.6) / 2 - 0.5 });
     sim.interagir();
     assert.deepEqual(sim.estado.jogador.inventario, [id]);
     sim.tempo = 1;
-    aproximar(sim, { x: p.prateleira.x, z: p.prateleira.z + p.prateleira.d / 2 + 0.5 }); sim.interagir();
+    aproximar(sim, { x: p.prateleira.x + p.prateleira.w / 2 + 0.5, z: p.prateleira.z + 0.25 }); sim.interagir();
     assert.equal(sim.estado.produtos[id].prateleira, 1);
     assert.deepEqual(sim.estado.jogador.inventario, []);
   }

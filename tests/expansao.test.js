@@ -84,7 +84,7 @@ test('a loja permanece intacta antes da compra e constrói a ala lateral em etap
   bairro.atualizarEstagio(0, 10);
   assert.equal(ala.visible, false);
   assert.equal(andaime.visible, false);
-  assert.equal(rodape.position.x, 4.65);
+  assert.equal(rodape.position.x, 5.55);
   assert.equal(rodape.scale.x, 1);
   assert.equal(bairro.atualizarEstagio(1), 0);
   bairro.atualizarEstagio(1, 1);
@@ -96,8 +96,8 @@ test('a loja permanece intacta antes da compra e constrói a ala lateral em etap
   assert.equal(ala.scale.x, 1);
   assert.equal(ala.position.x, 0);
   assert.equal(andaime.visible, false);
-  assert.equal(rodape.position.x, 6.15);
-  assert.ok(Math.abs(rodape.scale.x - 11.9 / 8.9) < 1e-10);
+  assert.ok(Math.abs(rodape.position.x - 6.15) < 1e-10);
+  assert.ok(Math.abs(rodape.scale.x - 11.9 / 10.7) < 1e-10);
 });
 
 test('carregar uma ala comprada mostra a construção pronta sem repetir a animação', () => {

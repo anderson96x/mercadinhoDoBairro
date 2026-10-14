@@ -1,5 +1,20 @@
 # Verificação da versão 0.1.0
 
+## Nova planta — nível 1 — 14/10/2026
+
+- Referência visual posterior: canteiro de tomates compactado para **3,6 × 2,5 u**, com oito plantas, atrás da loja. Após os pedidos de afastá-lo da parede e movê-lo mais à esquerda, passou para `(-9,2; -12,7)`, com coleta em `(-9,2; -10,9)`. As plantas têm margem de 0,7 u até as bordas e os volumes dos tomates ficam inteiramente dentro da terra. A cerca tem âncora independente para manter sua posição durante ajustes do canteiro. O jogador confirmou que a referência se aplica somente ao canteiro. Os **36 testes de N1, segurança espacial e personagens**, as rotas de todos os níveis e o build passaram com essa geometria. [Close-up atualizado](previews/horta-tomates.png).
+
+- Estado inicial medido antes da implementação: **157 testes passaram** e `npm run build` concluiu, com aviso de pacote JavaScript acima de 500 kB.
+- Entrega: [planta inicial e decisões](PLANTA-LOJA-N1.md). Salão de 14 × 16 u, terreno quadrado, porta posterior, escritório reposicionado, caixa acessível e banca modular de madeira. As expansões posteriores ainda seguem o modelo anterior, adaptado nas conexões.
+- Correção da horta: comparação direta com o painel N1 do SVG original confirmou a produção na faixa posterior esquerda, inteiramente atrás da loja. O caminho lateral foi removido. Depois, a pedido do jogador, o lado curto passou de 1,5 para a largura original de **2,5 u**, ficando com 6,1 × 2,5 u e preservando a face de coleta. A versão espacial passou para 5, incluindo migração dos saves V4 da entrega incorreta.
+- Verificação do ajuste de largura: **16 testes de N1 e segurança espacial passaram**, assim como as rotas em todos os níveis do verificador, o build e a regeneração da planta. As capturas foram atualizadas para o canteiro mais largo.
+- Suíte completa após a correção de posição: **165 testes passaram**, sem falhas. Oito casos novos cobrem a posição extraída do SVG original, N1, compras e seções bloqueadas, divisórias com inventário misto, compras fora de ordem, migração V3/V4 → V5 idempotente e uma venda manual completa começando com R$ 0. Esse último percorre os alvos reais do mapa e devolve a cesta após a saída do cliente; não concede dinheiro ou estoque inicial adicional. A expectativa de formato foi atualizada para a largura pedida pelo jogador.
+- `node scripts/check-store-layout.mjs`: rotas de coleta, reposição, compra e retorno ao caixa passaram nos níveis **1, 3, 4, 5, 7, 9, 11, 12, 13 e 15**. Móveis independentes mantêm separação; as seções contíguas do hortifruti usam colisão compartilhada e seleção exclusiva.
+- `npm run build`: concluído; permanece o aviso anterior de pacote maior que 500 kB.
+- `node scripts/render-floor-plan.mjs`: gerou [PLANTA-LOJA-N1.svg](PLANTA-LOJA-N1.svg) a partir da configuração implementada. O gerador agora produz o marco novo disponível; as plantas V2 permanecem históricas.
+- Edge headless: conferidas a [vista inicial em 1440 × 1000](previews/nova-planta-n1.png), [vista geral com zoom afastado](previews/nova-planta-n1-geral.png), [tela móvel em 390 × 844](previews/nova-planta-n1-mobile.png) e [Canvas 2D forçado](previews/nova-planta-n1-canvas.png). **Nenhuma exceção JavaScript** durante as capturas; largura do documento móvel igual à viewport, 390 px. As capturas partem de salvamento limpo, com a banca vazia até ser abastecida. A vegetação de fundo passou a respeitar os pisos novos também no Canvas.
+- As capturas verificam apresentação e carregamento. Gestos, desempenho em aparelho físico e uma partida humana prolongada não foram medidos. A implementação da planta completa até N15 continua pendente.
+
 ## Progressão artesanal até o nível 15 — 01/10/2026
 
 - **15 testes novos passaram** em `tests/artesanal.test.js`: desbloqueios por nível, custo e requisitos, capacidade, produção renovável, receitas com conservação dos ingredientes, armazenamento cheio, pausa, salvamento, objetivos, vendas, rotas e repositor.

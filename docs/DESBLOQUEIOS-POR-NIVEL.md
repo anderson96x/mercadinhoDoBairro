@@ -1,6 +1,6 @@
 # Desbloqueios por nível
 
-O [novo layout](PLANTA-LOJA-V2.md) está implementado sem alterar os níveis, custos ou receitas abaixo. O leite usa uma ilha fria desde o nível 5; a padaria fica ao fundo do salão. As interações automáticas funcionam junto aos objetos, por qualquer lado acessível. Bancas, hortas e oficinas foram afastadas; o terreno e o piso aumentaram para evitar coleta ou reposição de mercadorias vizinhas, sem círculos no chão.
+O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. O leite continua em ilha fria e a padaria no fundo; as demais etapas espaciais ainda usam as expansões anteriores. O acesso de produção passou para a porta dos fundos.
 
 ## Disponíveis
 
@@ -28,7 +28,7 @@ O [novo layout](PLANTA-LOJA-V2.md) está implementado sem alterar os níveis, cu
 - A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 15 é o último marco de conteúdo; a loja pode continuar funcionando e subindo de nível depois dele.
 - A cesta de trabalho prepara o jogador para viagens maiores sem mudar o começo do jogo.
 - A ala artesanal exige a padaria. Ela acrescenta um salão ao fundo da loja, conectado por uma passagem na ala dos ovos, e uma estufa ao lado do curral. As outras alas continuam funcionando durante a construção.
-- Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Colete e abasteça as bancas na nova ala.
+- Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Abasteça morangos na seção de hortifruti à esquerda e mel na banca do anexo.
 - A queijaria exige a ala artesanal e a ala do leite. Entregue **1 leite → 2 queijos**, em 5 segundos. O lote vale R$ 36, contra R$ 20 pela garrafa de leite vendida diretamente.
 - A cozinha de geleias exige o apiário. Entregue **2 morangos + 1 mel → 3 geleias**, em 6 segundos. O lote vale R$ 90, contra R$ 56 pelos ingredientes vendidos diretamente.
 - Para entregar ingredientes, aproxime-se da oficina carregando-os. Cada ingrediente tem estoque de entrada de até 8 unidades. A etiqueta mostra ingredientes disponíveis, receita, progresso e produtos prontos. Depois, recolha o lote e leve-o à banca. O repositor também coleta e abastece produtos prontos; o jogador fornece os ingredientes das receitas.

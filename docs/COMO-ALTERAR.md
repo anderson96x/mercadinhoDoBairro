@@ -1,5 +1,7 @@
 # Como ajustar e expandir o jogo
 
+O início da loja usa a [nova planta N1](PLANTA-LOJA-N1.md). Edite `src/jogo/planta.js` para o terreno, salão, porta posterior e compartimentos de hortifruti; `configuracao.js` consome essa geometria. As seções do móvel têm alvos independentes na face do corredor e volumes contíguos agrupados. Não aplique a exigência de espaçamento entre móveis independentes às divisórias desse conjunto. `node scripts/render-floor-plan.mjs` gera somente o marco novo já implementado; as plantas V2 são históricas.
+
 ## Regras rápidas
 
 Abra `src/jogo/configuracao.js`. Ele concentra os ajustes mais frequentes:

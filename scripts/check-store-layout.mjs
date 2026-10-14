@@ -43,7 +43,8 @@ for (const nivel of [1, 3, 4, 5, 7, 9, 11, 12, 13, 15]) {
 const pads = Object.entries(PRODUTOS).flatMap(([id,p]) =>
   (id === 'pao' ? ['reposicao'] : ['coleta','reposicao']).map(tipo => ({ id, tipo, ...geometriaEstacao(id, tipo) })));
 for (let i=0;i<pads.length;i++) for (let j=i+1;j<pads.length;j++) {
+  if (pads[i].tipo === 'reposicao' && pads[j].tipo === 'reposicao' && pads[i].movel === 'hortifruti' && pads[j].movel === 'hortifruti') continue;
   assert.ok(intervaloEstacoes(pads[i],pads[j]) > CONFIG.raioInteracao * 2,
     `Insufficient object spacing: ${pads[i].id}/${pads[i].tipo}, ${pads[j].id}/${pads[j].tipo}`);
 }
-console.log(`${pads.length} physical stations have disjoint pickup/stocking ranges, without floor markers.`);
+console.log(`${pads.length} interaction targets: independent fixtures stay separated; produce sections share a stand.`);

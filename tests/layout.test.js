@@ -35,7 +35,7 @@ test('projeção isométrica mantém a mesma escala nos três eixos e diagonais 
   assert.equal(CONFIG.anguloCamera, Math.atan2(offset.x, offset.z));
 });
 
-test('cliente entra pelo novo vão frontal antes de chegar à ilha central', () => {
+test('cliente entra pelo vão frontal antes de chegar à banca de tomates', () => {
   const sim = new Simulacao(); sim.criarCliente(); sim.proximoCliente = Infinity;
   const cliente = sim.clientes[0]; let atravessou = false;
   for (let i = 0; i < 1800 && cliente.fase !== 'comprando'; i++) {
