@@ -8,6 +8,12 @@ import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
 
+// A fila vira para o fundo após sete lugares, cabendo no salão anterior ao N9.
+export function pontoFila(indice) {
+  return { x: CONFIG.clienteCaixa.x + Math.min(indice, 6) * CONFIG.espacoClientes,
+    z: CONFIG.clienteCaixa.z - Math.max(0, indice - 6) * CONFIG.espacoClientes };
+}
+
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 const limitar = (v, min, max) => Math.min(max, Math.max(min, v));
 const capacidadeExtraAtiva = MELHORIAS.find(m => m.id === 'mochila')?.ativa !== false;
@@ -492,13 +498,13 @@ export class Simulacao {
     const caixas = [
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
-      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_TRIGO.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
+      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
-    if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(...ALA_PRODUCAO.paredes.filter(p => p.x !== 12.1 && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)));
-    if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(
+    if (this.estado.estagioLoja >= ALA_PADARIA.indice) caixas.push(...ALA_PRODUCAO.paredes.filter(p => p.x !== 12.1 && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)));
+    if (this.estado.estagioLoja >= ALA_PADARIA.indice) caixas.push(
       ...ALA_LEITE.paredes.filter(p => (this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1) && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal))
     );
-    if (this.estado.estagioLoja >= ALA_TRIGO.indice) caixas.push(
+    if (this.estado.estagioLoja >= ALA_PADARIA.indice) caixas.push(
       ...ALA_TRIGO.paredes.filter(p => !this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)
     );
     if (this.estado.melhorias.alaPadaria) caixas.push(
@@ -975,11 +981,11 @@ export class Simulacao {
         }
         if (compra.quantidade >= compra.desejado || c.quantidade >= CONFIG.capacidadeCestaCliente || c.esperaSemEstoque >= CONFIG.tempoEsperaCliente) this.concluirCompraAtual(c);
       } else if (c.fase === 'indoCaixa') {
-        const indice = fila.indexOf(c), x = CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes;
-        if (this.caminharCliente(c, { x, z: CONFIG.clienteCaixa.z }, dt)) c.fase = 'fila';
+        const indice = fila.indexOf(c);
+        if (this.caminharCliente(c, pontoFila(indice), dt)) c.fase = 'fila';
       } else if (c.fase === 'fila') {
         const indice = Math.max(0, fila.indexOf(c));
-        if (this.caminharCliente(c, { x: CONFIG.clienteCaixa.x + indice * CONFIG.espacoClientes, z: CONFIG.clienteCaixa.z }, dt)) { c.andando = false; c.angulo = CONFIG.anguloCaixa + Math.PI; }
+        if (this.caminharCliente(c, pontoFila(indice), dt)) { c.andando = false; c.angulo = CONFIG.anguloCaixa + Math.PI; }
       } else if (c.fase === 'passando') {
         if (this.caminharCliente(c, CONFIG.extremosCalcada[c.ladoSaida], dt)) c.fase = 'fim';
       } else if (c.fase === 'saindo') {

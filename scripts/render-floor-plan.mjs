@@ -6,7 +6,7 @@ import { geometriaEstacao } from '../src/jogo/estacoes.js';
 
 // Generate implemented new-plan milestones; V2 images stay historical.
 function renderizarPlanta(nivel) {
-const ativos = nivel >= 3 ? ['tomate', 'milho'] : ['tomate'];
+const ativos = nivel >= 7 ? ['tomate', 'milho', 'trigo'] : nivel >= 3 ? ['tomate', 'milho'] : ['tomate'];
 const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" role="img" aria-labelledby="title desc">
 <title id="title">Nova planta — nível ${nivel}</title><desc id="desc">Terreno quadrado, salão de 14 por 16 unidades, escritório ao fundo, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. ${nivel >= 3 ? 'Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.' : 'Somente tomate disponível.'}</desc>
 <style>text{font-family:Arial,sans-serif;fill:#294439}.title{font-size:30px;font-weight:bold}.label{font-size:13px;font-weight:bold}.note{font-size:15px}.small{font-size:11px}.wall{fill:#315c49}.route{fill:none;stroke:#bf743a;stroke-width:3;stroke-dasharray:7 5}</style>
@@ -75,7 +75,7 @@ const notes = [
   `IMPLEMENTADO NO NÍVEL ${nivel}`,
   'Salão inicial: 7 × 8 cm → 14 × 16 u.',
   'Terreno: 20 × 20 cm → 40 × 40 u.',
-  nivel >= 3 ? 'Tomate + milho na mesma banca.' : 'Tomates na banca junto à esquerda.',
+  nivel >= 7 ? 'Tomate, milho e trigo na banca.' : nivel >= 3 ? 'Tomate + milho na mesma banca.' : 'Tomates na banca junto à esquerda.',
   nivel >= 5 ? 'Ovos + leite na parede do fundo.' : nivel >= 4 ? 'Ovos na parede do fundo.' : 'Escritório e lixeira ao fundo.',
   'Entrada frontal e acesso posterior.',
   'Caixa com acesso livre à cadeira.',
@@ -92,7 +92,7 @@ const notes = [
   'ESCOPO DESTA ETAPA',
   'Departamentos posteriores ainda',
   'mantêm as ampliações anteriores.',
-  nivel >= 5 ? 'N5: curral ao lado do galinheiro.' : nivel >= 4 ? 'N4: galinheiro atrás da loja.' : nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
+  nivel >= 7 ? 'N7: trigo atrás do milho.' : nivel >= 5 ? 'N5: curral ao lado do galinheiro.' : nivel >= 4 ? 'N4: galinheiro atrás da loja.' : nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
   'u = unidade do jogo; rua em +z.'
 ];
 notes.forEach((value, i) => parts.push(`<text x="885" y="${165 + i * 31}" class="${[0, 9, 17].includes(i) ? 'label' : 'note'}">${value}</text>`));
@@ -100,4 +100,4 @@ parts.push('<text x="48" y="966" class="small">Gerado da configuração do jogo 
 writeFileSync(new URL(`../docs/PLANTA-LOJA-N${nivel}.svg`, import.meta.url), parts.join('\n'), 'utf8');
 console.log(`Generated docs/PLANTA-LOJA-N${nivel}.svg from the implemented level ${nivel} geometry.`);
 }
-for (const nivel of [1, 3, 4, 5]) renderizarPlanta(nivel);
+for (const nivel of [1, 3, 4, 5, 7]) renderizarPlanta(nivel);

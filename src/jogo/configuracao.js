@@ -11,7 +11,7 @@ export const ESCRITORIO = {
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 8,
+  versaoLayout: 9,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -101,7 +101,8 @@ export const PRODUTOS = {
     nome: 'Morango', plural: 'Morangos', cor: 0xe74769, preco: 16, origem: 'horta', nivelMinimo: 11,
     tempoCrescimento: 3.4, capacidadeHorta: 8, capacidadePrateleira: 12,
     // Reserva legada deslocada para liberar o corredor de coleta do curral N5.
-    horta: { x: -2.4, z: -16.4 }, coleta: { x: -2.4, z: -14 },
+    canteiro: { ...PLANTA_INICIAL.fazendaTomate.canteiro },
+    horta: { x: -2.4, z: -16.4 }, coleta: { x: -2.4, z: -14.6 },
     ...compartimentoHortifruti('morango'), liberado: false
   },
   mel: {
@@ -147,7 +148,7 @@ export const NIVEL_PADARIA = 9;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
   limites: { ...CONFIG.limiteMundo },
-  // Faixa legada conservada somente a partir do trigo, até adaptar N7+.
+  // Faixa legada conservada somente a partir da padaria, até adaptar N9+.
   piso: { x: 11.5, z: -1.3, w: 1.2, d: 16 },
   camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
   duracaoConstrucao: 4,
@@ -176,7 +177,7 @@ export const ALA_TRIGO = {
   id: 'alaTrigo', indice: 3, nivelMinimo: NIVEL_TRIGO, custo: 400, produtos: ['trigo'],
   limites: { ...CONFIG.limiteMundo },
   piso: { x: 18.1, z: -1.3, w: 6, d: 16 },
-  camera: { x: 4.2, z: -2, alturaDesktop: 37 },
+  camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
   duracaoConstrucao: 4,
   paredes: [
     { x: 18.1, z: -9.3, w: 6, d: 0.28, h: 2.8, passagemArtesanal: true },
@@ -229,7 +230,7 @@ export const MELHORIAS = [
   { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra o canteiro de milho atrás dos tomates e acrescente sua seção à banca de hortifruti.', custo: 350, icone: 'milho', produto: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 3 },
   { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa o galinheiro atrás da loja e instale a estante de ovos na parede do fundo, à direita da porta de produção.', custo: ALA_PRODUCAO.custo, icone: 'ovos', produto: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
   { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa o curral atrás da loja, ao lado do galinheiro, e instale o refrigerador de leite junto aos ovos na parede do fundo.', custo: ALA_LEITE.custo, icone: 'leite', produto: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },
-  { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra o último canteiro atrás da loja, acrescente a seção de trigo ao hortifruti e amplie a loja.', custo: ALA_TRIGO.custo, icone: 'trigo', produto: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
+  { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra o canteiro de trigo atrás do milho e acrescente sua seção ao hortifruti, mantendo o salão inicial.', custo: ALA_TRIGO.custo, icone: 'trigo', produto: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
   { id: 'alaPadaria', titulo: 'Padaria', descricao: 'Cada trigo rende 3 pães. Deixe o trigo na caixa à esquerda do balcão.', custo: ALA_PADARIA.custo, icone: 'pao', produto: 'pao', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_PADARIA, requisitoMelhoria: 'alaTrigo' },
   { id: 'cestasExtras', titulo: 'Mais cestas para clientes', descricao: 'Adicione 5 cestas para receber mais 5 clientes na loja ao mesmo tempo.', custo: 100, icone: 'cesta', max: 1, categoria: 'mercado', nivelMinimo: 8 },
   { id: 'mochila', titulo: 'Mais capacidade', descricao: 'Carregue mais 4 produtos por viagem.', custo: 25, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 1, ativa: false },

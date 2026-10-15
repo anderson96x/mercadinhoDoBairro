@@ -421,9 +421,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       estagioAnterior = estagio;
       const duracao = estagio >= ALA_TRIGO.indice ? ALA_TRIGO.duracaoConstrucao : estagio >= ALA_LEITE.indice ? ALA_LEITE.duracaoConstrucao : ALA_PRODUCAO.duracaoConstrucao;
       progresso = Math.min(1, progresso + dt / duracao);
-      // N4–6 instalam equipamentos sem ampliar o salão. As faixas legadas
-      // acompanham apenas o trigo enquanto N7+ aguardam sua nova planta.
-      const ampliada = estagio >= ALA_TRIGO.indice;
+      // N4–8 mantêm o salão inicial. A expansão começa na padaria.
+      const ampliada = estagio >= ALA_PADARIA.indice;
       const progressoFaixa = estagio >= ALA_PADARIA.indice ? 1 : progresso;
       const piso = THREE.MathUtils.smoothstep(progressoFaixa, 0, 0.5);
       const paredes = THREE.MathUtils.smoothstep(progressoFaixa, 0.35, 0.8);
@@ -449,11 +448,11 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       paredesAlaLeite.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progressoLeite, 0.35, 0.8));
       paredeLateralLeite.visible = false;
       paredeLateralLeite.position.x = estagio >= ALA_TRIGO.indice ? areaTrigo.w * pisoTrigo : 0;
-      alaTrigo.visible = estagio >= ALA_TRIGO.indice;
+      alaTrigo.visible = ampliada;
       alaTrigo.scale.x = Math.max(0.001, pisoTrigo);
       alaTrigo.position.x = 15.1 * (1 - alaTrigo.scale.x);
       paredesAlaTrigo.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progressoTrigo, 0.35, 0.8));
-      lateral.visible = !ampliada || (estagio === ALA_TRIGO.indice && progresso < 0.8);
+      lateral.visible = !ampliada || (estagio === ALA_PADARIA.indice && progresso < 0.8);
       const largura = ampliada ? area.w * piso + areaLeite.w * pisoLeite + areaTrigo.w * pisoTrigo : 0;
       lateral.position.x = largura;
       const fachada = PAREDES_LOJA.find(p => p.fachada);
@@ -465,11 +464,11 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       andaimeLeite.visible = false;
       andaimeLeite.position.x = 3 - areaLeite.w * (1 - pisoLeite);
       andaimeLeite.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
-      andaimeTrigo.visible = estagio === ALA_TRIGO.indice && progresso > 0 && progresso < 0.95;
+      andaimeTrigo.visible = estagio === ALA_PADARIA.indice && progresso > 0 && progresso < 0.95;
       andaimeTrigo.position.x = 9 - areaTrigo.w * (1 - pisoTrigo);
       andaimeTrigo.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
       arvoreLateral.position.x = ampliada ? 3 * pisoLeite : 0;
-      arvoreLateral.visible = estagio < ALA_TRIGO.indice;
+      arvoreLateral.visible = !ampliada;
       return estagio ? equipamentos : 0;
     },
     animarPorta(abertura) {
