@@ -1556,7 +1556,7 @@ export class Cena {
     this.alvoCamera.lerp(alvo, this.mobile ? Math.min(1, dt * 4) : 1);
     const equipamentoAla = this.bairro.atualizarEstagio(e.estagioLoja, dt);
     this.camera.position.copy(this.alvoCamera).add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z)); this.camera.lookAt(this.alvoCamera);
-    this.alertaCaixa.visible = e.banco.noCaixa >= BANCO.limite;
+    this.alertaCaixa.visible = sim.assaltosAtivos && e.banco.noCaixa >= BANCO.limite;
     this.alertaCaixa.position.set(CONFIG.balcao.x, 2.7 + Math.sin(sim.tempo * 5) * 0.08, CONFIG.balcao.z);
     this.alertaCaixa.lookAt(this.camera.position);
     this.alertaCaixeiro.visible = sim.assaltoNaLoja;

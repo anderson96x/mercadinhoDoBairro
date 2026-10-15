@@ -211,7 +211,7 @@ export class Interface {
     const banco = this.sim.estado.banco;
     const status = statusColeta(banco.coleta);
     const assalto = banco.assalto;
-    const riscoAtivo = banco.noCaixa >= BANCO.limite && !banco.coleta && !assalto;
+    const riscoAtivo = this.sim.assaltosAtivos && banco.noCaixa >= BANCO.limite && !banco.coleta && !assalto;
     const prazo = this.sim.tempoEsperaAssalto;
     const restante = Math.max(0, prazo - banco.tempoRisco);
     const segundos = Math.ceil(restante);
@@ -225,10 +225,10 @@ export class Interface {
       progresso.setAttribute('aria-valuenow', String(segundos));
       avisoPrazo.classList.toggle('urgente', restante <= 10);
     }
-    const chave = `${banco.noCaixa}:${status}:${assalto ? `${statusAssalto(assalto)}:${assalto.valor}` : ''}`;
+    const chave = `${this.sim.assaltosAtivos}:${banco.noCaixa}:${status}:${assalto ? `${statusAssalto(assalto)}:${assalto.valor}` : ''}`;
     if (chave === this.ultimoBanco) return;
     this.ultimoBanco = chave;
-    const alerta = banco.noCaixa >= BANCO.limite && !banco.coleta;
+    const alerta = this.sim.assaltosAtivos && banco.noCaixa >= BANCO.limite && !banco.coleta;
     this.el('dinheiro-caixa').textContent = `No caixa: ${reais(banco.noCaixa)}`;
     this.el('aviso-banco').hidden = !alerta && !banco.coleta && !assalto;
     this.el('aviso-banco').classList.toggle('coleta-em-andamento', !!banco.coleta);
@@ -296,7 +296,7 @@ export class Interface {
         <section class="dev-cartao dev-dinheiro" aria-label="Dinheiro">
           <div class="dev-cartao-topo"><span class="dev-rotulo">${icone('moeda')} Saldo disponível</span><strong>${reais(this.sim.estado.dinheiro)}</strong></div>
           <p>No caixa: ${reais(this.sim.estado.banco.noCaixa)}. Os botões ajustam os dois valores para testar depósitos.</p>
-          <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 100 ? 'disabled' : ''}>− R$ 100</button><button id="dev-adicionar">+ R$ 100</button></div>
+          <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 1000 ? 'disabled' : ''}>− R$ 1.000</button><button id="dev-adicionar">+ R$ 1.000</button></div>
         </section>
         <section class="dev-cartao" aria-label="Tempo até o assalto">
           <div class="dev-cartao-topo"><span class="dev-rotulo">Prazo para depositar</span><strong>${this.sim.tempoEsperaAssalto}<small> s</small></strong></div>
@@ -305,6 +305,11 @@ export class Interface {
             <button data-tempo-assalto="5" aria-pressed="${this.sim.tempoEsperaAssalto === 5}">5 segundos</button>
             <button data-tempo-assalto="60" aria-pressed="${this.sim.tempoEsperaAssalto === 60}">60 segundos</button>
           </div>
+        </section>
+        <section class="dev-cartao" aria-label="Assaltos">
+          <div class="dev-cartao-topo"><span class="dev-rotulo">Assaltos</span><strong>${this.sim.assaltosAtivos ? 'Ativados' : 'Desativados'}</strong></div>
+          <p>Desativar cancela o assalto atual e impede novos assaltos. A escolha fica salva neste navegador.</p>
+          <div class="dev-acoes"><button id="dev-assaltos" aria-pressed="${!this.sim.assaltosAtivos}">${this.sim.assaltosAtivos ? 'Desativar assaltos' : 'Ativar assaltos'}</button></div>
         </section>
         <div class="dev-progresso">
           <section class="dev-cartao" aria-label="Nível">
@@ -373,11 +378,12 @@ export class Interface {
       this.el('confirmar-reinicio').onclick = () => this.acoes.reiniciar();
     }
     if (tipo === 'dev') {
+      this.el('dev-assaltos').onclick = () => this.acoes.alternarAssaltosDev();
       this.el('painel-conteudo').querySelectorAll('[data-tempo-assalto]').forEach(botao => {
         botao.onclick = () => this.acoes.definirTempoAssalto(Number(botao.dataset.tempoAssalto));
       });
-      this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-100);
-      this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(100);
+      this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-1000);
+      this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(1000);
       this.el('dev-nivel').onclick = () => this.acoes.aumentarNivelDev();
       this.el('dev-reputacao').onclick = () => this.acoes.aumentarReputacaoDev();
       this.el('dev-reset').onclick = () => this.abrir('reiniciar');

@@ -23,7 +23,9 @@ import { CONFIG, MELHORIAS } from './jogo/configuracao.js';
 
 const sim = new Simulacao(carregar());
 const chavePrazoAssaltoDev = 'mercadinho-do-bairro-dev-prazo-assalto';
+const chaveAssaltosDev = 'mercadinho-do-bairro-dev-assaltos-ativos';
 if (import.meta.env.DEV) {
+  try { sim.definirAssaltosAtivos(localStorage.getItem(chaveAssaltosDev) !== 'false'); } catch { /* armazenamento opcional */ }
   try { sim.definirTempoEsperaAssalto(Number(localStorage.getItem(chavePrazoAssaltoDev))); } catch { /* armazenamento opcional */ }
 }
 const sons = new Sons();
@@ -76,6 +78,13 @@ function definirTempoAssalto(valor) {
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
   return true;
 }
+function alternarAssaltosDev() {
+  if (!import.meta.env.DEV) return;
+  sim.definirAssaltosAtivos(!sim.assaltosAtivos);
+  try { localStorage.setItem(chaveAssaltosDev, String(sim.assaltosAtivos)); } catch { /* armazenamento opcional */ }
+  gravar(); ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+}
 function aumentarReputacaoDev() {
   if (!import.meta.env.DEV) return;
   sim.aumentarReputacaoDev();
@@ -103,7 +112,7 @@ const ui = new Interface(sim, {
     if (resultado.sucesso) gravar();
     return resultado;
   },
-  pausar, comprar, alterarSaldo, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, aumentarReputacaoDev, iniciarSelecaoHorta,
+  pausar, comprar, alterarSaldo, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;

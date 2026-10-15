@@ -173,6 +173,7 @@ export class Simulacao {
     this.atividade = '';
     this.pausado = false;
     this.tempoEsperaAssalto = ASSALTO.espera;
+    this.assaltosAtivos = true;
     this.aleatorio = Math.random;
     this.ajudante = this.estado.funcionarios.ajudante;
     this.liberarPosicao(this.estado.jogador);
@@ -266,6 +267,17 @@ export class Simulacao {
     this.tempoEsperaAssalto = segundos;
     return true;
   }
+  definirAssaltosAtivos(ativo) {
+    this.assaltosAtivos = ativo;
+    if (!ativo) {
+      this.estado.banco.tempoRisco = 0;
+      this.estado.banco.assalto = null;
+      for (const cliente of this.clientes) {
+        cliente.assustado = false;
+        cliente.tempoAssusto = 0;
+      }
+    }
+  }
   consumirEventos() { const eventos = this.eventos; this.eventos = []; return eventos; }
   solicitarDeposito() {
     const banco = this.estado.banco;
@@ -283,6 +295,7 @@ export class Simulacao {
   }
   atualizarAssalto(dt) {
     const banco = this.estado.banco;
+    if (!this.assaltosAtivos) return;
     if (!banco.assalto) {
       banco.tempoRisco = !banco.coleta && banco.noCaixa >= BANCO.limite ? banco.tempoRisco + dt : 0;
       if (banco.tempoRisco >= this.tempoEsperaAssalto) {
