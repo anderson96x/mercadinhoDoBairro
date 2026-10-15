@@ -28,6 +28,55 @@ export const FAZENDAS_HORTIFRUTI = Object.fromEntries(['tomate', 'milho', 'trigo
 
 export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 
+export const PLANTA_AMPLIADA = {
+  salao: { x: 8.9, z: -1.3, w: 24, d: 16 },
+  limites: { ...PLANTA_INICIAL.limites, maxX: 20.9 },
+  piso: { x: 15.9, z: -1.3, w: 10, d: 16 },
+  camera: { x: 5, z: -1.3, alturaDesktop: 37 }
+};
+
+export function paredesAmpliacao(alturaBaixa) {
+  return [
+    { x: 15.9, z: -9.3, w: 10, d: 0.28, h: 2.8, passagemArtesanal: true },
+    { x: 15.9, z: 6.7, w: 10, d: 0.28, h: alturaBaixa },
+    { x: 20.9, z: -1.3, w: 0.28, d: 16, h: alturaBaixa }
+  ];
+}
+
+// Coordenadas locais do conjunto; a frente +z gira para a esquerda (-x).
+export const MODELO_PADARIA = {
+  prateleira: { x: 7.6, z: -2, w: 3.4, d: 0.9 },
+  entrada: { x: 4.75, z: -5.35, w: 0.65, d: 2.1 },
+  moinho: { x: 5.9, z: -5.4, w: 0.85, d: 0.85 },
+  forno: { x: 9.3, z: -5.4, w: 1.05, d: 1.15 },
+  // Balcões de atendimento; a faixa junto à parede direita fica aberta.
+  fechamento: [
+    // Laterais terminam na borda interna da frente; os cantos ficam alinhados.
+    { x: 10.45, z: -4.425, w: 0.65, d: 3.95, variedade: 1 },
+    { x: 4.75, z: -3.375, w: 0.65, d: 1.85, decoracao: false },
+    { x: 4.75, z: -5.35, w: 0.65, d: 2.1, decoracao: false, entregaTrigo: true },
+    { x: 5.1625, z: -2, w: 1.475, d: 0.9, variedade: 4 },
+    { x: 10.0375, z: -2, w: 1.475, d: 0.9, variedade: 5 }
+  ]
+};
+
+export function pontoPadaria(p) {
+  return { x: 14 - p.z, z: p.x - 11.6 };
+}
+
+export function volumePadaria(p) {
+  return { ...pontoPadaria(p), w: p.d, d: p.w };
+}
+
+export const PLANTA_PADARIA = {
+  horta: pontoPadaria(MODELO_PADARIA.entrada),
+  coleta: pontoPadaria({ x: 3.85, z: -5.35 }),
+  reposicao: pontoPadaria({ x: 3.85, z: -5.35 }),
+  prateleira: volumePadaria(MODELO_PADARIA.prateleira),
+  cliente: pontoPadaria({ x: 7.6, z: -0.95 }),
+  pontosCompra: [7.6, 6.7, 8.5].map(x => pontoPadaria({ x, z: -0.95 }))
+};
+
 // Painel N4: galinheiro acima e à direita do milho; ovos na parede posterior,
 // à direita da porta de produção. A compra mantém o salão inicial.
 export const PLANTA_OVOS = {

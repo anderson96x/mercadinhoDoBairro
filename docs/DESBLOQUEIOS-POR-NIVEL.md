@@ -1,8 +1,10 @@
 # Desbloqueios por nível
 
-O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. A expansão a partir da padaria e o anexo ainda conservam a geometria anterior.
+O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. O anexo artesanal ainda conserva a geometria anterior.
 
 No [nível 7](PLANTA-LOJA-N7.md), comprar trigo por R$ 400 acrescenta o canteiro atrás do milho e a terceira seção do hortifruti, sem ampliar o salão. Todos os canteiros de cultivos medem 3,6 × 2,5 u.
+
+No [nível 9](PLANTA-LOJA-N9.md), a padaria amplia o salão para 24 × 16 u à direita. O balcão fica junto à parede direita, de frente para o hortifruti. Entregue trigo na caixa ao fundo do conjunto: moinho e forno mantêm a receita de três pães por trigo.
 
 ## Disponíveis
 

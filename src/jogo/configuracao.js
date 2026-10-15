@@ -1,5 +1,5 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
-import { PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti } from './planta.js';
+import { PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti } from './planta.js';
 export const ALTURA_PAREDE_BAIXA = 0.75;
 export const ESCRITORIO = {
   limites: { minX: -3.1, maxX: 1.1, minZ: -9.3, maxZ: -5.8 },
@@ -11,7 +11,7 @@ export const ESCRITORIO = {
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 9,
+  versaoLayout: 12,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -132,10 +132,7 @@ export const PRODUTOS = {
   pao: {
     nome: 'Pão', plural: 'Pães', cor: 0xc87833, preco: 10, origem: 'padaria',
     capacidadeHorta: 0, capacidadePrateleira: 18,
-    horta: { x: 5.75, z: -5 }, coleta: { x: 4.7, z: -5 },
-    prateleira: { x: 7.6, z: -4.2, w: 3.4, d: 0.9 }, reposicao: { x: 4.7, z: -5 },
-    cliente: { x: 7.6, z: -3.15 },
-    pontosCompra: [{ x: 7.6, z: -3.15 }, { x: 6.7, z: -3.15 }, { x: 8.5, z: -3.15 }], liberado: false
+    ...PLANTA_PADARIA, liberado: false
   }
 };
 
@@ -148,7 +145,7 @@ export const NIVEL_PADARIA = 9;
 export const ALA_PRODUCAO = {
   id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
   limites: { ...CONFIG.limiteMundo },
-  // Faixa legada conservada somente a partir da padaria, até adaptar N9+.
+  // Geometria histórica das faixas antigas, sem renderização ou colisão.
   piso: { x: 11.5, z: -1.3, w: 1.2, d: 16 },
   camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
   duracaoConstrucao: 4,
@@ -189,9 +186,12 @@ export const ALA_TRIGO = {
 };
 export const ALA_PADARIA = {
   id: 'alaPadaria', indice: 4, nivelMinimo: NIVEL_PADARIA, custo: 1400, produtos: ['pao'],
-  entrada: { ...PRODUTOS.pao.horta, w: 0.65, d: 0.6 },
-  moinho: { x: 6.45, z: -5.9, w: 0.85, d: 0.85 },
-  forno: { x: 8.7, z: -5.9, w: 1.05, d: 1.15 }, capacidadeTrigo: 12,
+  piso: PLANTA_AMPLIADA.piso, camera: PLANTA_AMPLIADA.camera,
+  duracaoConstrucao: 4, paredes: paredesAmpliacao(ALTURA_PAREDE_BAIXA),
+  entrada: volumePadaria(MODELO_PADARIA.entrada),
+  fechamento: MODELO_PADARIA.fechamento.filter(p => !p.entregaTrigo).map(volumePadaria),
+  moinho: volumePadaria(MODELO_PADARIA.moinho),
+  forno: volumePadaria(MODELO_PADARIA.forno), capacidadeTrigo: 12,
   tempoMoagem: 1.8, tempoForno: 2.3, paesPorTrigo: 3
 };
 
@@ -231,7 +231,7 @@ export const MELHORIAS = [
   { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa o galinheiro atrás da loja e instale a estante de ovos na parede do fundo, à direita da porta de produção.', custo: ALA_PRODUCAO.custo, icone: 'ovos', produto: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
   { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa o curral atrás da loja, ao lado do galinheiro, e instale o refrigerador de leite junto aos ovos na parede do fundo.', custo: ALA_LEITE.custo, icone: 'leite', produto: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },
   { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra o canteiro de trigo atrás do milho e acrescente sua seção ao hortifruti, mantendo o salão inicial.', custo: ALA_TRIGO.custo, icone: 'trigo', produto: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
-  { id: 'alaPadaria', titulo: 'Padaria', descricao: 'Cada trigo rende 3 pães. Deixe o trigo na caixa à esquerda do balcão.', custo: ALA_PADARIA.custo, icone: 'pao', produto: 'pao', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_PADARIA, requisitoMelhoria: 'alaTrigo' },
+  { id: 'alaPadaria', titulo: 'Padaria', descricao: 'Cada trigo rende 3 pães. Entregue trigo na caixa ao fundo da padaria, junto à parede direita.', custo: ALA_PADARIA.custo, icone: 'pao', produto: 'pao', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_PADARIA, requisitoMelhoria: 'alaTrigo' },
   { id: 'cestasExtras', titulo: 'Mais cestas para clientes', descricao: 'Adicione 5 cestas para receber mais 5 clientes na loja ao mesmo tempo.', custo: 100, icone: 'cesta', max: 1, categoria: 'mercado', nivelMinimo: 8 },
   { id: 'mochila', titulo: 'Mais capacidade', descricao: 'Carregue mais 4 produtos por viagem.', custo: 25, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 1, ativa: false },
   { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 100, icone: 'raio', max: 1, categoria: 'jogador', nivelMinimo: 5, ativa: false },

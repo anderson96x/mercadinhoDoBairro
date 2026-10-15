@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
-import { CONFIG, PRODUTOS, ESCRITORIO } from '../src/jogo/configuracao.js';
-import { PLANTA_INICIAL, PRODUTOS_HORTIFRUTI } from '../src/jogo/planta.js';
+import { CONFIG, PRODUTOS, ESCRITORIO, ALA_PADARIA } from '../src/jogo/configuracao.js';
+import { PLANTA_INICIAL, PLANTA_AMPLIADA, PRODUTOS_HORTIFRUTI } from '../src/jogo/planta.js';
 import { PAREDES_LOJA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from '../src/jogo/bairro.js';
 import { geometriaEstacao } from '../src/jogo/estacoes.js';
 
@@ -8,7 +8,7 @@ import { geometriaEstacao } from '../src/jogo/estacoes.js';
 function renderizarPlanta(nivel) {
 const ativos = nivel >= 7 ? ['tomate', 'milho', 'trigo'] : nivel >= 3 ? ['tomate', 'milho'] : ['tomate'];
 const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" role="img" aria-labelledby="title desc">
-<title id="title">Nova planta — nível ${nivel}</title><desc id="desc">Terreno quadrado, salão de 14 por 16 unidades, escritório ao fundo, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. ${nivel >= 3 ? 'Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.' : 'Somente tomate disponível.'}</desc>
+<title id="title">Nova planta — nível ${nivel}</title><desc id="desc">Terreno quadrado, salão de ${nivel >= 9 ? 24 : 14} por 16 unidades, escritório ao fundo, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. ${nivel >= 3 ? 'Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.' : 'Somente tomate disponível.'}</desc>
 <style>text{font-family:Arial,sans-serif;fill:#294439}.title{font-size:30px;font-weight:bold}.label{font-size:13px;font-weight:bold}.note{font-size:15px}.small{font-size:11px}.wall{fill:#315c49}.route{fill:none;stroke:#bf743a;stroke-width:3;stroke-dasharray:7 5}</style>
 <rect width="1200" height="1000" fill="#faf9f5"/>
 <text x="48" y="54" class="title">Mercadinho do Bairro · nível ${nivel}</text>
@@ -21,10 +21,10 @@ rect(PLANTA_INICIAL.terreno, '#dfebd4', 'stroke="#9cb88e"');
 rect({ x: 4, z: 11.3, w: 40, d: 4.4 }, '#78817e');
 rect({ x: 4, z: 7.95, w: 40, d: 2.5 }, '#e8deca');
 text(13, 12, 'RUA');
-rect(PLANTA_INICIAL.salao, '#f4f0e5');
+rect(nivel >= 9 ? PLANTA_AMPLIADA.salao : PLANTA_INICIAL.salao, '#f4f0e5');
 const office = ESCRITORIO.limites;
 rect({ x: (office.minX + office.maxX) / 2, z: (office.minZ + office.maxZ) / 2, w: office.maxX - office.minX, d: office.maxZ - office.minZ }, '#dfd5df');
-for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) rect(p, '#315c49');
+for (const p of [...PAREDES_LOJA.filter(p => nivel < 9 || !p.lateral), ...(nivel >= 9 ? ALA_PADARIA.paredes : []), ...PAREDES_ESCRITORIO]) rect(p, '#315c49');
 for (const p of [ESCRITORIO.mesa, ESCRITORIO.estante]) rect(p, '#b99269');
 rect(PORTA_ESCRITORIO, '#94b7b5');
 text(-0.8, -6.3, 'ESCRITÓRIO', 'small');
@@ -45,6 +45,7 @@ for (const id of ativos) {
   text(p.horta.x, p.horta.z - p.canteiro.d / 2 - 0.4, p.nome.toLocaleUpperCase('pt-BR'), 'small');
 }
 path([{ x: 0.8, z: -1 }, { x: CONFIG.portaProducao.x, z: -8.4 }, { x: CONFIG.portaProducao.x, z: tomate.coleta.z }, tomate.coleta]);
+if (nivel >= 7) path([{ x: -5.8, z: PRODUTOS.milho.coleta.z }, { x: -5.8, z: PRODUTOS.trigo.coleta.z }, PRODUTOS.trigo.coleta]);
 if (nivel >= 3) path([{ x: -5.8, z: tomate.coleta.z }, { x: -5.8, z: PRODUTOS.milho.coleta.z }, PRODUTOS.milho.coleta]);
 if (nivel >= 4) {
   const ovos = PRODUTOS.ovos;
@@ -69,11 +70,20 @@ for (const id of PRODUTOS_HORTIFRUTI.filter(id => !ativos.includes(id))) {
   rect(PRODUTOS[id].prateleira, 'none', 'stroke="#b6b9a9" stroke-dasharray="4 3"');
 }
 text(13, -19, 'TERRENO RESERVADO', 'small');
-text(3.9, -1.3, 'SALÃO · 14 × 16 u');
+text(nivel >= 9 ? 8.9 : 3.9, -1.3, nivel >= 9 ? 'SALÃO · 24 × 16 u' : 'SALÃO · 14 × 16 u');
+if (nivel >= 9) {
+  for (const balcao of ALA_PADARIA.fechamento) rect(balcao, '#d7b58a', 'stroke="#936238"');
+  rect(PRODUTOS.pao.prateleira, '#d3e6e3', 'stroke="#63868d"');
+  for (const [id, nome] of [['entrada', 'TRIGO'], ['moinho', 'MOINHO'], ['forno', 'FORNO']]) {
+    rect(ALA_PADARIA[id], '#acb3ad'); text(ALA_PADARIA[id].x, ALA_PADARIA[id].z, nome, 'small');
+  }
+  text(14.5, -4.5, 'PADARIA', 'small');
+  path([PRODUTOS.pao.cliente, { x: 13, z: -4 }]);
+}
 parts.push('<path d="M860 140V900" stroke="#dedfd7"/>');
 const notes = [
   `IMPLEMENTADO NO NÍVEL ${nivel}`,
-  'Salão inicial: 7 × 8 cm → 14 × 16 u.',
+  nivel >= 9 ? 'Salão ampliado: 24 × 16 u.' : 'Salão inicial: 7 × 8 cm → 14 × 16 u.',
   'Terreno: 20 × 20 cm → 40 × 40 u.',
   nivel >= 7 ? 'Tomate, milho e trigo na banca.' : nivel >= 3 ? 'Tomate + milho na mesma banca.' : 'Tomates na banca junto à esquerda.',
   nivel >= 5 ? 'Ovos + leite na parede do fundo.' : nivel >= 4 ? 'Ovos na parede do fundo.' : 'Escritório e lixeira ao fundo.',
@@ -92,7 +102,7 @@ const notes = [
   'ESCOPO DESTA ETAPA',
   'Departamentos posteriores ainda',
   'mantêm as ampliações anteriores.',
-  nivel >= 7 ? 'N7: trigo atrás do milho.' : nivel >= 5 ? 'N5: curral ao lado do galinheiro.' : nivel >= 4 ? 'N4: galinheiro atrás da loja.' : nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
+  nivel >= 9 ? 'N9: padaria voltada ao hortifruti.' : nivel >= 7 ? 'N7: trigo atrás do milho.' : nivel >= 5 ? 'N5: curral ao lado do galinheiro.' : nivel >= 4 ? 'N4: galinheiro atrás da loja.' : nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
   'u = unidade do jogo; rua em +z.'
 ];
 notes.forEach((value, i) => parts.push(`<text x="885" y="${165 + i * 31}" class="${[0, 9, 17].includes(i) ? 'label' : 'note'}">${value}</text>`));
@@ -100,4 +110,4 @@ parts.push('<text x="48" y="966" class="small">Gerado da configuração do jogo 
 writeFileSync(new URL(`../docs/PLANTA-LOJA-N${nivel}.svg`, import.meta.url), parts.join('\n'), 'utf8');
 console.log(`Generated docs/PLANTA-LOJA-N${nivel}.svg from the implemented level ${nivel} geometry.`);
 }
-for (const nivel of [1, 3, 4, 5, 7]) renderizarPlanta(nivel);
+for (const nivel of [1, 3, 4, 5, 7, 9]) renderizarPlanta(nivel);

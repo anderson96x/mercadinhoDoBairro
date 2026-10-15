@@ -91,3 +91,20 @@ Os seis testes de `npm test` passaram:
 O navegador de testes não ofereceu WebGL. A verificação visual utilizou o renderizador alternativo em Canvas 2D. O caminho WebGL foi compilado, mas suas sombras e seu desempenho não foram medidos nesse ambiente. O teste de tamanho móvel não substitui medir desempenho e toque em um aparelho físico.
 
 As ferramentas opcionais para agentes são registradas apenas se `document.modelContext` existir. Essa API não estava disponível no navegador de teste; o jogo não depende dela.
+
+
+## Nova planta N9 — 14/10/2026
+
+Padaria na parede direita voltada ao hortifruti; salão 24 × 16 u. 188 testes passaram; rotas N1–N15 aprovadas. Revisão visual WebGL e Canvas 2D em `docs/previews/nova-planta-n9-*.png`. Migração V9 → V10 conserva produção e estoque. Tela móvel emulada; sem avaliação em aparelho físico.
+
+Build de produção concluído (`npm run build`), com aviso de tamanho de chunk acima de 500 kB.
+
+
+### Balcões e circulação da padaria
+
+Área de trabalho ampliada, com pelo menos 2,3 u entre vitrine e máquinas e trajetos separados dos padeiros. Fechamento com balcões de madeira, tampos claros e bandejas de donuts, croissants e caracóis decorativos. Colisões seguem os balcões; acesso de trigo mantido. Layout V11. 188 testes e rotas N1–N15 passaram; capturas WebGL, Canvas 2D e tela móvel emulada atualizadas.
+
+
+### Vitrines curvas da padaria
+
+Pães distribuídos em três prateleiras internas de vidro, mantendo 18 posições de estoque e animações alinhadas. Doces decorativos protegidos por vitrines de dois níveis. Removida a decoração dos balcões do fundo. Capturas WebGL, Canvas 2D e móvel emulado atualizadas.

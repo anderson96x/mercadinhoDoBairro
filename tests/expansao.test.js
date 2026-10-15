@@ -79,7 +79,7 @@ function bairroVisual() {
     cilindro: (g, a, b, h, cor, x, y, z) => mesh(g, x, y, z),
     esfera: (g, r, cor, x, y, z) => mesh(g, x, y, z)
   });
-  return { bairro, ala: cena.getObjectByName('ala-producao'), andaime: cena.getObjectByName('andaime'), rodape: cena.getObjectByName('rodape-frontal') };
+  return { bairro, ala: cena.getObjectByName('ampliacao-padaria'), andaime: cena.getObjectByName('andaime'), rodape: cena.getObjectByName('rodape-frontal') };
 }
 
 test('N4 instala equipamentos em etapas e conserva piso, fachada e parede lateral', () => {

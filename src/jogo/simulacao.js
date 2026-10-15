@@ -396,7 +396,7 @@ export class Simulacao {
       this.emitir('expansao', { texto: id === ALA_ARTESANAL.id
         ? 'Estufa aberta! Colha morangos ao fundo e abasteça a nova seção do hortifruti junto à parede esquerda.'
         : id === ALA_PADARIA.id
-        ? `Padaria aberta! Cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${PRODUTOS.pao.preco}. Deixe o trigo na caixa à esquerda do balcão de vidro.`
+        ? `Padaria aberta! Cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${PRODUTOS.pao.preco}. Entregue trigo na caixa ao fundo da padaria, junto à parede direita.`
         : id === ALA_TRIGO.id
         ? 'Plantação de trigo pronta! Colha o trigo atrás do milho e abasteça sua seção na banca de hortifruti.'
         : id === ALA_LEITE.id
@@ -459,7 +459,7 @@ export class Simulacao {
       const orientacaoPadaria = !this.estado.melhorias.alaPadaria
         ? { titulo: 'Abra a padaria', texto: 'Compre a padaria no escritório por R$ 1.400. Cada trigo rende 3 pães de R$ 10.', destino: 'escritorio' }
         : this.estado.producao.trigoPadaria === 0 && !this.estado.producao.farinha && !this.estado.produtos.pao.prateleira
-          ? { titulo: 'Leve trigo à padaria', texto: 'Colha trigo e deixe-o na caixa à esquerda do balcão. Cada trigo rende 3 pães de R$ 10.', destino: this.estado.jogador.inventario.includes('trigo') ? 'padaria' : 'trigo' }
+          ? { titulo: 'Leve trigo à padaria', texto: 'Colha trigo e entregue na caixa ao fundo da padaria, junto à parede direita. Cada trigo rende 3 pães de R$ 10.', destino: this.estado.jogador.inventario.includes('trigo') ? 'padaria' : 'trigo' }
           : { titulo: 'Pães frescos para o bairro', texto: 'Cada trigo rende 3 pães de R$ 10. Reabasteça a padaria para manter a produção.', destino: 'padaria', exibir: false };
       const orientacoesNivel = {
         2: {
@@ -513,15 +513,9 @@ export class Simulacao {
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
       ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
-    if (this.estado.estagioLoja >= ALA_PADARIA.indice) caixas.push(...ALA_PRODUCAO.paredes.filter(p => p.x !== 12.1 && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)));
-    if (this.estado.estagioLoja >= ALA_PADARIA.indice) caixas.push(
-      ...ALA_LEITE.paredes.filter(p => (this.estado.estagioLoja < ALA_TRIGO.indice || p.x !== 15.1) && (!this.estado.melhorias.alaArtesanal || !p.passagemArtesanal))
-    );
-    if (this.estado.estagioLoja >= ALA_PADARIA.indice) caixas.push(
-      ...ALA_TRIGO.paredes.filter(p => !this.estado.melhorias.alaArtesanal || !p.passagemArtesanal)
-    );
+    if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes.filter(p => !p.passagemArtesanal || !this.estado.melhorias.alaArtesanal));
     if (this.estado.melhorias.alaPadaria) caixas.push(
-      ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno
+      ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, ...ALA_PADARIA.fechamento
     );
     if (this.estado.melhorias.alaArtesanal) caixas.push(...ALA_ARTESANAL.paredes);
     for (const [id, p] of Object.entries(PRODUTOS)) {

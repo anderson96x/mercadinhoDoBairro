@@ -1,18 +1,20 @@
 # Plano de implementação da nova planta do mercadinho
 
-Data: 13/10/2026. **Status atualizado em 14/10/2026: implementação parcial, níveis 1, 3, 4, 5 e 7 concluídos.**
+Data: 13/10/2026. **Status atualizado em 14/10/2026: implementação parcial, níveis 1, 3, 4, 5, 7 e 9 concluídos.**
 
-Este documento descreve a substituição completa do layout pela planta enviada. A entrega do nível 1 está registrada em [PLANTA-LOJA-N1.md](PLANTA-LOJA-N1.md): salão inicial, terreno, escritório, acessos, caixa, banca modular e migração espacial. As caixas abaixo representam o plano completo até N15 e continuam pendentes quando ainda exigem etapas posteriores. O salão permanece inicial até N8; a geometria final da ampliação N9 e a remoção do anexo antigo ainda aguardam implementação.
+Este documento descreve a substituição completa do layout pela planta enviada. A entrega do nível 1 está registrada em [PLANTA-LOJA-N1.md](PLANTA-LOJA-N1.md): salão inicial, terreno, escritório, acessos, caixa, banca modular e migração espacial. As caixas abaixo representam o plano completo até N15 e continuam pendentes quando ainda exigem etapas posteriores. O salão permanece inicial até N8 e cresce para 24 × 16 u com a compra da padaria no N9. A remoção do anexo antigo ainda aguarda N11.
 
 A entrega do [nível 3](PLANTA-LOJA-N3.md) acrescenta milho atrás do tomate, mantendo os dois canteiros inteiramente atrás da loja, sem produção ao lado da parede esquerda. A banca ganha somente a seção comprada e o salão não aumenta. A reserva do trigo foi deslocada para trás do milho para evitar sobreposição nos níveis posteriores.
 
 A entrega do [nível 4](PLANTA-LOJA-N4.md) instala o galinheiro atrás da loja, acima e à direita do milho, e a estante de ovos na parede posterior, à direita da porta. O salão permanece em 14 × 16 u; a extensão lateral antiga não aparece nesta compra.
 
-A entrega do [nível 5](PLANTA-LOJA-N5.md) instala o curral na mesma faixa posterior, à direita do galinheiro, e o refrigerador ao lado dos ovos. O salão inicial é preservado também no leite. Os dois expositores têm seleção exclusiva pela frente para reposição com inventário misto. A versão espacial atual é 9; saves anteriores preservam compras, estoques, progresso de produção e cargas. A expansão legada a partir da padaria e o anexo ainda aguardam suas próximas adaptações.
+A entrega do [nível 5](PLANTA-LOJA-N5.md) instala o curral na mesma faixa posterior, à direita do galinheiro, e o refrigerador ao lado dos ovos. O salão inicial é preservado também no leite. Os dois expositores têm seleção exclusiva pela frente para reposição com inventário misto. A versão espacial atual é 11; saves anteriores preservam compras, estoques, progresso de produção e cargas. O anexo artesanal ainda aguarda sua próxima adaptação.
 
 A entrega do [nível 7](PLANTA-LOJA-N7.md) mantém o salão inicial e o trigo atrás do milho, com canteiros de 3,6 × 2,5 u para todos os cultivos. A fila dobra para o fundo após sete lugares, permitindo dez posições no salão inicial.
 
 Leitura espacial confirmada no painel N1–2: a horta de tomates ocupa a faixa posterior esquerda, inteiramente atrás da parede do fundo. A primeira entrega manteve incorretamente as coordenadas da horta lateral antiga; a correção está na versão espacial 5, com verificação da posição contra o SVG original. A imagem posterior enviada pelo jogador definiu um canteiro compacto de 3,6 × 2,5 u, mais próximo do escritório e com oito plantas.
+
+A entrega do [nível 9](PLANTA-LOJA-N9.md) amplia o salão somente à direita. A padaria fica na parede direita, girada para a esquerda, de frente para o hortifruti; entrega, moinho, forno, pães e percursos dos padeiros acompanham a rotação.
 
 ## 1. Referências e limites do planejamento
 

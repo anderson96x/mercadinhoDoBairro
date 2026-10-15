@@ -76,7 +76,7 @@ test('N5 exige nível e R$ 800, conserva piso e paredes mesmo sem comprar milho 
   const mesh = (grupo, ...args) => { const m = new THREE.Mesh(geometria, material); grupo.add(m); return m; };
   const bairro = construirBairro(cena, { caixa: mesh, esfera: mesh, cilindro: mesh });
   bairro.atualizarEstagio(1); bairro.atualizarEstagio(2, 1);
-  for (const nome of ['ala-producao', 'ala-leite', 'andaime', 'andaime-leite']) assert.equal(cena.getObjectByName(nome).visible, false, nome);
+  for (const nome of ['ampliacao-padaria', 'andaime-padaria']) assert.equal(cena.getObjectByName(nome).visible, false, nome);
   assert.equal(cena.getObjectByName('rodape-frontal').scale.x, 1);
   bairro.atualizarEstagio(2, 10);
   assert.equal(cena.getObjectByName('rodape-frontal').scale.x, 1);

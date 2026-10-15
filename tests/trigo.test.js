@@ -48,15 +48,15 @@ test('N7 mantém salão inicial sem piso ou andaime de expansão', () => {
     cilindro: (g, r1, r2, h, cor, x, y, z) => mesh(g, x, y, z),
     esfera: (g, r, cor, x, y, z) => mesh(g, x, y, z)
   });
-  const ala = cena.getObjectByName('ala-trigo');
-  const andaime = cena.getObjectByName('andaime-trigo');
+  const ala = cena.getObjectByName('ampliacao-padaria');
+  const andaime = cena.getObjectByName('andaime-padaria');
   bairro.atualizarEstagio(2);
   assert.equal(ala.visible, false);
   assert.equal(bairro.atualizarEstagio(3), 0);
   bairro.atualizarEstagio(3, 1);
   assert.equal(ala.visible, false);
   assert.equal(andaime.visible, false);
-  assert.ok(ala.scale.x > 0 && ala.scale.x < 1);
+  assert.equal(ala.scale.x, 1);
   bairro.atualizarEstagio(3, 3);
   assert.equal(ala.scale.x, 1);
   assert.equal(andaime.visible, false);

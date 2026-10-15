@@ -4,7 +4,7 @@ Um jogo de gerenciamento de mercadinho, em português, para navegador de computa
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. O cenário e os personagens são construídos por código, com visual 3D simples e original. Não usa imagens, áudios ou código extraídos de My Mini Mart.
 
-O nível 1 usa a [nova planta inicial](docs/PLANTA-LOJA-N1.md): salão de 14 × 16 u, acesso à horta pela porta dos fundos e banca de madeira junto à esquerda. No [nível 3](docs/PLANTA-LOJA-N3.md), milho acrescenta um canteiro atrás do tomate e uma seção à banca. No [nível 4](docs/PLANTA-LOJA-N4.md), ovos acrescentam o galinheiro posterior e a estante em degraus na parede do fundo. No [nível 5](docs/PLANTA-LOJA-N5.md), o curral fica ao lado do galinheiro e o refrigerador junto aos ovos. Essas compras mantêm o salão inicial e toda a produção fica atrás da loja. A adaptação espacial a partir do trigo continua pendente.
+O nível 1 usa a [nova planta inicial](docs/PLANTA-LOJA-N1.md): salão de 14 × 16 u, acesso à horta pela porta dos fundos e banca de madeira junto à esquerda. No [nível 3](docs/PLANTA-LOJA-N3.md), milho acrescenta um canteiro atrás do tomate e uma seção à banca. No [nível 4](docs/PLANTA-LOJA-N4.md), ovos acrescentam o galinheiro posterior e a estante em degraus na parede do fundo. No [nível 5](docs/PLANTA-LOJA-N5.md), o curral fica ao lado do galinheiro e o refrigerador junto aos ovos. Essas compras mantêm o salão inicial e toda a produção fica atrás da loja. O trigo no N7 mantém o salão inicial. No [N9](docs/PLANTA-LOJA-N9.md), a padaria amplia o salão à direita para 24 × 16 u e fica voltada para o hortifruti.
 
 ## Jogar e desenvolver
 
@@ -110,9 +110,9 @@ npm run preview
 
 Comece por [docs/COMO-ALTERAR.md](docs/COMO-ALTERAR.md). A simulação não importa Three.js nem elementos da página, o que permite testar a economia independentemente do visual.
 
-Esta versão tem dez produtos e ampliações até a ala artesanal. Milho no nível 3, [ovos no nível 4](docs/PLANTA-LOJA-N4.md) e [leite no nível 5](docs/PLANTA-LOJA-N5.md) acrescentam equipamentos ao salão inicial. A partir do trigo no nível 7 ainda são usadas expansões legadas, com padaria no nível 9 e anexo artesanal no nível 11. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
+Esta versão tem dez produtos e ampliações até a ala artesanal. Milho no nível 3, [ovos no nível 4](docs/PLANTA-LOJA-N4.md) e [leite no nível 5](docs/PLANTA-LOJA-N5.md) acrescentam equipamentos ao salão inicial. O trigo no nível 7 mantém o salão inicial. A padaria no nível 9 amplia a loja à direita; o anexo artesanal no nível 11 ainda usa a geometria legada. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
 
-O [layout até N5](docs/PLANTA-LOJA-N5.md) segue a nova planta, com produção inteiramente atrás da loja e salão de 14 × 16 u. Ovos e leite ficam juntos na parede posterior, com estoques e seleção de reposição separados. As ampliações posteriores ainda conservam a organização anterior, com padaria ao fundo e anexo artesanal. A fila tem cinco ou dez posições, sem marcações no piso. Salvamentos anteriores migram para a versão espacial 8, preservando progresso e recuperando atores em locais livres.
+O [layout até N9](docs/PLANTA-LOJA-N9.md) segue a nova planta, com produção agrícola atrás da loja e salão de 14 × 16 u até N8, ampliado para 24 × 16 u com a padaria. Ovos e leite ficam juntos na parede posterior, com estoques e seleção de reposição separados. A padaria fica junto à parede direita, com a frente voltada para o hortifruti; o anexo artesanal conserva a organização anterior. A fila tem cinco ou dez posições, sem marcações no piso. Salvamentos anteriores migram para a versão espacial 11, preservando progresso e recuperando atores em locais livres.
 
 ## Créditos e dependências
 

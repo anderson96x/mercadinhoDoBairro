@@ -251,7 +251,7 @@ test('anexo abre passagem e preserva alas anteriores durante a construção', ()
   bairro.atualizarEstagio(5);
   assert.equal(cena.getObjectByName('ala-artesanal').visible, true);
   assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, false);
-  assert.equal(cena.getObjectByName('ala-trigo').scale.x, 1);
+  assert.equal(cena.getObjectByName('ampliacao-padaria').scale.x, 1);
   bairro.atualizarEstagio(5, 4);
   assert.equal(cena.getObjectByName('ala-artesanal').scale.y, 1);
 });
