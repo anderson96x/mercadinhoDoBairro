@@ -1,8 +1,18 @@
 # Histórico de alterações
 
-## Versão atual: 0.44.0 — 2026-10-16
+## Versão atual: 0.44.1 — 2026-10-16
 
-Incremento MINOR sobre 0.43.11 pela adição de identificação dos produtos no cenário. Alterações locais ainda sem commit associado.
+Correção PATCH sobre 0.44.0. Alterações locais ainda sem commit associado.
+
+- Move o nascimento e a saída de pedestres para as extremidades da rua atual, com margem interna para manter o corpo inteiro sobre a calçada.
+- Ajusta a navegação para contornar postes e bancos dentro da calçada, incluindo faixas estreitas junto à borda que não coincidem com a grade de caminhos.
+- Preserva as posições externas ao recarregar clientes durante um assalto.
+- Acrescenta testes de nascimento, percurso completo, saída nas duas direções e recuperação de posições salvas.
+- Atualiza pacote, lockfile e README para 0.44.1; Ajuda e DEV exibem a versão automaticamente.
+
+## 0.44.0 — 2026-10-16
+
+Incremento MINOR sobre 0.43.11 pela adição de identificação dos produtos no cenário, registrado no commit `25bd9a2`.
 
 - Adiciona placas em postes somente nas seções de hortifruti: tomate, milho, trigo e morango, com os nomes em português.
 - Alinha as placas à frente das bancas, com o texto voltado para o corredor, acompanhando o zoom e o desbloqueio de cada seção.

@@ -63,7 +63,11 @@ export const CONFIG = {
   portaEntrada: { x: -1.3, z: 6.7 },
   cestas: { x: 0.8, z: 5.2 },
   pontoCestasCliente: { x: -0.05, z: 5.2 },
-  extremosCalcada: [{ x: -10.3, z: 8.4 }, { x: 10.3, z: 8.4 }],
+  // Mantém o corpo dentro da calçada, junto às extremidades visíveis da rua.
+  extremosCalcada: [
+    { x: PLANTA_INICIAL.terreno.x - PLANTA_INICIAL.terreno.w / 2 + 0.5, z: 8.4 },
+    { x: PLANTA_INICIAL.terreno.x + PLANTA_INICIAL.terreno.w / 2 - 0.5, z: 8.4 }
+  ],
   anguloCamera: Math.PI / 4,
   cameraIsometrica: { x: 18, y: 18, z: 18 }
 };

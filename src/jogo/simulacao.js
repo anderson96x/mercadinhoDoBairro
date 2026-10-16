@@ -187,7 +187,7 @@ export class Simulacao {
           produto: p.produto, desejado: limitar(Number(p.desejado) || 1, 1, 5), quantidade: limitar(Number(p.quantidade) || 0, 0, 5)
         }));
         return { ...c, id: i + 1,
-          ...(salvo.versaoLayout === CONFIG.versaoLayout ? { x: limitar(c.x, -15, 16), z: limitar(c.z, -10, 13) } : CONFIG.inicio),
+          ...(salvo.versaoLayout === CONFIG.versaoLayout ? { x: limitar(c.x, this.limitesClientes.minX, this.limitesClientes.maxX), z: limitar(c.z, this.limitesClientes.minZ, this.limitesClientes.maxZ) } : CONFIG.inicio),
           itens, quantidade: itens.length, compras, compraAtual: 0,
           satisfacao: ['feliz', 'neutro', 'irritado'].includes(c.satisfacao) ? c.satisfacao : null,
           satisfacaoRegistrada: c.satisfacaoRegistrada === true && ['feliz', 'neutro', 'irritado'].includes(c.satisfacao),
@@ -527,8 +527,17 @@ export class Simulacao {
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
+  get limitesClientes() {
+    const limites = this.limitesMundo;
+    return { ...limites,
+      minX: Math.min(limites.minX, ...CONFIG.extremosCalcada.map(p => p.x)),
+      maxX: Math.max(limites.maxX, ...CONFIG.extremosCalcada.map(p => p.x)),
+      // Reserva espaço para o corpo antes do meio-fio, sem entrar na rua.
+      maxZ: Math.min(limites.maxZ, CONFIG.entrada.z + 0.45)
+    };
+  }
   liberarPosicao(ator) {
-    const limites = this.limitesMundo, obstaculos = this.obstaculos();
+    const limites = this.clientes.includes(ator) ? this.limitesClientes : this.limitesMundo, obstaculos = this.obstaculos();
     const livre = p => p.x >= limites.minX && p.x <= limites.maxX && p.z >= limites.minZ && p.z <= limites.maxZ &&
       !obstaculos.some(o => Math.abs(p.x - o.x) < o.w / 2 + 0.32 && Math.abs(p.z - o.z) < o.d / 2 + 0.32);
     if (livre(ator)) return;
@@ -588,7 +597,7 @@ export class Simulacao {
     if (!livre(ator, ponto)) {
       let rota = this.caminhosClientes.get(ator);
       if (!rota || distancia(rota.destino, ponto) > 0.1 || this.tempo >= rota.recalcular) {
-        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livre, this.limitesMundo), recalcular: this.tempo + 0.6 };
+        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livre, this.limitesClientes), recalcular: this.tempo + 0.6 };
         this.caminhosClientes.set(ator, rota);
       }
       while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) {

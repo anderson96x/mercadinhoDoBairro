@@ -198,13 +198,19 @@ test('mercado fechado mantém clientes internos e manda os externos embora', () 
 });
 
 test('cliente criado com o mercado fechado dá meia-volta', () => {
-  const sim = new Simulacao(); sim.estado.lojaAberta = false; sim.proximoCliente = 0;
-  let virou = false;
-  for (let i = 0; i < 600 && !virou; i++) {
-    sim.atualizarClientes(1 / 60);
-    virou = sim.clientes.some(c => c.fase === 'saindo' && c.ladoSaida === c.ladoEntrada);
+  for (const lado of [0, 1]) {
+    const sim = new Simulacao(); sim.estado.lojaAberta = false; sim.proximoCliente = Infinity;
+    sim.proximoLadoEntrada = lado;
+    assert.ok(sim.criarCliente());
+    const cliente = sim.clientes[0];
+    const quadros = Math.ceil((distancia(cliente, CONFIG.entrada) / 2.4 + 5) * 60);
+    let virou = false;
+    for (let i = 0; i < quadros && !virou; i++) {
+      sim.atualizarClientes(1 / 60);
+      virou = cliente.fase === 'saindo' && cliente.ladoSaida === cliente.ladoEntrada;
+    }
+    assert.equal(virou, true);
   }
-  assert.equal(virou, true);
 });
 
 function avancar(sim, segundos, entrada) {

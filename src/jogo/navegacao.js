@@ -38,8 +38,11 @@ export function buscarCaminho(inicio, destino, livre, limites) {
     }
     for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) {
       if (!dx && !dz) continue;
-      const proximo = { x: (Math.round(atual.x / passo) + dx) * passo, z: (Math.round(atual.z / passo) + dz) * passo };
-      if (proximo.x < limites.minX || proximo.x > limites.maxX || proximo.z < limites.minZ || proximo.z > limites.maxZ) continue;
+      // Inclui a faixa junto à borda mesmo quando ela não coincide com a grade.
+      const proximo = {
+        x: Math.max(limites.minX, Math.min(limites.maxX, (Math.round(atual.x / passo) + dx) * passo)),
+        z: Math.max(limites.minZ, Math.min(limites.maxZ, (Math.round(atual.z / passo) + dz) * passo))
+      };
       const custo = atual.custo + distancia(atual, proximo), id = chave(proximo);
       if (custo >= (custos.get(id) ?? Infinity) || !livre(atual, proximo)) continue;
       custos.set(id, custo);
