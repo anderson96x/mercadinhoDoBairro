@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { segmentoLivre } from '../src/jogo/navegacao.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { BANCO, atualizarBanco } from '../src/jogo/banco.js';
@@ -131,6 +132,7 @@ test('carro-forte fica na rua, um agente protege a van e o outro recolhe o dinhe
   globalThis.document = { createElement: () => ({ getContext: () => ({ fillRect() {}, fillText() {} }) }) };
   try {
     const cena = new THREE.Scene(), visual = new ColetaBancoVisual(cena), sim = new Simulacao();
+    sim.aberturaPortaEntrada = 1; // A coleta mantém a entrada aberta para os agentes.
     const obstaculos = sim.obstaculosCliente({});
     for (let tempo = 0; tempo < BANCO.fim; tempo += 0.1) {
       visual.atualizar({ tempo, retirado: tempo >= BANCO.retirada });
@@ -145,7 +147,8 @@ test('carro-forte fica na rua, um agente protege a van e o outro recolhe o dinhe
         if (!agente.visible) continue;
         assert.equal(agente.userData.maleta.visible, indice === 0 && tempo >= BANCO.retirada);
         assert.ok(agente.position.z <= 9.59, 'agentes saem pelo lado voltado à loja');
-        assert.ok(!obstaculos.some(o => Math.abs(agente.position.x - o.x) < o.w / 2 + 0.22 && Math.abs(agente.position.z - o.z) < o.d / 2 + 0.22), `rota em ${tempo.toFixed(1)}s`);
+        const ponto = { x: agente.position.x, z: agente.position.z };
+        assert.ok(segmentoLivre(ponto, ponto, obstaculos, 0.22), `rota em ${tempo.toFixed(1)}s`);
       }
       if (tempo >= 10 && tempo <= 22) {
         assert.ok(Math.abs(visual.agentes[1].position.x + 0.15) < 0.01);

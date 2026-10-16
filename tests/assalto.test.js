@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { segmentoLivre } from '../src/jogo/navegacao.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
@@ -140,6 +141,7 @@ test('recarregar durante o assalto preserva clientes assustados e não duplica o
 
 test('carro preto acelera na rua e um assaltante corre até o caixa', () => {
   const cena = new THREE.Scene(), visual = new AssaltoVisual(cena), sim = new Simulacao();
+  sim.aberturaPortaEntrada = 1; // O evento abre a entrada antes do desembarque.
   const obstaculos = sim.obstaculosCliente({});
   visual.atualizar({ tempo: ASSALTO.desembarque + 0.2, roubado: false });
   const assaltante = visual.assaltante;
@@ -160,7 +162,8 @@ test('carro preto acelera na rua e um assaltante corre até o caixa', () => {
     const limites = new THREE.Box3().setFromObject(visual.carro);
     assert.ok(limites.min.x >= RUA.minX && limites.max.x <= RUA.maxX);
     if (assaltante.visible) {
-      assert.ok(!obstaculos.some(o => Math.abs(assaltante.position.x - o.x) < o.w / 2 + 0.22 && Math.abs(assaltante.position.z - o.z) < o.d / 2 + 0.22), `rota em ${tempo.toFixed(1)}s`);
+      const ponto = { x: assaltante.position.x, z: assaltante.position.z };
+      assert.ok(segmentoLivre(ponto, ponto, obstaculos, 0.22), `rota em ${tempo.toFixed(1)}s`);
     }
     if (tempo >= ASSALTO.coleta && tempo < ASSALTO.retirada) assert.ok(assaltante.position.z <= 5.26);
   }

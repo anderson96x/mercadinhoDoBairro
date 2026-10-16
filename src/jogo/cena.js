@@ -742,7 +742,6 @@ export class Cena {
     this.alertaCaixeiro = this.alertaCaixa.clone();
     this.alertaCaixeiro.name = 'alerta-caixeiro-assalto'; this.cena.add(this.alertaCaixeiro);
     this.notasCaixa = Array.from({ length: 4 }, (_, i) => caixa(this.cena, 0.26, 0.045, 0.13, i % 2 ? 0x91b578 : 0xb6c68e, CONFIG.balcao.x - 0.3, 1.42 + i * 0.047, CONFIG.balcao.z + 0.15));
-    this.aberturaLojaVisual = 0;
     this.sacolaEmbalagem = criarSacola(); this.sacolaEmbalagem.position.copy(pontoNoBalcao(-0.35, 1.31, -0.72)); this.sacolaEmbalagem.rotation.y = Math.PI / 2; this.sacolaEmbalagem.visible = false; this.cena.add(this.sacolaEmbalagem);
     this.itensEmbalagem = new THREE.Group(); this.cena.add(this.itensEmbalagem); this.clienteEmbalandoId = null;
     this.jogador = personagem(0xf8ecd1, 0xe9b489, true); this.cena.add(this.jogador);
@@ -1532,12 +1531,7 @@ export class Cena {
     }
     this.bairro.aplicar(e.personalizacao);
     this.bairro.animarPorta(sim.aberturaPortaEscritorio);
-    const aberturaAlvo = sim.portaEntradaDeveAbrir() ? 1 : 0;
-    this.aberturaLojaVisual = THREE.MathUtils.clamp(
-      this.aberturaLojaVisual + Math.sign(aberturaAlvo - this.aberturaLojaVisual) * dtVisual * 1.8,
-      Math.min(this.aberturaLojaVisual, aberturaAlvo), Math.max(this.aberturaLojaVisual, aberturaAlvo)
-    );
-    this.bairro.animarEntrada(this.aberturaLojaVisual, e.lojaAberta);
+    this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
     this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
     const base = this.baseCamera(), limites = CONFIG.limiteCamera;

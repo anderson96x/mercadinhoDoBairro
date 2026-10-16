@@ -1,6 +1,6 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
-import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
+import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO, volumesPortasEntrada } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
@@ -169,6 +169,7 @@ export class Simulacao {
     this.proximoLadoEntrada = Math.random() < 0.5 ? 0 : 1;
     this.proximoLadoSaida = Math.random() < 0.5 ? 0 : 1;
     this.aberturaPortaEscritorio = 0;
+    this.aberturaPortaEntrada = 0;
     this.progressoCaixa = 0;
     this.atividade = '';
     this.pausado = false;
@@ -511,6 +512,7 @@ export class Simulacao {
     const caixas = [
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
+      ...volumesPortasEntrada(this.aberturaPortaEntrada),
       ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
     if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes);
@@ -559,7 +561,10 @@ export class Simulacao {
   }
   mover(ator, dx, dz, dt, velocidade, colisao = true) {
     const limites = this.limitesMundo;
-    const testar = (x, z) => !colisao || !this.obstaculos().some(o => Math.abs(x - o.x) < o.w / 2 + 0.27 && Math.abs(z - o.z) < o.d / 2 + 0.27);
+    const obstaculos = colisao ? this.obstaculos() : [];
+    const portas = obstaculos.filter(o => o.portaEntrada);
+    const testar = (x, z) => !colisao || (segmentoLivre({ x, z }, { x, z }, obstaculos, 0.27)
+      && segmentoLivre(ator, { x, z }, portas, 0.27));
     const nx = limitar(ator.x + dx * dt * velocidade, limites.minX, limites.maxX);
     if (testar(nx, ator.z)) ator.x = nx;
     const nz = limitar(ator.z + dz * dt * velocidade, limites.minZ, limites.maxZ);
@@ -578,7 +583,10 @@ export class Simulacao {
     if (distancia(ator, ponto) < 0.025) { ator.x = ponto.x; ator.z = ponto.z; return true; }
     if (!dt) return false;
     const obstaculos = this.obstaculosCliente(ator);
-    const livre = (inicio, fim) => {
+    // Planeja a passagem pelo vão que abrirá por proximidade, mas cada passo
+    // continua respeitando a posição real das folhas durante a animação.
+    const obstaculosRota = [...obstaculos.filter(o => !o.portaEntrada), ...volumesPortasEntrada(1)];
+    const livre = (inicio, fim, planejar = false) => {
       const dx = fim.x - inicio.x, dz = fim.z - inicio.z, comprimento = dx * dx + dz * dz;
       if (this.clientes.some(outro => {
         if (outro === ator) return false;
@@ -591,13 +599,14 @@ export class Simulacao {
         const t = comprimento ? limitar(((outro.x - inicio.x) * dx + (outro.z - inicio.z) * dz) / comprimento, 0, 1) : 0;
         return Math.hypot(inicio.x + t * dx - outro.x, inicio.z + t * dz - outro.z) < CONFIG.distanciaClientes - 1e-6;
       })) return false;
-      return segmentoLivre(inicio, fim, obstaculos, 0.32);
+      return segmentoLivre(inicio, fim, planejar ? obstaculosRota : obstaculos, 0.32);
     };
+    const livreRota = (inicio, fim) => livre(inicio, fim, true);
     let alvo = ponto;
-    if (!livre(ator, ponto)) {
+    if (!livre(ator, ponto) && !livreRota(ator, ponto)) {
       let rota = this.caminhosClientes.get(ator);
       if (!rota || distancia(rota.destino, ponto) > 0.1 || this.tempo >= rota.recalcular) {
-        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livre, this.limitesClientes), recalcular: this.tempo + 0.6 };
+        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livreRota, this.limitesClientes), recalcular: this.tempo + 0.6 };
         this.caminhosClientes.set(ator, rota);
       }
       while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) {
@@ -944,6 +953,7 @@ export class Simulacao {
     return c.satisfacao;
   }
   portaEntradaDeveAbrir() {
+    if (distancia(this.estado.jogador, CONFIG.portaEntrada) < 2.35) return true;
     const assalto = this.estado.banco.assalto;
     if (assalto && assalto.tempo >= ASSALTO.chegada && assalto.tempo <= ASSALTO.embarque) return true;
     const coleta = this.estado.banco.coleta;
@@ -955,6 +965,12 @@ export class Simulacao {
     });
   }
   atualizarClientes(dt) {
+    const alvoEntrada = this.portaEntradaDeveAbrir() ? 1 : 0;
+    const abertura = limitar(this.aberturaPortaEntrada + (alvoEntrada ? 1 : -1) * dt * 1.8, 0, 1);
+    const atoresEntrada = [this.estado.jogador, ...this.clientes];
+    const folhas = volumesPortasEntrada(abertura);
+    // Uma folha não pode girar sobre alguém parado em sua trajetória.
+    if (!atoresEntrada.some(ator => !segmentoLivre(ator, ator, folhas, 0.32))) this.aberturaPortaEntrada = abertura;
     this.proximoCliente -= dt;
     if (this.proximoCliente <= 0 && this.criarCliente()) this.proximoCliente = this.intervaloClientes;
     const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));

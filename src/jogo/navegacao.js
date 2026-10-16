@@ -1,9 +1,15 @@
 // Interseção exata com retângulos: serve tanto para caminhos como para alcance.
 export function segmentoLivre(inicio, fim, obstaculos, margem = 0) {
-  const dx = fim.x - inicio.x, dz = fim.z - inicio.z;
   for (const o of obstaculos) {
+    const cos = Math.cos(o.angulo ?? 0), sin = Math.sin(o.angulo ?? 0);
+    // Testa portas giradas no espaço local da folha, preservando sua espessura.
+    const ix = (inicio.x - o.x) * cos - (inicio.z - o.z) * sin;
+    const iz = (inicio.x - o.x) * sin + (inicio.z - o.z) * cos;
+    const fx = (fim.x - o.x) * cos - (fim.z - o.z) * sin;
+    const fz = (fim.x - o.x) * sin + (fim.z - o.z) * cos;
+    const dx = fx - ix, dz = fz - iz;
     let entrada = 0, saida = 1;
-    for (const [pos, delta, centro, metade] of [[inicio.x, dx, o.x, o.w / 2 + margem], [inicio.z, dz, o.z, o.d / 2 + margem]]) {
+    for (const [pos, delta, centro, metade] of [[ix, dx, 0, o.w / 2 + margem], [iz, dz, 0, o.d / 2 + margem]]) {
       if (Math.abs(delta) < 1e-9) {
         if (Math.abs(pos - centro) >= metade) { entrada = 2; break; }
       } else {

@@ -19,6 +19,19 @@ export const ANGULOS_PORTAS_ENTRADA = {
   fechadas: { esquerda: 0, direita: 0 },
   abertas: { esquerda: -Math.PI / 2, direita: Math.PI / 2 }
 };
+export const FOLHAS_PORTAS_ENTRADA = [
+  { nome: 'esquerda', x: -2.74, z: 6.71, direcao: 1 },
+  { nome: 'direita', x: 0.15, z: 6.71, direcao: -1 }
+];
+
+export function volumesPortasEntrada(abertura) {
+  const angulos = angulosPortasEntrada(abertura);
+  return FOLHAS_PORTAS_ENTRADA.map(p => {
+    const angulo = angulos[p.nome], centro = p.direcao * 0.715;
+    return { x: p.x + centro * Math.cos(angulo), z: p.z - centro * Math.sin(angulo),
+      w: 1.5, d: 0.08, angulo, portaEntrada: true };
+  });
+}
 
 export function posicaoPortaEscritorio(abertura) {
   const t = THREE.MathUtils.smoothstep(abertura, 0, 1);
@@ -301,18 +314,22 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   for (const x of [6, 9.05]) {
     bloco(0.12, 2.6, 0.18, 0x286750, x, 1.53, 6.7, 'principal');
     bloco(0.45, 2.2, 0.055, 0xb5d6d9, x + (x === 6 ? 0.28 : -0.28), 1.43, 6.72);
-    bloco(0.03, 0.7, 0.06, 0xf5eddc, x + (x === 6 ? 0.48 : -0.48), 1.4, 6.77);
   }
-  const criarPortaEntrada = (x, direcao) => {
-    const folha = new THREE.Group(); folha.position.set(x, 0, 6.71); entrada.add(folha); destino = folha;
+  const criarPortaEntrada = ({ nome, x, z, direcao }) => {
+    const folha = new THREE.Group(); folha.name = `porta-entrada-${nome}`;
+    folha.position.set(x - entrada.position.x, 0, z); entrada.add(folha); destino = folha;
     const centro = direcao * 0.715;
     bloco(1.38, 2.3, 0.035, 0xa8c7c9, centro, 1.43, 0);
     for (const borda of [0, direcao * 1.43]) bloco(0.07, 2.4, 0.08, 0x286750, borda, 1.43, 0, 'principal');
     for (const y of [0.25, 2.61]) bloco(1.45, 0.08, 0.08, 0x286750, centro, y, 0, 'principal');
+    // As pegas pertencem à folha e giram com ela, perto da borda sem dobradiça.
+    for (const lado of [-1, 1]) {
+      const pega = bloco(0.045, 0.65, 0.065, 0xf5eddc, direcao * 1.2, 1.4, lado * 0.08);
+      pega.name = 'pega-porta-entrada';
+    }
     destino = entrada; return folha;
   };
-  const portaEntradaEsquerda = criarPortaEntrada(6.08, 1);
-  const portaEntradaDireita = criarPortaEntrada(8.97, -1);
+  const [portaEntradaEsquerda, portaEntradaDireita] = FOLHAS_PORTAS_ENTRADA.map(criarPortaEntrada);
   bloco(3.22, 0.2, 0.3, 0x286750, 7.52, 2.9, 6.7, 'principal');
   bloco(3.35, 0.68, 0.22, 0x286750, 7.52, 3.42, 6.7, 'principal');
   bloco(3, 0.025, 0.9, 0x286750, 7.5, 0.24, 6.25, 'principal');

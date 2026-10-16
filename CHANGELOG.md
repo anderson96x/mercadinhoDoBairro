@@ -1,8 +1,19 @@
 # Histórico de alterações
 
-## Versão atual: 0.44.1 — 2026-10-16
+## Versão atual: 0.44.2 — 2026-10-16
 
-Correção PATCH sobre 0.44.0. Alterações locais ainda sem commit associado.
+Correção PATCH sobre 0.44.1. Alterações locais ainda sem commit associado.
+
+- Prende as pegas às folhas da porta de entrada, perto da borda livre, para acompanharem a rotação durante a abertura.
+- Acrescenta colisão às folhas fechadas, abertas e parcialmente abertas, impedindo o jogador de atravessar os painéis.
+- Usa o mesmo estado de abertura na simulação e no cenário; a entrada abre também para o jogador e para de girar antes de atingir alguém.
+- Mantém a passagem de clientes pelo vão automático e verifica as rotas dos agentes bancários e do assaltante com as portas abertas.
+- Acrescenta testes de pegas, colisão, passagem pelo vão, abertura por proximidade, pausa e proteção durante o fechamento.
+- Atualiza pacote, lockfile e README para 0.44.2; Ajuda e DEV exibem a versão automaticamente.
+
+## 0.44.1 — 2026-10-16
+
+Correção PATCH sobre 0.44.0, registrada no commit `a1a77df`.
 
 - Move o nascimento e a saída de pedestres para as extremidades da rua atual, com margem interna para manter o corpo inteiro sobre a calçada.
 - Ajusta a navegação para contornar postes e bancos dentro da calçada, incluindo faixas estreitas junto à borda que não coincidem com a grade de caminhos.
