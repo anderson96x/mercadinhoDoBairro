@@ -51,18 +51,20 @@ test('N4 segue o SVG: galinheiro atrás e à direita do milho, ovos na parede po
   assert.ok(limites.min.z >= s.z - s.d / 2 - 1e-8, 'fundo encostado sem atravessar a parede');
   assert.ok(limites.max.z <= s.z + s.d / 2 + 1e-8);
   const prateleiras = estante.children.filter(o => o.name === 'prateleira-ovos');
-  assert.equal(prateleiras.length, 3);
-  assert.equal(new Set(frutas.map(f => f.position.y)).size, 3);
-  assert.equal(new Set(frutas.map(f => f.position.z)).size, 3, 'níveis recuam em degraus');
+  assert.equal(prateleiras.length, 4);
+  assert.equal(new Set(frutas.map(f => f.position.y)).size, 4);
+  assert.equal(new Set(frutas.map(f => f.position.z)).size, 1, 'ovos alinhados na frente do gabinete');
+  assert.ok(estante.getObjectByName('teto-estante-ovos'));
   for (const prateleira of prateleiras) {
-    assert.ok(prateleira.rotation.x > 0, 'caixotes inclinados para a frente');
+    assert.equal(prateleira.rotation.x, 0, 'prateleiras planas como a referência');
     const apoio = new THREE.Box3().setFromObject(prateleira);
     const ovos = frutas.filter(f => f.position.y > apoio.max.y && f.position.y < apoio.max.y + 0.5);
-    assert.equal(ovos.length, 4, 'quatro ovos por nível, capacidade total preservada');
+    assert.equal(ovos.length, 3, 'três ovos por nível, capacidade total de 12 preservada');
     for (const ovo of ovos) {
       const b = new THREE.Box3().setFromObject(ovo);
       assert.ok(b.min.x > limites.min.x && b.max.x < limites.max.x);
       assert.ok(b.min.z > limites.min.z && b.max.z < limites.max.z);
+      assert.ok(b.min.y >= apoio.max.y - 1e-6, 'ovos apoiados acima da bandeja');
       const centro = ovo.getWorldPosition(new THREE.Vector3());
       const camera = centro.clone().add(new THREE.Vector3(CONFIG.cameraIsometrica.x, CONFIG.cameraIsometrica.y, CONFIG.cameraIsometrica.z));
       const raio = new THREE.Raycaster(camera, centro.clone().sub(camera).normalize(), 0, camera.distanceTo(centro) - 0.01);

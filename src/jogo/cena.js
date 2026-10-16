@@ -63,8 +63,8 @@ function liberarGeometrias(grupo) {
 
 function posicaoProdutoPrateleira(id, p, i) {
   if (id === 'ovos') {
-    const nivel = Math.floor(i / 4);
-    return new THREE.Vector3(p.x - 0.75 + i % 4 * 0.5, 1.2 + nivel * 0.58, p.z + 0.43 - nivel * 0.4);
+    const nivel = Math.floor(i / 3);
+    return new THREE.Vector3(p.x - 0.65 + i % 3 * 0.65, 0.79 + nivel * 0.58, p.z + 0.49);
   }
   if (p.movel === 'hortifruti') {
     const x = -0.4 + i % 3 * 0.4;
@@ -163,29 +163,24 @@ function criarBanca(pai, p, cor = 0xd98b43) {
 function criarEstanteOvos(pai, p) {
   const estante = new THREE.Group(); estante.name = 'estante-ovos';
   estante.position.set(p.x, 0, p.z); pai.add(estante);
-  // Caixotes inclinados em degraus: cada nível recua para deixar os ovos à vista.
-  caixa(estante, p.w, 0.16, p.d, 0x3c4643, 0, 0.31, 0);
-  for (const x of [-p.w / 2 + 0.045, p.w / 2 - 0.045]) {
-    caixa(estante, 0.09, 2.48, 0.09, 0x46514d, x, 1.47, -p.d / 2 + 0.05);
-    caixa(estante, 0.09, 0.82, 0.09, 0x46514d, x, 0.64, p.d / 2 - 0.05);
-    const suporte = caixa(estante, 0.06, 2.17, 0.06, 0x46514d, x, 1.785, 0);
-    suporte.rotation.x = -0.62;
-    caixa(estante, 0.07, 0.56, p.d - 0.14, 0xbb9067, x, 0.65, 0);
+  // Gabinete branco aberto, com fundo fechado e prateleiras planas de metal.
+  caixa(estante, p.w - 0.1, 0.18, p.d - 0.08, 0xadb8bb, 0, 0.23, 0);
+  caixa(estante, p.w, 0.16, p.d, 0xe7edef, 0, 0.4, 0);
+  caixa(estante, p.w - 0.16, 2.38, 0.08, 0xc4d0d3, 0, 1.63, -p.d / 2 + 0.04);
+  for (const x of [-p.w / 2 + 0.06, p.w / 2 - 0.06]) {
+    caixa(estante, 0.12, 2.5, p.d, 0xe7edef, x, 1.63, 0);
+    caixa(estante, 0.035, 2.37, 0.035, 0xf8faf9, x, 1.63, p.d / 2 - 0.025);
   }
-  for (const x of [-p.w / 4, p.w / 4]) {
-    caixa(estante, p.w / 2 - 0.12, 0.55, 0.07, 0xcda77d, x, 0.65, p.d / 2 - 0.05);
-    for (const y of [0.47, 0.62, 0.77]) caixa(estante, p.w / 2 - 0.16, 0.012, 0.012, 0xb58b63, x, y, p.d / 2 - 0.008);
-  }
-  caixa(estante, p.w, 0.08, 0.08, 0x46514d, 0, 2.67, -p.d / 2 + 0.05);
-  for (let nivel = 0; nivel < 3; nivel++) {
+  const teto = caixa(estante, p.w, 0.16, p.d, 0xf0f3f3, 0, 2.85, 0);
+  teto.name = 'teto-estante-ovos';
+  for (let nivel = 0; nivel < 4; nivel++) {
     const prateleira = new THREE.Group(); prateleira.name = 'prateleira-ovos';
-    prateleira.position.set(0, 0.95 + nivel * 0.58, 0.4 - nivel * 0.4);
-    prateleira.rotation.x = 0.5; estante.add(prateleira);
-    for (const x of [-0.52, 0.52]) {
-      caixa(prateleira, 0.98, 0.06, 0.54, 0xcda77d, x, 0, 0);
-      for (const dx of [-0.46, 0.46]) caixa(prateleira, 0.06, 0.13, 0.54, 0xb8895e, x + dx, 0.065, 0);
-      for (const z of [-0.24, 0.24]) caixa(prateleira, 0.98, 0.11, 0.06, 0xb8895e, x, 0.055, z);
-      caixa(prateleira, 0.22, 0.07, 0.012, 0xffecc0, x, 0.055, 0.276);
+    prateleira.position.set(0, 0.48 + nivel * 0.58, 0); estante.add(prateleira);
+    caixa(prateleira, p.w - 0.24, 0.07, p.d - 0.18, 0x91adb4, 0, 0, 0.02);
+    caixa(prateleira, p.w - 0.24, 0.09, 0.045, 0xc8dbdf, 0, 0, p.d / 2 - 0.065);
+    for (const x of [-0.65, 0, 0.65]) {
+      caixa(prateleira, 0.4, 0.045, 0.46, 0xe2d9be, x, 0.055, 0.44);
+      caixa(prateleira, 0.24, 0.055, 0.012, 0xfff7df, x, 0, p.d / 2 - 0.035);
     }
   }
   return estante;
