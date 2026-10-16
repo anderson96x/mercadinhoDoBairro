@@ -72,7 +72,7 @@ function posicaoProdutoPrateleira(id, p, i) {
   }
   if (id === 'leite') return new THREE.Vector3(p.x - 0.75 + i % 4 * 0.5, 0.98 + Math.floor(i / 4) * 0.65, p.z + 0.48);
   if (id === 'queijo') {
-    return new THREE.Vector3(p.x - 0.25 + i % 2 * 0.5, 1.24, p.z - (p.d - 0.7) / 2 + Math.floor(i / 2) * (p.d - 0.7) / 5);
+    return new THREE.Vector3(p.x - 0.75 + i % 4 * 0.5, 0.93 + Math.floor(i / 4) * 0.65, p.z + 0.32);
   }
   if (id === 'pao') return new THREE.Vector3(p.x + 0.07, 0.98 + Math.floor(i / 6) * 0.4, p.z - 1.15 + i % 6 * 0.46);
   return new THREE.Vector3(p.x - 0.78 + i % 4 * 0.52, 1.11, p.z - 0.43 + Math.floor(i / 4) * 0.43);
@@ -99,7 +99,7 @@ function percorrerRoteiro(etapas, tempo) {
 }
 
 function criarRefrigerador(pai, ponto, id = 'leite') {
-  if (id === 'leite') return criarRefrigeradorParede(pai, ponto);
+  if (id === 'leite' || id === 'queijo') return criarRefrigeradorParede(pai, ponto, id);
   const refrigerador = new THREE.Group();
   refrigerador.name = `ilha-fria-${id}`;
   refrigerador.position.set(ponto.x, 0, ponto.z); pai.add(refrigerador);
@@ -120,12 +120,12 @@ function criarRefrigerador(pai, ponto, id = 'leite') {
   return { grupo: refrigerador };
 }
 
-function criarRefrigeradorParede(pai, p) {
-  const grupo = new THREE.Group(); grupo.name = 'refrigerador-parede-leite';
+function criarRefrigeradorParede(pai, p, id = 'leite') {
+  const grupo = new THREE.Group(); grupo.name = `refrigerador-parede-${id}`;
   grupo.position.set(p.x, 0, p.z); pai.add(grupo);
   const { w, d } = p, frente = d / 2;
   const base = caixa(grupo, w, 0.42, d - 0.06, 0xe0e8e5, 0, 0.44, -0.03);
-  base.name = 'base-refrigerador-leite';
+  base.name = `base-refrigerador-${id}`;
   caixa(grupo, w - 0.14, 2.26, 0.1, 0xcbdedb, 0, 1.75, -d / 2 + 0.05);
   for (const x of [-w / 2 + 0.06, w / 2 - 0.06]) {
     caixa(grupo, 0.12, 2.28, d, 0xeaf1f0, x, 1.74, 0);
@@ -133,21 +133,21 @@ function criarRefrigeradorParede(pai, p) {
   }
   for (const y of [0.79, 1.44, 2.09]) {
     const prateleira = caixa(grupo, w - 0.24, 0.07, d - 0.18, 0x9bbab9, 0, y, 0);
-    prateleira.name = 'prateleira-leite';
+    prateleira.name = `prateleira-${id}`;
   }
   const vidro = vidroLeite.clone(); vidro.opacity = 0.18;
   for (const lado of [-1, 1]) {
     const porta = caixa(grupo, w / 2 - 0.1, 1.96, 0.018, 0xd8eeed, lado * w / 4, 1.71, frente - 0.08);
-    porta.name = 'porta-vidro-leite'; porta.material = vidro;
+    porta.name = `porta-vidro-${id}`; porta.material = vidro;
     caixa(grupo, 0.045, 0.32, 0.06, 0x526c69, lado * 0.1, 1.5, frente - 0.04);
   }
   for (const x of [-w / 2 + 0.055, 0, w / 2 - 0.055])
     caixa(grupo, 0.055, 2.05, 0.045, 0x718985, x, 1.72, frente - 0.05);
   for (const y of [0.695, 2.745]) caixa(grupo, w, 0.055, 0.06, 0x718985, 0, y, frente - 0.04);
   caixa(grupo, w, 0.12, d, 0xeaf1f0, 0, 2.95, 0);
-  caixa(grupo, w, 0.23, 0.14, 0xb73a2d, 0, 2.815, frente - 0.08);
+  caixa(grupo, w, 0.23, 0.14, id === 'queijo' ? 0xfc9d03 : 0x3498db, 0, 2.815, frente - 0.08);
   const grade = caixa(grupo, w - 0.14, 0.28, 0.025, 0x344b4c, 0, 0.44, frente - 0.025);
-  grade.name = 'grade-refrigerador-leite';
+  grade.name = `grade-refrigerador-${id}`;
   for (let i = 0; i < 7; i++) caixa(grupo, w - 0.18, 0.014, 0.018, 0x8d9f9c, 0, 0.335 + i * 0.035, frente - 0.02);
   return { grupo };
 }
@@ -986,7 +986,7 @@ export class Cena {
     const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h) : null;
     this.produtos[id] = { grupo, frutos, frutas, galinhas: [], abelhas, irrigador, refrigerador, banca };
     this.criarLabel(`horta-${id}`, { ...h, y: id === 'morango' ? 2.6 : id === 'mel' ? 3 : 2 }, OFICINAS[id]?.nome.toLocaleUpperCase('pt-BR') || (id === 'mel' ? 'APIÁRIO' : 'ESTUFA DE MORANGOS'), 'Pronto para colher', id);
-    this.criarLabel(`loja-${id}`, { ...s, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
+    this.criarLabel(`loja-${id}`, { ...s, y: id === 'queijo' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   construirPadaria() {
     const p = MODELO_PADARIA.prateleira;

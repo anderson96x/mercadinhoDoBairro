@@ -41,13 +41,13 @@ export const PLANTA_MEL = {
   pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 17.6 + dx, z: 3.3 }))
 };
 
-// Painel N13: produção atrás do escritório e Deli na parede direita, após a padaria.
+// Painel N13: produção atrás do escritório; refrigerador à direita do leite.
 export const PLANTA_QUEIJO = {
   horta: { x: -0.8, z: -12.2 }, coleta: { x: -0.8, z: -10.75 },
   curral: { w: 2.65, d: 1.75 },
-  prateleira: { x: 19.9, z: 0.7, w: 1.4, d: 2.4 },
-  reposicao: { x: 18.6, z: 0.7 }, cliente: { x: 18.6, z: 0.7 },
-  pontosCompra: [-0.7, 0, 0.7].map(dz => ({ x: 18.6, z: 0.7 + dz }))
+  prateleira: { x: 11.8, z: -8.45, w: 2.2, d: 1.4, movel: 'parede-frios' },
+  reposicao: { x: 11.8, z: -7.15 }, cliente: { x: 11.8, z: -7.15 },
+  pontosCompra: [-0.65, 0, 0.65].map(dx => ({ x: 11.8 + dx, z: -7.15 }))
 };
 
 // N15: cozinha atrás dos frios; geleia prolonga a banca de mel para a esquerda.
@@ -145,7 +145,7 @@ export const PLANTA_LEITE = {
 };
 
 export function selecionarExpositorPosterior(ator, produtos) {
-  const ativos = [['ovos', PLANTA_OVOS.prateleira], ['leite', PLANTA_LEITE.prateleira]]
+  const ativos = [['ovos', PLANTA_OVOS.prateleira], ['leite', PLANTA_LEITE.prateleira], ['queijo', PLANTA_QUEIJO.prateleira]]
     .filter(([id]) => produtos[id]?.liberado);
   return ativos.find(([id, p], i) => {
     const anterior = ativos[i - 1]?.[1], proximo = ativos[i + 1]?.[1];

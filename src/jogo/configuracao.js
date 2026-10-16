@@ -11,7 +11,7 @@ export const ESCRITORIO = {
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 17,
+  versaoLayout: 18,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -202,7 +202,7 @@ export const MELHORIAS = [
   { id: 'logistica', titulo: 'Cesta de trabalho', descricao: 'Carregue 8 produtos e ande 15% mais rápido para cuidar de uma loja maior.', custo: 400, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 10 },
   { id: 'alaArtesanal', titulo: 'Estufa de morangos', descricao: 'Construa uma estufa à direita do curral. Abasteça a nova seção do hortifruti junto à parede esquerda.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
   { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa uma colmeia à direita da estufa. Recolha as garrafas de mel na bandeja e abasteça o expositor na frente direita da loja.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 12, requisitoMelhoria: 'alaArtesanal' },
-  { id: 'queijaria', titulo: 'Queijaria', descricao: 'Entregue leite à queijaria atrás do escritório. Cada garrafa rende 2 queijos. Recolha os queijos e abasteça o expositor na lateral direita, abaixo da padaria.', custo: 1600, icone: 'queijo', max: 1, tipo: 'construcao', produto: 'queijo', categoria: 'mercado', nivelMinimo: 13, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaLeite'] },
+  { id: 'queijaria', titulo: 'Queijaria', descricao: 'Entregue leite à queijaria atrás do escritório. Cada garrafa rende 2 queijos. Recolha os queijos e abasteça o refrigerador à direita do leite.', custo: 1600, icone: 'queijo', max: 1, tipo: 'construcao', produto: 'queijo', categoria: 'mercado', nivelMinimo: 13, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaLeite'] },
   { id: 'irrigacao', titulo: 'Irrigação da fazenda', descricao: 'Instale irrigadores em todas as hortas: as colheitas crescem 25% mais rápido.', custo: 650, icone: 'folha', max: 1, categoria: 'mercado', nivelMinimo: 14, requisitoMelhoria: 'alaArtesanal' },
   { id: 'equipeAgil', titulo: 'Reposição ágil', descricao: 'O repositor anda 30% mais rápido e prioriza as bancas vazias da loja ampliada.', custo: 500, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: 14, requisitoMelhoria: 'ajudante' },
   { id: 'cozinhaGeleia', titulo: 'Cozinha de geleias', descricao: 'Na cozinha atrás dos frios, combine 2 morangos e 1 mel para fazer 3 geleias. Recolha os potes e abasteça a seção de geleias junto ao mel, na frente direita.', custo: 2200, icone: 'geleia', max: 1, tipo: 'construcao', produto: 'geleia', categoria: 'mercado', nivelMinimo: 15, requisitoMelhoria: 'apiario' },

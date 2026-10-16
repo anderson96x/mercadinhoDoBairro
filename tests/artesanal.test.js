@@ -311,7 +311,7 @@ test('N12 instala mel na frente direita e mantém os estoques ao migrar saves V1
   assert.deepEqual(migrado.estado.jogador.inventario, ['mel']);
 });
 
-test('N13 instala queijaria atrás do escritório, Deli à direita e migra produção V15', () => {
+test('N13 instala queijaria atrás do escritório, refrigerador ao lado do leite e migra produção V15', () => {
   const sim = abrir(12), p = PRODUTOS.queijo;
   assert.equal(sim.estado.produtos.queijo.liberado, false);
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
@@ -323,15 +323,32 @@ test('N13 instala queijaria atrás do escritório, Deli à direita e migra produ
   assert.ok(p.horta.x >= -3.1 && p.horta.x <= 1.1);
   assert.ok(p.horta.z + p.curral.d / 2 < -9.3);
   assert.ok(p.coleta.z > p.horta.z && p.coleta.z < -9.3);
-  assert.ok(p.prateleira.x > 19 && p.prateleira.x + p.prateleira.w / 2 < 20.76);
-  assert.ok(p.prateleira.z > PRODUTOS.pao.prateleira.z);
-  assert.ok(p.prateleira.z + p.prateleira.d / 2 < PRODUTOS.mel.prateleira.z - PRODUTOS.mel.prateleira.d / 2);
-  assert.ok(p.cliente.x < p.prateleira.x - p.prateleira.w / 2);
+  const leite = PRODUTOS.leite.prateleira;
+  assert.ok(p.prateleira.x - p.prateleira.w / 2 > leite.x + leite.w / 2);
+  assert.equal(p.prateleira.z, leite.z);
+  assert.equal(p.prateleira.w, leite.w);
+  assert.equal(p.prateleira.d, leite.d);
+  assert.ok(p.cliente.z > p.prateleira.z + p.prateleira.d / 2);
   Cena.prototype.construirArtesanal.call(visual, 'queijo', p);
   assert.equal(visual.produtos.queijo.grupo.visible, true);
+  const fridge = visual.produtos.queijo.refrigerador.grupo;
+  assert.equal(fridge.name, 'refrigerador-parede-queijo');
+  assert.equal(fridge.children.filter(o => o.name === 'prateleira-queijo').length, 3);
+  assert.equal(fridge.children.filter(o => o.name === 'porta-vidro-queijo').length, 2);
+  const bounds = new THREE.Box3().setFromObject(fridge);
+  assert.ok(bounds.max.y > 2.9);
+  assert.ok(bounds.min.x >= p.prateleira.x - p.prateleira.w / 2 - 1e-6);
+  assert.ok(bounds.max.x <= p.prateleira.x + p.prateleira.w / 2 + 1e-6);
+  assert.ok(bounds.min.z >= p.prateleira.z - p.prateleira.d / 2 - 1e-6);
+  assert.ok(bounds.max.z <= p.prateleira.z + p.prateleira.d / 2 + 1e-6);
+  assert.equal(visual.produtos.queijo.frutas.length, 12);
+  assert.equal(new Set(visual.produtos.queijo.frutas.map(f => f.position.y)).size, 3);
   for (const queijo of visual.produtos.queijo.frutas) {
     assert.ok(Math.abs(queijo.position.x - p.prateleira.x) < p.prateleira.w / 2);
     assert.ok(Math.abs(queijo.position.z - p.prateleira.z) < p.prateleira.d / 2);
+    const b = new THREE.Box3().setFromObject(queijo);
+    assert.ok(b.min.x > bounds.min.x && b.max.x < bounds.max.x);
+    assert.ok(b.min.z > bounds.min.z && b.max.z < bounds.max.z);
   }
   sim.estado.versaoLayout = 15;
   Object.assign(sim.estado.oficinas.queijo, { ingredientes: { leite: 2 }, progresso: 2, produzidos: 4 });
