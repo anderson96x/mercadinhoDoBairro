@@ -109,7 +109,8 @@ export const MODELO_PADARIA = {
 };
 
 export function pontoPadaria(p) {
-  return { x: 14 - p.z, z: p.x - 11.6 };
+  // Um ladrilho (1,2 u) em direção à frente da loja, à esquerda na vista isométrica.
+  return { x: 14 - p.z, z: p.x - 10.4 };
 }
 
 export function volumePadaria(p) {

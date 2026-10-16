@@ -1134,7 +1134,8 @@ export class Cena {
       const pao = criarProduto('pao', 1.15); pao.position.set(p.x - 1.15 + i % 6 * 0.46, 0.98 + Math.floor(i / 6) * 0.4, p.z - 0.07); grupo.add(pao); return pao;
     });
     const transformacao = new THREE.Matrix4().makeRotationY(-Math.PI / 2);
-    transformacao.setPosition(14, 0, -11.6);
+    const origemPadaria = pontoPadaria({ x: 0, z: 0 });
+    transformacao.setPosition(origemPadaria.x, 0, origemPadaria.z);
     for (const objeto of grupo.children) objeto.applyMatrix4(transformacao);
     for (const roteiro of roteiros) for (const etapa of roteiro) {
       etapa.de = pontoPadaria(etapa.de); etapa.para = pontoPadaria(etapa.para);

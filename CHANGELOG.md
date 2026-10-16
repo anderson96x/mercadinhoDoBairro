@@ -1,8 +1,17 @@
 # Histórico de alterações
 
-## Versão atual: 0.43.10 — 2026-10-16
+## Versão atual: 0.43.11 — 2026-10-16
 
-Correção PATCH sobre 0.43.9. Alterações locais ainda sem commit associado.
+Correção PATCH sobre 0.43.10. Alterações locais ainda sem commit associado.
+
+- Desloca o conjunto da padaria um ladrilho (1,2 unidades) em direção à frente da loja, à esquerda na vista isométrica, para melhorar a centralização.
+- Mantém balcões, equipamentos, pães, pontos de entrega e compra, colisões e trajetos dos padeiros alinhados pela mesma transformação.
+- Atualiza a migração de posições salvas para recuperar personagens que estejam sobrepostos aos objetos deslocados.
+- Atualiza pacote, lockfile e README para 0.43.11; Ajuda e DEV exibem a versão automaticamente.
+
+## 0.43.10 — 2026-10-16
+
+Correção PATCH sobre 0.43.9, registrada no commit `7b17425`.
 
 - Corrige sombras cortadas ou ausentes na estufa e no apiário, ajustando a área e a profundidade da câmera de sombras ao terreno completo.
 - Melhora a resolução das sombras e corrige as faixas de autossombreamento na colmeia.
