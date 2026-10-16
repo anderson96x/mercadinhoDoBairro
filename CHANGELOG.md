@@ -1,6 +1,15 @@
 # Histórico de alterações
 
-## Versão atual: 0.43.9
+## Versão atual: 0.43.10 — 2026-10-16
+
+Correção PATCH sobre 0.43.9. Alterações locais ainda sem commit associado.
+
+- Corrige sombras cortadas ou ausentes na estufa e no apiário, ajustando a área e a profundidade da câmera de sombras ao terreno completo.
+- Melhora a resolução das sombras e corrige as faixas de autossombreamento na colmeia.
+- Remove a sombra opaca do teto transparente da estufa; estrutura e plantas continuam projetando sombras.
+- Atualiza a versão do pacote, lockfile e README; Ajuda e DEV recebem o novo valor automaticamente.
+
+## Base retrospectiva: 0.43.9
 
 Numeração reconstruída a partir dos **87 commits** entre `43658f2` e `ae46128`, examinando código, configuração, interface e testes, além das mensagens dos commits. A base é **0.1.0**; depois dela há **42 incrementos MINOR**, **37 incrementos PATCH**, **5 commits de documentação/ferramentas de documentação** e **2 merges sem alterações adicionais**.
 
@@ -18,7 +27,7 @@ Em um commit misto, prevalece a mudança de maior impacto. Os prefixos `feat`, `
 
 Os números abaixo são uma **reconstrução retrospectiva por commit**, não tags ou lançamentos registrados na época: `package.json` permaneceu em `0.1.0` durante esses 87 commits. A sequência usa `git log --reverse --topo-order HEAD` para contar cada commit uma vez, incluindo os das branches integradas. A tabela apresenta essa sequência de trás para frente.
 
-## Identificação da versão nesta revisão
+## Identificação da versão na revisão 0.43.9
 
 - Atualiza `package.json`, `package-lock.json` e README para **0.43.9**.
 - Exibe **Versão 0.43.9** nos menus Ajuda e DEV, lendo o valor de `package.json`.

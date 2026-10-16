@@ -15,6 +15,7 @@ import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { ALTURA_BANDEJA_MEL, construirColmeia, animarAbelhas } from './colmeia.js';
 import { atualizarMarcha, animarPernas } from './marcha.js';
 import { icone } from '../interface/icones.js';
+import { criarSol } from './iluminacao.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
@@ -723,10 +724,8 @@ export class Cena {
     this.renderer.domElement.setAttribute('aria-label', 'Mercadinho em 3D. Arraste para andar; use o botão direito, Shift e arraste, ou dois dedos para mover o mapa. Use a roda do mouse ou pinça para ajustar o zoom.');
     container.prepend(this.renderer.domElement);
     this.cena.add(new THREE.HemisphereLight(0xfff4dc, 0x70a85d, 2.55));
-    const sol = new THREE.DirectionalLight(0xffebc9, 2.8); sol.position.set(-8, 22, 13); sol.castShadow = true;
-    sol.shadow.mapSize.set(1024, 1024); sol.shadow.camera.left = -18; sol.shadow.camera.right = 18;
-    sol.shadow.camera.top = 18; sol.shadow.camera.bottom = -18; sol.shadow.normalBias = 0.035; sol.shadow.bias = -0.0002;
-    this.cena.add(sol);
+    const sol = criarSol();
+    this.cena.add(sol, sol.target);
     this.alvoCamera = new THREE.Vector3(-0.5, 0, 0.8);
     this.deslocamentoCamera = new THREE.Vector3();
     this.construirMundo();
@@ -958,6 +957,9 @@ export class Cena {
       }
       const teto = caixa(grupo, p.canteiro.w, 0.07, p.canteiro.d, 0xd7f4e9, h.x, 2.5, h.z);
       teto.material = new THREE.MeshStandardMaterial({ color: 0xd7f4e9, transparent: true, opacity: 0.18, depthWrite: false });
+      // O vidro deixa a luz passar; apenas a estrutura e as plantas projetam sombra.
+      teto.castShadow = false;
+      teto.receiveShadow = false;
       for (let i = 0; i < 8; i++) {
         const x = h.x - 1.1 + i % 4 * 2.2 / 3, z = h.z - 0.55 + Math.floor(i / 4) * 1.1;
         esfera(grupo, 0.3, 0x429852, x, 0.67, z, 1.2, 0.6, 1);
