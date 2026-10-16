@@ -41,6 +41,15 @@ export const PLANTA_MEL = {
   pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 17.6 + dx, z: 3.3 }))
 };
 
+// Painel N13: produção atrás do escritório e Deli na parede direita, após a padaria.
+export const PLANTA_QUEIJO = {
+  horta: { x: -0.8, z: -12.2 }, coleta: { x: -0.8, z: -10.75 },
+  curral: { w: 2.65, d: 1.75 },
+  prateleira: { x: 19.9, z: 0.7, w: 1.4, d: 2.4 },
+  reposicao: { x: 18.6, z: 0.7 }, cliente: { x: 18.6, z: 0.7 },
+  pontosCompra: [-0.7, 0, 0.7].map(dz => ({ x: 18.6, z: 0.7 + dz }))
+};
+
 export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 
 export const PLANTA_AMPLIADA = {

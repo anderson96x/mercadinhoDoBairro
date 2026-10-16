@@ -309,3 +309,37 @@ test('N12 instala mel na frente direita e mantém os estoques ao migrar saves V1
   assert.deepEqual(migrado.estado.produtos.mel, sim.estado.produtos.mel);
   assert.deepEqual(migrado.estado.jogador.inventario, ['mel']);
 });
+
+test('N13 instala queijaria atrás do escritório, Deli à direita e migra produção V15', () => {
+  const sim = abrir(12), p = PRODUTOS.queijo;
+  assert.equal(sim.estado.produtos.queijo.liberado, false);
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
+  Cena.prototype.construirArtesanal.call(visual, 'queijo', p);
+  assert.equal(visual.produtos.queijo.grupo.visible, false);
+  sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
+  assert.equal(sim.comprarMelhoria('queijaria').sucesso, true);
+  assert.equal(sim.estado.estagioLoja, 5);
+  assert.ok(p.horta.x >= -3.1 && p.horta.x <= 1.1);
+  assert.ok(p.horta.z + p.curral.d / 2 < -9.3);
+  assert.ok(p.coleta.z > p.horta.z && p.coleta.z < -9.3);
+  assert.ok(p.prateleira.x > 19 && p.prateleira.x + p.prateleira.w / 2 < 20.76);
+  assert.ok(p.prateleira.z > PRODUTOS.pao.prateleira.z);
+  assert.ok(p.prateleira.z + p.prateleira.d / 2 < PRODUTOS.mel.prateleira.z - PRODUTOS.mel.prateleira.d / 2);
+  assert.ok(p.cliente.x < p.prateleira.x - p.prateleira.w / 2);
+  Cena.prototype.construirArtesanal.call(visual, 'queijo', p);
+  assert.equal(visual.produtos.queijo.grupo.visible, true);
+  for (const queijo of visual.produtos.queijo.frutas) {
+    assert.ok(Math.abs(queijo.position.x - p.prateleira.x) < p.prateleira.w / 2);
+    assert.ok(Math.abs(queijo.position.z - p.prateleira.z) < p.prateleira.d / 2);
+  }
+  sim.estado.versaoLayout = 15;
+  Object.assign(sim.estado.oficinas.queijo, { ingredientes: { leite: 2 }, progresso: 2, produzidos: 4 });
+  Object.assign(sim.estado.produtos.queijo, { horta: 3, prateleira: 7, apresentado: true });
+  Object.assign(sim.estado.jogador, { x: 19.2, z: -16, inventario: ['queijo'] });
+  const migrado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
+  assert.equal(migrado.estado.melhorias.queijaria, 1);
+  assert.deepEqual(migrado.estado.oficinas.queijo, sim.estado.oficinas.queijo);
+  assert.deepEqual(migrado.estado.produtos.queijo, sim.estado.produtos.queijo);
+  assert.deepEqual(migrado.estado.jogador.inventario, ['queijo']);
+});
