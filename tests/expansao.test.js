@@ -33,7 +33,7 @@ test('estações futuras não aparecem nem criam marcações antes da compra', (
   assert.equal(visualComLeite.produtos.leite.grupo.visible, true);
 });
 
-test('ilha de leite tem quatro faces acabadas e acesso livre desde o nível 5', () => {
+test('refrigerador de parede tem duas portas de vidro, três níveis e acesso frontal desde N5', () => {
   const sim = new Simulacao();
   sim.estado.estagioLoja = ALA_LEITE.indice;
   sim.estado.melhorias.alaProducao = 1;
@@ -43,13 +43,17 @@ test('ilha de leite tem quatro faces acabadas e acesso livre desde o nível 5', 
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, alvosHorta: [], criarLabel() {} };
   Cena.prototype.construirEstacao.call(visual, 'leite', PRODUTOS.leite);
   const { refrigerador, frutas } = visual.produtos.leite;
-  assert.equal(refrigerador.grupo.name, 'ilha-fria-leite');
+  assert.equal(refrigerador.grupo.name, 'refrigerador-parede-leite');
   const bounds = new THREE.Box3().setFromObject(refrigerador.grupo);
   const tamanho = bounds.getSize(new THREE.Vector3());
-  assert.ok(tamanho.y < tamanho.z, 'ilha baixa deixa o salão visível');
+  assert.ok(tamanho.y > 2.7, 'refrigerador vertical como a referência');
   assert.ok(tamanho.x <= PRODUTOS.leite.prateleira.w + 0.001);
   assert.ok(tamanho.z <= PRODUTOS.leite.prateleira.d + 0.001);
-  assert.ok(frutas.every(f => f.position.y === frutas[0].position.y));
+  assert.equal(new Set(frutas.map(f => f.position.y)).size, 3);
+  assert.equal(refrigerador.grupo.children.filter(o => o.name === 'porta-vidro-leite' && o.material.transparent).length, 2);
+  const base = new THREE.Box3().setFromObject(refrigerador.grupo.getObjectByName('base-refrigerador-leite'));
+  const grade = new THREE.Box3().setFromObject(refrigerador.grupo.getObjectByName('grade-refrigerador-leite'));
+  assert.ok(grade.min.z > base.max.z, 'ventilação visível na frente da base');
   assert.ok(bounds.max.x < 15.1 - 0.8, 'não depende da parede removida na próxima expansão');
   for (const ponto of [PRODUTOS.leite.reposicao, ...PRODUTOS.leite.pontosCompra]) {
     const ator = { x: -1.3, z: 4.9, andando: false };
@@ -75,35 +79,34 @@ function bairroVisual() {
     cilindro: (g, a, b, h, cor, x, y, z) => mesh(g, x, y, z),
     esfera: (g, r, cor, x, y, z) => mesh(g, x, y, z)
   });
-  return { bairro, ala: cena.getObjectByName('ala-producao'), andaime: cena.getObjectByName('andaime'), rodape: cena.getObjectByName('rodape-frontal') };
+  return { bairro, ala: cena.getObjectByName('ampliacao-padaria'), andaime: cena.getObjectByName('andaime'), rodape: cena.getObjectByName('rodape-frontal') };
 }
 
-test('a loja permanece intacta antes da compra e constrói a ala lateral em etapas', () => {
+test('N4 instala equipamentos em etapas e conserva piso, fachada e parede lateral', () => {
   const { bairro, ala, andaime, rodape } = bairroVisual();
   assert.equal(bairro.atualizarEstagio(0), 0);
   bairro.atualizarEstagio(0, 10);
   assert.equal(ala.visible, false);
   assert.equal(andaime.visible, false);
-  assert.equal(rodape.position.x, 4.65);
+  assert.equal(rodape.position.x, 5.55);
   assert.equal(rodape.scale.x, 1);
   assert.equal(bairro.atualizarEstagio(1), 0);
   bairro.atualizarEstagio(1, 1);
-  assert.equal(ala.visible, true);
-  assert.equal(andaime.visible, true);
-  assert.ok(ala.scale.x > 0 && ala.scale.x < 1);
+  assert.equal(ala.visible, false);
+  assert.equal(andaime.visible, false);
   assert.equal(ala.scale.z, 1);
   assert.equal(bairro.atualizarEstagio(1, 3), 1);
   assert.equal(ala.scale.x, 1);
   assert.equal(ala.position.x, 0);
   assert.equal(andaime.visible, false);
-  assert.equal(rodape.position.x, 6.15);
-  assert.ok(Math.abs(rodape.scale.x - 11.9 / 8.9) < 1e-10);
+  assert.equal(rodape.position.x, 5.55);
+  assert.equal(rodape.scale.x, 1);
 });
 
-test('carregar uma ala comprada mostra a construção pronta sem repetir a animação', () => {
+test('carregar ovos comprados mostra equipamentos prontos sem criar a antiga extensão', () => {
   const { bairro, ala, andaime } = bairroVisual();
   assert.equal(bairro.atualizarEstagio(1), 1);
-  assert.equal(ala.visible, true);
+  assert.equal(ala.visible, false);
   assert.equal(ala.scale.x, 1);
   assert.equal(andaime.visible, false);
 });
@@ -297,12 +300,12 @@ test('salvar durante a viagem preserva a carga e o destino do ajudante', () => {
   assert.deepEqual(retomado.ajudante.inventario, []);
 });
 
-test('a ala bloqueia acesso antes da construção e oferece rotas entre fazenda, ovos e caixa', () => {
+test('N4 conserva a parede lateral e oferece rotas entre fazenda, ovos e caixa', () => {
   const sim = new Simulacao();
   assert.ok(sim.obstaculos().some(o => o.lateral));
   abrirAla(sim);
   assert.ok(!sim.obstaculos().some(o => o.x === ALA_PRODUCAO.piso.x && o.z === ALA_PRODUCAO.piso.z && o.w === ALA_PRODUCAO.piso.w));
-  assert.ok(!sim.obstaculos().some(o => o.lateral));
+  assert.ok(sim.obstaculos().some(o => o.lateral));
   const ator = { x: 5.35, z: -5.1, andando: false };
   for (const alvo of [PRODUTOS.ovos.coleta, PRODUTOS.ovos.cliente, CONFIG.clienteCaixa]) {
     let chegou = false;

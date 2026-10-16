@@ -4,6 +4,8 @@ Um jogo de gerenciamento de mercadinho, em português, para navegador de computa
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. O cenário e os personagens são construídos por código, com visual 3D simples e original. Não usa imagens, áudios ou código extraídos de My Mini Mart.
 
+O nível 1 usa a [nova planta inicial](docs/PLANTA-LOJA-N1.md): salão de 14 × 16 u, acesso à horta pela porta dos fundos e banca de madeira junto à esquerda. No [nível 3](docs/PLANTA-LOJA-N3.md), milho acrescenta um canteiro atrás do tomate e uma seção à banca. No [nível 4](docs/PLANTA-LOJA-N4.md), ovos acrescentam o galinheiro posterior e a estante em degraus na parede do fundo. No [nível 5](docs/PLANTA-LOJA-N5.md), o curral fica ao lado do galinheiro e o refrigerador junto aos ovos. Essas compras mantêm o salão inicial e toda a produção fica atrás da loja. O trigo no N7 mantém o salão inicial. No [N9](docs/PLANTA-LOJA-N9.md), a padaria amplia o salão à direita para 24 × 16 u e fica voltada para o hortifruti.
+
 ## Jogar e desenvolver
 
 Instale o **Node.js 22.12 ou mais recente**. No terminal, dentro desta pasta:
@@ -33,7 +35,7 @@ Para testar em um celular na mesma rede Wi-Fi, mantenha o servidor aberto e aces
 | Pausar | Botão de pausa ou Esc. |
 | Som, ajuda e novo jogo | Menu de pausa. |
 
-O joystick aparece onde você começa a arrastar. O movimento acompanha as direções da tela. As interações continuam automáticas junto aos objetos, por qualquer lado acessível, sem círculos no chão. As hortas, bancas e oficinas ficam mais afastadas para que os alcances de mercadorias diferentes não se cruzem. Paredes impedem interações através delas. Para produzir pão, entregue trigo junto à caixa da padaria.
+O joystick aparece onde você começa a arrastar. O movimento acompanha as direções da tela. As interações continuam automáticas junto aos objetos, sem círculos no chão. No hortifruti, aproxime-se da seção do produto pela face do corredor; os demais objetos permitem seus lados livres. Paredes impedem interações através delas. Para produzir pão, entregue trigo junto à caixa da padaria.
 
 ## O que já funciona
 
@@ -108,9 +110,9 @@ npm run preview
 
 Comece por [docs/COMO-ALTERAR.md](docs/COMO-ALTERAR.md). A simulação não importa Three.js nem elementos da página, o que permite testar a economia independentemente do visual.
 
-Esta versão tem dez produtos e ampliações até a ala artesanal. A loja começa pequena: milho no nível 3, extensões de 3 unidades para ovos no nível 4, leite no nível 5 e trigo no nível 7, padaria no nível 9 e anexo artesanal no nível 11. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
+Esta versão tem dez produtos e ampliações até a ala artesanal. Milho no nível 3, [ovos no nível 4](docs/PLANTA-LOJA-N4.md) e [leite no nível 5](docs/PLANTA-LOJA-N5.md) acrescentam equipamentos ao salão inicial. O trigo no nível 7 mantém o salão inicial. A padaria no nível 9 amplia a loja à direita; o anexo artesanal no nível 11 ainda usa a geometria legada. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
 
-O novo [layout da loja](docs/PLANTA-LOJA-V2.md) organiza bancas alinhadas, padaria ao fundo, fila marcada para cinco ou dez clientes e ilhas frias de leite e queijo. O leite mantém a mesma posição desde o nível 5. Painéis removíveis reservam futuras conexões; as próximas alas ainda dependem de conteúdo e ampliação do terreno. Salvamentos antigos preservam dinheiro, produtos, receitas e funcionários, com posições recuperadas em locais livres.
+O [layout até N9](docs/PLANTA-LOJA-N9.md) segue a nova planta, com produção agrícola atrás da loja e salão de 14 × 16 u até N8, ampliado para 24 × 16 u com a padaria. Ovos e leite ficam juntos na parede posterior, com estoques e seleção de reposição separados. A padaria fica junto à parede direita, com a frente voltada para o hortifruti; o anexo artesanal conserva a organização anterior. A fila tem cinco ou dez posições, sem marcações no piso. Salvamentos anteriores migram para a versão espacial 11, preservando progresso e recuperando atores em locais livres.
 
 ## Créditos e dependências
 

@@ -75,14 +75,14 @@ test('pão entra na demanda normal e clientes que o pedem levam pelo menos três
   assert.equal(sim.estado.produtos.pao.prateleira, 15);
 });
 
-test('padaria fica ao fundo e tem dois padeiros de avental e chapéu branco', () => {
+test('padaria fica na parede direita e tem dois padeiros de avental e chapéu branco', () => {
   const visual = { cena: new THREE.Scene(), produtos: {}, sim: new Simulacao(), criarLabel() {} };
   Cena.prototype.construirPadaria.call(visual);
   const { grupo, padeiros, frutas } = visual.produtos.pao;
   assert.equal(grupo.name, 'padaria');
   assert.equal(padeiros.length, 2);
   assert.equal(frutas.length, PRODUTOS.pao.capacidadePrateleira);
-  assert.ok(PRODUTOS.pao.prateleira.z < PRODUTOS.ovos.prateleira.z);
+  assert.ok(PRODUTOS.ovos.prateleira.z < PRODUTOS.pao.prateleira.z, 'ovos ocupam a parede do fundo; padaria mantém sua área legada');
   const vitrine = grupo.getObjectByName('vitrine-paes');
   assert.ok(vitrine);
   assert.equal(vitrine.children.filter(item => item.name === 'tampo-paes').length, 1);
@@ -92,11 +92,12 @@ test('padaria fica ao fundo e tem dois padeiros de avental e chapéu branco', ()
   const bounds = new THREE.Box3().setFromObject(vitrine);
   assert.ok(bounds.max.x - bounds.min.x <= PRODUTOS.pao.prateleira.w);
   assert.ok(bounds.max.z - bounds.min.z <= PRODUTOS.pao.prateleira.d);
-  assert.ok(frutas.every(pao => pao.position.y > tampo.position.y + 0.02));
-  assert.ok(grupo.getObjectByName('entrega-trigo-padaria').position.x < PRODUTOS.pao.prateleira.x);
+  assert.ok(frutas.every(pao => pao.position.y < tampo.position.y - 0.02));
+  assert.equal(vitrine.children.filter(o => o.name === 'prateleira-vitrine').length, 3);
+  assert.ok(grupo.getObjectByName('entrega-trigo-padaria').position.z < PRODUTOS.pao.prateleira.z);
   assert.equal(visual.produtos.pao.trigosRecebidos.length, ALA_PADARIA.capacidadeTrigo);
   const triturador = grupo.getObjectByName('triturador-padaria');
-  assert.ok(triturador.position.x < PRODUTOS.pao.prateleira.x);
+  assert.ok(triturador.position.x > PRODUTOS.pao.prateleira.x);
   assert.ok(new THREE.Box3().setFromObject(triturador).max.y < 2);
   assert.equal(triturador.getObjectByName('corpo-triturador').material.color.getHex(), 0xadb7b9);
   assert.equal(triturador.getObjectByName('corpo-triturador').material.metalness, 0.58);
@@ -107,8 +108,8 @@ test('padaria fica ao fundo e tem dois padeiros de avental e chapéu branco', ()
   assert.ok(triturador.children.every(item => !item.children.some(parte => parte.material?.color?.getHex() === 0xe4bc57)));
   assert.equal(grupo.getObjectByName('base-madeira-padaria').material.color.getHex(), 0x936238);
   assert.ok(grupo.getObjectByName('forno-padaria').position.x > PRODUTOS.pao.prateleira.x);
-  assert.ok(frutas.every(pao => pao.position.y === frutas[0].position.y));
-  assert.ok(frutas[12].position.z > frutas[0].position.z);
+  assert.equal(new Set(frutas.map(pao => pao.position.y)).size, 3);
+  assert.ok(frutas[12].position.y > frutas[0].position.y);
   for (const padeiro of padeiros) {
     const avental = padeiro.getObjectByName('avental-padaria');
     const chapeu = padeiro.getObjectByName('chapeu-padaria');
@@ -143,13 +144,13 @@ test('os dois padeiros caminham entre entrega, máquinas e vitrine', () => {
   assert.equal(padaria.padeiros[1].userData.cargaPadaria.visible, true);
   assert.ok(padaria.padeiros[0].userData.cargaPadaria.children.length > 0);
   assert.ok(padaria.padeiros[1].userData.cargaPadaria.children.length > 0);
-  assert.ok(maquinas[0].x > inicio[0].x);
+  assert.ok(maquinas[0].z > inicio[0].z);
   assert.ok(maquinas[1].distanceTo(inicio[1]) > 0.2);
-  assert.ok(vitrine[1].z > maquinas[1].z);
-  assert.ok(vitrine[0].z > maquinas[0].z, 'o moedor avança para entregar a farinha');
+  assert.ok(vitrine[1].x < maquinas[1].x);
+  assert.ok(vitrine[0].x < maquinas[0].x, 'o moedor avança para entregar a farinha');
 });
 
-test('construir a padaria mantém a ala do trigo pronta durante a animação', () => {
+test('construir a padaria abre o piso inteiro e anima equipamentos', () => {
   const cena = new THREE.Scene();
   const mesh = (grupo, x, y, z) => {
     const item = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial());
@@ -162,8 +163,8 @@ test('construir a padaria mantém a ala do trigo pronta durante a animação', (
   });
   bairro.atualizarEstagio(3);
   bairro.atualizarEstagio(4);
-  const trigo = cena.getObjectByName('ala-trigo');
+  const trigo = cena.getObjectByName('ampliacao-padaria');
   assert.equal(trigo.scale.x, 1);
-  assert.equal(cena.getObjectByName('andaime-trigo').visible, false);
+  assert.equal(cena.getObjectByName('andaime-padaria').visible, false);
   assert.ok(bairro.atualizarEstagio(4, 3.5) > 0);
 });

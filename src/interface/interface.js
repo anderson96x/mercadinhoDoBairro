@@ -211,7 +211,7 @@ export class Interface {
     const banco = this.sim.estado.banco;
     const status = statusColeta(banco.coleta);
     const assalto = banco.assalto;
-    const riscoAtivo = banco.noCaixa >= BANCO.limite && !banco.coleta && !assalto;
+    const riscoAtivo = this.sim.assaltosAtivos && banco.noCaixa >= BANCO.limite && !banco.coleta && !assalto;
     const prazo = this.sim.tempoEsperaAssalto;
     const restante = Math.max(0, prazo - banco.tempoRisco);
     const segundos = Math.ceil(restante);
@@ -225,10 +225,10 @@ export class Interface {
       progresso.setAttribute('aria-valuenow', String(segundos));
       avisoPrazo.classList.toggle('urgente', restante <= 10);
     }
-    const chave = `${banco.noCaixa}:${status}:${assalto ? `${statusAssalto(assalto)}:${assalto.valor}` : ''}`;
+    const chave = `${this.sim.assaltosAtivos}:${banco.noCaixa}:${status}:${assalto ? `${statusAssalto(assalto)}:${assalto.valor}` : ''}`;
     if (chave === this.ultimoBanco) return;
     this.ultimoBanco = chave;
-    const alerta = banco.noCaixa >= BANCO.limite && !banco.coleta;
+    const alerta = this.sim.assaltosAtivos && banco.noCaixa >= BANCO.limite && !banco.coleta;
     this.el('dinheiro-caixa').textContent = `No caixa: ${reais(banco.noCaixa)}`;
     this.el('aviso-banco').hidden = !alerta && !banco.coleta && !assalto;
     this.el('aviso-banco').classList.toggle('coleta-em-andamento', !!banco.coleta);
@@ -285,7 +285,7 @@ export class Interface {
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p><p>Para mover o mapa, arraste com o <b>botão direito</b> ou <b>Shift</b>; no celular, use <b>dois dedos</b>. <b>Shift + setas</b> também move a câmera. Para aproximar ou afastar, use a <b>roda do mouse</b> ou a <b>pinça com dois dedos</b>.</p></div></div>
           <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 4, construa o galinheiro. As galinhas produzem ovos automaticamente.</p></div></li><li><span>5</span><div><b>Abra a ala do leite</b><p>No nível 5, construa o curral por R$ 800. Recolha as garrafas de vidro e abasteça a prateleira de leite.</p></div></li><li><span>6</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>7</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">No nível 7, abra a ala do trigo por R$ 400. Colha na plantação entre o galinheiro e o curral e abasteça a nova prateleira. Cada trigo vale R$ 5.</p>
-        <p class="nota">No nível 9, abra a padaria por R$ 1.400. Deixe trigo na caixa à esquerda do balcão de vidro, em frente aos ovos. Dois padeiros fazem farinha e assam três pães por trigo. Cada pão vale R$ 10.</p>
+        <p class="nota">No nível 9, abra a padaria por R$ 1.400. A loja se amplia à direita. Entregue trigo na caixa ao fundo da padaria; o balcão fica de frente para o hortifruti. Dois padeiros fazem farinha e assam três pães por trigo. Cada pão vale R$ 10.</p>
         <p class="nota">Do nível 10 ao 15: melhore sua cesta, abra a ala artesanal ao fundo da loja e construa a estufa, o apiário, a queijaria e a cozinha de geleias. No nível 14, irrigação e reposição ágil ajudam a cuidar da loja maior.</p>
         <p class="nota">Nas oficinas, aproxime-se com os ingredientes para entregá-los. Uma garrafa de leite rende 2 queijos; 2 morangos e 1 mel rendem 3 geleias. Recolha os produtos prontos e abasteça as bancas. O repositor também coleta a produção pronta. Os novos produtos só entram nos pedidos depois do primeiro abastecimento.</p>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
@@ -296,7 +296,7 @@ export class Interface {
         <section class="dev-cartao dev-dinheiro" aria-label="Dinheiro">
           <div class="dev-cartao-topo"><span class="dev-rotulo">${icone('moeda')} Saldo disponível</span><strong>${reais(this.sim.estado.dinheiro)}</strong></div>
           <p>No caixa: ${reais(this.sim.estado.banco.noCaixa)}. Os botões ajustam os dois valores para testar depósitos.</p>
-          <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 100 ? 'disabled' : ''}>− R$ 100</button><button id="dev-adicionar">+ R$ 100</button></div>
+          <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 1000 ? 'disabled' : ''}>− R$ 1.000</button><button id="dev-adicionar">+ R$ 1.000</button></div>
         </section>
         <section class="dev-cartao" aria-label="Tempo até o assalto">
           <div class="dev-cartao-topo"><span class="dev-rotulo">Prazo para depositar</span><strong>${this.sim.tempoEsperaAssalto}<small> s</small></strong></div>
@@ -305,6 +305,11 @@ export class Interface {
             <button data-tempo-assalto="5" aria-pressed="${this.sim.tempoEsperaAssalto === 5}">5 segundos</button>
             <button data-tempo-assalto="60" aria-pressed="${this.sim.tempoEsperaAssalto === 60}">60 segundos</button>
           </div>
+        </section>
+        <section class="dev-cartao" aria-label="Assaltos">
+          <div class="dev-cartao-topo"><span class="dev-rotulo">Assaltos</span><strong>${this.sim.assaltosAtivos ? 'Ativados' : 'Desativados'}</strong></div>
+          <p>Desativar cancela o assalto atual e impede novos assaltos. A escolha fica salva neste navegador.</p>
+          <div class="dev-acoes"><button id="dev-assaltos" aria-pressed="${!this.sim.assaltosAtivos}">${this.sim.assaltosAtivos ? 'Desativar assaltos' : 'Ativar assaltos'}</button></div>
         </section>
         <div class="dev-progresso">
           <section class="dev-cartao" aria-label="Nível">
@@ -373,11 +378,12 @@ export class Interface {
       this.el('confirmar-reinicio').onclick = () => this.acoes.reiniciar();
     }
     if (tipo === 'dev') {
+      this.el('dev-assaltos').onclick = () => this.acoes.alternarAssaltosDev();
       this.el('painel-conteudo').querySelectorAll('[data-tempo-assalto]').forEach(botao => {
         botao.onclick = () => this.acoes.definirTempoAssalto(Number(botao.dataset.tempoAssalto));
       });
-      this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-100);
-      this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(100);
+      this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-1000);
+      this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(1000);
       this.el('dev-nivel').onclick = () => this.acoes.aumentarNivelDev();
       this.el('dev-reputacao').onclick = () => this.acoes.aumentarReputacaoDev();
       this.el('dev-reset').onclick = () => this.abrir('reiniciar');

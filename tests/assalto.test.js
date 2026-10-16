@@ -7,6 +7,39 @@ import { AssaltoVisual } from '../src/jogo/assalto-visual.js';
 import { salvar, carregar } from '../src/jogo/salvamento.js';
 import { RUA } from '../src/jogo/bairro.js';
 
+test('desativar assaltos cancela o risco e reativar inicia um novo prazo', () => {
+  const sim = new Simulacao();
+  sim.estado.banco.noCaixa = 1000;
+  sim.definirTempoEsperaAssalto(5);
+  sim.atualizarAssalto(4);
+  sim.definirAssaltosAtivos(false);
+  sim.atualizarAssalto(600);
+  assert.equal(sim.estado.banco.assalto, null);
+  assert.equal(sim.estado.banco.tempoRisco, 0);
+  sim.definirAssaltosAtivos(true);
+  sim.atualizarAssalto(4);
+  assert.equal(sim.estado.banco.assalto, null);
+  sim.atualizarAssalto(1);
+  assert.ok(sim.estado.banco.assalto);
+});
+
+test('desativar um assalto libera clientes e preserva dinheiro e reputação', () => {
+  const sim = new Simulacao();
+  sim.estado.banco.noCaixa = 1000;
+  sim.estado.dinheiro = 1000;
+  sim.clientes.push({ assustado: true, tempoAssusto: 10 });
+  sim.estado.banco.assalto = { tempo: ASSALTO.entrada, invadiu: true, roubado: false, encerrado: false, valor: 0 };
+  const reputacao = sim.reputacao;
+  sim.definirAssaltosAtivos(false);
+  sim.atualizarAssalto(600);
+  assert.equal(sim.assaltoNaLoja, false);
+  assert.equal(sim.estado.banco.assalto, null);
+  assert.equal(sim.clientes[0].assustado, false);
+  assert.equal(sim.estado.dinheiro, 1000);
+  assert.equal(sim.estado.banco.noCaixa, 1000);
+  assert.equal(sim.reputacao, reputacao);
+});
+
 test('pausar durante o aviso congela o prazo e retomar não dispara assalto', () => {
   const sim = new Simulacao();
   sim.estado.banco.noCaixa = 1000;

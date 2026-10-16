@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG, PRODUTOS, ESCRITORIO } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
-import { geometriaEstacao, intervaloEstacoes, distanciaEstacao } from '../src/jogo/estacoes.js';
+import { geometriaEstacao, intervaloEstacoes, distanciaEstacao, estacoesSeparadasPorParede } from '../src/jogo/estacoes.js';
+import { PAREDES_LOJA } from '../src/jogo/bairro.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function lojaCompleta() {
@@ -14,11 +15,14 @@ function lojaCompleta() {
   return sim;
 }
 
-test('áreas de interação de produtos diferentes não se sobrepõem', () => {
+test('móveis independentes têm alcances separados ou parede contínua; hortifruti compartilha seções', () => {
   const pontos = Object.entries(PRODUTOS).flatMap(([id,p]) => (id === 'pao' ? ['reposicao'] : ['coleta','reposicao'])
     .map(tipo => ({ id, tipo, ...geometriaEstacao(id, tipo) })));
   for(let i=0;i<pontos.length;i++) for(let j=i+1;j<pontos.length;j++) {
-    assert.ok(intervaloEstacoes(pontos[i],pontos[j]) > CONFIG.raioInteracao * 2,
+    if (pontos[i].tipo === 'reposicao' && pontos[j].tipo === 'reposicao' && pontos[i].movel
+      && pontos[i].movel === pontos[j].movel && ['hortifruti', 'parede-frios', 'doces'].includes(pontos[i].movel)) continue;
+    assert.ok(intervaloEstacoes(pontos[i],pontos[j]) > CONFIG.raioInteracao * 2
+      || estacoesSeparadasPorParede(pontos[i], pontos[j], PAREDES_LOJA, CONFIG.raioInteracao),
       `${pontos[i].id}/${pontos[i].tipo} e ${pontos[j].id}/${pontos[j].tipo}`);
   }
 });
@@ -55,7 +59,7 @@ test('escritório compacto fica separado do milho e devolve acesso ao salão', (
   sim.tempo=1; sim.interagir();
   assert.deepEqual(sim.estado.jogador.inventario,['milho']);
   assert.equal(sim.estado.produtos.milho.prateleira,0);
-  Object.assign(sim.estado.jogador,{x:0.9,z:PRODUTOS.milho.prateleira.z});
+  Object.assign(sim.estado.jogador,PRODUTOS.milho.reposicao);
   assert.equal(segmentoLivre(sim.estado.jogador, sim.estado.jogador, sim.obstaculos(), 0.27), true);
   assert.ok(distanciaEstacao(sim.estado.jogador, PRODUTOS.milho.prateleira) < CONFIG.raioInteracao);
   sim.interagir();
@@ -92,6 +96,9 @@ test('coleta e reposição funcionam em todos os lados acessíveis dos objetos',
       const objeto = geometriaEstacao(id, tipo);
       let lados = 0;
       for (const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]]) {
+        if (tipo === 'reposicao' && objeto.movel === 'hortifruti' && (dx !== 1 || dz !== 0)) continue;
+        if (tipo === 'reposicao' && objeto.movel === 'doces' && (dx !== 0 || dz !== -1)) continue;
+        if (tipo === 'reposicao' && objeto.movel === 'parede-frios' && (dx !== 0 || dz !== 1)) continue;
         const sim = lojaCompleta();
         const ponto = { x: objeto.x + dx * (objeto.w / 2 + 0.5), z: objeto.z + dz * (objeto.d / 2 + 0.5) };
         if (!segmentoLivre(ponto,ponto,sim.obstaculos(),0.27)) continue;
@@ -102,7 +109,7 @@ test('coleta e reposição funcionam em todos os lados acessíveis dos objetos',
         assert.deepEqual(sim.estado.jogador.inventario,tipo === 'reposicao' ? [] : [id],`${id}/${tipo} lado ${dx},${dz}`);
         if (tipo === 'reposicao') assert.equal(id === 'pao' ? sim.estado.producao.trigoPadaria : sim.estado.produtos[id].prateleira,1,id);
       }
-      assert.ok(lados >= 2,`${id}/${tipo}: acesso por pelo menos dois lados`);
+      assert.ok(lados >= (id === 'pao' || ['hortifruti', 'parede-frios', 'doces'].includes(objeto.movel) ? 1 : 2),`${id}/${tipo}: acesso pelos lados livres`);
     }
   }
 });

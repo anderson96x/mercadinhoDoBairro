@@ -37,7 +37,7 @@ test('trigo custa R$ 400 no nível 7, já pode ser colhido e abastece a pratelei
   assert.equal(salvo.produtos.trigo.prateleira, 1);
 });
 
-test('a ala do trigo se constrói com piso, paredes e andaime animados', () => {
+test('N7 mantém salão inicial sem piso ou andaime de expansão', () => {
   const cena = new THREE.Scene();
   const mesh = (grupo, x, y, z) => {
     const objeto = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial());
@@ -48,15 +48,15 @@ test('a ala do trigo se constrói com piso, paredes e andaime animados', () => {
     cilindro: (g, r1, r2, h, cor, x, y, z) => mesh(g, x, y, z),
     esfera: (g, r, cor, x, y, z) => mesh(g, x, y, z)
   });
-  const ala = cena.getObjectByName('ala-trigo');
-  const andaime = cena.getObjectByName('andaime-trigo');
+  const ala = cena.getObjectByName('ampliacao-padaria');
+  const andaime = cena.getObjectByName('andaime-padaria');
   bairro.atualizarEstagio(2);
   assert.equal(ala.visible, false);
   assert.equal(bairro.atualizarEstagio(3), 0);
   bairro.atualizarEstagio(3, 1);
-  assert.equal(ala.visible, true);
-  assert.equal(andaime.visible, true);
-  assert.ok(ala.scale.x > 0 && ala.scale.x < 1);
+  assert.equal(ala.visible, false);
+  assert.equal(andaime.visible, false);
+  assert.equal(ala.scale.x, 1);
   bairro.atualizarEstagio(3, 3);
   assert.equal(ala.scale.x, 1);
   assert.equal(andaime.visible, false);

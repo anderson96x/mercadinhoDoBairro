@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { PALETAS, PERSONALIZACAO_PADRAO, validarPersonalizacao } from '../src/jogo/personalizacao.js';
 import { estadoInicial, validarEstado, Simulacao } from '../src/jogo/simulacao.js';
+import { CONFIG } from '../src/jogo/configuracao.js';
 
 test('jogos antigos recebem identidade padrão sem perder progresso', () => {
   const salvo = estadoInicial(); delete salvo.personalizacao; salvo.dinheiro = 456;
@@ -35,13 +36,13 @@ test('funcionário usa o vão de serviço em ambos os sentidos', () => {
   const sim = new Simulacao(); sim.estado.melhorias.ajudante = 1;
   sim.proximoCliente = 999; sim.estado.jogador.x = -9;
   let paraHorta = 0, paraLoja = 0;
-  for (let i = 0; i < 60 * 40; i++) {
+  for (let i = 0; i < 60 * 80; i++) {
     const antes = { x: sim.ajudante.x, z: sim.ajudante.z };
     sim.atualizar(1 / 60);
     const depois = sim.ajudante;
-    if ((antes.x + 3.1) * (depois.x + 3.1) < 0) {
-      assert.ok(depois.z > -0.8 && depois.z < 2.2, 'travessia precisa estar na porta');
-      if (depois.x < antes.x) paraHorta++; else paraLoja++;
+    if (depois.x > -3.1 && depois.x < 10.9 && (antes.z - CONFIG.portaProducao.z) * (depois.z - CONFIG.portaProducao.z) < 0) {
+      assert.ok(Math.abs(depois.x - CONFIG.portaProducao.x) < CONFIG.portaProducao.w / 2 - 0.32, 'travessia precisa estar na porta posterior');
+      if (depois.z < antes.z) paraHorta++; else paraLoja++;
     }
   }
   assert.ok(paraHorta > 0 && paraLoja > 0);

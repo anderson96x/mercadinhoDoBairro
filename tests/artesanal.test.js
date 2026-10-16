@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { CONFIG, PRODUTOS, MELHORIAS, OFICINAS, ALA_ARTESANAL } from '../src/jogo/configuracao.js';
 import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { Cena, criarProduto } from '../src/jogo/cena.js';
+import { volumesDoces, selecionarCompartimentoDoces } from '../src/jogo/planta.js';
 import { construirBairro } from '../src/jogo/bairro.js';
 
 const novos = ['morango', 'mel', 'queijo', 'geleia'];
@@ -241,17 +242,154 @@ test('estufa, colmeia, oficinas e produtos têm modelos próprios', () => {
   assert.ok(visual.produtos.morango.irrigador);
 });
 
-test('anexo abre passagem e preserva alas anteriores durante a construção', () => {
+test('N11 preserva o salão N9 e sua parede posterior, sem anexo', () => {
   const cena = new THREE.Scene();
   const mesh = (g, w, h, d, cor, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial()); g.add(m); m.position.set(x || 0, y || 0, z || 0); return m; };
   const bairro = construirBairro(cena, { caixa: mesh, cilindro: mesh, esfera: mesh });
   bairro.atualizarEstagio(4);
-  assert.equal(cena.getObjectByName('ala-artesanal').visible, false);
+  assert.equal(cena.getObjectByName('ala-artesanal'), undefined);
   assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, true);
   bairro.atualizarEstagio(5);
-  assert.equal(cena.getObjectByName('ala-artesanal').visible, true);
-  assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, false);
-  assert.equal(cena.getObjectByName('ala-trigo').scale.x, 1);
+  assert.equal(cena.getObjectByName('ala-artesanal'), undefined);
+  assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, true);
+  assert.equal(cena.getObjectByName('ampliacao-padaria').scale.x, 1);
   bairro.atualizarEstagio(5, 4);
-  assert.equal(cena.getObjectByName('ala-artesanal').scale.y, 1);
+  assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, true);
+});
+
+test('N11 posiciona estufa ao lado do curral com canteiro padronizado e conserva saves V12', () => {
+  const p = PRODUTOS.morango;
+  assert.deepEqual(p.canteiro, PRODUTOS.tomate.canteiro);
+  assert.ok(Math.abs(p.horta.z - PRODUTOS.leite.horta.z) <= 0.5);
+  assert.ok(p.horta.x - p.canteiro.w / 2 > PRODUTOS.leite.horta.x + PRODUTOS.leite.curral.w / 2);
+  assert.equal(p.prateleira.x, PRODUTOS.trigo.prateleira.x);
+  assert.ok(Math.abs(p.prateleira.z - PRODUTOS.trigo.prateleira.z) - p.prateleira.d < 1e-9);
+  const sim = abrir(11);
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
+  Cena.prototype.construirArtesanal.call(visual, 'morango', p);
+  for (const fruto of visual.produtos.morango.frutos) {
+    assert.ok(Math.abs(fruto.position.x - p.horta.x) < p.canteiro.w / 2);
+    assert.ok(Math.abs(fruto.position.z - p.horta.z) < p.canteiro.d / 2);
+  }
+  sim.estado.versaoLayout = 12;
+  sim.estado.jogador.inventario = ['morango'];
+  Object.assign(sim.estado.produtos.morango, { horta: 5, prateleira: 7, apresentado: true });
+  const migrado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
+  assert.deepEqual(migrado.estado.produtos.morango, sim.estado.produtos.morango);
+  assert.deepEqual(migrado.estado.jogador.inventario, ['morango']);
+  assert.equal(migrado.estado.melhorias.alaArtesanal, 1);
+});
+
+test('N12 instala mel na frente direita e mantém os estoques ao migrar saves V14', () => {
+  const sim = abrir(11), p = PRODUTOS.mel;
+  assert.equal(sim.estado.produtos.mel.liberado, false);
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
+  Cena.prototype.construirArtesanal.call(visual, 'mel', p);
+  assert.equal(visual.produtos.mel.grupo.visible, false);
+  sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
+  assert.equal(sim.comprarMelhoria('apiario').sucesso, true);
+  assert.equal(sim.estado.estagioLoja, 5);
+  assert.ok(p.horta.x > PRODUTOS.morango.horta.x);
+  assert.equal(p.horta.z, PRODUTOS.morango.horta.z);
+  assert.ok(p.prateleira.x > 14 && p.prateleira.x + p.prateleira.w / 2 < 20.9);
+  assert.ok(p.prateleira.z > 3 && p.prateleira.z + p.prateleira.d / 2 < 6.7);
+  assert.ok(p.cliente.z < p.prateleira.z - p.prateleira.d / 2);
+  Cena.prototype.construirArtesanal.call(visual, 'mel', p);
+  assert.equal(visual.produtos.mel.grupo.visible, true);
+  for (const pote of visual.produtos.mel.frutas) {
+    assert.ok(Math.abs(pote.position.x - p.prateleira.x) < p.prateleira.w / 2);
+    assert.ok(Math.abs(pote.position.z - p.prateleira.z) < p.prateleira.d / 2);
+  }
+  sim.estado.versaoLayout = 14;
+  Object.assign(sim.estado.produtos.mel, { horta: 5, prateleira: 7, apresentado: true });
+  Object.assign(sim.estado.jogador, { x: 13.2, z: -14.7, inventario: ['mel'] });
+  const migrado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
+  assert.equal(migrado.estado.melhorias.apiario, 1);
+  assert.deepEqual(migrado.estado.produtos.mel, sim.estado.produtos.mel);
+  assert.deepEqual(migrado.estado.jogador.inventario, ['mel']);
+});
+
+test('N13 instala queijaria atrás do escritório, Deli à direita e migra produção V15', () => {
+  const sim = abrir(12), p = PRODUTOS.queijo;
+  assert.equal(sim.estado.produtos.queijo.liberado, false);
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
+  Cena.prototype.construirArtesanal.call(visual, 'queijo', p);
+  assert.equal(visual.produtos.queijo.grupo.visible, false);
+  sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
+  assert.equal(sim.comprarMelhoria('queijaria').sucesso, true);
+  assert.equal(sim.estado.estagioLoja, 5);
+  assert.ok(p.horta.x >= -3.1 && p.horta.x <= 1.1);
+  assert.ok(p.horta.z + p.curral.d / 2 < -9.3);
+  assert.ok(p.coleta.z > p.horta.z && p.coleta.z < -9.3);
+  assert.ok(p.prateleira.x > 19 && p.prateleira.x + p.prateleira.w / 2 < 20.76);
+  assert.ok(p.prateleira.z > PRODUTOS.pao.prateleira.z);
+  assert.ok(p.prateleira.z + p.prateleira.d / 2 < PRODUTOS.mel.prateleira.z - PRODUTOS.mel.prateleira.d / 2);
+  assert.ok(p.cliente.x < p.prateleira.x - p.prateleira.w / 2);
+  Cena.prototype.construirArtesanal.call(visual, 'queijo', p);
+  assert.equal(visual.produtos.queijo.grupo.visible, true);
+  for (const queijo of visual.produtos.queijo.frutas) {
+    assert.ok(Math.abs(queijo.position.x - p.prateleira.x) < p.prateleira.w / 2);
+    assert.ok(Math.abs(queijo.position.z - p.prateleira.z) < p.prateleira.d / 2);
+  }
+  sim.estado.versaoLayout = 15;
+  Object.assign(sim.estado.oficinas.queijo, { ingredientes: { leite: 2 }, progresso: 2, produzidos: 4 });
+  Object.assign(sim.estado.produtos.queijo, { horta: 3, prateleira: 7, apresentado: true });
+  Object.assign(sim.estado.jogador, { x: 19.2, z: -16, inventario: ['queijo'] });
+  const migrado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
+  assert.equal(migrado.estado.melhorias.queijaria, 1);
+  assert.deepEqual(migrado.estado.oficinas.queijo, sim.estado.oficinas.queijo);
+  assert.deepEqual(migrado.estado.produtos.queijo, sim.estado.produtos.queijo);
+  assert.deepEqual(migrado.estado.jogador.inventario, ['queijo']);
+});
+
+test('N15 prolonga o mel sem misturar estoques ou repor a seção vizinha na divisória', () => {
+  const sim = abrir(12);
+  assert.ok(Math.abs(volumesDoces(sim.estado.produtos)[0].w - PRODUTOS.mel.prateleira.w) < 1e-8);
+  assert.equal(selecionarCompartimentoDoces(PRODUTOS.geleia.reposicao, sim.estado.produtos), undefined);
+  sim.estado.estatisticas.clientes = 350;
+  assert.equal(sim.comprarMelhoria('cozinhaGeleia').sucesso, true);
+  assert.equal(sim.estado.melhorias.queijaria, 0); // Compra adiada continua permitida.
+  const volumes = sim.obstaculos().filter(o => o.movel === 'doces');
+  assert.equal(volumes.length, 1);
+  assert.ok(Math.abs(volumes[0].w - 6.4) < 1e-8);
+  assert.equal(sim.estado.estagioLoja, 5);
+  const divisoria = PRODUTOS.mel.prateleira.x - PRODUTOS.mel.prateleira.w / 2;
+  for (const [x, id] of [[divisoria - 0.01, 'geleia'], [divisoria, 'mel'], [divisoria + 0.01, 'mel']]) {
+    sim.estado.produtos.mel.prateleira = 0;
+    sim.estado.produtos.geleia.prateleira = 0;
+    sim.estado.jogador.inventario = ['mel', 'geleia'];
+    interagir(sim, { x, z: 3.3 });
+    assert.equal(sim.estado.produtos[id].prateleira, 1);
+    assert.equal(sim.estado.produtos[id === 'mel' ? 'geleia' : 'mel'].prateleira, 0);
+  }
+  sim.estado.produtos.mel.prateleira = PRODUTOS.mel.capacidadePrateleira;
+  sim.estado.jogador.inventario = ['geleia'];
+  const antes = sim.estado.produtos.geleia.prateleira;
+  interagir(sim, { x: divisoria, z: 3.3 });
+  assert.equal(sim.estado.produtos.geleia.prateleira, antes);
+  assert.deepEqual(sim.estado.jogador.inventario, ['geleia']);
+});
+
+test('N15 mantém a cozinha externa, potes dentro da seção e produção de saves V16', () => {
+  const sim = abrir(15), p = PRODUTOS.geleia;
+  assert.ok(p.horta.x >= PRODUTOS.ovos.prateleira.x && p.horta.x <= PRODUTOS.leite.prateleira.x);
+  assert.ok(p.horta.z + p.curral.d / 2 < -9.3);
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
+  Cena.prototype.construirArtesanal.call(visual, 'geleia', p);
+  for (const pote of visual.produtos.geleia.frutas) {
+    assert.ok(Math.abs(pote.position.x - p.prateleira.x) < p.prateleira.w / 2);
+    assert.ok(Math.abs(pote.position.z - p.prateleira.z) < p.prateleira.d / 2);
+  }
+  sim.estado.versaoLayout = 16;
+  Object.assign(sim.estado.oficinas.geleia, { ingredientes: { morango: 2, mel: 1 }, progresso: 2, produzidos: 3 });
+  Object.assign(sim.estado.produtos.geleia, { horta: 3, prateleira: 7, apresentado: true });
+  Object.assign(sim.estado.jogador, { x: 19.2, z: -10.9, inventario: ['geleia'] });
+  const migrado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
+  assert.deepEqual(migrado.estado.oficinas.geleia, sim.estado.oficinas.geleia);
+  assert.deepEqual(migrado.estado.produtos.geleia, sim.estado.produtos.geleia);
+  assert.deepEqual(migrado.estado.jogador.inventario, ['geleia']);
 });

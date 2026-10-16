@@ -1,8 +1,16 @@
 # Desbloqueios por nível
 
-O [novo layout](PLANTA-LOJA-V2.md) está implementado sem alterar os níveis, custos ou receitas abaixo. O leite usa uma ilha fria desde o nível 5; a padaria fica ao fundo do salão. As interações automáticas funcionam junto aos objetos, por qualquer lado acessível. Bancas, hortas e oficinas foram afastadas; o terreno e o piso aumentaram para evitar coleta ou reposição de mercadorias vizinhas, sem círculos no chão.
+O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. O anexo artesanal ainda conserva a geometria anterior.
+
+No [nível 7](PLANTA-LOJA-N7.md), comprar trigo por R$ 400 acrescenta o canteiro atrás do milho e a terceira seção do hortifruti, sem ampliar o salão. Todos os canteiros de cultivos medem 3,6 × 2,5 u.
+
+No [nível 9](PLANTA-LOJA-N9.md), a padaria amplia o salão para 24 × 16 u à direita. O balcão fica junto à parede direita, de frente para o hortifruti. Entregue trigo na caixa ao fundo do conjunto: moinho e forno mantêm a receita de três pães por trigo.
 
 ## Disponíveis
+
+No [nível 4](PLANTA-LOJA-N4.md), a compra de ovos instala o galinheiro atrás da loja e uma estante alta de três níveis junto à parede posterior, à direita da porta de produção. O salão mantém 14 × 16 u. As galinhas produzem um ovo a cada 3,5 segundos, sem insumos; coleta e reposição continuam manuais ou pelo repositor contratado posteriormente.
+
+No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinheiro, e o refrigerador vertical de duas portas de vidro fica à direita dos ovos na parede posterior. O salão continua com 14 × 16 u. O curral produz uma garrafa a cada 4,5 segundos, sem insumos. Abasteça ovos e leite pela frente do expositor correspondente; os estoques são separados, inclusive na divisória.
 
 | Nível | Melhoria ou produto | Custo | Preço de venda por unidade |
 | --- | --- | --- | --- |
@@ -16,7 +24,7 @@ O [novo layout](PLANTA-LOJA-V2.md) está implementado sem alterar os níveis, cu
 | 8 | Mais 5 cestas (até 10 clientes na loja) | R$ 100 | — |
 | 9 | Padaria | R$ 1.400 | R$ 10 por pão |
 | 10 | Cesta de trabalho: 8 produtos e +15% de velocidade | R$ 400 | — |
-| 11 | Ala artesanal e estufa de morangos | R$ 1.200 | R$ 16 por morango |
+| 11 | Estufa de morangos | R$ 1.200 | R$ 16 por morango |
 | 12 | Apiário do bairro | R$ 850 | R$ 24 por pote de mel |
 | 13 | Queijaria | R$ 1.600 | R$ 18 por queijo |
 | 14 | Irrigação: tempo de crescimento das hortas reduzido em 25% | R$ 650 | — |
@@ -27,10 +35,11 @@ O [novo layout](PLANTA-LOJA-V2.md) está implementado sem alterar os níveis, cu
 
 - A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 15 é o último marco de conteúdo; a loja pode continuar funcionando e subindo de nível depois dele.
 - A cesta de trabalho prepara o jogador para viagens maiores sem mudar o começo do jogo.
-- A ala artesanal exige a padaria. Ela acrescenta um salão ao fundo da loja, conectado por uma passagem na ala dos ovos, e uma estufa ao lado do curral. As outras alas continuam funcionando durante a construção.
-- Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Colete e abasteça as bancas na nova ala.
-- A queijaria exige a ala artesanal e a ala do leite. Entregue **1 leite → 2 queijos**, em 5 segundos. O lote vale R$ 36, contra R$ 20 pela garrafa de leite vendida diretamente.
-- A cozinha de geleias exige o apiário. Entregue **2 morangos + 1 mel → 3 geleias**, em 6 segundos. O lote vale R$ 90, contra R$ 56 pelos ingredientes vendidos diretamente.
+- A estufa de morangos exige a padaria. No nível 11, acrescenta um canteiro de 3,6 × 2,5 u à direita do curral e a quarta seção do hortifruti na parede esquerda. O salão ampliado no nível 9 permanece igual, sem anexo posterior. O identificador salvo continua sendo `alaArtesanal`.
+- Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Abasteça morangos na seção de hortifruti à esquerda e mel na banca do anexo.
+- A queijaria exige a estufa de morangos e a ala do leite. A produção fica atrás do escritório; o expositor refrigerado fica na lateral direita, abaixo da padaria. Entregue **1 leite → 2 queijos**, em 5 segundos. O lote vale R$ 36, contra R$ 20 pela garrafa de leite vendida diretamente.
+- O apiário do N12 fica à direita da estufa, alinhado com ela. O expositor de mel fica na frente direita do salão, sem nova ampliação. No N15, a geleia prolonga esse balcão para a esquerda, com estoque e reposição próprios.
+- A cozinha de geleias exige o apiário. Fica atrás da região de ovos/leite, com entrega e coleta pela porta posterior. Os potes são vendidos na seção esquerda do balcão de mel e geleia, na frente direita. Entregue **2 morangos + 1 mel → 3 geleias**, em 6 segundos. O lote vale R$ 90, contra R$ 56 pelos ingredientes vendidos diretamente.
 - Para entregar ingredientes, aproxime-se da oficina carregando-os. Cada ingrediente tem estoque de entrada de até 8 unidades. A etiqueta mostra ingredientes disponíveis, receita, progresso e produtos prontos. Depois, recolha o lote e leve-o à banca. O repositor também coleta e abastece produtos prontos; o jogador fornece os ingredientes das receitas.
 - Uma oficina cheia pausa a produção sem consumir ingredientes: até 8 queijos ou 9 geleias aguardam coleta. As bancas comportam 12 unidades de cada produto.
 - Os quatro novos produtos entram nos pedidos **após o primeiro abastecimento**. Depois disso, continue repondo para atender à demanda.

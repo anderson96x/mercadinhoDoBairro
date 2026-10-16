@@ -1,6 +1,10 @@
 # Como ajustar e expandir o jogo
 
+O início da loja usa a [nova planta N1](PLANTA-LOJA-N1.md), seguida pelo [milho no N3](PLANTA-LOJA-N3.md). Edite `src/jogo/planta.js` para o terreno, salão, porta posterior, canteiros e compartimentos de hortifruti; `configuracao.js` consome essa geometria. `FAZENDAS_HORTIFRUTI` mantém milho alinhado atrás do tomate e reserva trigo ainda mais ao fundo. Todo canteiro deve terminar antes de `PLANTA_INICIAL.limites.minZ`, inteiramente atrás da loja. As seções do móvel têm alvos independentes na face do corredor e volumes contíguos agrupados. Não aplique a exigência de espaçamento entre móveis independentes às divisórias desse conjunto. `node scripts/render-floor-plan.mjs` gera os marcos N1 e N3; as plantas V2 são históricas.
+
 ## Regras rápidas
+
+O [N4](PLANTA-LOJA-N4.md) usa `PLANTA_OVOS` e o [N5](PLANTA-LOJA-N5.md), `PLANTA_LEITE`. Os estágios 1 e 2 registram instalações de equipamentos mantendo o salão inicial. O N7 também mantém o salão inicial. No N9, `PLANTA_AMPLIADA` define o salão 24 × 16 u; `ALA_PADARIA` ativa o piso lateral e substitui a parede direita inicial. `MODELO_PADARIA`, `pontoPadaria()` e `volumePadaria()` mantêm coordenadas locais, rotação de 90° e volumes coerentes entre modelos, animações e colisão. `selecionarExpositorPosterior()` delimita as faixas de reposição pela frente de ovos e leite; na divisória, ovos têm prioridade estável. Verificações de espaçamento permitem alcances próximos com seleção exclusiva ou parede contínua cobrindo toda a projeção compartilhada. O gerador produz N1, N3, N4, N5, N7 e N9.
 
 Abra `src/jogo/configuracao.js`. Ele concentra os ajustes mais frequentes:
 

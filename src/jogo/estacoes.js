@@ -5,7 +5,7 @@ export function geometriaEstacao(id, tipo) {
   if (id === 'pao') return ALA_PADARIA.entrada;
   const p = PRODUTOS[id];
   return tipo === 'reposicao' ? p.prateleira : {
-    ...p.horta, ...(id === 'ovos' ? { w: 2.5, d: 2.2 } : p.curral ?? { w: 2.5, d: 3.6 })
+    ...p.horta, ...(p.galinheiro ?? p.canteiro ?? p.curral ?? { w: 2.5, d: 3.6 })
   };
 }
 
@@ -24,4 +24,20 @@ export function distanciaEstacao(ator, objeto) {
 export function intervaloEstacoes(a, b) {
   return Math.hypot(Math.max(0, Math.abs(a.x - b.x) - (a.w + b.w) / 2),
     Math.max(0, Math.abs(a.z - b.z) - (a.d + b.d) / 2));
+}
+
+// Uma parede contínua pode separar alcances próximos em ambientes distintos.
+// Deve cobrir toda a projeção compartilhada, não só a linha entre os centros;
+// assim um vão de porta ou o fim da parede não concede uma exceção indevida.
+export function estacoesSeparadasPorParede(a, b, paredes, raio) {
+  return paredes.some(p => ['x', 'z'].some(eixo => {
+    const transversal = eixo === 'x' ? 'z' : 'x';
+    const tamanho = eixo === 'x' ? 'w' : 'd', largura = eixo === 'x' ? 'd' : 'w';
+    if (p[tamanho] > 0.3) return false;
+    const min = o => o[eixo] - o[tamanho] / 2, max = o => o[eixo] + o[tamanho] / 2;
+    if (!((max(a) <= min(p) && min(b) >= max(p)) || (max(b) <= min(p) && min(a) >= max(p)))) return false;
+    const inicio = Math.max(a[transversal] - a[largura] / 2 - raio, b[transversal] - b[largura] / 2 - raio);
+    const fim = Math.min(a[transversal] + a[largura] / 2 + raio, b[transversal] + b[largura] / 2 + raio);
+    return inicio <= fim && p[transversal] - p[largura] / 2 <= inicio + 1e-8 && p[transversal] + p[largura] / 2 >= fim - 1e-8;
+  }));
 }

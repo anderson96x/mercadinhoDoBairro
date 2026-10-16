@@ -1,15 +1,10 @@
 import * as THREE from 'three';
+import { PLANTA_INICIAL, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
-import { CONFIG, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL } from './configuracao.js';
+import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
-export const PAREDES_LOJA = [
-  { x: 3, z: -8.3, w: 12.2, d: 0.28, h: 2.8 },
-  { x: 9.1, z: -0.8, w: 0.28, d: 15, h: ALTURA_PAREDE_BAIXA, lateral: true },
-  { x: -3.1, z: -4.55, w: 0.28, d: 7.5, h: 2.8 },
-  { x: -3.1, z: 4.45, w: 0.28, d: 4.5, h: 2.8 },
-  { x: 4.65, z: 6.7, w: 8.9, d: 0.28, h: ALTURA_PAREDE_BAIXA }
-];
+export const PAREDES_LOJA = paredesPlantaInicial(ALTURA_PAREDE_BAIXA);
 
 const limitesEscritorio = ESCRITORIO.limites;
 export const PAREDES_ESCRITORIO = [
@@ -97,6 +92,8 @@ function criarDetalhesGrama(grupo) {
     geometria.computeVertexNormals();
     const malha = new THREE.Mesh(geometria, new THREE.MeshStandardMaterial({ color: cores[i], side: THREE.DoubleSide, roughness: 1 }));
     malha.receiveShadow = true;
+    // O Canvas desenha a vegetação antes dos pisos que passaram a cobri-la.
+    malha.userData.fundo = 2;
     grupo.add(malha);
   });
 }
@@ -121,7 +118,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   );
   chao(0, 120, 0.3, 120, 0x78c85a, 0, -0.5, 0);
   // O terreno inteiro existe desde o início; as construções ocupam espaço nele depois.
-  chao(1, 40, 0.3, 37, 0x62b94b, 4, -0.2, -4);
+  const terreno = PLANTA_INICIAL.terreno;
+  chao(1, terreno.w, 0.3, terreno.d, 0x62b94b, terreno.x, -0.2, terreno.z);
   // Manchas suaves quebram o tapete verde sem criar obstaculos no terreno.
   for (const [x, z, rx, rz, cor] of [
     [-10.8, -8.4, 1.2, 0.7, 0x69bd4f], [-5.3, -4.8, 1.1, 0.6, 0x67b94d],
@@ -161,80 +159,30 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       }
     }
   };
-  // Os pisos se encontram em x = 9.1, com a mesma altura e malha de azulejos.
-  chao(3, 12.2, 0.2, 15, 0xc4b9a5, 3, 0.06, -0.8);
-  chao(4, 12.2, 0.07, 14.7, 0xe3dcc8, 3, 0.19, -0.8, 'piso');
-  decorarPiso(-2.2, 9);
-  for (let x = -2.8; x < 9; x += 1.2) chao(5, 0.018, 0.008, 14.65, 0xc8bfae, x, 0.23, -0.8);
-  for (let z = -8.1; z < 6.6; z += 1.2) chao(5, 12.2, 0.008, 0.018, 0xc8bfae, 3, 0.23, z);
-  const area = ALA_PRODUCAO.piso;
-  const ala = new THREE.Group(); grupo.add(ala); destino = ala;
-  ala.name = 'ala-producao';
-  ala.visible = false;
+  // O salão inicial vem da mesma planta usada pela navegação e documentação.
+  const salao = PLANTA_INICIAL.salao;
+  chao(3, salao.w, 0.2, salao.d, 0xc4b9a5, salao.x, 0.06, salao.z);
+  chao(4, salao.w, 0.07, salao.d - 0.3, 0xe3dcc8, salao.x, 0.19, salao.z, 'piso');
+  decorarPiso(-2.2, 10);
+  for (let x = -2.8; x < 10.9; x += 1.2) chao(5, 0.018, 0.008, salao.d - 0.35, 0xc8bfae, x, 0.23, salao.z);
+  for (let z = -9.1; z < 6.6; z += 1.2) chao(5, salao.w, 0.008, 0.018, 0xc8bfae, salao.x, 0.23, z);
+  const area = ALA_PADARIA.piso;
+  const ampliacao = new THREE.Group(); grupo.add(ampliacao); destino = ampliacao;
+  ampliacao.name = 'ampliacao-padaria'; ampliacao.visible = false;
   chao(3, area.w, 0.2, area.d, 0xc4b9a5, area.x, 0.06, area.z);
   chao(4, area.w, 0.07, area.d - 0.3, 0xe3dcc8, area.x, 0.19, area.z, 'piso');
-  decorarPiso(9.8, 2);
-  for (let x = 9.2; x < 12.1; x += 1.2) chao(5, 0.018, 0.008, area.d - 0.35, 0xc8bfae, x, 0.23, area.z);
-  for (let z = -8.1; z < 6.6; z += 1.2) chao(5, area.w, 0.008, 0.018, 0xc8bfae, area.x, 0.23, z);
-  const paredesAla = new THREE.Group(); ala.add(paredesAla); destino = paredesAla;
-  const paredeLateralOvos = new THREE.Group(); paredesAla.add(paredeLateralOvos);
-  const passagemArtesanal = new THREE.Group(); paredesAla.add(passagemArtesanal);
+  decorarPiso(11.4, 8);
+  for (let x = 11.6; x < 20.8; x += 1.2) chao(5, 0.018, 0.008, area.d - 0.35, 0xc8bfae, x, 0.23, area.z);
+  for (let z = -9.1; z < 6.6; z += 1.2) chao(5, area.w, 0.008, 0.018, 0xc8bfae, area.x, 0.23, z);
+  const paredesAmpliacao = new THREE.Group(); ampliacao.add(paredesAmpliacao);
+  const passagemArtesanal = new THREE.Group(); paredesAmpliacao.add(passagemArtesanal);
   passagemArtesanal.name = 'parede-passagem-artesanal';
-  for (const p of ALA_PRODUCAO.paredes) {
-    destino = p.z === -8.3 ? passagemArtesanal : p.x === 12.1 ? paredeLateralOvos : paredesAla;
+  for (const p of ALA_PADARIA.paredes) {
+    destino = p.passagemArtesanal ? passagemArtesanal : paredesAmpliacao;
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
   }
-  const areaLeite = ALA_LEITE.piso;
-  const alaLeite = new THREE.Group(); grupo.add(alaLeite); destino = alaLeite;
-  alaLeite.name = 'ala-leite'; alaLeite.visible = false;
-  chao(3, areaLeite.w, 0.2, areaLeite.d, 0xc4b9a5, areaLeite.x, 0.06, areaLeite.z);
-  chao(4, areaLeite.w, 0.07, areaLeite.d - 0.3, 0xe3dcc8, areaLeite.x, 0.19, areaLeite.z, 'piso');
-  decorarPiso(12.8, 2);
-  for (let x = 12.2; x < 15.1; x += 1.2) chao(5, 0.018, 0.008, areaLeite.d - 0.35, 0xc8bfae, x, 0.23, areaLeite.z);
-  for (let z = -8.1; z < 6.6; z += 1.2) chao(5, areaLeite.w, 0.008, 0.018, 0xc8bfae, areaLeite.x, 0.23, z);
-  const paredesAlaLeite = new THREE.Group(); alaLeite.add(paredesAlaLeite); destino = paredesAlaLeite;
-  const paredeLateralLeite = new THREE.Group(); paredesAlaLeite.add(paredeLateralLeite);
-  const passagemLeite = new THREE.Group(); paredesAlaLeite.add(passagemLeite);
-  for (const p of ALA_LEITE.paredes) {
-    destino = p.passagemArtesanal ? passagemLeite : p.x === 15.1 ? paredeLateralLeite : paredesAlaLeite;
-    bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
-    bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
-    if (p.z !== 6.7) rodape(p);
-  }
-  const areaTrigo = ALA_TRIGO.piso;
-  const alaTrigo = new THREE.Group(); grupo.add(alaTrigo); destino = alaTrigo;
-  alaTrigo.name = 'ala-trigo'; alaTrigo.visible = false;
-  chao(3, areaTrigo.w, 0.2, areaTrigo.d, 0xc4b9a5, areaTrigo.x, 0.06, areaTrigo.z);
-  chao(4, areaTrigo.w, 0.07, areaTrigo.d - 0.3, 0xe3dcc8, areaTrigo.x, 0.19, areaTrigo.z, 'piso');
-  decorarPiso(15.8, 5);
-  for (let x = 15.2; x < 21.1; x += 1.2) chao(5, 0.018, 0.008, areaTrigo.d - 0.35, 0xc8bfae, x, 0.23, areaTrigo.z);
-  for (let z = -8.1; z < 6.6; z += 1.2) chao(5, areaTrigo.w, 0.008, 0.018, 0xc8bfae, areaTrigo.x, 0.23, z);
-  const paredesAlaTrigo = new THREE.Group(); alaTrigo.add(paredesAlaTrigo); destino = paredesAlaTrigo;
-  const passagemTrigo = new THREE.Group(); paredesAlaTrigo.add(passagemTrigo);
-  for (const p of ALA_TRIGO.paredes) {
-    destino = p.passagemArtesanal ? passagemTrigo : paredesAlaTrigo;
-    const parede = bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
-    if (p.painelExpansao) parede.name = 'painel-expansao-lateral';
-    bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
-    if (p.z !== 6.7) rodape(p);
-  }
-  const artesanal = new THREE.Group(); grupo.add(artesanal); destino = artesanal;
-  artesanal.name = 'ala-artesanal'; artesanal.visible = false;
-  const areaArtesanal = ALA_ARTESANAL.piso;
-  chao(3, areaArtesanal.w, 0.2, areaArtesanal.d, 0xc4b9a5, areaArtesanal.x, 0.06, areaArtesanal.z);
-  chao(4, areaArtesanal.w, 0.07, areaArtesanal.d, 0xe9e2ce, areaArtesanal.x, 0.19, areaArtesanal.z, 'piso');
-  for (let x = 9.2; x < 21; x += 1.2) chao(5, 0.018, 0.008, areaArtesanal.d - 0.1, 0xc8bfae, x, 0.23, areaArtesanal.z);
-  for (let z = -19.4; z < -8.3; z += 1.2) chao(5, areaArtesanal.w - 0.1, 0.008, 0.018, 0xc8bfae, areaArtesanal.x, 0.23, z);
-  for (const p of ALA_ARTESANAL.paredes) {
-    const parede = bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
-    if (p.painelExpansao) parede.name = 'painel-expansao-artesanal';
-    bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
-    rodape(p);
-  }
-  for (const x of [9.25, 20.95]) bloco(0.12, 2.3, 0.2, 0x286750, x, 1.38, -8.3, 'principal');
-  bloco(11.82, 0.28, 0.22, 0xe7b65a, 15.1, 2.6, -8.3, 'destaque');
   const lateral = new THREE.Group(); grupo.add(lateral);
   const andaime = new THREE.Group(); grupo.add(andaime); destino = andaime;
   andaime.name = 'andaime';
@@ -247,7 +195,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const andaimeLeite = andaime.clone(); grupo.add(andaimeLeite);
   andaimeLeite.name = 'andaime-leite'; andaimeLeite.position.x = 3; andaimeLeite.visible = false;
   const andaimeTrigo = andaime.clone(); grupo.add(andaimeTrigo);
-  andaimeTrigo.name = 'andaime-trigo'; andaimeTrigo.position.x = 9; andaimeTrigo.visible = false;
+  andaimeTrigo.name = 'andaime-padaria'; andaimeTrigo.position.x = 9; andaimeTrigo.visible = false;
   destino = grupo;
   for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) {
     destino = p.lateral ? lateral : grupo;
@@ -257,12 +205,26 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   }
   destino = grupo;
   // Um único rodapé acompanha a fachada durante a expansão, sem emenda em x = 9.1.
-  const rodapeFrontal = rodape(PAREDES_LOJA.find(p => p.z === 6.7));
+  const rodapeFrontal = rodape(PAREDES_LOJA.find(p => p.fachada));
   rodapeFrontal.name = 'rodape-frontal';
-  // Porta de serviço aberta para a horta lateral.
-  for (const z of [-0.8, 2.2]) bloco(0.34, 2.9, 0.14, 0x286750, -3.1, 1.68, z, 'principal');
-  bloco(0.34, 0.22, 3.15, 0x286750, -3.1, 3.02, 0.7, 'principal');
-  for (let x = -5; x < -3.3; x += 0.55) chao(3, 0.43, 0.06, 1.6, 0xd6c7ac, x, 0.16, 0.7);
+  // Porta dupla de produção: folhas recolhidas para fora, com vão real livre.
+  const servico = CONFIG.portaProducao;
+  for (const lado of [-1, 1]) {
+    const x = servico.x + lado * servico.w / 2;
+    bloco(0.12, 2.9, 0.2, 0x286750, x, 1.68, servico.z, 'principal');
+    const folha = new THREE.Group(); grupo.add(folha);
+    folha.name = `porta-producao-${lado}`;
+    folha.position.set(x, 0.23, servico.z);
+    folha.rotation.y = -lado * Math.PI / 2;
+    destino = folha;
+    bloco(1.38, 2.3, 0.08, 0x286750, -lado * 0.72, 1.2, 0, 'principal');
+    bloco(1.16, 1.3, 0.09, 0xa8c7c9, -lado * 0.72, 1.45, 0);
+    destino = grupo;
+  }
+  bloco(servico.w + 0.2, 0.22, 0.2, 0x286750, servico.x, 3.02, servico.z, 'principal');
+  // A horta está atrás da loja; o caminho permanece inteiro na faixa posterior.
+  const coletaTomate = PRODUTOS.tomate.coleta;
+  for (let x = coletaTomate.x; x <= servico.x; x += 0.65) chao(3, 0.5, 0.06, 0.65, 0xd6c7ac, x, 0.08, coletaTomate.z);
   // Escritório no canto esquerdo, com paredes e porta à meia altura para manter o interior visível.
   chao(6, 3.85, 0.012, limitesEscritorio.maxZ - limitesEscritorio.minZ - 0.2, 0xd5c2d5, -1, 0.241, (limitesEscritorio.minZ + limitesEscritorio.maxZ) / 2);
   for (const x of [-1.4, 0]) bloco(0.09, 1.25, 0.23, 0x286750, x, 0.855, PORTA_ESCRITORIO.z, 'principal');
@@ -368,9 +330,11 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     }
   }
   // Cerca e árvores enquadram a área de cultivo.
-  for (let z = -21; z <= 6; z += 1.3) {
-    bloco(0.13, 0.9, 0.13, 0xa8733f, -11.6, 0.5, z);
-    bloco(0.1, 0.12, 1.35, 0xd29a5b, -11.6, 0.7, z + 0.62);
+  const cerca = PLANTA_INICIAL.cercaFundos;
+  const zCerca = cerca.z;
+  for (let x = cerca.minX; x <= cerca.maxX; x += 1.3) {
+    bloco(0.13, 0.9, 0.13, 0xa8733f, x, 0.5, zCerca);
+    bloco(1.35, 0.12, 0.1, 0xd29a5b, x + 0.62, 0.7, zCerca);
   }
   const arvoreLateral = new THREE.Group(); grupo.add(arvoreLateral);
   for (const [indice, [x,z]] of [[-12.4,-6.2],[-12.4,4.7],[13.8,-5.4]].entries()) {
@@ -404,53 +368,26 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     atualizarEstagio(estagio, dt = 0) {
       if (estagioAnterior !== undefined && estagio > estagioAnterior) progresso = 0;
       estagioAnterior = estagio;
-      const duracao = estagio >= ALA_TRIGO.indice ? ALA_TRIGO.duracaoConstrucao : estagio >= ALA_LEITE.indice ? ALA_LEITE.duracaoConstrucao : ALA_PRODUCAO.duracaoConstrucao;
+      const duracao = estagio >= ALA_PADARIA.indice ? ALA_PADARIA.duracaoConstrucao : estagio >= ALA_TRIGO.indice ? ALA_TRIGO.duracaoConstrucao : estagio >= ALA_LEITE.indice ? ALA_LEITE.duracaoConstrucao : ALA_PRODUCAO.duracaoConstrucao;
       progresso = Math.min(1, progresso + dt / duracao);
-      const progressoOvos = estagio >= ALA_LEITE.indice ? 1 : progresso;
-      const piso = THREE.MathUtils.smoothstep(progressoOvos, 0, 0.5);
-      const paredes = THREE.MathUtils.smoothstep(progressoOvos, 0.35, 0.8);
+      const ampliada = estagio >= ALA_PADARIA.indice;
+      const progressoAmpliacao = estagio > ALA_PADARIA.indice ? 1 : progresso;
       const equipamentos = THREE.MathUtils.smoothstep(progresso, 0.7, 1);
-      const progressoLeite = estagio >= ALA_TRIGO.indice ? 1 : progresso;
-      const pisoLeite = THREE.MathUtils.smoothstep(progressoLeite, 0, 0.5);
-      const progressoTrigo = estagio >= ALA_PADARIA.indice ? 1 : progresso;
-      const pisoTrigo = THREE.MathUtils.smoothstep(progressoTrigo, 0, 0.5);
-      artesanal.visible = estagio >= ALA_ARTESANAL.indice;
-      artesanal.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progresso, 0, 0.8));
-      passagemArtesanal.visible = estagio < ALA_ARTESANAL.indice;
-      passagemLeite.visible = estagio < ALA_ARTESANAL.indice;
-      passagemTrigo.visible = estagio < ALA_ARTESANAL.indice;
-      ala.visible = !!estagio;
-      ala.scale.x = Math.max(0.001, piso);
-      ala.position.x = 9.1 * (1 - ala.scale.x);
-      paredesAla.scale.y = Math.max(0.001, paredes);
-      paredeLateralOvos.visible = estagio === ALA_PRODUCAO.indice || (estagio === ALA_LEITE.indice && progresso < 0.8);
-      paredeLateralOvos.position.x = estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0;
-      alaLeite.visible = estagio >= ALA_LEITE.indice;
-      alaLeite.scale.x = Math.max(0.001, pisoLeite);
-      alaLeite.position.x = 12.1 * (1 - alaLeite.scale.x);
-      paredesAlaLeite.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progressoLeite, 0.35, 0.8));
-      paredeLateralLeite.visible = estagio === ALA_LEITE.indice || (estagio === ALA_TRIGO.indice && progresso < 0.8);
-      paredeLateralLeite.position.x = estagio >= ALA_TRIGO.indice ? areaTrigo.w * pisoTrigo : 0;
-      alaTrigo.visible = estagio >= ALA_TRIGO.indice;
-      alaTrigo.scale.x = Math.max(0.001, pisoTrigo);
-      alaTrigo.position.x = 15.1 * (1 - alaTrigo.scale.x);
-      paredesAlaTrigo.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progressoTrigo, 0.35, 0.8));
-      lateral.visible = !estagio || (estagio === ALA_PRODUCAO.indice && progresso < 0.8);
-      lateral.position.x = estagio ? area.w * piso : 0;
-      const largura = (estagio ? area.w * piso : 0) + (estagio >= ALA_LEITE.indice ? areaLeite.w * pisoLeite : 0) + (estagio >= ALA_TRIGO.indice ? areaTrigo.w * pisoTrigo : 0);
-      rodapeFrontal.scale.x = 1 + largura / 8.9;
-      rodapeFrontal.position.x = 4.65 + largura / 2;
-      andaime.visible = estagio === ALA_PRODUCAO.indice && progresso > 0 && progresso < 0.95;
-      andaime.position.x = -area.w * (1 - piso);
-      andaime.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
-      andaimeLeite.visible = estagio === ALA_LEITE.indice && progresso > 0 && progresso < 0.95;
-      andaimeLeite.position.x = 3 - areaLeite.w * (1 - pisoLeite);
-      andaimeLeite.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
-      andaimeTrigo.visible = estagio === ALA_TRIGO.indice && progresso > 0 && progresso < 0.95;
-      andaimeTrigo.position.x = 9 - areaTrigo.w * (1 - pisoTrigo);
-      andaimeTrigo.scale.y = 1 - THREE.MathUtils.smoothstep(progresso, 0.8, 0.95);
-      arvoreLateral.position.x = estagio >= ALA_LEITE.indice ? 3 * pisoLeite : 0;
-      arvoreLateral.visible = estagio < ALA_TRIGO.indice;
+      ampliacao.visible = ampliada;
+      // A área caminhável fica disponível inteira na compra; paredes e equipamentos sobem.
+      paredesAmpliacao.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progressoAmpliacao, 0, 0.7));
+      lateral.visible = !ampliada;
+      lateral.position.x = 0;
+      const largura = ampliada ? area.w : 0;
+      const fachada = PAREDES_LOJA.find(p => p.fachada);
+      rodapeFrontal.scale.x = 1 + largura / fachada.w;
+      rodapeFrontal.position.x = fachada.x + largura / 2;
+      andaime.visible = false;
+      andaimeLeite.visible = false;
+      andaimeTrigo.visible = ampliada && progressoAmpliacao > 0 && progressoAmpliacao < 0.95;
+      andaimeTrigo.position.x = 20.9 - 12.35;
+      andaimeTrigo.scale.y = 1 - THREE.MathUtils.smoothstep(progressoAmpliacao, 0.8, 0.95);
+      arvoreLateral.visible = !ampliada;
       return estagio ? equipamentos : 0;
     },
     animarPorta(abertura) {
