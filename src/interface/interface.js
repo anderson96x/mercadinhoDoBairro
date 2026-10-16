@@ -1,10 +1,12 @@
 import { icone } from './icones.js';
+import pacote from '../../package.json' with { type: 'json' };
 import { PALETAS } from '../jogo/personalizacao.js';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
 import { BANCO, statusColeta } from '../jogo/banco.js';
 import { statusAssalto } from '../jogo/assalto.js';
 import { atualizarPainelClientes } from './clientes.js';
 import { atualizarPainelProducao } from './producao.js';
+const versaoJogo = pacote.version;
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
   { id: 'mercado', titulo: 'Mercado' },
@@ -282,6 +284,7 @@ export class Interface {
         </form>`;
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
+        <p class="nota">Versão ${versaoJogo}</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p><p>Para mover o mapa, arraste com o <b>botão direito</b> ou <b>Shift</b>; no celular, use <b>dois dedos</b>. <b>Shift + setas</b> também move a câmera. Para aproximar ou afastar, use a <b>roda do mouse</b> ou a <b>pinça com dois dedos</b>.</p></div></div>
           <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 4, construa o galinheiro. As galinhas produzem ovos automaticamente.</p></div></li><li><span>5</span><div><b>Abra a ala do leite</b><p>No nível 5, construa o curral por R$ 800. Recolha as garrafas de vidro e abasteça a prateleira de leite.</p></div></li><li><span>6</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>7</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">No nível 7, abra a ala do trigo por R$ 400. Colha na plantação entre o galinheiro e o curral e abasteça a nova prateleira. Cada trigo vale R$ 5.</p>
@@ -293,6 +296,7 @@ export class Interface {
       const proximaReputacao = Math.min(100, Math.ceil((this.sim.reputacao + 1) / 10) * 10);
       conteudo = `<div class="dev-painel">
         <p class="painel-subtitulo">Ajuste o progresso para testar o jogo.</p>
+        <p class="nota">Versão ${versaoJogo}</p>
         <section class="dev-cartao dev-dinheiro" aria-label="Dinheiro">
           <div class="dev-cartao-topo"><span class="dev-rotulo">${icone('moeda')} Saldo disponível</span><strong>${reais(this.sim.estado.dinheiro)}</strong></div>
           <p>No caixa: ${reais(this.sim.estado.banco.noCaixa)}. Os botões ajustam os dois valores para testar depósitos.</p>

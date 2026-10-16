@@ -1,8 +1,10 @@
 ﻿# Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.1.0**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.43.9**.
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
+
+A versão segue o formato **MAJOR.MINOR.PATCH**: mudanças incompatíveis em versões estáveis incrementam MAJOR, novas funcionalidades incrementam MINOR e correções incrementam PATCH. Durante o desenvolvimento inicial, o jogo permanece na série `0.x`, com reformulações amplas contabilizadas em MINOR. A versão é definida em `package.json` e exibida nos menus Ajuda e DEV. O [histórico de alterações](CHANGELOG.md) registra a classificação e a versão resultante de cada um dos 87 commits revisados, incluindo documentação e merges sem incremento.
 
 ## Stack e construção do jogo
 
