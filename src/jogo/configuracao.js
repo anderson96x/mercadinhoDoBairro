@@ -1,5 +1,5 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
-import { PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti } from './planta.js';
+import { PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti } from './planta.js';
 export const ALTURA_PAREDE_BAIXA = 0.75;
 export const ESCRITORIO = {
   limites: { minX: -3.1, maxX: 1.1, minZ: -9.3, maxZ: -5.8 },
@@ -11,7 +11,7 @@ export const ESCRITORIO = {
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 12,
+  versaoLayout: 13,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -100,9 +100,7 @@ export const PRODUTOS = {
   morango: {
     nome: 'Morango', plural: 'Morangos', cor: 0xe74769, preco: 16, origem: 'horta', nivelMinimo: 11,
     tempoCrescimento: 3.4, capacidadeHorta: 8, capacidadePrateleira: 12,
-    // Reserva legada deslocada para liberar o corredor de coleta do curral N5.
-    canteiro: { ...PLANTA_INICIAL.fazendaTomate.canteiro },
-    horta: { x: -2.4, z: -16.4 }, coleta: { x: -2.4, z: -14.6 },
+    ...PLANTA_MORANGO,
     ...compartimentoHortifruti('morango'), liberado: false
   },
   mel: {
@@ -195,21 +193,11 @@ export const ALA_PADARIA = {
   tempoMoagem: 1.8, tempoForno: 2.3, paesPorTrigo: 3
 };
 
-// O anexo usa o terreno ao fundo; o vão substitui a parede dos ovos.
+// Identificador preservado para compatibilidade com saves; não amplia o salão.
 export const ALA_ARTESANAL = {
   id: 'alaArtesanal', indice: 5, nivelMinimo: 11, custo: 1200, produtos: ['morango'],
-  piso: { x: 15.1, z: -13.9, w: 12, d: 11.2 },
-  paredes: [
-    { x: 10.1, z: -19.5, w: 2, d: 0.28, h: ALTURA_PAREDE_BAIXA },
-    { x: 12.9, z: -19.5, w: 3.6, d: 0.28, h: ALTURA_PAREDE_BAIXA, painelExpansao: true },
-    { x: 17.9, z: -19.5, w: 6.4, d: 0.28, h: ALTURA_PAREDE_BAIXA },
-    { x: 9.1, z: -16.75, w: 0.28, d: 5.5, h: ALTURA_PAREDE_BAIXA },
-    { x: 9.1, z: -9.5, w: 0.28, d: 2.4, h: ALTURA_PAREDE_BAIXA },
-    { x: 21.1, z: -17.35, w: 0.28, d: 4.3, h: ALTURA_PAREDE_BAIXA },
-    { x: 21.1, z: -14.2, w: 0.28, d: 2, h: ALTURA_PAREDE_BAIXA, painelExpansao: true },
-    { x: 21.1, z: -10.75, w: 0.28, d: 4.9, h: ALTURA_PAREDE_BAIXA }
-  ],
-  camera: { x: 4.2, z: -5, alturaDesktop: 43 }, duracaoConstrucao: 4
+  paredes: [],
+  camera: PLANTA_AMPLIADA.camera, duracaoConstrucao: 4
 };
 
 export const OFICINAS = {
@@ -221,7 +209,7 @@ export const OFICINAS = {
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
   { id: 'logistica', titulo: 'Cesta de trabalho', descricao: 'Carregue 8 produtos e ande 15% mais rápido para cuidar de uma loja maior.', custo: 400, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 10 },
-  { id: 'alaArtesanal', titulo: 'Ala artesanal e estufa', descricao: 'Amplie a loja para o terreno ao fundo e construa uma estufa de morangos. Abasteça a nova seção do hortifruti junto à parede esquerda.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
+  { id: 'alaArtesanal', titulo: 'Estufa de morangos', descricao: 'Construa uma estufa à direita do curral. Abasteça a nova seção do hortifruti junto à parede esquerda.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
   { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa uma colmeia ao lado da estufa. Recolha as garrafas de mel na bandeja e abasteça a banca.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 12, requisitoMelhoria: 'alaArtesanal' },
   { id: 'queijaria', titulo: 'Queijaria', descricao: 'Entregue leite à queijaria perto da estufa. Cada garrafa rende 2 queijos. Recolha os queijos e abasteça a banca.', custo: 1600, icone: 'queijo', max: 1, tipo: 'construcao', produto: 'queijo', categoria: 'mercado', nivelMinimo: 13, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaLeite'] },
   { id: 'irrigacao', titulo: 'Irrigação da fazenda', descricao: 'Instale irrigadores em todas as hortas: as colheitas crescem 25% mais rápido.', custo: 650, icone: 'folha', max: 1, categoria: 'mercado', nivelMinimo: 14, requisitoMelhoria: 'alaArtesanal' },

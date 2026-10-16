@@ -6,7 +6,7 @@ import { geometriaEstacao } from '../src/jogo/estacoes.js';
 
 // Generate implemented new-plan milestones; V2 images stay historical.
 function renderizarPlanta(nivel) {
-const ativos = nivel >= 7 ? ['tomate', 'milho', 'trigo'] : nivel >= 3 ? ['tomate', 'milho'] : ['tomate'];
+const ativos = nivel >= 11 ? ['tomate', 'milho', 'trigo', 'morango'] : nivel >= 7 ? ['tomate', 'milho', 'trigo'] : nivel >= 3 ? ['tomate', 'milho'] : ['tomate'];
 const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" role="img" aria-labelledby="title desc">
 <title id="title">Nova planta — nível ${nivel}</title><desc id="desc">Terreno quadrado, salão de ${nivel >= 9 ? 24 : 14} por 16 unidades, escritório ao fundo, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. ${nivel >= 3 ? 'Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.' : 'Somente tomate disponível.'}</desc>
 <style>text{font-family:Arial,sans-serif;fill:#294439}.title{font-size:30px;font-weight:bold}.label{font-size:13px;font-weight:bold}.note{font-size:15px}.small{font-size:11px}.wall{fill:#315c49}.route{fill:none;stroke:#bf743a;stroke-width:3;stroke-dasharray:7 5}</style>
@@ -110,4 +110,4 @@ parts.push('<text x="48" y="966" class="small">Gerado da configuração do jogo 
 writeFileSync(new URL(`../docs/PLANTA-LOJA-N${nivel}.svg`, import.meta.url), parts.join('\n'), 'utf8');
 console.log(`Generated docs/PLANTA-LOJA-N${nivel}.svg from the implemented level ${nivel} geometry.`);
 }
-for (const nivel of [1, 3, 4, 5, 7, 9]) renderizarPlanta(nivel);
+for (const nivel of [1, 3, 4, 5, 7, 9, 11]) renderizarPlanta(nivel);

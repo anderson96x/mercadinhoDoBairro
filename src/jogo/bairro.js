@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { PLANTA_INICIAL, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
-import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL } from './configuracao.js';
+import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = paredesPlantaInicial(ALTURA_PAREDE_BAIXA);
@@ -183,21 +183,6 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
   }
-  const artesanal = new THREE.Group(); grupo.add(artesanal); destino = artesanal;
-  artesanal.name = 'ala-artesanal'; artesanal.visible = false;
-  const areaArtesanal = ALA_ARTESANAL.piso;
-  chao(3, areaArtesanal.w, 0.2, areaArtesanal.d, 0xc4b9a5, areaArtesanal.x, 0.06, areaArtesanal.z);
-  chao(4, areaArtesanal.w, 0.07, areaArtesanal.d, 0xe9e2ce, areaArtesanal.x, 0.19, areaArtesanal.z, 'piso');
-  for (let x = 9.2; x < 21; x += 1.2) chao(5, 0.018, 0.008, areaArtesanal.d - 0.1, 0xc8bfae, x, 0.23, areaArtesanal.z);
-  for (let z = -19.4; z < -8.3; z += 1.2) chao(5, areaArtesanal.w - 0.1, 0.008, 0.018, 0xc8bfae, areaArtesanal.x, 0.23, z);
-  for (const p of ALA_ARTESANAL.paredes) {
-    const parede = bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
-    if (p.painelExpansao) parede.name = 'painel-expansao-artesanal';
-    bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
-    rodape(p);
-  }
-  for (const x of [9.25, 20.95]) bloco(0.12, 2.3, 0.2, 0x286750, x, 1.38, -8.3, 'principal');
-  bloco(11.82, 0.28, 0.22, 0xe7b65a, 15.1, 2.6, -8.3, 'destaque');
   const lateral = new THREE.Group(); grupo.add(lateral);
   const andaime = new THREE.Group(); grupo.add(andaime); destino = andaime;
   andaime.name = 'andaime';
@@ -391,9 +376,6 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       ampliacao.visible = ampliada;
       // A área caminhável fica disponível inteira na compra; paredes e equipamentos sobem.
       paredesAmpliacao.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progressoAmpliacao, 0, 0.7));
-      artesanal.visible = estagio >= ALA_ARTESANAL.indice;
-      artesanal.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progresso, 0, 0.8));
-      passagemArtesanal.visible = estagio < ALA_ARTESANAL.indice;
       lateral.visible = !ampliada;
       lateral.position.x = 0;
       const largura = ampliada ? area.w : 0;

@@ -108,7 +108,7 @@ test('coleta e reposição funcionam em todos os lados acessíveis dos objetos',
         assert.deepEqual(sim.estado.jogador.inventario,tipo === 'reposicao' ? [] : [id],`${id}/${tipo} lado ${dx},${dz}`);
         if (tipo === 'reposicao') assert.equal(id === 'pao' ? sim.estado.producao.trigoPadaria : sim.estado.produtos[id].prateleira,1,id);
       }
-      assert.ok(lados >= (['hortifruti', 'parede-frios'].includes(objeto.movel) ? 1 : 2),`${id}/${tipo}: acesso pelos lados livres`);
+      assert.ok(lados >= (id === 'pao' || ['hortifruti', 'parede-frios'].includes(objeto.movel) ? 1 : 2),`${id}/${tipo}: acesso pelos lados livres`);
     }
   }
 });

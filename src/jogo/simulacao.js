@@ -513,11 +513,11 @@ export class Simulacao {
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
       ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
-    if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes.filter(p => !p.passagemArtesanal || !this.estado.melhorias.alaArtesanal));
+    if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes);
     if (this.estado.melhorias.alaPadaria) caixas.push(
       ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, ...ALA_PADARIA.fechamento
     );
-    if (this.estado.melhorias.alaArtesanal) caixas.push(...ALA_ARTESANAL.paredes);
+
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (!this.estado.produtos[id].liberado) continue;
       if (p.prateleira.movel !== 'hortifruti') caixas.push(p.prateleira);

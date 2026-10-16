@@ -24,7 +24,10 @@ export function buscarCaminho(inicio, destino, livre, limites) {
   const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
   const primeiro = { ...inicio, custo: 0, estimativa: distancia(inicio, destino), anterior: null };
   const abertos = [primeiro], custos = new Map([[chave(inicio), 0]]);
-  for (let tentativas = 0; abertos.length && tentativas < 3000; tentativas++) {
+  // A parede posterior exige contornar o salão para alcançar estações externas.
+  // Cobrir toda a grade evita descartar rotas longas válidas.
+  const limiteBusca = 2 * Math.ceil((limites.maxX - limites.minX) / passo + 1) * Math.ceil((limites.maxZ - limites.minZ) / passo + 1);
+  for (let tentativas = 0; abertos.length && tentativas < limiteBusca; tentativas++) {
     abertos.sort((a, b) => b.estimativa - a.estimativa);
     const atual = abertos.pop();
     if (atual.custo > custos.get(chave(atual))) continue;

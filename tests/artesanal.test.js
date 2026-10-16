@@ -241,17 +241,41 @@ test('estufa, colmeia, oficinas e produtos têm modelos próprios', () => {
   assert.ok(visual.produtos.morango.irrigador);
 });
 
-test('anexo abre passagem e preserva alas anteriores durante a construção', () => {
+test('N11 preserva o salão N9 e sua parede posterior, sem anexo', () => {
   const cena = new THREE.Scene();
   const mesh = (g, w, h, d, cor, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial()); g.add(m); m.position.set(x || 0, y || 0, z || 0); return m; };
   const bairro = construirBairro(cena, { caixa: mesh, cilindro: mesh, esfera: mesh });
   bairro.atualizarEstagio(4);
-  assert.equal(cena.getObjectByName('ala-artesanal').visible, false);
+  assert.equal(cena.getObjectByName('ala-artesanal'), undefined);
   assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, true);
   bairro.atualizarEstagio(5);
-  assert.equal(cena.getObjectByName('ala-artesanal').visible, true);
-  assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, false);
+  assert.equal(cena.getObjectByName('ala-artesanal'), undefined);
+  assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, true);
   assert.equal(cena.getObjectByName('ampliacao-padaria').scale.x, 1);
   bairro.atualizarEstagio(5, 4);
-  assert.equal(cena.getObjectByName('ala-artesanal').scale.y, 1);
+  assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, true);
+});
+
+test('N11 posiciona estufa ao lado do curral com canteiro padronizado e conserva saves V12', () => {
+  const p = PRODUTOS.morango;
+  assert.deepEqual(p.canteiro, PRODUTOS.tomate.canteiro);
+  assert.ok(Math.abs(p.horta.z - PRODUTOS.leite.horta.z) <= 0.5);
+  assert.ok(p.horta.x - p.canteiro.w / 2 > PRODUTOS.leite.horta.x + PRODUTOS.leite.curral.w / 2);
+  assert.equal(p.prateleira.x, PRODUTOS.trigo.prateleira.x);
+  assert.ok(Math.abs(p.prateleira.z - PRODUTOS.trigo.prateleira.z) - p.prateleira.d < 1e-9);
+  const sim = abrir(11);
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
+  Cena.prototype.construirArtesanal.call(visual, 'morango', p);
+  for (const fruto of visual.produtos.morango.frutos) {
+    assert.ok(Math.abs(fruto.position.x - p.horta.x) < p.canteiro.w / 2);
+    assert.ok(Math.abs(fruto.position.z - p.horta.z) < p.canteiro.d / 2);
+  }
+  sim.estado.versaoLayout = 12;
+  sim.estado.jogador.inventario = ['morango'];
+  Object.assign(sim.estado.produtos.morango, { horta: 5, prateleira: 7, apresentado: true });
+  const migrado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
+  assert.deepEqual(migrado.estado.produtos.morango, sim.estado.produtos.morango);
+  assert.deepEqual(migrado.estado.jogador.inventario, ['morango']);
+  assert.equal(migrado.estado.melhorias.alaArtesanal, 1);
 });

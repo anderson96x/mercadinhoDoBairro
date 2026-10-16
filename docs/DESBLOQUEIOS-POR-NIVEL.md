@@ -24,7 +24,7 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 8 | Mais 5 cestas (até 10 clientes na loja) | R$ 100 | — |
 | 9 | Padaria | R$ 1.400 | R$ 10 por pão |
 | 10 | Cesta de trabalho: 8 produtos e +15% de velocidade | R$ 400 | — |
-| 11 | Ala artesanal e estufa de morangos | R$ 1.200 | R$ 16 por morango |
+| 11 | Estufa de morangos | R$ 1.200 | R$ 16 por morango |
 | 12 | Apiário do bairro | R$ 850 | R$ 24 por pote de mel |
 | 13 | Queijaria | R$ 1.600 | R$ 18 por queijo |
 | 14 | Irrigação: tempo de crescimento das hortas reduzido em 25% | R$ 650 | — |
@@ -35,7 +35,7 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 
 - A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 15 é o último marco de conteúdo; a loja pode continuar funcionando e subindo de nível depois dele.
 - A cesta de trabalho prepara o jogador para viagens maiores sem mudar o começo do jogo.
-- A ala artesanal exige a padaria. Ela acrescenta um salão ao fundo da loja, conectado por uma passagem na ala dos ovos, e uma estufa ao lado do curral. As outras alas continuam funcionando durante a construção.
+- A estufa de morangos exige a padaria. No nível 11, acrescenta um canteiro de 3,6 × 2,5 u à direita do curral e a quarta seção do hortifruti na parede esquerda. O salão ampliado no nível 9 permanece igual, sem anexo posterior. O identificador salvo continua sendo `alaArtesanal`.
 - Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Abasteça morangos na seção de hortifruti à esquerda e mel na banca do anexo.
 - A queijaria exige a ala artesanal e a ala do leite. Entregue **1 leite → 2 queijos**, em 5 segundos. O lote vale R$ 36, contra R$ 20 pela garrafa de leite vendida diretamente.
 - A cozinha de geleias exige o apiário. Entregue **2 morangos + 1 mel → 3 geleias**, em 6 segundos. O lote vale R$ 90, contra R$ 56 pelos ingredientes vendidos diretamente.

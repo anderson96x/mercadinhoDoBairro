@@ -1,5 +1,5 @@
 // Nova planta: 2 unidades por cm anotado; x para a direita, z para a rua.
-// As etapas posteriores ainda conservam suas ampliações anteriores.
+// O salão amplia no N9; N11 acrescenta apenas equipamentos.
 export const PLANTA_INICIAL = {
   escala: 2,
   terreno: { x: 4, z: -5.5, w: 40, d: 40 },
@@ -25,6 +25,12 @@ export const FAZENDAS_HORTIFRUTI = Object.fromEntries(['tomate', 'milho', 'trigo
     coleta: { x: tomate.coleta.x, z: tomate.coleta.z - indice * 4.5 }
   }];
 }));
+
+// Painel N11: estufa à direita do curral, na mesma faixa posterior.
+export const PLANTA_MORANGO = {
+  horta: { x: 8, z: -22.2 }, coleta: { x: 8, z: -20.4 },
+  canteiro: { ...PLANTA_INICIAL.fazendaTomate.canteiro }
+};
 
 export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 
