@@ -291,6 +291,7 @@ export class Interface {
         <p class="nota">No nível 9, abra a padaria por R$ 1.400. A loja se amplia à direita. Entregue trigo na caixa ao fundo da padaria; o balcão fica de frente para o hortifruti. Dois padeiros fazem farinha e assam três pães por trigo. Cada pão vale R$ 10.</p>
         <p class="nota">Do nível 10 ao 15: melhore sua cesta, abra a ala artesanal ao fundo da loja e construa a estufa, o apiário, a queijaria e a cozinha de geleias. No nível 14, irrigação e reposição ágil ajudam a cuidar da loja maior.</p>
         <p class="nota">Nas oficinas, aproxime-se com os ingredientes para entregá-los. Uma garrafa de leite rende 2 queijos; 2 morangos e 1 mel rendem 3 geleias. Recolha os produtos prontos e abasteça as bancas. O repositor também coleta a produção pronta. Os novos produtos só entram nos pedidos depois do primeiro abastecimento.</p>
+        <p class="nota">No nível 16, construa o estacionamento pelo escritório por R$ 10.000. Ele fica à esquerda da loja, com seis vagas, acesso pela rua, canteiro central e iluminação.</p>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'dev') {
       const proximaReputacao = Math.min(100, Math.ceil((this.sim.reputacao + 1) / 10) * 10);

@@ -1,6 +1,6 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
-import { volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
-import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO, volumesPortasEntrada } from './bairro.js';
+import { OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
+import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, PAREDES_ESCRITORIO, PORTA_ESCRITORIO, volumesPortasEntrada } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
@@ -440,6 +440,11 @@ export class Simulacao {
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
+      if (this.nivel >= 16 && !this.estado.melhorias.estacionamento) {
+        return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
+          titulo: 'Um lugar para estacionar', texto: 'No escritório, construa o estacionamento por R$ 10.000. Ele ocupa o terreno ao lado esquerdo da loja.',
+          destino: 'escritorio', exibir: true };
+      }
       const orientacaoOvos = !this.estado.melhorias.alaProducao
         ? { titulo: 'Construa o galinheiro', texto: 'Compre a ala dos ovos no escritório.', destino: 'escritorio' }
         : this.estado.produtos.ovos.prateleira < 1
@@ -526,6 +531,7 @@ export class Simulacao {
       if (id !== 'pao') caixas.push(geometriaEstacao(id, 'coleta'));
     }
     caixas.push(...volumesHortifruti(this.estado.produtos), ...volumesDoces(this.estado.produtos));
+    if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO);
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
@@ -552,7 +558,7 @@ export class Simulacao {
     Object.assign(ator, CONFIG.inicio);
   }
   obstaculosCliente(ator) {
-    const caixas = [...this.obstaculos(), ...MOBILIARIO_CALCADA];
+    const caixas = [...this.obstaculos(), ...mobiliarioCalcada(!!this.estado.melhorias.estacionamento)];
     // O corredor imediatamente atrás da cadeira é reservado ao caixa.
     // Outros atores ainda podem acessá-lo, mas clientes devem passar
     // pela frente ou pelas laterais do atendente.

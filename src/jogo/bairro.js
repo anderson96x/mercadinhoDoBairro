@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PLANTA_INICIAL, paredesPlantaInicial } from './planta.js';
+import { PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
 import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
 
@@ -59,6 +59,10 @@ export const MOBILIARIO_CALCADA = [
   ...[1.4, 6.2, 10.5].map(x => ({ x, z: 7.4, w: 1.1, d: 0.55 }))
 ];
 
+export function mobiliarioCalcada(comEstacionamento = false) {
+  return comEstacionamento ? [PLANTA_ESTACIONAMENTO.posteCalcada, ...MOBILIARIO_CALCADA.slice(1)] : MOBILIARIO_CALCADA;
+}
+
 export const RUA = Object.freeze({
   minX: -15, maxX: 23,
   faixas: Object.freeze([
@@ -67,7 +71,7 @@ export const RUA = Object.freeze({
   ])
 });
 
-function criarDetalhesGrama(grupo) {
+function criarDetalhesGrama(grupo, vegetacaoEstacionamento) {
   // Posicoes fixas deixam a paisagem igual em cada carregamento.
   let semente = 4187;
   const aleatorio = () => ((semente = (1664525 * semente + 1013904223) >>> 0) / 4294967296);
@@ -81,12 +85,15 @@ function criarDetalhesGrama(grupo) {
   ];
   const cores = [0x398f43, 0x84c85c, 0xa5d76c];
   const vertices = cores.map(() => []);
+  const verticesEstacionamento = cores.map(() => []);
   for (const faixa of faixas) {
     for (let i = 0; i < faixa.quantidade; i++) {
       const x = faixa.x[0] + aleatorio() * (faixa.x[1] - faixa.x[0]);
       const z = faixa.z[0] + aleatorio() * (faixa.z[1] - faixa.z[0]);
       const altura = 0.16 + aleatorio() * 0.12;
-      const pontos = vertices[Math.floor(aleatorio() * cores.length)];
+      const p = PLANTA_ESTACIONAMENTO.piso;
+      const dentro = Math.abs(x - p.x) < p.w / 2 + 0.2 && Math.abs(z - p.z) < p.d / 2 + 0.2;
+      const pontos = (dentro ? verticesEstacionamento : vertices)[Math.floor(aleatorio() * cores.length)];
       for (let folha = 0; folha < 3; folha++) {
         const angulo = folha * Math.PI * 2 / 3 + aleatorio() * 0.4;
         const dx = Math.cos(angulo), dz = Math.sin(angulo);
@@ -99,7 +106,7 @@ function criarDetalhesGrama(grupo) {
       }
     }
   }
-  vertices.forEach((pontos, i) => {
+  for (const [conjunto, destino] of [[vertices, grupo], [verticesEstacionamento, vegetacaoEstacionamento]]) conjunto.forEach((pontos, i) => {
     const geometria = new THREE.BufferGeometry();
     geometria.setAttribute('position', new THREE.Float32BufferAttribute(pontos, 3));
     geometria.computeVertexNormals();
@@ -107,12 +114,14 @@ function criarDetalhesGrama(grupo) {
     malha.receiveShadow = true;
     // O Canvas desenha a vegetação antes dos pisos que passaram a cobri-la.
     malha.userData.fundo = 2;
-    grupo.add(malha);
+    destino.add(malha);
   });
 }
 
 export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const grupo = new THREE.Group(); cena.add(grupo);
+  const vegetacaoEstacionamento = new THREE.Group(); vegetacaoEstacionamento.name = 'vegetacao-estacionamento'; grupo.add(vegetacaoEstacionamento);
+  const calcadaAcesso = new THREE.Group(); calcadaAcesso.name = 'calcada-acesso-estacionamento'; grupo.add(calcadaAcesso);
   let destino = grupo;
   const materiais = [];
   const bloco = (w, h, d, cor, x, y, z, papel) => {
@@ -149,19 +158,34 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     mancha.userData.fundo = 2;
     grupo.add(mancha);
   }
-  criarDetalhesGrama(grupo);
+  criarDetalhesGrama(grupo, vegetacaoEstacionamento);
   chao(2, 40, 0.08, 4.4, 0x48525e, 4, 0, 11.3);
-  chao(3, 40, 0.18, 2.5, 0xe0bc8c, 4, 0.04, 7.95);
-  bloco(40, 0.22, 0.16, 0xf3e5ce, 4, 0.07, 9.18);
+  // Só a faixa de calçada sob o acesso desaparece após a compra.
+  const pisoCalcada = (camada, w, h, d, cor, x, y, z) => {
+    const acesso = PLANTA_ESTACIONAMENTO.acesso;
+    const inicio = x - w / 2, fim = x + w / 2;
+    const cortes = [inicio, acesso.x - acesso.w / 2, acesso.x + acesso.w / 2, fim]
+      .filter(p => p >= inicio && p <= fim).sort((a, b) => a - b);
+    for (let i = 1; i < cortes.length; i++) {
+      const largura = cortes[i] - cortes[i - 1];
+      if (largura <= 0) continue;
+      const centro = (cortes[i] + cortes[i - 1]) / 2;
+      destino = Math.abs(centro - acesso.x) < acesso.w / 2 ? calcadaAcesso : grupo;
+      chao(camada, largura, h, d, cor, centro, y, z);
+    }
+    destino = grupo;
+  };
+  pisoCalcada(3, 40, 0.18, 2.5, 0xe0bc8c, 4, 0.04, 7.95);
+  pisoCalcada(4, 40, 0.22, 0.16, 0xf3e5ce, 4, 0.07, 9.18);
   for (let x = -14; x < 24; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
   // A faixa atravessa a rua inteira, de uma calçada à outra.
   for (let z = 9.5; z < 13.5; z += 0.35) chao(4, 2.2, 0.012, 0.18, 0xf7eddb, -1.3, 0.052, z);
-  for (let x = -14.5; x < 24; x += 0.8) chao(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
-  for (const z of [7.25, 7.95, 8.65]) chao(4, 40, 0.01, 0.015, 0xbeb19a, 4, 0.136, z);
+  for (let x = -14.5; x < 24; x += 0.8) pisoCalcada(4, 0.016, 0.01, 2.35, 0xbeb19a, x, 0.135, 7.95);
+  for (const z of [7.25, 7.95, 8.65]) pisoCalcada(4, 40, 0.01, 0.015, 0xbeb19a, 4, 0.136, z);
   for (let i = 0; i < 48; i++) {
     if (i % 3 !== 1) continue;
     const x = -14.7 + i * 0.8;
-    for (const z of [7.6, 8.3]) chao(4, 0.77, 0.004, 0.67, 0xe7c89e, x, 0.133, z);
+    for (const z of [7.6, 8.3]) pisoCalcada(4, 0.77, 0.004, 0.67, 0xe7c89e, x, 0.133, z);
   }
   const decorarPiso = (primeiraColuna, colunas) => {
     for (let i = 0; i < colunas; i++) {
@@ -355,7 +379,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   }
   const arvoreLateral = new THREE.Group(); grupo.add(arvoreLateral);
   for (const [indice, [x,z]] of [[-12.4,-6.2],[-12.4,4.7],[13.8,-5.4]].entries()) {
-    const arvores = x > 0 ? arvoreLateral : grupo;
+    const arvores = x > 0 ? arvoreLateral : vegetacaoEstacionamento;
     const arvore = new THREE.Group(); arvore.position.set(x, 0, z); arvores.add(arvore);
     const escala = [1, 0.91, 1.06][indice]; arvore.scale.setScalar(escala);
     cilindro(arvore, 0.16, 0.27, 1.76, 0x865834, 0, 0.84, 0, 9);
@@ -374,14 +398,22 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       [0.45, 2.78, 0.03, 0.46, 0x79ca65]
     ]) esfera(arvore, raio, cor, px, py, pz, 1, 0.82, 0.92);
   }
+  const postesCalcada = new THREE.Group(); postesCalcada.name = 'poste-calcada-estacionamento'; grupo.add(postesCalcada);
   for (const x of [-7.8, 10.8]) {
-    cilindro(grupo, 0.055, 0.075, 2.8, 0x45544e, x, 1.55, 8.4);
+    destino = x < 0 ? postesCalcada : grupo;
+    cilindro(destino, 0.055, 0.075, 2.8, 0x45544e, x, 1.55, 8.4);
     bloco(0.35, 0.3, 0.35, 0xffe1a0, x, 3, 8.4);
     bloco(0.45, 0.09, 0.45, 0x45544e, x, 3.2, 8.4);
   }
+  destino = grupo;
   let anterior;
   let estagioAnterior, progresso = 1;
   return {
+    atualizarEstacionamento(comprado) {
+      vegetacaoEstacionamento.visible = !comprado;
+      calcadaAcesso.visible = !comprado;
+      postesCalcada.position.x = comprado ? PLANTA_ESTACIONAMENTO.posteCalcada.x - MOBILIARIO_CALCADA[0].x : 0;
+    },
     atualizarEstagio(estagio, dt = 0) {
       if (estagioAnterior !== undefined && estagio > estagioAnterior) progresso = 0;
       estagioAnterior = estagio;

@@ -30,10 +30,19 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 14 | Irrigação: tempo de crescimento das hortas reduzido em 25% | R$ 650 | — |
 | 14 | Reposição ágil: repositor anda 30% mais rápido | R$ 500 | — |
 | 15 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote de geleia |
+| 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
+
+## Estacionamento no nível 16
+
+Ao alcançar o nível 16, sente-se no escritório e abra **Melhorias → Mercado → Estacionamento**. A construção custa **R$ 10.000**, pode ser comprada uma única vez e ocupa o terreno à esquerda da loja, entre o salão e a borda lateral do terreno, com acesso pela rua.
+
+O estacionamento tem seis vagas demarcadas, quatro carros cenográficos estacionados, setas de circulação, passagem pela calçada, canteiro central com arbustos, iluminação e placa de estacionamento. Ocupa o terreno até perto da borda esquerda. O acesso usa o mesmo asfalto do estacionamento e fica centralizado nas duas faixas de entrada e saída. A vegetação que ocupava essa área é substituída durante a construção; a calçada e o meio-fio são recortados no acesso e o poste é movido para fora dele. O acesso à horta e a circulação pela calçada permanecem livres. Carros e canteiro têm colisão.
+
+A compra exige apenas o nível e o saldo; não depende da cozinha de geleias nem libera produtos adicionais. É salva com as demais melhorias. Partidas antigas recebem o estacionamento ainda não comprado, preservando saldo e progresso.
 
 ## Como jogar a fase artesanal
 
-- A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 15 é o último marco de conteúdo; a loja pode continuar funcionando e subindo de nível depois dele.
+- A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 16 acrescenta o estacionamento após a fase artesanal; a loja pode continuar funcionando e subindo de nível depois dele.
 - A cesta de trabalho prepara o jogador para viagens maiores sem mudar o começo do jogo.
 - A estufa de morangos exige a padaria. No nível 11, acrescenta um canteiro de 3,6 × 2,5 u à direita do curral e a quarta seção do hortifruti na parede esquerda. O salão ampliado no nível 9 permanece igual, sem anexo posterior. O identificador salvo continua sendo `alaArtesanal`.
 - Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Abasteça morangos na seção de hortifruti à esquerda e mel na banca do anexo.

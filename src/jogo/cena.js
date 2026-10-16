@@ -17,6 +17,7 @@ import { atualizarMarcha, animarPernas } from './marcha.js';
 import { icone } from '../interface/icones.js';
 import { criarSol } from './iluminacao.js';
 import { criarPlacaProduto } from './placas-produtos.js';
+import { construirEstacionamento } from './estacionamento.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
@@ -780,6 +781,9 @@ export class Cena {
     const c = new THREE.Group(); c.position.set(-5.5, 0, -4.1); suporte.add(c);
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera });
     this.bairro.atualizarEstagio(this.sim.estado.estagioLoja);
+    this.estacionamento = construirEstacionamento(); this.cena.add(this.estacionamento.grupo);
+    this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento);
+    this.bairro.atualizarEstacionamento(!!this.sim.estado.melhorias.estacionamento);
     this.bairro.aplicar(this.sim.estado.personalizacao);
     const suporteCestas = new THREE.Group();
     suporteCestas.position.set(CONFIG.cestas.x, 0, CONFIG.cestas.z); this.cena.add(suporteCestas);
@@ -1530,6 +1534,8 @@ export class Cena {
       });
     }
     this.bairro.aplicar(e.personalizacao);
+    this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt);
+    this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);
     this.bairro.animarPorta(sim.aberturaPortaEscritorio);
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
     this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);

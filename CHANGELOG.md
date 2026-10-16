@@ -1,8 +1,30 @@
 # Histórico de alterações
 
-## Versão atual: 0.44.2 — 2026-10-16
+## Versão atual: 0.45.1 — 2026-10-16
 
-Correção PATCH sobre 0.44.1. Alterações locais ainda sem commit associado.
+Correção PATCH sobre 0.45.0. Alterações locais ainda sem commit associado.
+
+- Estende o estacionamento até perto da borda esquerda do terreno, reposicionando as vagas externas, a placa e o canteiro central.
+- Centraliza o acesso nas faixas de entrada e saída, usando o mesmo asfalto e uma ligação contínua até a rua.
+- Recorta a calçada e o meio-fio apenas após a compra, amplia a travessia e move o poste para fora do acesso, com a colisão correspondente.
+- Verifica alinhamento das setas, continuidade do piso, limites do terreno e passagem livre nas duas faixas.
+- Atualiza pacote, lockfile e README para 0.45.1; Ajuda e DEV exibem a versão automaticamente.
+
+## 0.45.0 — 2026-10-16
+
+Incremento MINOR sobre 0.44.2 pela nova construção do nível 16. Alterações locais ainda sem commit associado.
+
+- Adiciona estacionamento por R$ 10.000 na aba Mercado do escritório, disponível a partir do nível 16 e limitado a uma compra.
+- Constrói seis vagas no terreno à esquerda da loja, com quatro carros cenográficos, entrada pela rua, setas, travessia, canteiro central, arbustos, iluminação e placa P.
+- Substitui a vegetação da área comprada e anima a construção; partidas carregadas mostram a estrutura pronta.
+- Acrescenta colisões aos carros e ao canteiro, preservando acesso às hortas e à loja.
+- Salva a compra como melhoria independente e mantém partidas antigas com o estacionamento bloqueado, preservando dinheiro e progresso.
+- Atualiza objetivo do nível 16, Ajuda, README e guia de desbloqueios; inclui testes de compra, limites, persistência, modelos e navegação.
+- Atualiza pacote e lockfile para 0.45.0; Ajuda e DEV exibem a versão automaticamente.
+
+## 0.44.2 — 2026-10-16
+
+Correção PATCH sobre 0.44.1, registrada no commit `213844d`.
 
 - Prende as pegas às folhas da porta de entrada, perto da borda livre, para acompanharem a rotação durante a abertura.
 - Acrescenta colisão às folhas fechadas, abertas e parcialmente abertas, impedindo o jogador de atravessar os painéis.
