@@ -1,123 +1,146 @@
-# Mercadinho do Bairro
+﻿# Mercadinho do Bairro
 
-Um jogo de gerenciamento de mercadinho, em português, para navegador de computador e celular. Versão inicial **0.1.0**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.1.0**.
 
-Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. O cenário e os personagens são construídos por código, com visual 3D simples e original. Não usa imagens, áudios ou código extraídos de My Mini Mart.
+Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
 
-O nível 1 usa a [nova planta inicial](docs/PLANTA-LOJA-N1.md): salão de 14 × 16 u, acesso à horta pela porta dos fundos e banca de madeira junto à esquerda. No [nível 3](docs/PLANTA-LOJA-N3.md), milho acrescenta um canteiro atrás do tomate e uma seção à banca. No [nível 4](docs/PLANTA-LOJA-N4.md), ovos acrescentam o galinheiro posterior e a estante em degraus na parede do fundo. No [nível 5](docs/PLANTA-LOJA-N5.md), o curral fica ao lado do galinheiro e o refrigerador junto aos ovos. Essas compras mantêm o salão inicial e toda a produção fica atrás da loja. O trigo no N7 mantém o salão inicial. No [N9](docs/PLANTA-LOJA-N9.md), a padaria amplia o salão à direita para 24 × 16 u e fica voltada para o hortifruti.
+## Stack e construção do jogo
 
-## Jogar e desenvolver
+| Tecnologia | Uso no projeto |
+| --- | --- |
+| JavaScript com módulos ES | Regras do jogo, economia, movimento, produção e clientes. |
+| Three.js 0.180.0 / WebGL 2 | Cena 3D, câmera, iluminação, sombras e animações. |
+| Canvas 2D | Renderizador alternativo quando WebGL 2 não está disponível. |
+| HTML e CSS | Interface, menus e adaptação a celular em retrato e paisagem. |
+| Vite 7.1.7 | Servidor de desenvolvimento e empacotamento para hospedagem estática. |
+| Web Audio API | Efeitos sonoros sintetizados no navegador. |
+| `localStorage` | Salvamento do progresso no próprio navegador. |
+| Fontsource | Fontes Outfit e DM Sans incluídas no projeto. |
+| Node.js e `node:test` | Ferramentas de desenvolvimento e testes das regras do jogo. |
 
-Instale o **Node.js 22.12 ou mais recente**. No terminal, dentro desta pasta:
+O jogo usa uma simulação própria, separada da renderização. Modelos, personagens e objetos são construídos por código com formas e materiais do Three.js. O laço principal usa `requestAnimationFrame`, com atualização da simulação em passos de 1/60 de segundo. A simulação cuida de colisões, busca de caminho, estoques, funcionários e vendas; a cena representa esse estado e a interface apresenta os controles e indicadores.
+
+Não há backend nem contas de usuário. O jogo pode ser servido como arquivos estáticos, e as fontes não dependem de serviços externos durante a partida.
+
+## Executar localmente
+
+Use **Node.js 22.12 ou mais recente**. No terminal, dentro da pasta do projeto:
 
 ```bash
 npm ci
 npm run dev
 ```
 
-Abra `http://localhost:4173`. Não abra `index.html` com duplo clique: o projeto usa módulos e precisa do servidor.
+Abra `http://localhost:4173`. O projeto usa módulos e precisa do servidor; abrir `index.html` diretamente não inicia o jogo corretamente.
 
-Em desenvolvimento (`npm run dev`), o botão **DEV** no canto superior direito zera todo o progresso e recarrega o jogo com um clique. Ele não aparece na versão de produção.
+Para jogar no celular pela mesma rede Wi-Fi, mantenha o servidor aberto e acesse `http://IP-DO-COMPUTADOR:4173`. Se necessário, autorize o acesso à rede local no firewall.
 
-Para testar em um celular na mesma rede Wi-Fi, mantenha o servidor aberto e acesse `http://IP-DO-COMPUTADOR:4173` no navegador do celular. Autorize o acesso à rede local no firewall, se necessário.
+Em desenvolvimento, o botão **DEV** abre ferramentas para ajustar saldo, nível, reputação e eventos, além de reiniciar a partida. Ele não aparece na versão de produção.
+
+## Como jogar
+
+1. Vá até a horta e aproxime-se dos tomates para colher. Sua cesta começa com capacidade para **4 produtos**.
+2. Leve os tomates até a seção correspondente da banca para abastecê-la. Colheita e reposição acontecem automaticamente por proximidade.
+3. Sente-se na cadeira do caixa para atender os clientes que já fizeram suas compras e estão na fila.
+4. Atenda **25 clientes por nível**. Cada nível concede **R$ 100 de bônus** e pode liberar novas compras.
+5. Sente-se na cadeira do escritório e use o computador para contratar funcionários, comprar produtos e melhorias ou personalizar a loja.
+6. Continue abastecendo os produtos liberados e forneça ingredientes às estações de produção. O caixa contratado atende a fila; o repositor coleta e abastece produtos prontos.
+
+Mantenha as bancas abastecidas e a fila andando: a satisfação dos clientes afeta a reputação e o ritmo de chegada de novos compradores. A loja começa com cinco cestas para clientes; a melhoria do nível 8 permite receber até dez clientes ao mesmo tempo.
+
+Quando houver **R$ 1.000 ou mais no caixa**, solicite **Depositar no banco** pelo computador do escritório. O carro-forte recolhe o dinheiro, preservando seu saldo disponível para compras. Deixar dinheiro acumulado sem solicitar o depósito pode provocar um assalto.
 
 ## Controles
 
 | Ação | Como fazer |
 | --- | --- |
-| Andar no celular | Toque e segure no cenário; arraste para escolher a direção. Solte para parar. |
-| Andar com o mouse | Clique, segure e arraste no cenário. |
 | Andar pelo teclado | W, A, S, D ou as setas. |
-| Colher | Aproxime-se da horta, curral ou oficina pelo lado acessível desejado. |
-| Repor | Aproxime-se da banca ou ilha fria do mesmo produto. |
-| Vender | Sente-se na cadeira do caixa enquanto há clientes esperando. |
-| Melhorar ou personalizar a loja | Sente-se na cadeira do escritório e use o computador. |
+| Andar com o mouse | Clique, segure e arraste no cenário; solte para parar. |
+| Andar no celular | Toque, segure e arraste no cenário; solte para parar. |
+| Colher ou recolher produtos | Aproxime-se da origem do produto por um lado acessível. |
+| Repor produtos | Aproxime-se do expositor correspondente carregando o produto. |
+| Entregar ingredientes | Aproxime-se da estação de produção carregando os ingredientes. |
+| Atender clientes | Sente-se na cadeira do caixa enquanto há clientes esperando. |
+| Gerenciar e personalizar | Sente-se na cadeira do escritório e use o computador. |
+| Descartar produtos | Aproxime-se da lixeira e escolha os itens no painel. |
 | Pausar | Botão de pausa ou Esc. |
 | Som, ajuda e novo jogo | Menu de pausa. |
 
-O joystick aparece onde você começa a arrastar. O movimento acompanha as direções da tela. As interações continuam automáticas junto aos objetos, sem círculos no chão. No hortifruti, aproxime-se da seção do produto pela face do corredor; os demais objetos permitem seus lados livres. Paredes impedem interações através delas. Para produzir pão, entregue trigo junto à caixa da padaria.
+O joystick aparece onde você começa a arrastar, e o movimento acompanha as direções da tela. Aproxime-se do hortifruti pelo lado do corredor e dos demais objetos pelos lados livres. As interações respeitam paredes e obstáculos.
 
-## O que já funciona
+## Níveis e desbloqueios
 
-- Tomates e milho nas hortas; um galinheiro que produz ovos e um curral que fornece leite em garrafas de vidro.
-- Cesta com capacidade, animação de pegar e guardar os produtos e melhorias.
-- Cesta cinza do jogador: capacidade inicial de 4 produtos e melhoria para 8.
-- Clientes com percurso até a prateleira, fila, compra e saída.
-- Dinheiro de jogo e contratação de caixa. O ajudante está temporariamente desativado.
-- Objetivos progressivos, níveis, efeitos sonoros e pausa.
-- Interface adaptada a celular em retrato e paisagem.
-- Salvamento automático neste navegador a cada 5 segundos e ao sair da página.
-- Cena com Three.js/WebGL 2 e desenho alternativo em Canvas 2D quando WebGL não está disponível.
-- Fontes incluídas no projeto: não depende de Google Fonts em tempo de execução.
+Os níveis representam a evolução contínua da mesma loja. Atingir o nível libera a compra; é preciso pagar pela melhoria no escritório e cumprir seus pré-requisitos. Os valores abaixo são dinheiro do jogo.
 
-O salvamento usa `localStorage`: cada navegador e endereço tem seu próprio progresso. Não há sincronização de contas. Uma navegação privada ou limpeza dos dados do site pode apagar o jogo. O relógio da loja avança apenas enquanto a página está visível.
+| Nível | Compra liberada | Custo | Efeito ou requisito |
+| --- | --- | --- | --- |
+| 1 | Tomates | Disponível no início | Colher, abastecer e vender. |
+| 2 | Caixa | R$ 250 | Atende os clientes automaticamente. |
+| 3 | Milho | R$ 350 | Acrescenta um novo cultivo e produto para venda. |
+| 4 | Ala dos ovos | R$ 500 | Galinheiro produz ovos sem ingredientes. |
+| 5 | Ala do leite | R$ 800 | Curral produz garrafas de leite sem ingredientes. |
+| 6 | Repositor | R$ 900 | Coleta produtos prontos e abastece as prateleiras. |
+| 7 | Ala do trigo | R$ 400 | Acrescenta trigo para venda ou produção de pão. |
+| 8 | Mais cestas para clientes | R$ 100 | Adiciona cinco cestas, chegando a dez. |
+| 9 | Padaria | R$ 1.400 | Produz pão; exige a ala do trigo. |
+| 10 | Cesta de trabalho | R$ 400 | Capacidade de 8 produtos e +15% de velocidade. |
+| 11 | Estufa de morangos | R$ 1.200 | Libera morangos; exige a padaria. |
+| 12 | Apiário do bairro | R$ 850 | Produz mel; exige a estufa de morangos. |
+| 13 | Queijaria | R$ 1.600 | Produz queijo; exige a estufa de morangos e a ala do leite. |
+| 14 | Irrigação da fazenda | R$ 650 | Reduz em 25% o tempo dos cultivos; exige a estufa de morangos. |
+| 14 | Reposição ágil | R$ 500 | Repositor anda 30% mais rápido; exige o repositor. |
+| 15 | Cozinha de geleias | R$ 2.200 | Produz geleias; exige o apiário. |
 
-## Estrutura
+O nível 15 é o último marco de conteúdo atual. A loja pode continuar funcionando e subindo de nível depois dele.
+
+## Produção e receitas
+
+Tomate, milho, trigo e morango crescem nas hortas. Ovos, leite e mel são produzidos automaticamente nas suas origens; recolha-os e abasteça os expositores correspondentes.
+
+| Estação | Ingredientes por lote | Resultado |
+| --- | --- | --- |
+| Padaria | 1 trigo | 3 pães |
+| Queijaria | 1 leite | 2 queijos em 5 segundos |
+| Cozinha de geleias | 2 morangos + 1 mel | 3 geleias em 6 segundos |
+
+Entregue o trigo na caixa de entrada da padaria. Os pães abastecem o balcão pela própria produção. Na queijaria e na cozinha de geleias, entregue os ingredientes por proximidade, espere o lote ficar pronto e leve os produtos ao expositor. O repositor também transporta os produtos prontos; o jogador fornece os ingredientes.
+
+As oficinas param quando a saída está cheia, sem consumir ingredientes adicionais. Morango, mel, queijo e geleia entram nos pedidos dos clientes após o primeiro abastecimento.
+
+## Salvamento
+
+O progresso é salvo automaticamente a cada **5 segundos** e ao sair da página. Cada navegador e endereço mantém sua própria partida em `localStorage`, sem sincronização entre dispositivos. Limpar os dados do site ou encerrar uma sessão privada pode apagar o progresso.
+
+A simulação pausa quando a página fica oculta; não há produção enquanto o jogo está fechado. Para recomeçar, use **Pausa → Começar um novo jogo** e confirme a exclusão do progresso local.
+
+## Organização do código
 
 ```text
 src/
   main.js                     Inicialização, laço do jogo e ligação dos módulos
   jogo/
-    configuracao.js           Produtos, preços, mapa, melhorias e objetivos
-    simulacao.js              Regras, movimento, estoque, clientes e funcionários
-    cena.js                   Cenário, modelos, câmera e animações
-    renderizador-compativel.js Desenho alternativo sem WebGL
+    configuracao.js           Produtos, preços, melhorias, receitas e objetivos
+    simulacao.js              Regras, movimento, estoques, clientes e funcionários
+    cena.js                   Modelos 3D, câmera e animações
+    renderizador-compativel.js Renderização alternativa em Canvas 2D
+    navegacao.js               Busca de caminho e verificação de trajetos
     controles.js              Mouse, toque e teclado
     salvamento.js             Persistência local
     audio.js                  Efeitos sonoros sintetizados
-  interface/
-    interface.js              Painéis, cesta, objetivos e dinheiro
-    estilos.css               Estilos e tamanhos de tela
-    icones.js                 Ícones da interface
-public/
-  favicon.svg
-tests/
-  simulacao.test.js            Testes das regras e da economia
-docs/
-  COMO-ALTERAR.md              Guia de expansão
-.github/workflows/
-  publicar.yml                Publicação opcional no GitHub Pages
+    banco.js                  Depósitos e coleta de dinheiro
+    assalto.js                Eventos de assalto
+    personalizacao.js         Aparência da loja e do jogador
+  interface/                  Painéis, indicadores, ícones e estilos
+public/                       Arquivos estáticos
+scripts/                      Ferramentas de análise do jogo
+tests/                        Testes de simulação, produção, controles e progressão
 ```
 
-## Colocar no GitHub
-
-1. Crie um repositório vazio no GitHub.
-2. Extraia este ZIP e abra o terminal dentro da pasta.
-3. Execute os comandos abaixo, substituindo a URL pela do seu repositório:
-
-```bash
-git init
-git add .
-git commit -m "Primeira versão do mercadinho"
-git branch -M main
-git remote add origin https://github.com/SEU-USUARIO/SEU-REPOSITORIO.git
-git push -u origin main
-```
-
-Para publicar, abra **Settings → Pages → Build and deployment → Source → GitHub Actions** no repositório. O fluxo incluído publica a pasta `dist` a cada envio para `main`. Você também pode executá-lo manualmente pela aba **Actions**. A configuração `base: './'` permite servir o jogo dentro do caminho do seu repositório.
-
-## Testar e gerar os arquivos finais
-
-```bash
-npm test
-npm run build
-npm run preview
-```
-
-`npm run build` gera `dist/`, pronta para uma hospedagem estática. As dependências e arquivos gerados são ignorados pelo Git. O ZIP contém o código-fonte, e as dependências são instaladas por `npm ci`.
-
-## Expandir
-
-Comece por [docs/COMO-ALTERAR.md](docs/COMO-ALTERAR.md). A simulação não importa Three.js nem elementos da página, o que permite testar a economia independentemente do visual.
-
-Esta versão tem dez produtos e ampliações até a ala artesanal. Milho no nível 3, [ovos no nível 4](docs/PLANTA-LOJA-N4.md) e [leite no nível 5](docs/PLANTA-LOJA-N5.md) acrescentam equipamentos ao salão inicial. O trigo no nível 7 mantém o salão inicial. A padaria no nível 9 amplia a loja à direita; o anexo artesanal no nível 11 ainda usa a geometria legada. Produtos e oficinas continuam sendo comprados separadamente conforme [os desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
-
-O [layout até N9](docs/PLANTA-LOJA-N9.md) segue a nova planta, com produção agrícola atrás da loja e salão de 14 × 16 u até N8, ampliado para 24 × 16 u com a padaria. Ovos e leite ficam juntos na parede posterior, com estoques e seleção de reposição separados. A padaria fica junto à parede direita, com a frente voltada para o hortifruti; o anexo artesanal conserva a organização anterior. A fila tem cinco ou dez posições, sem marcações no piso. Salvamentos anteriores migram para a versão espacial 11, preservando progresso e recuperando atores em locais livres.
+Para ajustar a economia ou adicionar conteúdo, comece por `src/jogo/configuracao.js`. As regras ficam em `src/jogo/simulacao.js`, os modelos em `src/jogo/cena.js` e os painéis em `src/interface/`. A simulação não depende de Three.js nem de elementos da página, permitindo testar suas regras separadamente do visual.
 
 ## Créditos e dependências
 
-- Three.js: licença MIT.
-- Vite: licença MIT.
+- Three.js e Vite: licença MIT.
 - Outfit e DM Sans: SIL Open Font License, distribuídas por Fontsource.
 
-As licenças das dependências acompanham seus pacotes. Nenhuma dependência paga é necessária.
+As licenças acompanham os respectivos pacotes. Nenhuma dependência paga é necessária.
