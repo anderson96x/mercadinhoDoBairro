@@ -279,3 +279,33 @@ test('N11 posiciona estufa ao lado do curral com canteiro padronizado e conserva
   assert.deepEqual(migrado.estado.jogador.inventario, ['morango']);
   assert.equal(migrado.estado.melhorias.alaArtesanal, 1);
 });
+
+test('N12 instala mel na frente direita e mantém os estoques ao migrar saves V14', () => {
+  const sim = abrir(11), p = PRODUTOS.mel;
+  assert.equal(sim.estado.produtos.mel.liberado, false);
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
+  Cena.prototype.construirArtesanal.call(visual, 'mel', p);
+  assert.equal(visual.produtos.mel.grupo.visible, false);
+  sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
+  assert.equal(sim.comprarMelhoria('apiario').sucesso, true);
+  assert.equal(sim.estado.estagioLoja, 5);
+  assert.ok(p.horta.x > PRODUTOS.morango.horta.x);
+  assert.equal(p.horta.z, PRODUTOS.morango.horta.z);
+  assert.ok(p.prateleira.x > 14 && p.prateleira.x + p.prateleira.w / 2 < 20.9);
+  assert.ok(p.prateleira.z > 3 && p.prateleira.z + p.prateleira.d / 2 < 6.7);
+  assert.ok(p.cliente.z < p.prateleira.z - p.prateleira.d / 2);
+  Cena.prototype.construirArtesanal.call(visual, 'mel', p);
+  assert.equal(visual.produtos.mel.grupo.visible, true);
+  for (const pote of visual.produtos.mel.frutas) {
+    assert.ok(Math.abs(pote.position.x - p.prateleira.x) < p.prateleira.w / 2);
+    assert.ok(Math.abs(pote.position.z - p.prateleira.z) < p.prateleira.d / 2);
+  }
+  sim.estado.versaoLayout = 14;
+  Object.assign(sim.estado.produtos.mel, { horta: 5, prateleira: 7, apresentado: true });
+  Object.assign(sim.estado.jogador, { x: 13.2, z: -14.7, inventario: ['mel'] });
+  const migrado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
+  assert.equal(migrado.estado.melhorias.apiario, 1);
+  assert.deepEqual(migrado.estado.produtos.mel, sim.estado.produtos.mel);
+  assert.deepEqual(migrado.estado.jogador.inventario, ['mel']);
+});

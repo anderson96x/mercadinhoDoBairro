@@ -8,7 +8,7 @@ A entrega do [nível 3](PLANTA-LOJA-N3.md) acrescenta milho atrás do tomate, ma
 
 A entrega do [nível 4](PLANTA-LOJA-N4.md) instala o galinheiro atrás da loja, acima e à direita do milho, e a estante de ovos na parede posterior, à direita da porta. O salão permanece em 14 × 16 u; a extensão lateral antiga não aparece nesta compra.
 
-A entrega do [nível 5](PLANTA-LOJA-N5.md) instala o curral na mesma faixa posterior, à direita do galinheiro, e o refrigerador ao lado dos ovos. O salão inicial é preservado também no leite. Os dois expositores têm seleção exclusiva pela frente para reposição com inventário misto. A versão espacial atual é 13; saves anteriores preservam compras, estoques, progresso de produção e cargas. O N11 mantém o salão ampliado no N9, sem anexo artesanal.
+A entrega do [nível 5](PLANTA-LOJA-N5.md) instala o curral na mesma faixa posterior, à direita do galinheiro, e o refrigerador ao lado dos ovos. O salão inicial é preservado também no leite. Os dois expositores têm seleção exclusiva pela frente para reposição com inventário misto. A versão espacial atual é 15; saves anteriores preservam compras, estoques, progresso de produção e cargas. O N11 mantém o salão ampliado no N9, sem anexo artesanal.
 
 A entrega do [nível 7](PLANTA-LOJA-N7.md) mantém o salão inicial e o trigo atrás do milho, com canteiros de 3,6 × 2,5 u para todos os cultivos. A fila dobra para o fundo após sete lugares, permitindo dez posições no salão inicial.
 
@@ -289,3 +289,5 @@ A implementação só estará completa quando:
 - [ ] Testes, build, revisão visual e documentação estiverem concluídos com evidências atuais.
 
 **Validação deste planejamento:** inspeção do SVG, de sua geometria incorporada e do código existente. Nenhum teste de implementação, build ou regeneração das plantas do jogo foi executado para criar este documento.
+
+A entrega do [nível 12](PLANTA-LOJA-N12.md) posiciona o apiário à direita da estufa (exceção à planta original solicitada pelo usuário) e instala o expositor de mel na frente direita, mantendo o salão do N9. O compartilhamento com geleia fica para N15.

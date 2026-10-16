@@ -32,6 +32,15 @@ export const PLANTA_MORANGO = {
   canteiro: { ...PLANTA_INICIAL.fazendaTomate.canteiro }
 };
 
+// N12: apiário à direita da estufa por ajuste solicitado; venda na frente direita.
+// O conjunto de venda receberá a seção de geleia no N15.
+export const PLANTA_MEL = {
+  horta: { x: 13.2, z: -22.2 }, coleta: { x: 13.2, z: -19.8 },
+  prateleira: { x: 17.6, z: 4.6, w: 3.2, d: 1.4 },
+  reposicao: { x: 17.6, z: 3.3 }, cliente: { x: 17.6, z: 3.3 },
+  pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 17.6 + dx, z: 3.3 }))
+};
+
 export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 
 export const PLANTA_AMPLIADA = {

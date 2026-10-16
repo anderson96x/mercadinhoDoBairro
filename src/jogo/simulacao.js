@@ -495,7 +495,7 @@ export class Simulacao {
           const temIngrediente = faltante && this.estado.jogador.inventario.includes(faltante);
           orientacaoNivel = {
             titulo: `Primeira banca de ${produto.nome.toLocaleLowerCase('pt-BR')}`,
-            texto: receita ? `${MELHORIAS.find(m => m.id === receita.melhoria).descricao}` : `Colete ${produto.plural.toLocaleLowerCase('pt-BR')} e abasteça ${id === 'morango' ? 'a seção do hortifruti junto à parede esquerda' : 'a banca na ala ao fundo da loja'}. O repositor também pode ajudar.`,
+            texto: receita ? `${MELHORIAS.find(m => m.id === receita.melhoria).descricao}` : `Colete ${produto.plural.toLocaleLowerCase('pt-BR')} e abasteça ${id === 'morango' ? 'a seção do hortifruti junto à parede esquerda' : id === 'mel' ? 'o expositor na frente direita da loja' : 'a banca na ala ao fundo da loja'}. O repositor também pode ajudar.`,
             destino: carregando ? `prateleira-${id}` : faltante && !temIngrediente ? `coleta-${faltante}` : `coleta-${id}`
           };
         }

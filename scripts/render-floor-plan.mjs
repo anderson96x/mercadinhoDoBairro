@@ -80,6 +80,14 @@ if (nivel >= 9) {
   text(14.5, -4.5, 'PADARIA', 'small');
   path([PRODUTOS.pao.cliente, { x: 13, z: -4 }]);
 }
+if (nivel >= 12) {
+  const mel = PRODUTOS.mel;
+  rect(geometriaEstacao('mel', 'coleta'), '#dca66a', 'stroke="#805634"');
+  text(mel.horta.x, mel.horta.z, 'APIÁRIO', 'small');
+  rect(mel.prateleira, '#e7a92b', 'stroke="#805634"');
+  text(mel.prateleira.x, mel.prateleira.z, 'MEL', 'small');
+  path([mel.coleta, { x: CONFIG.portaProducao.x, z: mel.coleta.z }, CONFIG.portaProducao, { x: 8, z: 1 }, mel.reposicao]);
+}
 parts.push('<path d="M860 140V900" stroke="#dedfd7"/>');
 const notes = [
   `IMPLEMENTADO NO NÍVEL ${nivel}`,
@@ -110,4 +118,4 @@ parts.push('<text x="48" y="966" class="small">Gerado da configuração do jogo 
 writeFileSync(new URL(`../docs/PLANTA-LOJA-N${nivel}.svg`, import.meta.url), parts.join('\n'), 'utf8');
 console.log(`Generated docs/PLANTA-LOJA-N${nivel}.svg from the implemented level ${nivel} geometry.`);
 }
-for (const nivel of [1, 3, 4, 5, 7, 9, 11]) renderizarPlanta(nivel);
+for (const nivel of [1, 3, 4, 5, 7, 9, 11, 12]) renderizarPlanta(nivel);
