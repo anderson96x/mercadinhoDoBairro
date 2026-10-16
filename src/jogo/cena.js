@@ -16,6 +16,7 @@ import { ALTURA_BANDEJA_MEL, construirColmeia, animarAbelhas } from './colmeia.j
 import { atualizarMarcha, animarPernas } from './marcha.js';
 import { icone } from '../interface/icones.js';
 import { criarSol } from './iluminacao.js';
+import { criarPlacaProduto } from './placas-produtos.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
@@ -926,6 +927,7 @@ export class Cena {
     const refrigerador = id === 'leite' ? criarRefrigerador(grupo, s) : null;
     const estante = id === 'ovos' ? criarEstanteOvos(grupo, s) : null;
     const banca = !refrigerador && !estante ? criarBanca(grupo, s) : null;
+    if (s.movel === 'hortifruti') grupo.add(criarPlacaProduto(id, s));
     const frutas = [];
     for (let i = 0; i < 12; i++) {
       const f = criarProduto(id, id === 'leite' ? 0.8 : 1.25);
@@ -987,6 +989,7 @@ export class Cena {
     }
     const refrigerador = id === 'queijo' ? criarRefrigerador(grupo, s, id) : null;
     const banca = !refrigerador ? criarBanca(grupo, s, 0x936238) : null;
+    if (s.movel === 'hortifruti') grupo.add(criarPlacaProduto(id, s));
     for (let i = 0; i < p.capacidadePrateleira; i++) {
       const fruto = criarProduto(id, 1.1); fruto.position.copy(posicaoProdutoPrateleira(id, s, i)); grupo.add(fruto); frutas.push(fruto);
     }

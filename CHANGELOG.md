@@ -1,8 +1,17 @@
 # Histórico de alterações
 
-## Versão atual: 0.43.11 — 2026-10-16
+## Versão atual: 0.44.0 — 2026-10-16
 
-Correção PATCH sobre 0.43.10. Alterações locais ainda sem commit associado.
+Incremento MINOR sobre 0.43.11 pela adição de identificação dos produtos no cenário. Alterações locais ainda sem commit associado.
+
+- Adiciona placas em postes somente nas seções de hortifruti: tomate, milho, trigo e morango, com os nomes em português.
+- Alinha as placas à frente das bancas, com o texto voltado para o corredor, acompanhando o zoom e o desbloqueio de cada seção.
+- Compartilha as texturas de texto e usa as fontes locais do projeto, com suporte ao renderizador alternativo em Canvas 2D.
+- Atualiza pacote, lockfile e README para 0.44.0; Ajuda e DEV exibem a versão automaticamente.
+
+## 0.43.11 — 2026-10-16
+
+Correção PATCH sobre 0.43.10, registrada no commit `8072462`.
 
 - Desloca o conjunto da padaria um ladrilho (1,2 unidades) em direção à frente da loja, à esquerda na vista isométrica, para melhorar a centralização.
 - Mantém balcões, equipamentos, pães, pontos de entrega e compra, colisões e trajetos dos padeiros alinhados pela mesma transformação.
