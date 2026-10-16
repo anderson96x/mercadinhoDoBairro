@@ -1,4 +1,5 @@
 import { construirBalcoesDecorados, criarVitrineCurva } from './padaria-decoracao.js';
+import { criarExpositorHortifruti } from './hortifruti.js';
 import { MODELO_PADARIA, pontoPadaria } from './planta.js';
 import { construirBairro } from './bairro.js';
 import { geometriaEstacao, distanciaEstacao } from './estacoes.js';
@@ -191,23 +192,7 @@ function criarEstanteOvos(pai, p) {
 }
 
 function criarSecaoHortifruti(pai, p) {
-  const grupo = new THREE.Group(); grupo.name = 'secao-hortifruti';
-  grupo.position.set(p.x, 0, p.z); pai.add(grupo);
-  // Pés, tábuas verticais, fundo escuro e bordas claras, como uma caixa de feira.
-  for (const x of [-p.w / 2 + 0.13, p.w / 2 - 0.13]) for (const z of [-p.d / 2 + 0.13, p.d / 2 - 0.13])
-    caixa(grupo, 0.12, 0.65, 0.12, 0x9e704e, x, 0.54, z);
-  for (const x of [-p.w / 2 + 0.055, p.w / 2 - 0.055]) {
-    for (let i = 0; i < 7; i++) caixa(grupo, 0.11, 0.56, (p.d - 0.1) / 7 - 0.012,
-      i % 2 ? 0xc69670 : 0xcda17e, x, 0.86, -p.d / 2 + 0.05 + (i + 0.5) * (p.d - 0.1) / 7);
-  }
-  for (const z of [-p.d / 2 + 0.055, p.d / 2 - 0.055]) {
-    caixa(grupo, p.w, 0.56, 0.11, 0xb78964, 0, 0.86, z);
-    caixa(grupo, p.w, 0.09, 0.12, 0xe0b18c, 0, 1.15, z);
-  }
-  const fundo = caixa(grupo, p.w - 0.16, 0.08, p.d - 0.16, 0x77523a, 0, 1.04, 0);
-  fundo.rotation.z = -0.14;
-  for (const x of [-p.w / 2 + 0.06, p.w / 2 - 0.06])
-    caixa(grupo, 0.12, 0.09, p.d, 0xe0b18c, x, x < 0 ? 1.23 : 1.14, 0);
+  const grupo = criarExpositorHortifruti(caixa, p); pai.add(grupo);
   return grupo;
 }
 
@@ -941,7 +926,7 @@ export class Cena {
     const s = p.prateleira;
     const refrigerador = id === 'leite' ? criarRefrigerador(grupo, s) : null;
     const estante = id === 'ovos' ? criarEstanteOvos(grupo, s) : null;
-    if (!refrigerador && !estante) criarBanca(grupo, s);
+    const banca = !refrigerador && !estante ? criarBanca(grupo, s) : null;
     const frutas = [];
     for (let i = 0; i < 12; i++) {
       const f = criarProduto(id, id === 'leite' ? 0.8 : 1.25);
@@ -955,7 +940,7 @@ export class Cena {
       f.position.copy(posicaoProdutoPrateleira(id, s, i)); grupo.add(f); frutas.push(f);
     }
     const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h) : null;
-    this.produtos[id] = { grupo, frutos, frutas, galinhas, refrigerador, estante, irrigador };
+    this.produtos[id] = { grupo, frutos, frutas, galinhas, refrigerador, estante, irrigador, banca };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : id === 'leite' ? 'CURRAL' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'ovos' ? 3.1 : id === 'leite' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
@@ -999,12 +984,12 @@ export class Cena {
       grupo.add(fruto); frutos.push(fruto);
     }
     const refrigerador = id === 'queijo' ? criarRefrigerador(grupo, s, id) : null;
-    if (!refrigerador) criarBanca(grupo, s, 0x936238);
+    const banca = !refrigerador ? criarBanca(grupo, s, 0x936238) : null;
     for (let i = 0; i < p.capacidadePrateleira; i++) {
       const fruto = criarProduto(id, 1.1); fruto.position.copy(posicaoProdutoPrateleira(id, s, i)); grupo.add(fruto); frutas.push(fruto);
     }
     const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h) : null;
-    this.produtos[id] = { grupo, frutos, frutas, galinhas: [], abelhas, irrigador, refrigerador };
+    this.produtos[id] = { grupo, frutos, frutas, galinhas: [], abelhas, irrigador, refrigerador, banca };
     this.criarLabel(`horta-${id}`, { ...h, y: id === 'morango' ? 2.6 : id === 'mel' ? 3 : 2 }, OFICINAS[id]?.nome.toLocaleUpperCase('pt-BR') || (id === 'mel' ? 'APIÁRIO' : 'ESTUFA DE MORANGOS'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...s, y: 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
