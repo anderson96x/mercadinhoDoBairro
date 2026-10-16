@@ -36,9 +36,9 @@ export const PLANTA_MORANGO = {
 // O conjunto de venda receberá a seção de geleia no N15.
 export const PLANTA_MEL = {
   horta: { x: 13.2, z: -22.2 }, coleta: { x: 13.2, z: -19.8 },
-  prateleira: { x: 17.6, z: 4.6, w: 3.2, d: 1.4, movel: 'doces' },
-  reposicao: { x: 17.6, z: 3.3 }, cliente: { x: 17.6, z: 3.3 },
-  pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 17.6 + dx, z: 3.3 }))
+  prateleira: { x: 17.6, z: 5.8, w: 3.2, d: 1.4, movel: 'doces' },
+  reposicao: { x: 17.6, z: 4.5 }, cliente: { x: 17.6, z: 4.5 },
+  pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 17.6 + dx, z: 4.5 }))
 };
 
 // Painel N13: produção atrás do escritório; refrigerador à direita do leite.
@@ -54,9 +54,9 @@ export const PLANTA_QUEIJO = {
 export const PLANTA_GELEIA = {
   horta: { x: 7.3, z: -12.2 }, coleta: { x: 7.3, z: -10.75 },
   curral: { w: 2.65, d: 1.75 },
-  prateleira: { x: 14.4, z: 4.6, w: 3.2, d: 1.4, movel: 'doces' },
-  reposicao: { x: 14.4, z: 3.3 }, cliente: { x: 14.4, z: 3.3 },
-  pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 14.4 + dx, z: 3.3 }))
+  prateleira: { x: 14.4, z: 5.8, w: 3.2, d: 1.4, movel: 'doces' },
+  reposicao: { x: 14.4, z: 4.5 }, cliente: { x: 14.4, z: 4.5 },
+  pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 14.4 + dx, z: 4.5 }))
 };
 
 const SECOES_DOCES = [['mel', PLANTA_MEL.prateleira], ['geleia', PLANTA_GELEIA.prateleira]];

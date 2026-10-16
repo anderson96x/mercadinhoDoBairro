@@ -75,6 +75,7 @@ function posicaoProdutoPrateleira(id, p, i) {
     return new THREE.Vector3(p.x - 0.75 + i % 4 * 0.5, 0.93 + Math.floor(i / 4) * 0.65, p.z + 0.32);
   }
   if (id === 'pao') return new THREE.Vector3(p.x + 0.07, 0.98 + Math.floor(i / 6) * 0.4, p.z - 1.15 + i % 6 * 0.46);
+  if (p.movel === 'doces') return new THREE.Vector3(p.x - 0.78 + i % 4 * 0.52, 1.27, p.z - 0.43 + Math.floor(i / 4) * 0.43);
   return new THREE.Vector3(p.x - 0.78 + i % 4 * 0.52, 1.11, p.z - 0.43 + Math.floor(i / 4) * 0.43);
 }
 
@@ -154,6 +155,10 @@ function criarRefrigeradorParede(pai, p, id = 'leite') {
 
 function criarBanca(pai, p, cor = 0xd98b43) {
   if (p.movel === 'hortifruti') return criarSecaoHortifruti(pai, p);
+  if (p.movel === 'doces') {
+    const banca = criarExpositorHortifruti(caixa, p, { inclinacao: 0, nome: 'secao-doces' });
+    pai.add(banca); return banca;
+  }
   caixa(pai, p.movel === 'doces' ? p.w : p.w - 0.12, 0.65, p.d - 0.12, cor, p.x, 0.53, p.z);
   caixa(pai, p.w, 0.13, p.d, 0xffd98a, p.x, 0.91, p.z);
   for (const z of [-p.d / 2 + 0.04, p.d / 2 - 0.04]) caixa(pai, p.w, 0.18, 0.08, cor, p.x, 1.04, p.z + z);

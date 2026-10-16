@@ -378,14 +378,14 @@ test('N15 prolonga o mel sem misturar estoques ou repor a seção vizinha na div
     sim.estado.produtos.mel.prateleira = 0;
     sim.estado.produtos.geleia.prateleira = 0;
     sim.estado.jogador.inventario = ['mel', 'geleia'];
-    interagir(sim, { x, z: 3.3 });
+    interagir(sim, { x, z: PRODUTOS.mel.reposicao.z });
     assert.equal(sim.estado.produtos[id].prateleira, 1);
     assert.equal(sim.estado.produtos[id === 'mel' ? 'geleia' : 'mel'].prateleira, 0);
   }
   sim.estado.produtos.mel.prateleira = PRODUTOS.mel.capacidadePrateleira;
   sim.estado.jogador.inventario = ['geleia'];
   const antes = sim.estado.produtos.geleia.prateleira;
-  interagir(sim, { x: divisoria, z: 3.3 });
+  interagir(sim, { x: divisoria, z: PRODUTOS.mel.reposicao.z });
   assert.equal(sim.estado.produtos.geleia.prateleira, antes);
   assert.deepEqual(sim.estado.jogador.inventario, ['geleia']);
 });

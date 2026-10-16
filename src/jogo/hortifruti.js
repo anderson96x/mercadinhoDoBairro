@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 
 // Cada produto recebe o mesmo acabamento desde seu próprio desbloqueio.
-export function criarExpositorHortifruti(caixa, p) {
+export function criarExpositorHortifruti(caixa, p, { inclinacao = -0.14, nome = 'secao-hortifruti' } = {}) {
   const { w, d } = p;
-  const grupo = new THREE.Group(); grupo.name = 'secao-hortifruti';
+  const grupo = new THREE.Group(); grupo.name = nome;
   grupo.position.set(p.x, 0, p.z);
   const madeira = [0xa86c36, 0xb77a40, 0xc18748, 0xb1763b];
   caixa(grupo, w - 0.08, 0.12, d - 0.08, 0x704522, 0, 0.2, 0);
@@ -15,7 +15,6 @@ export function criarExpositorHortifruti(caixa, p) {
     for (const z of [-d / 2 + 0.045, d / 2 - 0.045])
       caixa(grupo, w - 0.18, 0.115, 0.09, madeira[(i + 1) % madeira.length], 0, y, z);
   }
-  const inclinacao = -0.14;
   const altura = x => 1.04 + Math.tan(inclinacao) * x;
   const bandeja = caixa(grupo, w - 0.16, 0.08, d - 0.12, 0x684421, 0, 1.04, 0);
   bandeja.name = 'bandeja-inclinada'; bandeja.rotation.z = inclinacao;
