@@ -1,5 +1,5 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
-import { PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
+import { volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, MOBILIARIO_CALCADA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
@@ -520,10 +520,10 @@ export class Simulacao {
 
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (!this.estado.produtos[id].liberado) continue;
-      if (p.prateleira.movel !== 'hortifruti') caixas.push(p.prateleira);
+      if (!['hortifruti', 'doces'].includes(p.prateleira.movel)) caixas.push(p.prateleira);
       if (id !== 'pao') caixas.push(geometriaEstacao(id, 'coleta'));
     }
-    caixas.push(...volumesHortifruti(this.estado.produtos));
+    caixas.push(...volumesHortifruti(this.estado.produtos), ...volumesDoces(this.estado.produtos));
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
@@ -670,6 +670,7 @@ export class Simulacao {
     if (!pertoLixeira) this.lixeiraVisitada = false;
     const candidatos = [];
     const obstaculos = this.obstaculos();
+    const doce = selecionarCompartimentoDoces(jogador, this.estado.produtos);
     const compartimento = selecionarCompartimentoHortifruti(jogador, this.estado.produtos);
     const expositorPosterior = selecionarExpositorPosterior(jogador, this.estado.produtos);
     for (const [id, p] of Object.entries(PRODUTOS)) {
@@ -680,9 +681,11 @@ export class Simulacao {
         // Cada seção tem uma faixa exclusiva na face do corredor. Na divisória,
         // a seção em direção à frente possui a borda; o estoque não muda sozinho.
         const compartilhado = tipo === 'reposicao' && objeto.movel === 'hortifruti';
+        const doceCompartilhado = tipo === 'reposicao' && objeto.movel === 'doces';
+        if (doceCompartilhado && doce !== id) continue;
         if (compartilhado && compartimento !== id) continue;
         if (tipo === 'reposicao' && objeto.movel === 'parede-frios' && expositorPosterior !== id) continue;
-        const outros = obstaculos.filter(o => compartilhado && o.movel === objeto.movel
+        const outros = obstaculos.filter(o => doceCompartilhado && o.movel === objeto.movel ? false : compartilhado && o.movel === objeto.movel
           ? !(jogador.z >= o.z - o.d / 2 - 1e-8 && jogador.z <= o.z + o.d / 2 + 1e-8)
           : o.x !== objeto.x || o.z !== objeto.z || o.w !== objeto.w || o.d !== objeto.d);
         if (segmentoLivre(jogador, pontoMaisProximo(jogador, objeto), outros)) candidatos.push({ id, tipo, distancia: d });

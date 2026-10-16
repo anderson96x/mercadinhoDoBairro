@@ -36,7 +36,7 @@ export const PLANTA_MORANGO = {
 // O conjunto de venda receberá a seção de geleia no N15.
 export const PLANTA_MEL = {
   horta: { x: 13.2, z: -22.2 }, coleta: { x: 13.2, z: -19.8 },
-  prateleira: { x: 17.6, z: 4.6, w: 3.2, d: 1.4 },
+  prateleira: { x: 17.6, z: 4.6, w: 3.2, d: 1.4, movel: 'doces' },
   reposicao: { x: 17.6, z: 3.3 }, cliente: { x: 17.6, z: 3.3 },
   pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 17.6 + dx, z: 3.3 }))
 };
@@ -49,6 +49,30 @@ export const PLANTA_QUEIJO = {
   reposicao: { x: 18.6, z: 0.7 }, cliente: { x: 18.6, z: 0.7 },
   pontosCompra: [-0.7, 0, 0.7].map(dz => ({ x: 18.6, z: 0.7 + dz }))
 };
+
+// N15: cozinha atrás dos frios; geleia prolonga a banca de mel para a esquerda.
+export const PLANTA_GELEIA = {
+  horta: { x: 7.3, z: -12.2 }, coleta: { x: 7.3, z: -10.75 },
+  curral: { w: 2.65, d: 1.75 },
+  prateleira: { x: 14.4, z: 4.6, w: 3.2, d: 1.4, movel: 'doces' },
+  reposicao: { x: 14.4, z: 3.3 }, cliente: { x: 14.4, z: 3.3 },
+  pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 14.4 + dx, z: 3.3 }))
+};
+
+const SECOES_DOCES = [['mel', PLANTA_MEL.prateleira], ['geleia', PLANTA_GELEIA.prateleira]];
+export function volumesDoces(produtos) {
+  const secoes = SECOES_DOCES.filter(([id]) => produtos[id]?.liberado).map(([, p]) => p);
+  if (!secoes.length) return [];
+  const minX = Math.min(...secoes.map(p => p.x - p.w / 2));
+  const maxX = Math.max(...secoes.map(p => p.x + p.w / 2));
+  return [{ ...secoes[0], x: (minX + maxX) / 2, w: maxX - minX }];
+}
+export function selecionarCompartimentoDoces(ator, produtos) {
+  // Mel possui a borda comum; ambos atendem somente pelo corredor interno.
+  return SECOES_DOCES.find(([id, p]) => produtos[id]?.liberado
+    && ator.z <= p.z - p.d / 2 && ator.x >= p.x - p.w / 2 - 1e-8
+    && ator.x <= p.x + p.w / 2 + 1e-8)?.[0];
+}
 
 export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 

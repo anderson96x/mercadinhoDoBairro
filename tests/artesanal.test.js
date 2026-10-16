@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { CONFIG, PRODUTOS, MELHORIAS, OFICINAS, ALA_ARTESANAL } from '../src/jogo/configuracao.js';
 import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { Cena, criarProduto } from '../src/jogo/cena.js';
+import { volumesDoces, selecionarCompartimentoDoces } from '../src/jogo/planta.js';
 import { construirBairro } from '../src/jogo/bairro.js';
 
 const novos = ['morango', 'mel', 'queijo', 'geleia'];
@@ -342,4 +343,53 @@ test('N13 instala queijaria atrás do escritório, Deli à direita e migra produ
   assert.deepEqual(migrado.estado.oficinas.queijo, sim.estado.oficinas.queijo);
   assert.deepEqual(migrado.estado.produtos.queijo, sim.estado.produtos.queijo);
   assert.deepEqual(migrado.estado.jogador.inventario, ['queijo']);
+});
+
+test('N15 prolonga o mel sem misturar estoques ou repor a seção vizinha na divisória', () => {
+  const sim = abrir(12);
+  assert.ok(Math.abs(volumesDoces(sim.estado.produtos)[0].w - PRODUTOS.mel.prateleira.w) < 1e-8);
+  assert.equal(selecionarCompartimentoDoces(PRODUTOS.geleia.reposicao, sim.estado.produtos), undefined);
+  sim.estado.estatisticas.clientes = 350;
+  assert.equal(sim.comprarMelhoria('cozinhaGeleia').sucesso, true);
+  assert.equal(sim.estado.melhorias.queijaria, 0); // Compra adiada continua permitida.
+  const volumes = sim.obstaculos().filter(o => o.movel === 'doces');
+  assert.equal(volumes.length, 1);
+  assert.ok(Math.abs(volumes[0].w - 6.4) < 1e-8);
+  assert.equal(sim.estado.estagioLoja, 5);
+  const divisoria = PRODUTOS.mel.prateleira.x - PRODUTOS.mel.prateleira.w / 2;
+  for (const [x, id] of [[divisoria - 0.01, 'geleia'], [divisoria, 'mel'], [divisoria + 0.01, 'mel']]) {
+    sim.estado.produtos.mel.prateleira = 0;
+    sim.estado.produtos.geleia.prateleira = 0;
+    sim.estado.jogador.inventario = ['mel', 'geleia'];
+    interagir(sim, { x, z: 3.3 });
+    assert.equal(sim.estado.produtos[id].prateleira, 1);
+    assert.equal(sim.estado.produtos[id === 'mel' ? 'geleia' : 'mel'].prateleira, 0);
+  }
+  sim.estado.produtos.mel.prateleira = PRODUTOS.mel.capacidadePrateleira;
+  sim.estado.jogador.inventario = ['geleia'];
+  const antes = sim.estado.produtos.geleia.prateleira;
+  interagir(sim, { x: divisoria, z: 3.3 });
+  assert.equal(sim.estado.produtos.geleia.prateleira, antes);
+  assert.deepEqual(sim.estado.jogador.inventario, ['geleia']);
+});
+
+test('N15 mantém a cozinha externa, potes dentro da seção e produção de saves V16', () => {
+  const sim = abrir(15), p = PRODUTOS.geleia;
+  assert.ok(p.horta.x >= PRODUTOS.ovos.prateleira.x && p.horta.x <= PRODUTOS.leite.prateleira.x);
+  assert.ok(p.horta.z + p.curral.d / 2 < -9.3);
+  const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
+  Cena.prototype.construirArtesanal.call(visual, 'geleia', p);
+  for (const pote of visual.produtos.geleia.frutas) {
+    assert.ok(Math.abs(pote.position.x - p.prateleira.x) < p.prateleira.w / 2);
+    assert.ok(Math.abs(pote.position.z - p.prateleira.z) < p.prateleira.d / 2);
+  }
+  sim.estado.versaoLayout = 16;
+  Object.assign(sim.estado.oficinas.geleia, { ingredientes: { morango: 2, mel: 1 }, progresso: 2, produzidos: 3 });
+  Object.assign(sim.estado.produtos.geleia, { horta: 3, prateleira: 7, apresentado: true });
+  Object.assign(sim.estado.jogador, { x: 19.2, z: -10.9, inventario: ['geleia'] });
+  const migrado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(migrado.estado.versaoLayout, CONFIG.versaoLayout);
+  assert.deepEqual(migrado.estado.oficinas.geleia, sim.estado.oficinas.geleia);
+  assert.deepEqual(migrado.estado.produtos.geleia, sim.estado.produtos.geleia);
+  assert.deepEqual(migrado.estado.jogador.inventario, ['geleia']);
 });

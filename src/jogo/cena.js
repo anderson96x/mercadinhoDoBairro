@@ -70,7 +70,7 @@ function posicaoProdutoPrateleira(id, p, i) {
     return new THREE.Vector3(p.x + x, 1.2 - x * 0.14, p.z - 0.75 + Math.floor(i / 3) * 0.5);
   }
   if (id === 'leite') return new THREE.Vector3(p.x - 0.75 + i % 4 * 0.5, 0.98 + Math.floor(i / 4) * 0.65, p.z + 0.48);
-  if (id === 'queijo' || id === 'geleia') {
+  if (id === 'queijo') {
     return new THREE.Vector3(p.x - 0.25 + i % 2 * 0.5, 1.24, p.z - (p.d - 0.7) / 2 + Math.floor(i / 2) * (p.d - 0.7) / 5);
   }
   if (id === 'pao') return new THREE.Vector3(p.x + 0.07, 0.98 + Math.floor(i / 6) * 0.4, p.z - 1.15 + i % 6 * 0.46);
@@ -153,7 +153,7 @@ function criarRefrigeradorParede(pai, p) {
 
 function criarBanca(pai, p, cor = 0xd98b43) {
   if (p.movel === 'hortifruti') return criarSecaoHortifruti(pai, p);
-  caixa(pai, p.w - 0.12, 0.65, p.d - 0.12, cor, p.x, 0.53, p.z);
+  caixa(pai, p.movel === 'doces' ? p.w : p.w - 0.12, 0.65, p.d - 0.12, cor, p.x, 0.53, p.z);
   caixa(pai, p.w, 0.13, p.d, 0xffd98a, p.x, 0.91, p.z);
   for (const z of [-p.d / 2 + 0.04, p.d / 2 - 0.04]) caixa(pai, p.w, 0.18, 0.08, cor, p.x, 1.04, p.z + z);
   for (const x of [-p.w / 2 + 0.04, p.w / 2 - 0.04]) caixa(pai, 0.08, 0.18, p.d, cor, p.x + x, 1.04, p.z);

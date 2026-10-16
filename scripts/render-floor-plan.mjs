@@ -80,6 +80,14 @@ if (nivel >= 9) {
   text(14.5, -4.5, 'PADARIA', 'small');
   path([PRODUTOS.pao.cliente, { x: 13, z: -4 }]);
 }
+if (nivel >= 15) {
+  const geleia = PRODUTOS.geleia;
+  rect(geometriaEstacao('geleia', 'coleta'), '#b56d85', 'stroke="#805634"');
+  text(geleia.horta.x, geleia.horta.z - 1.3, 'COZINHA', 'small');
+  rect(geleia.prateleira, '#b94470', 'stroke="#805634"');
+  text(geleia.prateleira.x, geleia.prateleira.z, 'GELEIA', 'small');
+  path([geleia.coleta, { x: CONFIG.portaProducao.x, z: geleia.coleta.z }, CONFIG.portaProducao, { x: 8, z: 1 }, geleia.reposicao]);
+}
 if (nivel >= 13) {
   const queijo = PRODUTOS.queijo;
   rect(geometriaEstacao('queijo', 'coleta'), '#73a9a5', 'stroke="#63868d"');
@@ -126,4 +134,4 @@ parts.push('<text x="48" y="966" class="small">Gerado da configuração do jogo 
 writeFileSync(new URL(`../docs/PLANTA-LOJA-N${nivel}.svg`, import.meta.url), parts.join('\n'), 'utf8');
 console.log(`Generated docs/PLANTA-LOJA-N${nivel}.svg from the implemented level ${nivel} geometry.`);
 }
-for (const nivel of [1, 3, 4, 5, 7, 9, 11, 12, 13]) renderizarPlanta(nivel);
+for (const nivel of [1, 3, 4, 5, 7, 9, 11, 12, 13, 15]) renderizarPlanta(nivel);
