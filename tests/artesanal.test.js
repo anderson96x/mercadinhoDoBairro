@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { CONFIG, PRODUTOS, MELHORIAS, OFICINAS, ALA_ARTESANAL } from '../src/jogo/configuracao.js';
 import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { Cena, criarProduto } from '../src/jogo/cena.js';
-import { volumesDoces, selecionarCompartimentoDoces } from '../src/jogo/planta.js';
+import { PLANTA_OFICINAS, volumesDoces, selecionarCompartimentoDoces } from '../src/jogo/planta.js';
 import { construirBairro } from '../src/jogo/bairro.js';
 
 const novos = ['morango', 'mel', 'queijo', 'geleia'];
@@ -257,6 +257,31 @@ test('N11 preserva o salão N9 e sua parede posterior, sem anexo', () => {
   assert.equal(cena.getObjectByName('parede-passagem-artesanal').visible, true);
 });
 
+test('sala das oficinas abre com qualquer fábrica e permite entrar e sair sem porta', () => {
+  const cena = new THREE.Scene();
+  const mesh = g => { const m = new THREE.Mesh(new THREE.BoxGeometry(), new THREE.MeshBasicMaterial()); g.add(m); return m; };
+  const bairro = construirBairro(cena, { caixa: mesh, cilindro: mesh, esfera: mesh });
+  const sala = cena.getObjectByName('sala-oficinas');
+  for (const melhoria of ['queijaria', 'cozinhaGeleia']) {
+    const sim = abrir(12);
+    bairro.atualizarOficinas(sim.estado.produtos);
+    assert.equal(sala.visible, false);
+    assert.ok(PLANTA_OFICINAS.paredes.every(p => !sim.obstaculos().includes(p)));
+    sim.estado.estatisticas.clientes = 350;
+    assert.equal(sim.comprarMelhoria(melhoria).sucesso, true);
+    bairro.atualizarOficinas(sim.estado.produtos);
+    assert.equal(sala.visible, true);
+    assert.ok(PLANTA_OFICINAS.paredes.every(p => sim.obstaculos().includes(p)));
+    const id = melhoria === 'queijaria' ? 'queijo' : 'geleia';
+    const ator = { x: 11, z: -10.5 };
+    for (const destino of [PRODUTOS[id].coleta, { x: 11, z: -10.5 }]) {
+      let chegou = false;
+      for (let i = 0; i < 1500 && !chegou; i++) { sim.tempo += 0.05; chegou = sim.caminharCliente(ator, destino, 0.05); }
+      assert.equal(chegou, true, melhoria);
+    }
+  }
+});
+
 test('N11 posiciona estufa ao lado do curral com canteiro padronizado e conserva saves V12', () => {
   const p = PRODUTOS.morango;
   assert.deepEqual(p.canteiro, PRODUTOS.tomate.canteiro);
@@ -311,7 +336,7 @@ test('N12 instala mel na frente direita e mantém os estoques ao migrar saves V1
   assert.deepEqual(migrado.estado.jogador.inventario, ['mel']);
 });
 
-test('N13 instala queijaria atrás do escritório, refrigerador ao lado do leite e migra produção V15', () => {
+test('N13 instala queijaria na sala dos fundos, refrigerador ao lado do leite e migra produção V15', () => {
   const sim = abrir(12), p = PRODUTOS.queijo;
   assert.equal(sim.estado.produtos.queijo.liberado, false);
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
@@ -320,7 +345,7 @@ test('N13 instala queijaria atrás do escritório, refrigerador ao lado do leite
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
   assert.equal(sim.comprarMelhoria('queijaria').sucesso, true);
   assert.equal(sim.estado.estagioLoja, 5);
-  assert.ok(p.horta.x >= -3.1 && p.horta.x <= 1.1);
+  assert.ok(Math.abs(p.horta.x - PLANTA_OFICINAS.piso.x) + p.curral.w / 2 < PLANTA_OFICINAS.piso.w / 2);
   assert.ok(p.horta.z + p.curral.d / 2 < -9.3);
   assert.ok(p.coleta.z > p.horta.z && p.coleta.z < -9.3);
   const leite = PRODUTOS.leite.prateleira;
@@ -392,7 +417,7 @@ test('N15 prolonga o mel sem misturar estoques ou repor a seção vizinha na div
 
 test('N15 mantém a cozinha externa, potes dentro da seção e produção de saves V16', () => {
   const sim = abrir(15), p = PRODUTOS.geleia;
-  assert.ok(p.horta.x >= PRODUTOS.ovos.prateleira.x && p.horta.x <= PRODUTOS.leite.prateleira.x);
+  assert.ok(Math.abs(p.horta.x - PLANTA_OFICINAS.piso.x) + p.curral.w / 2 < PLANTA_OFICINAS.piso.w / 2);
   assert.ok(p.horta.z + p.curral.d / 2 < -9.3);
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
   Cena.prototype.construirArtesanal.call(visual, 'geleia', p);

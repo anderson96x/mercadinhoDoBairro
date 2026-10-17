@@ -156,10 +156,11 @@ test('V6 migra ovos, progresso de produção e cargas para N4 sem cobrar nem cri
   assert.deepEqual(new Simulacao(structuredClone(migrado.estado)).estado, migrado.estado);
 });
 
-test('parede posterior separa ovos de oficina externa sem conceder exceção para um vão', () => {
-  const ovos = geometriaEstacao('ovos', 'reposicao'), oficina = geometriaEstacao('geleia', 'coleta');
+test('parede posterior separa ovos de objeto externo sem conceder exceção para um vão', () => {
+  // Objeto de referência atrás dos ovos: a oficina real agora fica na sala à direita.
+  const ovos = geometriaEstacao('ovos', 'reposicao'), oficina = { x: 7.3, z: -12.2, w: 2.65, d: 1.75 };
   assert.ok(estacoesSeparadasPorParede(ovos, oficina, PAREDES_LOJA, CONFIG.raioInteracao));
   const parede = PAREDES_LOJA.find(p => p.z === PLANTA_INICIAL.limites.minZ && p.x > CONFIG.portaProducao.x);
   assert.equal(estacoesSeparadasPorParede(ovos, oficina, [{ ...parede, w: parede.w - 0.4, x: parede.x + 0.2 }], CONFIG.raioInteracao), false, 'parede curta deixa um vão no alcance compartilhado');
-  assert.equal(segmentoLivre(PRODUTOS.ovos.reposicao, PRODUTOS.geleia.horta, PAREDES_LOJA), false);
+  assert.equal(segmentoLivre(PRODUTOS.ovos.reposicao, oficina, PAREDES_LOJA), false);
 });

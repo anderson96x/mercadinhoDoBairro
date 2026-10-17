@@ -1,6 +1,14 @@
 # Histórico de alterações
 
-## Versão atual: 0.46.3 — 2026-10-16
+## Versão atual: 0.47.0 — 2026-10-16
+
+- Cria uma sala com piso cerâmico, paredes baixas no estilo do escritório e entrada lateral sem porta nos fundos direitos.
+- Reúne queijaria e cozinha de geleias nessa sala, mantendo compras, receitas e estoques existentes.
+- Remove a parede curta esquerda e aproxima as duas máquinas da parede baixa do fundo, ampliando a circulação na frente.
+- Compartilha a planta entre visual e colisões; atualiza a migração de posições e verifica acesso com qualquer uma das oficinas comprada primeiro.
+- Validação: 222 testes, rotas de todos os níveis e build passaram; prévia no Edge/WebGL sem erros JavaScript em `docs/previews/sala-oficinas.png`.
+
+## 0.46.3 — 2026-10-16
 
 Refinamento visual PATCH sobre 0.46.2. Alterações locais ainda sem commit associado.
 

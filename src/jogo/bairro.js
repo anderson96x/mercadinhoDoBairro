@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
+import { PLANTA_OFICINAS, oficinasConstruidas, PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
 import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
 
@@ -93,6 +93,8 @@ function criarDetalhesGrama(grupo, vegetacaoEstacionamento) {
       const altura = 0.16 + aleatorio() * 0.12;
       const p = PLANTA_ESTACIONAMENTO.piso;
       const dentro = Math.abs(x - p.x) < p.w / 2 + 0.2 && Math.abs(z - p.z) < p.d / 2 + 0.2;
+      const sala = PLANTA_OFICINAS.piso;
+      if (Math.abs(x - sala.x) < sala.w / 2 + 0.2 && Math.abs(z - sala.z) < sala.d / 2 + 0.2) continue;
       const pontos = (dentro ? verticesEstacionamento : vertices)[Math.floor(aleatorio() * cores.length)];
       for (let folha = 0; folha < 3; folha++) {
         const angulo = folha * Math.PI * 2 / 3 + aleatorio() * 0.4;
@@ -219,6 +221,18 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
+  }
+  const oficinas = new THREE.Group(); grupo.add(oficinas); destino = oficinas;
+  oficinas.name = 'sala-oficinas'; oficinas.visible = false;
+  const pisoOficinas = PLANTA_OFICINAS.piso;
+  chao(3, pisoOficinas.w, 0.2, pisoOficinas.d, 0xc4b9a5, pisoOficinas.x, 0.06, pisoOficinas.z);
+  chao(4, pisoOficinas.w, 0.07, pisoOficinas.d, 0xe3dcc8, pisoOficinas.x, 0.19, pisoOficinas.z, 'piso');
+  for (let x = 12.5; x < 20.9; x += 1.2) chao(5, 0.018, 0.008, pisoOficinas.d, 0xc8bfae, x, 0.23, pisoOficinas.z);
+  for (let z = -14.1; z < -9.3; z += 1.2) chao(5, pisoOficinas.w, 0.008, 0.018, 0xc8bfae, pisoOficinas.x, 0.23, z);
+  for (const p of PLANTA_OFICINAS.paredes) {
+    bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
+    bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
+    rodape(p);
   }
   const lateral = new THREE.Group(); grupo.add(lateral);
   const andaime = new THREE.Group(); grupo.add(andaime); destino = andaime;
@@ -409,6 +423,9 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   let anterior;
   let estagioAnterior, progresso = 1;
   return {
+    atualizarOficinas(produtos) {
+      oficinas.visible = oficinasConstruidas(produtos);
+    },
     atualizarEstacionamento(comprado) {
       vegetacaoEstacionamento.visible = !comprado;
       calcadaAcesso.visible = !comprado;

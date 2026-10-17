@@ -1,5 +1,5 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
-import { OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
+import { PLANTA_OFICINAS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, PAREDES_ESCRITORIO, PORTA_ESCRITORIO, volumesPortasEntrada } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
@@ -523,6 +523,7 @@ export class Simulacao {
       ...volumesPortasEntrada(this.aberturaPortaEntrada),
       ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
+    if (oficinasConstruidas(this.estado.produtos)) caixas.push(...PLANTA_OFICINAS.paredes);
     if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes);
     if (this.estado.melhorias.alaPadaria) caixas.push(
       ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, ...ALA_PADARIA.fechamento

@@ -792,6 +792,7 @@ export class Cena {
     this.estacionamento = construirEstacionamento(); this.cena.add(this.estacionamento.grupo);
     this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento);
     this.bairro.atualizarEstacionamento(!!this.sim.estado.melhorias.estacionamento);
+    this.bairro.atualizarOficinas(this.sim.estado.produtos);
     this.bairro.aplicar(this.sim.estado.personalizacao);
     const suporteCestas = new THREE.Group();
     suporteCestas.position.set(CONFIG.cestas.x, 0, CONFIG.cestas.z); this.cena.add(suporteCestas);
@@ -1544,6 +1545,7 @@ export class Cena {
         particula.scale.setScalar(1 - progresso * 0.65);
       });
     }
+    this.bairro.atualizarOficinas(e.produtos);
     this.bairro.aplicar(e.personalizacao);
     this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);

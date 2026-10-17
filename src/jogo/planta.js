@@ -57,18 +57,30 @@ export const PLANTA_MEL = {
   pontosCompra: [-0.9, 0, 0.9].map(dx => ({ x: 17.6 + dx, z: 4.5 }))
 };
 
-// Painel N13: produção atrás do escritório; refrigerador à direita do leite.
+// Sala compartilhada nos fundos direitos; entrada lateral aberta, sem porta.
+export const PLANTA_OFICINAS = {
+  piso: { x: 16.6, z: -11.8, w: 8.6, d: 5 },
+  entrada: { x: 12.3, z: -10.5 },
+  paredes: [
+    { x: 16.6, z: -14.3, w: 8.6, d: 0.18, h: 1.45 },
+    { x: 20.9, z: -11.8, w: 0.18, d: 5, h: 1.45 }
+  ]
+};
+
+export const oficinasConstruidas = produtos => !!(produtos.queijo?.liberado || produtos.geleia?.liberado);
+
+// N13: produção na sala dos fundos; refrigerador à direita do leite.
 export const PLANTA_QUEIJO = {
-  horta: { x: -0.8, z: -12.2 }, coleta: { x: -0.8, z: -10.75 },
+  horta: { x: 14.1, z: -13.2 }, coleta: { x: 14.1, z: -11.75 },
   curral: { w: 2.65, d: 1.75 },
   prateleira: { x: 11.8, z: -8.45, w: 2.2, d: 1.4, movel: 'parede-frios' },
   reposicao: { x: 11.8, z: -7.15 }, cliente: { x: 11.8, z: -7.15 },
   pontosCompra: [-0.65, 0, 0.65].map(dx => ({ x: 11.8 + dx, z: -7.15 }))
 };
 
-// N15: cozinha atrás dos frios; geleia prolonga a banca de mel para a esquerda.
+// N15: cozinha ao lado da queijaria; geleia prolonga a banca de mel para a esquerda.
 export const PLANTA_GELEIA = {
-  horta: { x: 7.3, z: -12.2 }, coleta: { x: 7.3, z: -10.75 },
+  horta: { x: 18.8, z: -13.2 }, coleta: { x: 18.8, z: -11.75 },
   curral: { w: 2.65, d: 1.75 },
   prateleira: { x: 14.4, z: 5.8, w: 3.2, d: 1.4, movel: 'doces' },
   reposicao: { x: 14.4, z: 4.5 }, cliente: { x: 14.4, z: 4.5 },
