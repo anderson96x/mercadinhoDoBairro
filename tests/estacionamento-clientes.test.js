@@ -19,10 +19,10 @@ function preparar() {
   sim.aleatorio = () => 0;
   return sim;
 }
-function passo(sim) {
-  sim.tempo += 0.05;
+function passo(sim, dt = 0.05) {
+  sim.tempo += dt;
   sim.estado.produtos.tomate.prateleira = 10;
-  sim.atualizarClientes(0.05); sim.atualizarCaixa(0.05);
+  sim.atualizarClientes(dt); sim.atualizarCaixa(dt);
 }
 function ate(sim, condicao, maximo = 6000) {
   for (let i = 0; i < maximo && !condicao(); i++) passo(sim);
@@ -54,13 +54,13 @@ test('construção fica vazia e espera a obra terminar antes da primeira chegada
   assert.equal(new Simulacao(sim.estado).estacionamento.carros.length, 0);
 });
 
-test('cliente dirige, estaciona, desembarca, compra, paga, volta ao próprio carro e vai embora', () => {
+test('a 60 FPS, cliente dirige, estaciona, desembarca, compra, paga, volta ao próprio carro e vai embora', () => {
   const sim = preparar(); sim.criarCliente();
   const cliente = sim.clientes[0], carro = sim.estacionamento.carros[0];
   const fases = new Set(); let abriuPorta = false, saiuComSacola = false;
   const antes = sim.estado.estatisticas.clientes;
   for (let i = 0; i < 6000 && cliente.fase !== 'fim'; i++) {
-    passo(sim); fases.add(carro.fase);
+    passo(sim, 1 / 60); fases.add(carro.fase);
     abriuPorta ||= carro.porta > 0.9;
     saiuComSacola ||= cliente.fase === 'saindo' && cliente.levaSacolas;
   }

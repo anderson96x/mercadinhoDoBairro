@@ -5,11 +5,41 @@ import { construirBairro, FOLHAS_PORTAS_ENTRADA, volumesPortasEntrada } from '..
 import { CONFIG } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
+import { SAIDA_PEDESTRES } from '../src/jogo/estacionamento-clientes.js';
 
 function malha(pai, w, h, d, cor, x = 0, y = 0, z = 0) {
   const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: cor }));
   m.position.set(x, y, z); pai.add(m); return m;
 }
+
+test('motorista vindo do estacionamento contorna a folha em movimento a 60 FPS', () => {
+  for (const abertura of [0, 0.2, 0.6, 1]) {
+    const sim = new Simulacao(); sim.proximoCliente = Infinity; sim.estado.lojaAberta = true;
+    sim.criarCliente(); const cliente = sim.clientes[0];
+    Object.assign(cliente, SAIDA_PEDESTRES, { fase: 'chegando', etapa: 0 });
+    sim.aberturaPortaEntrada = abertura;
+    for (let i = 0; i < 1200 && cliente.fase === 'chegando'; i++) {
+      const anterior = { x: cliente.x, z: cliente.z };
+      sim.tempo += 1 / 60; sim.atualizarClientes(1 / 60);
+      assert.ok(segmentoLivre(anterior, cliente, volumesPortasEntrada(sim.aberturaPortaEntrada), 0.32), 'não atravessa a folha');
+    }
+    assert.equal(cliente.fase, 'pegandoCesta', `porta inicialmente em ${abertura}`);
+  }
+});
+
+test('cliente já preso ao lado da porta consegue desviar e entrar sem teletransporte', () => {
+  const sim = new Simulacao(); sim.proximoCliente = Infinity; sim.estado.lojaAberta = true;
+  sim.criarCliente(); const cliente = sim.clientes[0];
+  Object.assign(cliente, { x: -2.16, z: 8.4, fase: 'chegando', etapa: 0 });
+  sim.aberturaPortaEntrada = 0.6;
+  for (let i = 0; i < 1200 && cliente.fase === 'chegando'; i++) {
+    const anterior = { x: cliente.x, z: cliente.z };
+    sim.tempo += 1 / 60; sim.atualizarClientes(1 / 60);
+    assert.ok(Math.hypot(cliente.x - anterior.x, cliente.z - anterior.z) <= 2.4 / 60 + 1e-6);
+    assert.ok(segmentoLivre(anterior, cliente, volumesPortasEntrada(sim.aberturaPortaEntrada), 0.32));
+  }
+  assert.equal(cliente.fase, 'pegandoCesta');
+});
 
 test('pegas pertencem às folhas e acompanham a abertura sem mudar a dobradiça', () => {
   const cena = new THREE.Scene();

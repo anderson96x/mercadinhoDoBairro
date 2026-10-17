@@ -595,7 +595,16 @@ export class Simulacao {
     const obstaculos = this.obstaculosCliente(ator);
     // Planeja a passagem pelo vão que abrirá por proximidade, mas cada passo
     // continua respeitando a posição real das folhas durante a animação.
-    const obstaculosRota = [...obstaculos.filter(o => !o.portaEntrada), ...volumesPortasEntrada(1)];
+    const folhasAbertas = volumesPortasEntrada(1);
+    const pelaCalcada = ator.z >= CONFIG.portaEntrada.z && ponto.z >= CONFIG.portaEntrada.z;
+    // Na calçada é preciso contornar também a posição atual da folha. Esperar
+    // que ela abra pode travar ambos: a pessoa impede justamente esse giro.
+    // Se já está no espaço que a folha aberta ocuparia, permita sair dele
+    // respeitando a geometria real, em vez de prender a origem numa colisão virtual.
+    const preverAbertura = segmentoLivre(ator, ator, folhasAbertas, 0.32);
+    const obstaculosRota = [...obstaculos.filter(o => !o.portaEntrada),
+      ...(preverAbertura ? folhasAbertas : []),
+      ...(pelaCalcada || !preverAbertura ? obstaculos.filter(o => o.portaEntrada) : [])];
     const livre = (inicio, fim, planejar = false) => {
       const dx = fim.x - inicio.x, dz = fim.z - inicio.z, comprimento = dx * dx + dz * dz;
       if (this.clientes.some(outro => {
@@ -613,7 +622,7 @@ export class Simulacao {
     };
     const livreRota = (inicio, fim) => livre(inicio, fim, true);
     let alvo = ponto;
-    if (!livre(ator, ponto) && !livreRota(ator, ponto)) {
+    if (!livreRota(ator, ponto)) {
       let rota = this.caminhosClientes.get(ator);
       if (!rota || distancia(rota.destino, ponto) > 0.1 || this.tempo >= rota.recalcular) {
         rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livreRota, this.limitesClientes), recalcular: this.tempo + 0.6 };

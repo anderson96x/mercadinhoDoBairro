@@ -1,6 +1,15 @@
 # Histórico de alterações
 
-## Versão atual: 0.46.1 — 2026-10-16
+## Versão atual: 0.46.2 — 2026-10-16
+
+Correção PATCH sobre 0.46.1. Alterações locais ainda sem commit associado.
+
+- Corrige o motorista preso ao lado da entrada: a 60 FPS, a pessoa bloqueava o giro da folha parcialmente aberta e aguardava justamente essa abertura para caminhar.
+- Ao circular pela calçada, clientes planejam o desvio considerando a posição atual e a posição aberta da porta. Clientes já presos também conseguem sair pelo espaço livre, preservando colisões e a proteção contra a porta girar sobre pessoas.
+- Acrescenta regressões a 60 FPS com diferentes aberturas iniciais e com um cliente já preso; o ciclo completo de compras do motorista também passa a ser verificado a 60 FPS.
+- Os dois testes novos reproduziram a falha antes da correção. Após o ajuste, 221 testes passaram e o build concluiu com o aviso de tamanho de pacote já existente.
+
+## 0.46.1 — 2026-10-16
 
 Correção PATCH sobre 0.46.0. Alterações locais ainda sem commit associado.
 
