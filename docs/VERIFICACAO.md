@@ -1,5 +1,12 @@
 # Verificação da versão 0.1.0
 
+## Clientes de carro — 0.46.0 — 16/10/2026
+
+- As seis vagas começam vazias. O teste completo percorre chegada, manobra, desembarque, caminhada, compra, pagamento, retorno ao mesmo carro, embarque, ré e partida. Também cobre lotação, loja fechada durante a chegada, pausa, espera por trânsito e pedestres, e salvamento sem duplicar produtos pagos.
+- Rotas de entrada e saída de todas as vagas verificadas quanto a posição contínua, orientação, limites do asfalto e separação do canteiro central. A volta ao fundo e a aproximação à vaga reduzem a velocidade.
+- **217 testes passaram**; `npm run build` concluiu com o aviso já existente de pacote acima de 500 kB.
+- Edge headless com WebGL, 1200 × 900: estacionamento vazio, curva de estacionamento, porta aberta, desembarque, ré e saída conferidos sem exceções JavaScript; uma compra concluída no percurso. [Prévia da manobra](previews/estacionamento-clientes.png). Verificação em aparelho físico não realizada.
+
 ## Nova planta — nível 5 (leite) — 14/10/2026
 
 - Referência posterior do jogador: o expositor baixo foi substituído por [refrigerador vertical de parede](previews/leite-e-ovos-n5.png), com duas portas de vidro, três prateleiras internas, puxadores, cabeçalho vermelho e ventilação inferior. Os 12 lugares foram distribuídos em três níveis; animações e etiqueta ajustadas. **42 testes de N5, expansão e personagens passaram**, incluindo apoio das garrafas e visibilidade por raios através do vidro, assim como o build. Detalhe e vista geral atualizados; móvel/Canvas abaixo registram o expositor baixo anterior. Posição, colisão, estoque e regras de venda foram preservados.

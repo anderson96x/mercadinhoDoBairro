@@ -3,7 +3,7 @@ import { criarExpositorHortifruti } from './hortifruti.js';
 import { MODELO_PADARIA, pontoPadaria } from './planta.js';
 import { construirBairro } from './bairro.js';
 import { geometriaEstacao, distanciaEstacao } from './estacoes.js';
-import { Trafego } from './trafego.js';
+import { Trafego, MODELOS_CARROS } from './trafego.js';
 import { ColetaBancoVisual } from './coleta-banco.js';
 import { AssaltoVisual } from './assalto-visual.js';
 import { BANCO } from './banco.js';
@@ -732,6 +732,14 @@ export class Cena {
     this.deslocamentoCamera = new THREE.Vector3();
     this.construirMundo();
     this.trafego = new Trafego(this.cena);
+    this.sim.estacionamento.receberDoTrafego = id => {
+      const carro = this.trafego.retirarParaEstacionar();
+      if (!carro) return null;
+      this.estacionamento.receberCarro(id, carro.grupo);
+      return { modelo: MODELOS_CARROS.indexOf(carro.modelo), x: carro.grupo.position.x,
+        z: carro.grupo.position.z, angulo: carro.grupo.rotation.y,
+        rodas: carro.grupo.userData.rodas[0].rotation.z, velocidade: carro.velocidade };
+    };
     this.coletaBanco = new ColetaBancoVisual(this.cena);
     this.assaltoVisual = new AssaltoVisual(this.cena);
     this.alertaCaixa = new THREE.Group();
@@ -1510,11 +1518,14 @@ export class Cena {
     const sim = this.sim, e = sim.estado;
     const coleta = e.banco.coleta;
     const assalto = e.banco.assalto;
-    if (coleta || assalto) this.trafego.faixasReservadas.add(0);
+    if (coleta || assalto || sim.estacionamento.reservaRua) this.trafego.faixasReservadas.add(0);
     else this.trafego.faixasReservadas.delete(0);
     this.trafego.atualizar(dt);
-    if (coleta?.tempo < 0 && dt > 0 && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
-    if (assalto?.tempo < 0 && dt > 0 && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
+    sim.estacionamento.transitoLivre = !this.trafego.carros.some(c => c.faixa === 0);
+    const manobraAtiva = sim.estacionamento.carros.some(c => (c.fase === 'aguardando' && c.recebido)
+      || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase));
+    if (coleta?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
+    if (assalto?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
     this.coletaBanco.atualizar(coleta);
     this.assaltoVisual.atualizar(assalto);
     const dtVisual = dt || (e.jogador.sentadoEscritorio ? 1 / 60 : 0);
@@ -1534,7 +1545,7 @@ export class Cena {
       });
     }
     this.bairro.aplicar(e.personalizacao);
-    this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt);
+    this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);
     this.bairro.animarPorta(sim.aberturaPortaEscritorio);
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
@@ -1591,6 +1602,7 @@ export class Cena {
         this.clientes.set(c.id, m); this.cena.add(m);
       }
       const modelo = this.clientes.get(c.id);
+      modelo.visible = !c.noCarro;
       const itens = c.itens ?? Array(c.quantidade).fill(c.produto);
       if (c.temCesta && !c.levaSacolas) aplicarPaletaCesta(modelo.userData.cesta, paletaAtual);
       if (!c.assustado || !modelo.userData.congelado) this.animarPersonagem(modelo, c, c.assustado ? 0 : dt, tempo + c.id, itens, 'prateleira', 0.55);

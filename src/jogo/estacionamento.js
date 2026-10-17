@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { PLANTA_ESTACIONAMENTO as P } from './planta.js';
-import { criarCarro, MODELOS_CARROS } from './trafego.js';
 
 export function construirEstacionamento() {
   const grupo = new THREE.Group(); grupo.name = 'estacionamento'; grupo.visible = false;
@@ -49,7 +48,7 @@ export function construirEstacionamento() {
     caixa(marcacao, 'fundo-vaga', 0.055, 0.012, vaga.d, 0xf3efd8,
       vaga.x + (vaga.lado ? 1 : -1) * vaga.w / 2, 0.073, vaga.z, 4);
     caixa(marcacao, 'limitador-vaga', 0.16, 0.12, 0.9, 0xd6ba5b,
-      vaga.x + (vaga.lado ? 1 : -1) * 1.03, 0.12, vaga.z);
+      vaga.x + (vaga.lado ? 1 : -1) * 1.48, 0.12, vaga.z);
   }
   caixa(detalhes, 'canteiro-central-estacionamento', P.ilha.w, 0.2, P.ilha.d,
     0xd3d8c8, P.ilha.x, 0.14, P.ilha.z);
@@ -77,13 +76,7 @@ export function construirEstacionamento() {
     m.position.set(x, 0.082, z); m.userData.fundo = 4; detalhes.add(m);
   };
   for (const z of [-3.8, 3.5]) for (const faixa of P.faixas) seta(faixa.x, z, faixa.direcao);
-  for (const { vaga: indice, modelo } of P.carros) {
-    const vaga = P.vagas[indice], carro = criarCarro(MODELOS_CARROS[modelo]);
-    carro.name = `carro-estacionado-${indice + 1}`;
-    carro.scale.multiplyScalar(0.88); carro.position.set(vaga.x, 0.06, vaga.z);
-    carro.rotation.y = vaga.lado ? Math.PI : 0;
-    detalhes.add(carro);
-  }
+  const carros = new Map();
   const placa = new THREE.Group(); placa.name = 'placa-estacionamento';
   placa.position.set(P.placa.x, 0, P.placa.z); detalhes.add(placa);
   caixa(placa, 'poste-placa', 0.07, 1.7, 0.07, 0x71817e, 0, 0.9, 0);
@@ -93,10 +86,39 @@ export function construirEstacionamento() {
   for (const y of [1.9, 1.7]) caixa(placa, 'letra-P', 0.29, 0.08, 0.02, 0xfff9df, 0, y, 0.055);
   caixa(placa, 'letra-P', 0.08, 0.2, 0.02, 0xfff9df, 0.12, 1.8, 0.055);
   let compradoAntes, progresso = 1;
-  return { grupo, atualizar(comprado, dt = 0) {
+  return { grupo, carros, receberCarro(id, carro) {
+    carro.userData.luzes = [];
+    carro.traverse(o => { if (['pisca', 'luz-freio', 'luz-re'].includes(o.name)) carro.userData.luzes.push(o); });
+    carros.set(id, carro); grupo.add(carro);
+  }, atualizar(comprado, dt = 0, veiculos = [], tempo = 0) {
     if (comprado && compradoAntes === false) progresso = 0;
     compradoAntes = comprado; grupo.visible = comprado;
     if (comprado) progresso = Math.min(1, progresso + dt / 4);
     detalhes.scale.y = Math.max(0.001, THREE.MathUtils.smoothstep(progresso, 0, 1));
+    for (const estado of veiculos) {
+      if (!carros.has(estado.clienteId)) continue;
+      const carro = carros.get(estado.clienteId);
+      const giro = Math.atan2(Math.sin(estado.angulo - carro.rotation.y), Math.cos(estado.angulo - carro.rotation.y));
+      carro.position.set(estado.x, estado.z > 9.26 ? 0.04 : 0.06, estado.z);
+      carro.rotation.y = estado.angulo;
+      carro.visible = true;
+      carro.userData.porta.rotation.y = -estado.porta * 1.1;
+      for (const roda of carro.userData.rodas) roda.rotation.z = estado.rodas;
+      for (const suporte of carro.userData.direcaoRodas) suporte.rotation.y = THREE.MathUtils.lerp(suporte.rotation.y,
+        estado.velocidade > 0.1 && dt > 0 ? THREE.MathUtils.clamp(giro / dt * 0.65 * (estado.fase === 're' ? -1 : 1), -0.48, 0.48) : 0, Math.min(1, dt * 8));
+      for (const luz of carro.userData.luzes) {
+        if (luz.name === 'luz-re') luz.visible = estado.fase === 're';
+        else {
+          const acesa = luz.name === 'pisca' ? ['chegando', 're', 'partindo'].includes(estado.fase) && Math.sin(tempo * 9) > 0
+            : estado.velocidade < 1.5 && estado.fase !== 'estacionado';
+          luz.material.emissive.setHex(acesa ? (luz.name === 'pisca' ? 0xff8a15 : 0xff2515) : 0);
+          luz.material.emissiveIntensity = acesa ? 0.9 : 0;
+        }
+      }
+    }
+    for (const [id, carro] of carros) if (!veiculos.some(c => c.clienteId === id)) {
+      carro.traverse(o => { if (o.isMesh) { o.geometry.dispose(); if (['pisca', 'luz-freio'].includes(o.name)) o.material.dispose(); } });
+      grupo.remove(carro); carros.delete(id);
+    }
   } };
 }

@@ -54,7 +54,7 @@ test('objetivo do nível 16 aponta para a compra no escritório', () => {
   assert.notEqual(sim.missao().titulo, 'Um lugar para estacionar');
 });
 
-test('seis vagas e quatro carros cabem no terreno lateral sem ocupar hortas ou loja', () => {
+test('seis vagas vazias ocupam o terreno lateral sem ocupar hortas ou loja', () => {
   const estacionamento = construirEstacionamento();
   assert.equal(estacionamento.grupo.visible, false);
   estacionamento.atualizar(true);
@@ -66,16 +66,8 @@ test('seis vagas e quatro carros cabem no terreno lateral sem ocupar hortas ou l
     if (/^vaga-estacionamento-\d+$/.test(o.name)) vagas.push(o);
     if (/^carro-estacionado-\d+$/.test(o.name)) carros.push(o);
   });
-  assert.equal(vagas.length, 6); assert.equal(carros.length, 4);
-  estacionamento.grupo.updateMatrixWorld(true);
-  for (const carro of carros) {
-    const b = new THREE.Box3().setFromObject(carro);
-    assert.ok(b.min.x > P.piso.x - P.piso.w / 2 && b.max.x < P.piso.x + P.piso.w / 2);
-    assert.ok(b.min.z > P.piso.z - P.piso.d / 2 && b.max.z < P.piso.z + P.piso.d / 2);
-    const colisao = OBSTACULOS_ESTACIONAMENTO.find(o => Math.abs(o.x - carro.position.x) < 1e-6 && Math.abs(o.z - carro.position.z) < 1e-6);
-    assert.ok(b.min.x >= colisao.x - colisao.w / 2 && b.max.x <= colisao.x + colisao.w / 2);
-    assert.ok(b.min.z >= colisao.z - colisao.d / 2 && b.max.z <= colisao.z + colisao.d / 2);
-  }
+  assert.equal(vagas.length, 6); assert.equal(carros.length, 0);
+  assert.equal(estacionamento.carros.size, 0);
 });
 
 test('colisões só existem após a compra e deixam acesso ao estacionamento e à horta', () => {
@@ -89,10 +81,7 @@ test('colisões só existem após a compra e deixam acesso ao estacionamento e �
     [{ x: CONFIG.portaProducao.x, z: -10.2 }, PRODUTOS.tomate.coleta]]) {
     assert.ok(buscarCaminho(inicio, destino, livre, sim.limitesClientes).length, 'acesso deve continuar livre');
   }
-  const carro = OBSTACULOS_ESTACIONAMENTO[2];
-  const ator = { x: carro.x, z: carro.z - 1.4 };
-  sim.mover(ator, 0, 1, 0.05, 10);
-  assert.ok(ator.z < carro.z - carro.d / 2 - 0.27);
+
 });
 
 test('asfalto chega à borda e o acesso contínuo fica centrado nas faixas de entrada e saída', () => {

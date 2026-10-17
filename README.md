@@ -1,6 +1,6 @@
 ﻿# Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.45.1**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.46.0**.
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
 
@@ -96,7 +96,7 @@ Os níveis representam a evolução contínua da mesma loja. Atingir o nível li
 | 15 | Cozinha de geleias | R$ 2.200 | Produz geleias; exige o apiário. |
 | 16 | Estacionamento | R$ 10.000 | Seis vagas no terreno à esquerda da loja, com acesso pela rua, iluminação e canteiro central. |
 
-O nível 16 é o último marco de conteúdo atual. O estacionamento é comprado no escritório, na aba Mercado, e sua construção fica salva. Possui seis vagas e quatro carros cenográficos estacionados. A loja pode continuar funcionando e subindo de nível depois dele.
+O nível 16 é o último marco de conteúdo atual. O estacionamento é comprado no escritório, na aba Mercado, e sua construção fica salva. As seis vagas começam vazias. Clientes chegam de carro, estacionam, desembarcam e caminham até a loja; depois das compras, voltam ao próprio carro e saem de ré antes de seguir pela rua. Rodas, direção, portas, piscas e luzes acompanham as manobras. A loja pode continuar funcionando e subindo de nível depois dele.
 
 ## Produção e receitas
 

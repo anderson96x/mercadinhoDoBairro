@@ -18,24 +18,17 @@ export const PLANTA_INICIAL = {
 // Área externa à esquerda da loja, sem ocupar a horta ou a calçada frontal.
 export const PLANTA_ESTACIONAMENTO = {
   piso: { x: -9.9, z: -1.1, w: 11.8, d: 15 },
-  ilha: { x: -9.9, z: -2.4, w: 0.7, d: 8.2 },
+  ilha: { x: -9.9, z: -1.95, w: 0.7, d: 7.5 },
   acesso: { x: -9.9, z: 7.83, w: 6.4, d: 2.86 },
   faixas: [{ x: -11.5, direcao: 0 }, { x: -8.3, direcao: Math.PI }],
   posteCalcada: { x: -6.2, z: 8.4, w: 0.18, d: 0.18 },
   placa: { x: -14.8, z: 5.8 },
-  vagas: [-14.1, -5.7].flatMap((x, lado) => [-5.6, -2.6, 0.4].map(z => ({ x, z, w: 2.8, d: 2.6, lado }))),
-  carros: [
-    { vaga: 0, modelo: 2 }, { vaga: 2, modelo: 4 },
-    { vaga: 3, modelo: 1 }, { vaga: 4, modelo: 10 }
-  ]
+  vagas: [-13.9, -5.9].flatMap((x, lado) => [-4.8, -1.8, 1.2].map(z => ({ x, z, w: 3.4, d: 2.6, lado }))),
 };
 
 export const OBSTACULOS_ESTACIONAMENTO = [
   PLANTA_ESTACIONAMENTO.ilha,
-  { ...PLANTA_ESTACIONAMENTO.placa, w: 0.12, d: 0.12 },
-  ...PLANTA_ESTACIONAMENTO.carros.map(({ vaga }) => ({
-    x: PLANTA_ESTACIONAMENTO.vagas[vaga].x, z: PLANTA_ESTACIONAMENTO.vagas[vaga].z, w: 2.8, d: 1.6
-  }))
+  { ...PLANTA_ESTACIONAMENTO.placa, w: 0.12, d: 0.12 }
 ];
 
 // Painel N3: milho alinhado ao tomate, mais ao fundo (z menor).

@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.45.1 — 2026-10-16
+## Versão atual: 0.46.0 — 2026-10-16
+
+Incremento MINOR pelo ciclo completo de clientes motorizados. Alterações locais ainda sem commit associado.
+
+- Estacionamento construído e partidas carregadas começam com seis vagas vazias, sem carros cenográficos nem colisões invisíveis.
+- Vincula cada carro ao cliente e reserva sua vaga até terminar a viagem: chegada pela rua, estacionamento, desembarque, compras, retorno, embarque, ré e partida.
+- Anima curvas com aceleração e frenagem, rodas girando e esterçando, porta do motorista, piscas e luzes de freio e ré.
+- Coordena manobras, pedestres, trânsito e veículos do banco; clientes recusados também retornam ao próprio carro. Compras já pagas não voltam ao estoque ao salvar durante a partida.
+- Valida as seis vagas, lotação, ciclo de compra completo, loja fechada, pausa, pedestres, salvamento e remoção dos modelos. Suíte de 217 testes e build passaram; viagem conferida no Edge com WebGL sem exceções JavaScript.
+
+## 0.45.1 — 2026-10-16
 
 Correção PATCH sobre 0.45.0. Alterações locais ainda sem commit associado.
 

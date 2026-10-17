@@ -7,6 +7,7 @@ import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
+import { EstacionamentoClientes, pontoPortaCarro, volumeCarro, SAIDA_PEDESTRES } from './estacionamento-clientes.js';
 
 // A fila vira para o fundo após sete lugares, cabendo no salão anterior ao N9.
 export function pontoFila(indice) {
@@ -155,6 +156,7 @@ export class Simulacao {
   constructor(salvo) {
     this.estado = validarEstado(salvo);
     this.clientes = [];
+    this.estacionamento = new EstacionamentoClientes();
     this.aparenciasDisponiveis = [];
     this.ultimaAparenciaCliente = null;
     this.eventos = [];
@@ -187,7 +189,7 @@ export class Simulacao {
         const compras = (Array.isArray(c.compras) ? c.compras : []).filter(p => p && PRODUTOS[p.produto]).map(p => ({
           produto: p.produto, desejado: limitar(Number(p.desejado) || 1, 1, 5), quantidade: limitar(Number(p.quantidade) || 0, 0, 5)
         }));
-        return { ...c, id: i + 1,
+        return { ...c, id: i + 1, carroId: null, noCarro: false,
           ...(salvo.versaoLayout === CONFIG.versaoLayout ? { x: limitar(c.x, this.limitesClientes.minX, this.limitesClientes.maxX), z: limitar(c.z, this.limitesClientes.minZ, this.limitesClientes.maxZ) } : CONFIG.inicio),
           itens, quantidade: itens.length, compras, compraAtual: 0,
           satisfacao: ['feliz', 'neutro', 'irritado'].includes(c.satisfacao) ? c.satisfacao : null,
@@ -312,7 +314,7 @@ export class Simulacao {
     if (!a.invadiu && a.tempo >= ASSALTO.entrada) {
       a.invadiu = true;
       this.progressoCaixa = 0;
-      for (const c of this.clientes) if (c.z <= CONFIG.portaEntrada.z && c.fase !== 'fim') {
+      for (const c of this.clientes) if (!c.noCarro && c.x >= PLANTA_INICIAL.limites.minX && c.z <= CONFIG.portaEntrada.z && c.fase !== 'fim') {
         c.assustado = true; c.andando = false; c.tempoAssusto = this.tempo;
       }
       this.emitir('assaltoIniciado');
@@ -414,7 +416,8 @@ export class Simulacao {
       : id === 'milho'
       ? 'Milho liberado! Saia pela porta dos fundos. O novo canteiro fica atrás dos tomates; abasteça sua seção na banca de hortifruti.'
       : m.titulo });
-    for (const ator of [this.estado.jogador, this.ajudante, ...this.clientes]) this.liberarPosicao(ator);
+    if (id === 'estacionamento') this.estacionamento.prontoEm = this.tempo + 4;
+    for (const ator of [this.estado.jogador, this.ajudante, ...this.clientes.filter(c => !c.noCarro)]) this.liberarPosicao(ator);
     this.caminhosClientes = new WeakMap();
     this.trajetosProducao = new WeakMap();
     return { sucesso: true, dinheiro: this.estado.dinheiro };
@@ -531,7 +534,8 @@ export class Simulacao {
       if (id !== 'pao') caixas.push(geometriaEstacao(id, 'coleta'));
     }
     caixas.push(...volumesHortifruti(this.estado.produtos), ...volumesDoces(this.estado.produtos));
-    if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO);
+    if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
+      ...this.estacionamento.carros.filter(c => c.fase !== 'aguardando').map(volumeCarro));
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
@@ -847,6 +851,9 @@ export class Simulacao {
   criarCliente() {
     if (this.estado.banco.assalto) return false;
     const cestaReservada = this.cestasDisponiveis > 0;
+    const deCarro = !!this.estado.melhorias.estacionamento && cestaReservada && this.estado.lojaAberta;
+    if (deCarro && (this.tempo < this.estacionamento.prontoEm || this.estacionamento.manobrando
+      || this.estacionamento.carros.length >= 6 || this.estacionamento.carros.some(c => c.fase === 'esperandoSaida'))) return false;
     const pedirOvos = this.estado.producao.ovosProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.ovosVendidos >= 10 ? 3 : 4) === 0;
     const pedirLeite = this.estado.producao.leitesProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.leitesVendidos >= 10 ? 4 : 5) === 0;
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado
@@ -901,6 +908,7 @@ export class Simulacao {
     const aparencia = this.aparenciasDisponiveis.pop();
     this.ultimaAparenciaCliente = aparencia;
     this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: compras[0].desejado, compras, compraAtual: 0, itens: [], fase: cestaReservada ? 'chegando' : 'passando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida: cestaReservada ? ladoSaida : 1 - ladoEntrada, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada, temCesta: false, levaSacolas: false });
+    if (deCarro) this.estacionamento.reservar(this.clientes.at(-1), this.tempo);
     return true;
   }
   normalizarComprasCliente(c) {
@@ -971,6 +979,7 @@ export class Simulacao {
     });
   }
   atualizarClientes(dt) {
+    this.estacionamento.atualizar(this, dt);
     const alvoEntrada = this.portaEntradaDeveAbrir() ? 1 : 0;
     const abertura = limitar(this.aberturaPortaEntrada + (alvoEntrada ? 1 : -1) * dt * 1.8, 0, 1);
     const atoresEntrada = [this.estado.jogador, ...this.clientes];
@@ -982,6 +991,7 @@ export class Simulacao {
     const fila = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0));
     const clienteEmAtendimento = this.clienteEmAtendimento;
     for (const c of this.clientes) {
+      if (['dirigindo', 'embarcando'].includes(c.fase)) continue;
       if (c.assustado) { c.andando = false; continue; }
       const compra = this.normalizarComprasCliente(c);
       const p = PRODUTOS[c.produto], e = this.estado.produtos[c.produto];
@@ -989,6 +999,10 @@ export class Simulacao {
         c.fase = 'saindo'; c.etapa = 1; c.temCesta = false; c.cestaReservada = false; c.ladoSaida = c.ladoEntrada; c.recusado = true;
       }
       if (c.fase === 'chegando') {
+        if (c.etapa === -1) {
+          if (this.caminharCliente(c, SAIDA_PEDESTRES, dt)) c.etapa = 0;
+          continue;
+        }
         if (c.etapa === 0) {
           if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;
           continue;
@@ -1032,7 +1046,14 @@ export class Simulacao {
       } else if (c.fase === 'saindo') {
         if (c.etapa === 0) {
           if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;
-        } else if (this.caminharCliente(c, CONFIG.extremosCalcada[c.ladoSaida ?? 1], dt)) c.fase = 'fim';
+        } else {
+          const carro = this.estacionamento.carroCliente(c);
+          if (carro) {
+            if (c.etapa === 1) {
+              if (this.caminharCliente(c, SAIDA_PEDESTRES, dt)) c.etapa = 2;
+            } else if (this.caminharCliente(c, pontoPortaCarro(carro), dt)) this.estacionamento.embarcar(c);
+          } else if (this.caminharCliente(c, CONFIG.extremosCalcada[c.ladoSaida ?? 1], dt)) c.fase = 'fim';
+        }
       }
     }
     this.clientes = this.clientes.filter(c => c.fase !== 'fim');

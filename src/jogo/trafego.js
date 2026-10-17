@@ -34,6 +34,12 @@ const FORMATOS = {
   van: { comprimento: 2.91, largura: 1.2, corpo: 0.62, teto: 1.9, baseTras: -1.31, topoTras: -1.2, topoFrente: 1.03, baseFrente: 1.24 }
 };
 
+export function dimensoesCarro(modelo) {
+  const formato = FORMATOS[modelo.tipo];
+  return { comprimento: (formato.comprimento + 0.204) * modelo.escala,
+    largura: (formato.largura + 0.23) * modelo.escala };
+}
+
 const materiais = new Map();
 function material(cor, duplo = false) {
   const chave = `${cor}:${duplo}`;
@@ -64,7 +70,7 @@ function vidroNaFace(grupo, face, u0, u1, v0, v1, deslocamento) {
   painel(grupo, [ponto(u0, v0), ponto(u1, v0), ponto(u1, v1), ponto(u0, v1)], 0x365464);
 }
 
-export function criarCarro(modelo) {
+export function criarCarro(modelo, animavel = false) {
   const formato = FORMATOS[modelo.tipo];
   const carro = new THREE.Group();
   carro.name = `carro-${modelo.tipo}`;
@@ -103,23 +109,41 @@ export function criarCarro(modelo) {
   vidroNaFace(carro, frente, 0.08, 0.92, 0.12, 0.87, [0.012, 0, 0]);
   if (modelo.tipo !== 'van') vidroNaFace(carro, traseira, 0.09, 0.91, 0.14, 0.84, [-0.012, 0, 0]);
   const divisao = (topoTras + topoFrente) / 2;
+  let porta;
   for (const lado of [-1, 1]) {
     const face = [[baseTras, topoCorpo, lado * meiaCabine], [baseFrente, topoCorpo, lado * meiaCabine], [topoFrente, alturaTeto, lado * meioTeto], [topoTras, alturaTeto, lado * meioTeto]];
-    painel(carro, face, modelo.cor);
+    if (animavel && lado === -1) {
+      porta = new THREE.Group(); porta.name = 'porta-motorista'; carro.add(porta);
+      const meioBaixo = new THREE.Vector3(...face[0]).lerp(new THREE.Vector3(...face[1]), 0.5).toArray();
+      const meioAlto = new THREE.Vector3(...face[3]).lerp(new THREE.Vector3(...face[2]), 0.5).toArray();
+      painel(carro, [face[0], meioBaixo, meioAlto, face[3]], modelo.cor);
+      painel(porta, [meioBaixo, face[1], face[2], meioAlto], modelo.cor);
+      const larguraPorta = baseFrente - meioBaixo[0];
+      caixa(carro, larguraPorta, h * 0.78, 0.012, 0x252b30, baseFrente - larguraPorta / 2, topoCorpo - h * 0.4, -l / 2 - 0.02);
+      caixa(porta, larguraPorta, h * 0.82, 0.04, modelo.cor, baseFrente - larguraPorta / 2, topoCorpo - h * 0.4, -l / 2 - 0.045);
+    } else painel(carro, face, modelo.cor);
     const janelas = modelo.tipo === 'van' ? [[0.66, 0.94]]
       : modelo.tipo === 'picape' ? [[0.08, 0.92]]
         : ['suv', 'minivan'].includes(modelo.tipo) ? [[0.07, 0.3], [0.34, 0.61], [0.65, 0.94]]
           : [[0.08, 0.46], [0.52, 0.93]];
-    for (const [u0, u1] of janelas) vidroNaFace(carro, face, u0, u1, 0.13, 0.86, [0, 0, lado * 0.012]);
-    caixa(carro, 0.15, 0.035, 0.025, acabamento, divisao + 0.12, topoCorpo - 0.12, lado * (l / 2 + 0.014));
+    for (const [u0, u1] of janelas) vidroNaFace(porta && lado === -1 && u0 >= 0.5 ? porta : carro, face, u0, u1, 0.13, 0.86, [0, 0, lado * 0.012]);
+    caixa(porta && lado === -1 ? porta : carro, 0.15, 0.035, 0.025, acabamento, divisao + 0.12, topoCorpo - 0.12, lado * (l / 2 + 0.06));
     caixa(carro, 0.015, h * 0.6, 0.014, acabamento, divisao, topoCorpo - h * 0.36, lado * (l / 2 + 0.012));
     caixa(carro, 0.16, 0.1, 0.12, modelo.cor, baseFrente - 0.1, topoCorpo + 0.035, lado * (l / 2 + 0.055));
     caixa(carro, 0.07, 0.065, 0.08, 0xa5c0c9, baseFrente - 0.184, topoCorpo + 0.035, lado * (l / 2 + 0.055));
   }
+  if (porta) {
+    porta.position.set(baseFrente, 0, -l / 2);
+    for (const parte of porta.children) parte.position.sub(porta.position);
+    carro.userData.porta = porta;
+  }
   const rodas = [];
+  const direcaoRodas = [];
   for (const x of [-eixo, eixo]) for (const lado of [-1, 1]) {
     const roda = new THREE.Group();
-    roda.position.set(x, 0.3, lado * (l / 2 - 0.035)); carro.add(roda); rodas.push(roda);
+    const suporte = new THREE.Group(); suporte.position.set(x, 0.3, lado * (l / 2 - 0.035));
+    carro.add(suporte); suporte.add(roda); rodas.push(roda);
+    if (x > 0) direcaoRodas.push(suporte);
     const pneu = malha(roda, new THREE.CylinderGeometry(0.28, 0.28, 0.15, 10), borracha);
     pneu.rotation.x = Math.PI / 2;
     const calota = malha(roda, new THREE.CylinderGeometry(0.17, 0.17, 0.012, 8), 0xb8c3c7, 0, 0, lado * 0.083);
@@ -129,7 +153,17 @@ export function criarCarro(modelo) {
   }
   for (const lado of [-1, 1]) {
     caixa(carro, 0.055, 0.15, 0.22, 0xffefd2, c / 2 + 0.031, 0.77, lado * l * 0.33);
-    caixa(carro, 0.055, 0.17, 0.23, 0xd94438, -c / 2 - 0.031, 0.78, lado * l * 0.33);
+    const freio = caixa(carro, 0.055, 0.17, 0.23, 0xd94438, -c / 2 - 0.031, 0.78, lado * l * 0.33);
+    freio.name = 'luz-freio';
+    if (animavel) {
+      freio.material = freio.material.clone();
+      for (const frente of [-1, 1]) {
+        const seta = caixa(carro, 0.06, 0.08, 0.1, 0xffab32, frente * (c / 2 + 0.04), 0.85, lado * l * 0.43);
+        seta.name = 'pisca'; seta.material = seta.material.clone();
+      }
+      const re = caixa(carro, 0.06, 0.07, 0.08, 0xfff3d3, -c / 2 - 0.04, 0.72, lado * l * 0.28);
+      re.name = 'luz-re'; re.visible = false;
+    }
   }
   caixa(carro, 0.08, 0.12, l * 0.37, borracha, c / 2 + 0.04, 0.72, 0);
   caixa(carro, 0.095, 0.024, l * 0.31, acabamento, c / 2 + 0.04, 0.73, 0);
@@ -150,6 +184,7 @@ export function criarCarro(modelo) {
 
   carro.scale.setScalar(modelo.escala);
   carro.userData.rodas = rodas;
+  carro.userData.direcaoRodas = direcaoRodas;
   return carro;
 }
 
@@ -181,7 +216,7 @@ export class Trafego {
     const borda = faixa.direcao > 0 ? RUA.minX : RUA.maxX;
     if (this.carros.some(c => c.faixa === indice && Math.abs(c.grupo.position.x - borda) < 6)) return false;
     const modelo = this.proximoModelo();
-    const grupo = criarCarro(modelo);
+    const grupo = criarCarro(modelo, true);
     grupo.rotation.y = faixa.direcao > 0 ? 0 : Math.PI;
     // Inclui para-choques, escala e orientação: nenhuma parte sai do asfalto.
     const tamanho = new THREE.Box3().setFromObject(grupo);
@@ -193,6 +228,15 @@ export class Trafego {
     return true;
   }
 
+  retirarParaEstacionar() {
+    // Transfere o último carro da faixa: ninguém fica vindo atrás dele enquanto espera.
+    const carro = this.carros.filter(c => c.faixa === 0 && c.grupo.position.x > -8.3)
+      .sort((a, b) => b.grupo.position.x - a.grupo.position.x)[0];
+    if (!carro) return null;
+    this.carros.splice(this.carros.indexOf(carro), 1);
+    return carro;
+  }
+
   atualizar(dt) {
     if (!Number.isFinite(dt) || dt <= 0) return;
     for (let i = this.carros.length - 1; i >= 0; i--) {
@@ -200,7 +244,10 @@ export class Trafego {
       const proximoX = carro.grupo.position.x + carro.direcao * carro.velocidade * dt;
       if (proximoX > carro.maxX || proximoX < carro.minX) {
         this.cena.remove(carro.grupo);
-        carro.grupo.traverse(objeto => { if (objeto.isMesh) objeto.geometry.dispose(); });
+        carro.grupo.traverse(objeto => { if (objeto.isMesh) {
+          objeto.geometry.dispose();
+          if (['pisca', 'luz-freio'].includes(objeto.name)) objeto.material.dispose();
+        } });
         this.carros.splice(i, 1);
         continue;
       }
