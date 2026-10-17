@@ -1,5 +1,12 @@
 # Verificação da versão 0.1.0
 
+## Trânsito reutilizado e fluxo misto — 0.46.1 — 16/10/2026
+
+- **219 testes passaram**, incluindo os vinte modelos em escala original nas seis vagas, limites do piso, separação do canteiro e de carros grandes estacionados nas vagas vizinhas. `npm run build` concluiu com o aviso existente de pacote acima de 500 kB.
+- O estacionamento recebe o próprio objeto do trânsito, preservando posição, escala, modelo e rodas. O teste impede criação de um carro substituto enquanto aguarda tráfego; valida retirada da lista da rua e remoção ao fim da visita.
+- Compradores a pé e passantes continuam circulando durante construção, manobra, lotação e espera por um carro. A chance de uma visita de carro é de 35% quando há cesta, vaga e condições de entrada; as demais visitas seguem a chegada a pé.
+- Edge headless com WebGL, 1200 × 900: um motorista em picape, quatro compradores a pé e um passante coexistiram. Cinco compras concluídas; a mesma picape, com escala original 1,1, estacionou, abriu a porta e foi embora. Nenhuma exceção JavaScript. [Prévia do fluxo misto](previews/estacionamento-fluxo-misto.png). Verificação em aparelho físico não realizada.
+
 ## Clientes de carro — 0.46.0 — 16/10/2026
 
 - As seis vagas começam vazias. O teste completo percorre chegada, manobra, desembarque, caminhada, compra, pagamento, retorno ao mesmo carro, embarque, ré e partida. Também cobre lotação, loja fechada durante a chegada, pausa, espera por trânsito e pedestres, e salvamento sem duplicar produtos pagos.

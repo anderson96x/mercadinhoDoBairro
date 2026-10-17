@@ -27,7 +27,7 @@ const volta = () => [
 ];
 function trajetos(indice) {
   if (rotas.has(indice)) return rotas.get(indice);
-  const v = P.vagas[indice], x = v.lado ? saida : entrada, z = v.z + (v.lado ? -1.4 : 1.9);
+  const v = P.vagas[indice], x = v.lado ? saida : entrada, z = v.z + (v.lado ? -1.9 : 1.9);
   const curva = [ponto(x, z), ponto(x, v.z + (z - v.z) * 0.45),
     ponto(v.x + (x - v.x) * 0.55, v.z), ponto(v.x, v.z)];
   const chegada = [

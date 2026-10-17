@@ -18,12 +18,12 @@ export const PLANTA_INICIAL = {
 // Área externa à esquerda da loja, sem ocupar a horta ou a calçada frontal.
 export const PLANTA_ESTACIONAMENTO = {
   piso: { x: -9.9, z: -1.1, w: 11.8, d: 15 },
-  ilha: { x: -9.9, z: -1.95, w: 0.7, d: 7.5 },
+  ilha: { x: -9.9, z: -1.95, w: 0.5, d: 7.5 },
   acesso: { x: -9.9, z: 7.83, w: 6.4, d: 2.86 },
   faixas: [{ x: -11.5, direcao: 0 }, { x: -8.3, direcao: Math.PI }],
   posteCalcada: { x: -6.2, z: 8.4, w: 0.18, d: 0.18 },
   placa: { x: -14.8, z: 5.8 },
-  vagas: [-13.9, -5.9].flatMap((x, lado) => [-4.8, -1.8, 1.2].map(z => ({ x, z, w: 3.4, d: 2.6, lado }))),
+  vagas: [-13.95, -5.85].flatMap((x, lado) => [-3.7, -0.7, 2.3].map(z => ({ x, z, w: 3.4, d: 2.6, lado }))),
 };
 
 export const OBSTACULOS_ESTACIONAMENTO = [

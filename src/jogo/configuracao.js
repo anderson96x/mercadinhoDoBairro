@@ -28,6 +28,7 @@ export const CONFIG = {
     { reputacao: 100, segundos: 2.5 }
   ],
   quantidadeCestas: 5,
+  proporcaoClientesCarro: 0.35,
   cestasPorMelhoria: 5,
   capacidadeCestaCliente: 5,
   capacidadeAjudante: 8,

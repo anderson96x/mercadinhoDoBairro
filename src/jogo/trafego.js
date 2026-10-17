@@ -126,7 +126,12 @@ export function criarCarro(modelo, animavel = false) {
       : modelo.tipo === 'picape' ? [[0.08, 0.92]]
         : ['suv', 'minivan'].includes(modelo.tipo) ? [[0.07, 0.3], [0.34, 0.61], [0.65, 0.94]]
           : [[0.08, 0.46], [0.52, 0.93]];
-    for (const [u0, u1] of janelas) vidroNaFace(porta && lado === -1 && u0 >= 0.5 ? porta : carro, face, u0, u1, 0.13, 0.86, [0, 0, lado * 0.012]);
+    for (const [u0, u1] of janelas) {
+      if (porta && lado === -1 && u0 < 0.5 && u1 > 0.5) {
+        vidroNaFace(carro, face, u0, 0.5, 0.13, 0.86, [0, 0, lado * 0.012]);
+        vidroNaFace(porta, face, 0.5, u1, 0.13, 0.86, [0, 0, lado * 0.012]);
+      } else vidroNaFace(porta && lado === -1 && u0 >= 0.5 ? porta : carro, face, u0, u1, 0.13, 0.86, [0, 0, lado * 0.012]);
+    }
     caixa(porta && lado === -1 ? porta : carro, 0.15, 0.035, 0.025, acabamento, divisao + 0.12, topoCorpo - 0.12, lado * (l / 2 + 0.06));
     caixa(carro, 0.015, h * 0.6, 0.014, acabamento, divisao, topoCorpo - h * 0.36, lado * (l / 2 + 0.012));
     caixa(carro, 0.16, 0.1, 0.12, modelo.cor, baseFrente - 0.1, topoCorpo + 0.035, lado * (l / 2 + 0.055));

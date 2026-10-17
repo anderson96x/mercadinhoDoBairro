@@ -851,9 +851,10 @@ export class Simulacao {
   criarCliente() {
     if (this.estado.banco.assalto) return false;
     const cestaReservada = this.cestasDisponiveis > 0;
-    const deCarro = !!this.estado.melhorias.estacionamento && cestaReservada && this.estado.lojaAberta;
-    if (deCarro && (this.tempo < this.estacionamento.prontoEm || this.estacionamento.manobrando
-      || this.estacionamento.carros.length >= 6 || this.estacionamento.carros.some(c => c.fase === 'esperandoSaida'))) return false;
+    const deCarro = !!this.estado.melhorias.estacionamento && cestaReservada && this.estado.lojaAberta
+      && this.tempo >= this.estacionamento.prontoEm && !this.estacionamento.manobrando
+      && this.estacionamento.carros.length < 6 && !this.estacionamento.carros.some(c => c.fase === 'esperandoSaida')
+      && this.aleatorio() < CONFIG.proporcaoClientesCarro;
     const pedirOvos = this.estado.producao.ovosProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.ovosVendidos >= 10 ? 3 : 4) === 0;
     const pedirLeite = this.estado.producao.leitesProduzidos >= 2 && this.proximaId % (this.estado.estatisticas.leitesVendidos >= 10 ? 4 : 5) === 0;
     const disponiveis = Object.keys(PRODUTOS).filter(id => this.estado.produtos[id].liberado

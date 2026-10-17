@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.46.0 — 2026-10-16
+## Versão atual: 0.46.1 — 2026-10-16
+
+Correção PATCH sobre 0.46.0. Alterações locais ainda sem commit associado.
+
+- Reutiliza o próprio carro que já circula na rua, com o mesmo objeto, cor, modelo, escala e posição; elimina a redução para 82% e a criação de carros exclusivos do estacionamento.
+- Aceita os vinte modelos do trânsito e ajusta vagas, colisões, portas e curvas para o tamanho original, incluindo picapes, SUVs e vans.
+- Mantém passantes e compradores a pé. Uma parcela dos compradores pode chegar dirigindo; vagas ocupadas, construção ou manobras não interrompem o fluxo da calçada.
+- Testa os vinte modelos nas seis vagas, inclusive com veículos grandes nas vagas vizinhas, transferência sem teletransporte e convivência entre pedestres e motoristas.
+- Suíte de 219 testes e build passaram. No Edge com WebGL, um motorista, quatro compradores a pé e um passante coexistiram; cinco vendas concluídas e o mesmo carro partiu, sem exceções JavaScript.
+
+## 0.46.0 — 2026-10-16
 
 Incremento MINOR pelo ciclo completo de clientes motorizados. Alterações locais ainda sem commit associado.
 
