@@ -70,6 +70,37 @@ function vidroNaFace(grupo, face, u0, u1, v0, v1, deslocamento) {
   painel(grupo, [ponto(u0, v0), ponto(u1, v0), ponto(u1, v1), ponto(u0, v1)], 0x365464);
 }
 
+function criarInterior(carro, formato, alturaTeto) {
+  const interior = new THREE.Group(); interior.name = 'interior-carro'; carro.add(interior);
+  const { largura, corpo, baseTras, baseFrente } = formato;
+  const piso = 0.5 + corpo, alturaCabine = alturaTeto - piso;
+  const meiaCabine = (baseFrente - baseTras) / 2;
+  const assentoX = baseFrente - meiaCabine * 0.7;
+  const profundidade = Math.min(0.4, meiaCabine * 0.55);
+  caixa(interior, baseFrente - baseTras - 0.08, 0.018, largura * 0.82,
+    0x343a3b, (baseTras + baseFrente) / 2, piso + 0.012, 0).name = 'piso-cabine';
+  for (const lado of [-1, 1]) {
+    const banco = new THREE.Group(); banco.name = lado < 0 ? 'banco-motorista' : 'banco-passageiro';
+    banco.position.set(assentoX, piso, lado * largura * 0.23); interior.add(banco);
+    caixa(banco, profundidade, 0.08, largura * 0.3, 0xa49a85, 0, 0.065, 0);
+    const encosto = caixa(banco, 0.075, alturaCabine * 0.52, largura * 0.3,
+      0x827a6a, -profundidade * 0.42, alturaCabine * 0.31 + 0.04, 0);
+    encosto.rotation.z = -0.08;
+    caixa(banco, 0.085, alturaCabine * 0.16, largura * 0.2, 0xa49a85,
+      -profundidade * 0.46, alturaCabine * 0.66 + 0.025, 0).name = 'apoio-cabeca';
+  }
+  caixa(interior, 0.14, 0.10, largura * 0.72, 0x444c50,
+    baseFrente - meiaCabine * 0.17, piso + 0.065, 0).name = 'painel-interno';
+  const volante = new THREE.Group(); volante.name = 'volante'; interior.add(volante);
+  volante.position.set(baseFrente - meiaCabine * 0.35, piso + alturaCabine * 0.38, -largura * 0.23);
+  volante.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), new THREE.Vector3(0.9, 0.4, 0).normalize());
+  const raio = Math.min(0.12, alturaCabine * 0.25);
+  malha(volante, new THREE.TorusGeometry(raio, 0.018, 5, 12), 0x222c30);
+  caixa(volante, raio * 1.6, 0.022, 0.025, 0x707e82, 0, 0, 0);
+  caixa(volante, 0.022, raio, 0.025, 0x707e82, 0, -raio / 2, 0);
+  malha(volante, new THREE.SphereGeometry(0.033, 6, 4), 0x303b40);
+}
+
 export function criarCarro(modelo, animavel = false) {
   const formato = FORMATOS[modelo.tipo];
   const carro = new THREE.Group();
@@ -101,6 +132,7 @@ export function criarCarro(modelo, animavel = false) {
   caixa(carro, c * 0.73, 0.1, l * 0.63, borracha, 0, 0.43, 0);
   const meiaCabine = l * 0.44, meioTeto = l * 0.35;
   const alturaTeto = teto - (modelo.tipo === 'seda' ? 0.13 : 0.06);
+  criarInterior(carro, formato, alturaTeto);
   const frente = [[baseFrente, topoCorpo, -meiaCabine], [baseFrente, topoCorpo, meiaCabine], [topoFrente, alturaTeto, meioTeto], [topoFrente, alturaTeto, -meioTeto]];
   const traseira = [[baseTras, topoCorpo, meiaCabine], [baseTras, topoCorpo, -meiaCabine], [topoTras, alturaTeto, -meioTeto], [topoTras, alturaTeto, meioTeto]];
   painel(carro, frente, modelo.cor);

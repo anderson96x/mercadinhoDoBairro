@@ -1,6 +1,14 @@
 # Histórico de alterações
 
-## Versão atual: 0.46.2 — 2026-10-16
+## Versão atual: 0.46.3 — 2026-10-16
+
+Refinamento visual PATCH sobre 0.46.2. Alterações locais ainda sem commit associado.
+
+- Acrescenta bancos dianteiros com encostos e apoios de cabeça, piso escuro, painel e volante com aro e raios ao construtor compartilhado dos carros.
+- Dimensiona o interior pela cabine de cada modelo, atendendo os vinte carros reutilizados do trânsito; os detalhes aparecem ao abrir a porta no estacionamento.
+- Confere as seis carrocerias com portas abertas no Edge/WebGL, sem exceções JavaScript. Testes existentes de trânsito e build passaram.
+
+## 0.46.2 — 2026-10-16
 
 Correção PATCH sobre 0.46.1. Alterações locais ainda sem commit associado.
 
