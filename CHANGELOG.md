@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.48.0 — 2026-10-19
+## Versão atual: 0.49.0 — 2026-10-19
+
+- Adiciona às ferramentas DEV um botão para completar até a capacidade máxima todas as prateleiras de produtos já liberados, marcar os produtos como apresentados e reiniciar o repositor sem perder sua carga.
+- Mantém bloqueados os produtos e móveis que ainda não fazem parte do progresso atual.
+- Validação: suíte completa de testes e build passaram.
+
+## 0.48.0 — 2026-10-19
 
 - Libera uma melhoria de dois níveis no nível 17; cada compra de R$ 1.000 instala uma prateleira metálica de dois lados pelo escritório, na aba Mercado.
 - Instala dois móveis vazios idênticos de 5,775 unidades nos corredores centrais, alinhados pela frente com o balcão da padaria e terminando juntos antes dos expositores do fundo. Mantém colisão por compra, espaço para a fila e acesso aos produtos existentes. A importação fica planejada para o nível 18, sem novos produtos nesta etapa.

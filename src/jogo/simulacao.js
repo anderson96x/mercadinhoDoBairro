@@ -22,6 +22,9 @@ const fertilizanteAtivo = MELHORIAS.find(m => m.id === 'fertilizante')?.ativa !=
 const velocidadeJogadorAtiva = MELHORIAS.find(m => m.id === 'velocidade')?.ativa !== false;
 const ajudanteAtivo = MELHORIAS.find(m => m.id === 'ajudante')?.ativa !== false;
 const velocidadeAjudanteAtiva = MELHORIAS.find(m => m.id === 'velocidadeAjudante')?.ativa !== false;
+const estadoAjudanteInicial = () => ({
+  x: 0.2, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false, angulo: 0
+});
 
 export function estadoInicial() {
   return {
@@ -37,7 +40,7 @@ export function estadoInicial() {
     }])),
     producao: { progressoOvo: 0, ovosProduzidos: 0, progressoLeite: 0, leitesProduzidos: 0,
       trigoPadaria: 0, farinha: 0, progressoMoagem: 0, progressoForno: 0, paesProduzidos: 0 },
-    funcionarios: { ajudante: { x: 0.2, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false } },
+    funcionarios: { ajudante: estadoAjudanteInicial() },
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0, crescimentoMelhorado: false, apresentado: false
     }])),
@@ -275,6 +278,23 @@ export class Simulacao {
     if (![5, 60].includes(segundos)) return false;
     this.tempoEsperaAssalto = segundos;
     return true;
+  }
+  preencherPrateleirasDev() {
+    let quantidade = 0;
+    for (const [id, estoque] of Object.entries(this.estado.produtos)) {
+      if (!estoque.liberado) continue;
+      quantidade += Math.max(0, PRODUTOS[id].capacidadePrateleira - estoque.prateleira);
+      estoque.prateleira = PRODUTOS[id].capacidadePrateleira;
+      estoque.apresentado = true;
+    }
+    for (const id of this.ajudante.inventario) {
+      const estoque = this.estado.produtos[id];
+      if (estoque) estoque.horta = Math.min(PRODUTOS[id].capacidadeHorta, estoque.horta + 1);
+    }
+    Object.assign(this.ajudante, estadoAjudanteInicial());
+    this.trajetosProducao.delete(this.ajudante);
+    this.reposicoes.delete(this.ajudante);
+    return quantidade;
   }
   definirAssaltosAtivos(ativo) {
     this.assaltosAtivos = ativo;

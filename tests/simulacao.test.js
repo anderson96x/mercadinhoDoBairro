@@ -4,6 +4,28 @@ import { Simulacao, estadoInicial, validarEstado, distancia } from '../src/jogo/
 import { CONFIG, PRODUTOS, NIVEL_AJUDANTE, MELHORIAS } from '../src/jogo/configuracao.js';
 import { MOBILIARIO_CALCADA } from '../src/jogo/bairro.js';
 
+test('ferramenta DEV completa todas as prateleiras liberadas', () => {
+  const sim = new Simulacao();
+  sim.estado.produtos.tomate.prateleira = 2;
+  sim.estado.produtos.milho.liberado = true;
+  sim.estado.produtos.milho.prateleira = 5;
+  sim.estado.produtos.milho.horta = 2;
+  Object.assign(sim.ajudante, { x: 8, z: -4, produto: 'milho', destino: 'prateleira', inventario: ['milho', 'milho'], temporizador: 0.4, andando: true });
+
+  const quantidade = sim.preencherPrateleirasDev();
+
+  assert.equal(quantidade, 17);
+  assert.equal(sim.estado.produtos.tomate.prateleira, PRODUTOS.tomate.capacidadePrateleira);
+  assert.equal(sim.estado.produtos.milho.prateleira, PRODUTOS.milho.capacidadePrateleira);
+  assert.equal(sim.estado.produtos.tomate.apresentado, true);
+  assert.equal(sim.estado.produtos.milho.apresentado, true);
+  assert.equal(sim.estado.produtos.milho.horta, 4);
+  assert.deepEqual(sim.ajudante, estadoInicial().funcionarios.ajudante);
+  assert.equal(sim.estado.produtos.ovos.prateleira, 0);
+  assert.equal(sim.estado.produtos.ovos.apresentado, false);
+  assert.equal(sim.preencherPrateleirasDev(), 0);
+});
+
 test('primeiros objetivos seguem as ações reais e continuam após recarregar', () => {
   const sim = new Simulacao();
   assert.equal(sim.missao().titulo, 'Colha seus primeiros tomates');

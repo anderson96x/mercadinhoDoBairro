@@ -1,6 +1,6 @@
 ﻿# Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.48.0**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.49.0**.
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
 
@@ -39,7 +39,7 @@ Abra `http://localhost:4173`. O projeto usa módulos e precisa do servidor; abri
 
 Para jogar no celular pela mesma rede Wi-Fi, mantenha o servidor aberto e acesse `http://IP-DO-COMPUTADOR:4173`. Se necessário, autorize o acesso à rede local no firewall.
 
-Em desenvolvimento, o botão **DEV** abre ferramentas para ajustar saldo, nível, reputação e eventos, além de reiniciar a partida. Ele não aparece na versão de produção.
+Em desenvolvimento, o botão **DEV** abre ferramentas para ajustar saldo, preencher todas as prateleiras liberadas, nível, reputação e eventos, além de reiniciar a partida. Ele não aparece na versão de produção.
 
 ## Como jogar
 
