@@ -9,7 +9,7 @@ export function abrirLoja(nivel = 15) {
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 40000;
   for (const id of ['caixa', 'milho', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
-    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia']) {
+    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'prateleirasImportados']) {
     if (MELHORIAS.find(m => m.id === id).nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }
   sim.proximoCliente = Infinity;
@@ -17,7 +17,7 @@ export function abrirLoja(nivel = 15) {
   return sim;
 }
 
-for (const nivel of [1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15]) {
+for (const nivel of [1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15, 17]) {
   const sim = abrirLoja(nivel);
   for (const [id, produto] of Object.entries(PRODUTOS)) {
     if (!sim.estado.produtos[id].liberado) continue;

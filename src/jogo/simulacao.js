@@ -1,5 +1,5 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
-import { PLANTA_OFICINAS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
+import { PRATELEIRAS_IMPORTADOS, PLANTA_OFICINAS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, PAREDES_ESCRITORIO, PORTA_ESCRITORIO, volumesPortasEntrada } from './bairro.js';
 import { CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
@@ -64,6 +64,12 @@ export function validarEstado(dados) {
     const liberada = m.ativa !== false && nivelSalvo >= (m.nivelMinimo || 1);
     const compradaAntes = m.nivelMinimoLegado && nivelSalvo >= m.nivelMinimoLegado && dados.melhorias?.[m.id] > 0;
     base.melhorias[m.id] = numero(dados.melhorias?.[m.id], liberada || compradaAntes ? m.max : 0);
+  }
+  // Migra o formato provisório que guardava cada prateleira em uma melhoria.
+  if (nivelSalvo >= 17 && dados.melhorias?.prateleirasImportados === undefined) {
+    base.melhorias.prateleirasImportados = numero(
+      numero(dados.melhorias?.prateleiraImportados1, 1) + numero(dados.melhorias?.prateleiraImportados2, 1), 2
+    );
   }
   // As novas construções dependem de instalações existentes, inclusive ao restaurar.
   for (const m of MELHORIAS.filter(m => m.nivelMinimo >= 10)) {
@@ -443,6 +449,11 @@ export class Simulacao {
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
+      if (this.nivel >= 17 && this.estado.melhorias.prateleirasImportados < PRATELEIRAS_IMPORTADOS.length) {
+        return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
+          titulo: 'Prepare as prateleiras de importados', texto: 'No escritório, compre as duas prateleiras por R$ 1.000 cada. Elas ficam vazias; a importação está prevista para o nível 18.',
+          destino: 'escritorio', exibir: true };
+      }
       if (this.nivel >= 16 && !this.estado.melhorias.estacionamento) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: 'Um lugar para estacionar', texto: 'No escritório, construa o estacionamento por R$ 10.000. Ele ocupa o terreno ao lado esquerdo da loja.',
@@ -535,6 +546,7 @@ export class Simulacao {
       if (id !== 'pao') caixas.push(geometriaEstacao(id, 'coleta'));
     }
     caixas.push(...volumesHortifruti(this.estado.produtos), ...volumesDoces(this.estado.produtos));
+    caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
       ...this.estacionamento.carros.filter(c => c.fase !== 'aguardando').map(volumeCarro));
     if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);

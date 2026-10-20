@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs';
 import { CONFIG, PRODUTOS, ESCRITORIO, ALA_PADARIA } from '../src/jogo/configuracao.js';
-import { PLANTA_INICIAL, PLANTA_AMPLIADA, PRODUTOS_HORTIFRUTI } from '../src/jogo/planta.js';
+import { PLANTA_INICIAL, PLANTA_AMPLIADA, PRODUTOS_HORTIFRUTI, PRATELEIRAS_IMPORTADOS } from '../src/jogo/planta.js';
 import { PAREDES_LOJA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from '../src/jogo/bairro.js';
 import { geometriaEstacao } from '../src/jogo/estacoes.js';
 
@@ -104,6 +104,11 @@ if (nivel >= 12) {
   text(mel.prateleira.x, mel.prateleira.z, 'MEL', 'small');
   path([mel.coleta, { x: CONFIG.portaProducao.x, z: mel.coleta.z }, CONFIG.portaProducao, { x: 8, z: 1 }, mel.reposicao]);
 }
+if (nivel >= 17) for (const [indice, p] of PRATELEIRAS_IMPORTADOS.entries()) {
+  rect(p, '#d5dfe2', 'stroke="#71838d"');
+  text(p.x, p.z, `P${indice + 1}`, 'small');
+  text(p.x, p.z + p.d / 2 + 0.6, 'R$ 1.000', 'small');
+}
 parts.push('<path d="M860 140V900" stroke="#dedfd7"/>');
 const notes = [
   `IMPLEMENTADO NO NÍVEL ${nivel}`,
@@ -113,7 +118,7 @@ const notes = [
   nivel >= 5 ? 'Ovos + leite na parede do fundo.' : nivel >= 4 ? 'Ovos na parede do fundo.' : 'Escritório e lixeira ao fundo.',
   'Entrada frontal e acesso posterior.',
   'Caixa com acesso livre à cadeira.',
-  'Cinco cestas e cinco lugares de fila.',
+  nivel >= 17 ? 'P1 e P2: prateleiras vazias.' : 'Cinco cestas e cinco lugares de fila.',
   '',
   'BANCA MODULAR',
   'Só tomates aparecem no início.',
@@ -134,4 +139,4 @@ parts.push('<text x="48" y="966" class="small">Gerado da configuração do jogo 
 writeFileSync(new URL(`../docs/PLANTA-LOJA-N${nivel}.svg`, import.meta.url), parts.join('\n'), 'utf8');
 console.log(`Generated docs/PLANTA-LOJA-N${nivel}.svg from the implemented level ${nivel} geometry.`);
 }
-for (const nivel of [1, 3, 4, 5, 7, 9, 11, 12, 13, 15]) renderizarPlanta(nivel);
+for (const nivel of [1, 3, 4, 5, 7, 9, 11, 12, 13, 15, 17]) renderizarPlanta(nivel);

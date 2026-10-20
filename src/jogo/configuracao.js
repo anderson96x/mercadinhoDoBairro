@@ -204,6 +204,7 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
+  { id: 'prateleirasImportados', titulo: 'Prateleiras de importados', descricao: 'Instale até duas prateleiras metálicas de dois lados no centro da loja. Ficam vazias por enquanto; os produtos importados estão previstos para o nível 18.', custo: 1000, icone: 'prateleira', max: 2, tipo: 'mobiliario', categoria: 'mercado', nivelMinimo: 17 },
   { id: 'estacionamento', titulo: 'Estacionamento', descricao: 'Construa seis vagas ao lado da loja. Clientes chegam de carro, estacionam e voltam ao veículo depois das compras.', custo: 10000, icone: 'estacionamento', max: 1, tipo: 'construcaoExterna', categoria: 'mercado', nivelMinimo: 16 },
   { id: 'logistica', titulo: 'Cesta de trabalho', descricao: 'Carregue 8 produtos e ande 15% mais rápido para cuidar de uma loja maior.', custo: 400, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 10 },
   { id: 'alaArtesanal', titulo: 'Estufa de morangos', descricao: 'Construa uma estufa à direita do curral. Abasteça a nova seção do hortifruti junto à parede esquerda.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },

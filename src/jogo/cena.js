@@ -18,6 +18,7 @@ import { icone } from '../interface/icones.js';
 import { criarSol } from './iluminacao.js';
 import { criarPlacaProduto } from './placas-produtos.js';
 import { construirEstacionamento } from './estacionamento.js';
+import { construirPrateleirasImportados } from './prateleiras-importados.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
@@ -793,6 +794,9 @@ export class Cena {
     this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento);
     this.bairro.atualizarEstacionamento(!!this.sim.estado.melhorias.estacionamento);
     this.bairro.atualizarOficinas(this.sim.estado.produtos);
+    this.prateleirasImportados = construirPrateleirasImportados(caixa);
+    this.cena.add(this.prateleirasImportados.grupo);
+    this.prateleirasImportados.atualizar(this.sim.estado.melhorias);
     this.bairro.aplicar(this.sim.estado.personalizacao);
     const suporteCestas = new THREE.Group();
     suporteCestas.position.set(CONFIG.cestas.x, 0, CONFIG.cestas.z); this.cena.add(suporteCestas);
@@ -1546,6 +1550,7 @@ export class Cena {
       });
     }
     this.bairro.atualizarOficinas(e.produtos);
+    this.prateleirasImportados.atualizar(e.melhorias);
     this.bairro.aplicar(e.personalizacao);
     this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);

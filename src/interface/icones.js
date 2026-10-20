@@ -1,4 +1,5 @@
 const caminhos = {
+  prateleira: '<path d="M4 3v18m16-18v18M4 5h16M4 10h16M4 15h16M4 20h16M8 7v3m5 2v3m3 2v3"/>',
   estacionamento: '<rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/>',
   loja: '<path d="M3 10h18l-2-6H5l-2 6Zm2 0v10h14V10M9 20v-6h6v6M8 4l-1 6m9-6 1 6"/>',
   moeda: '<circle cx="12" cy="12" r="9"/><path d="M15 8h-4a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4H9m3-10v12"/>',

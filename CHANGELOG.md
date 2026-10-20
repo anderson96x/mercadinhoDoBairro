@@ -1,6 +1,13 @@
 # Histórico de alterações
 
-## Versão atual: 0.47.0 — 2026-10-16
+## Versão atual: 0.48.0 — 2026-10-19
+
+- Libera uma melhoria de dois níveis no nível 17; cada compra de R$ 1.000 instala uma prateleira metálica de dois lados pelo escritório, na aba Mercado.
+- Instala dois móveis vazios idênticos de 5,775 unidades nos corredores centrais, alinhados pela frente com o balcão da padaria e terminando juntos antes dos expositores do fundo. Mantém colisão por compra, espaço para a fila e acesso aos produtos existentes. A importação fica planejada para o nível 18, sem novos produtos nesta etapa.
+- Preserva saves antigos e o progresso parcial do formato provisório com duas opções; acrescenta testes de compra, saldo, limite, salvamento, instalação e circulação, além da planta N17.
+- Validação: 230 testes, rotas até o nível 17 e build passaram. Compras e visual conferidos no Edge em desktop e celular, com WebGL e Canvas, sem exceções JavaScript; capturas em `docs/previews/prateleiras-importados-n17-*.png`.
+
+## 0.47.0 — 2026-10-16
 
 - Cria uma sala com piso cerâmico, paredes baixas no estilo do escritório e entrada lateral sem porta nos fundos direitos.
 - Reúne queijaria e cozinha de geleias nessa sala, mantendo compras, receitas e estoques existentes.

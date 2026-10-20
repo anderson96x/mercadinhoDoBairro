@@ -292,6 +292,7 @@ export class Interface {
         <p class="nota">Do nível 10 ao 15: melhore sua cesta, abra a ala artesanal ao fundo da loja e construa a estufa, o apiário, a queijaria e a cozinha de geleias. No nível 14, irrigação e reposição ágil ajudam a cuidar da loja maior.</p>
         <p class="nota">Nas oficinas, aproxime-se com os ingredientes para entregá-los. Uma garrafa de leite rende 2 queijos; 2 morangos e 1 mel rendem 3 geleias. Recolha os produtos prontos e abasteça as bancas. O repositor também coleta a produção pronta. Os novos produtos só entram nos pedidos depois do primeiro abastecimento.</p>
         <p class="nota">No nível 16, construa o estacionamento pelo escritório por R$ 10.000. As seis vagas começam vazias. Parte dos clientes chega nos carros da rua, estaciona, faz compras e volta ao próprio veículo. Passantes e compradores a pé continuam circulando pela calçada.</p>
+        <p class="nota">No nível 17, evolua Prateleiras de importados até o nível 2 em Melhorias → Mercado, por R$ 1.000 por nível. Elas ficam vazias por enquanto; a importação está prevista para o nível 18.</p>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'dev') {
       const proximaReputacao = Math.min(100, Math.ceil((this.sim.reputacao + 1) / 10) * 10);

@@ -104,6 +104,16 @@ export function selecionarCompartimentoDoces(ator, produtos) {
 
 export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
 
+// As frentes acompanham o balcão da padaria; ambas terminam na mesma linha atrás.
+export const LINHA_FRONTAL_PADARIA = 0.375;
+export const LINHA_TRASEIRA_PRATELEIRAS_IMPORTADOS = -5.400;
+const COMPRIMENTO_PRATELEIRAS_IMPORTADOS = LINHA_FRONTAL_PADARIA - LINHA_TRASEIRA_PRATELEIRAS_IMPORTADOS;
+export const PRATELEIRAS_IMPORTADOS = [4.8, 10.4].map((x, indice) => ({
+  nome: `prateleira-importados-${indice + 1}`, x,
+  z: (LINHA_FRONTAL_PADARIA + LINHA_TRASEIRA_PRATELEIRAS_IMPORTADOS) / 2,
+  w: 1.2, d: COMPRIMENTO_PRATELEIRAS_IMPORTADOS, h: 2.4
+}));
+
 export const PLANTA_AMPLIADA = {
   salao: { x: 8.9, z: -1.3, w: 24, d: 16 },
   limites: { ...PLANTA_INICIAL.limites, maxX: 20.9 },

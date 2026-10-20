@@ -31,6 +31,15 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 14 | Reposição ágil: repositor anda 30% mais rápido | R$ 500 | — |
 | 15 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote de geleia |
 | 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
+| 17 | Prateleiras de importados (2 níveis) | R$ 1.000 por nível | — |
+
+## Prateleiras de importados no nível 17
+
+No nível 17, abra **Escritório → Melhorias → Mercado** e compre a melhoria **Prateleiras de importados**. Ela tem dois níveis; cada nível custa **R$ 1.000** e instala uma prateleira, sem depender do estacionamento.
+
+São duas gôndolas metálicas idênticas de 5,775 unidades, quatro níveis e dois lados, paralelas ao hortifruti no centro do salão e alinhadas pela frente com o balcão da padaria, conforme a [planta N17](PLANTA-LOJA-N17.svg). Os corredores dão acesso aos expositores posteriores e preservam a fila de dez clientes. Cada móvel e sua colisão aparecem somente após a respectiva compra.
+
+**Por enquanto, as prateleiras ficam vazias.** A importação de produtos está planejada para o **nível 18** e será implementada em uma próxima etapa. Esta compra não cria estoque, receitas ou demanda de clientes. O nível comprado é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
 
 ## Estacionamento no nível 16
 
