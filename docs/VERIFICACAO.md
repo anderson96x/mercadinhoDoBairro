@@ -1,5 +1,21 @@
 # Verificação da versão 0.1.0
 
+## Retirada da farinha — 0.50.2 — 19/10/2026
+
+- A farinha da bandeja desaparece no mesmo quadro em que o saco carregado se torna visível e permanece ausente até o padeiro voltar ao moinho para a próxima coleta.
+- A regressão impede que a farinha da bandeja e a farinha transportada apareçam simultaneamente. 235 testes e build passaram.
+
+## Bandeja do moinho — 0.50.1 — 19/10/2026
+
+- O moinho ganhou bica inclinada, bandeja metálica larga com base e três bordas elevadas, e uma porção de farinha maior dentro do recipiente.
+- Os testes verificam a composição, o acabamento metálico e a permanência do conjunto dentro da padaria. 235 testes e build passaram.
+
+## Transporte de farinha — 0.50.0 — 19/10/2026
+
+- O padeiro do forno inicia o ciclo na saída do moinho, recolhe e leva um saco aberto de farinha ao forno, assa e troca a carga pela bandeja de pães antes de abastecer a vitrine.
+- A regressão percorre ciclos completos e exige a exibição das duas cargas na ordem de produção. As regras e os campos persistidos não mudaram.
+- 235 testes e build passaram.
+
 ## Transições dos padeiros — 0.49.4 — 19/10/2026
 
 - A regressão acompanha cada quadro da parada e da retomada, exige deslocamento contínuo sem atravessar balcões e confirma que a direção do padeiro coincide com seu movimento.

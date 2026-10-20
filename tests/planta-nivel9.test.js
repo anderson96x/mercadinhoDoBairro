@@ -50,7 +50,8 @@ test('padaria girada mantém modelos, pães e trajetos dos padeiros dentro do sa
   for (const painel of ALA_PADARIA.fechamento) assert.ok(sim.obstaculos().includes(painel));
   const pontosMoedor = padaria.roteiros[0].flatMap(e => [e.de, e.para]);
   const pontosForneiro = padaria.roteiros[1].flatMap(e => [e.de, e.para]);
-  assert.ok(Math.min(...pontosForneiro.map(p => p.z)) - Math.max(...pontosMoedor.map(p => p.z)) >= 1.19);
+  assert.ok(pontosForneiro.some(forneiro => pontosMoedor.some(moedor => Math.hypot(forneiro.x - moedor.x, forneiro.z - moedor.z) < 0.001)),
+    'os dois roteiros compartilham a saída do moinho para entregar a farinha');
   const bounds = new THREE.Box3().setFromObject(padaria.grupo);
   assert.ok(bounds.max.x < PLANTA_AMPLIADA.limites.maxX - 0.14);
   assert.ok(bounds.min.z > PLANTA_AMPLIADA.limites.minZ + 0.14);

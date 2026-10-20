@@ -102,6 +102,12 @@ test('padaria fica na parede direita e tem dois padeiros de avental e chapéu br
   assert.ok(new THREE.Box3().setFromObject(triturador).max.y < 2);
   assert.equal(triturador.getObjectByName('corpo-triturador').material.color.getHex(), 0xadb7b9);
   assert.equal(triturador.getObjectByName('corpo-triturador').material.metalness, 0.58);
+  const bandejaFarinha = triturador.getObjectByName('bandeja-farinha-padaria');
+  assert.ok(bandejaFarinha);
+  assert.equal(bandejaFarinha.children.filter(item => item.geometry?.type === 'BoxGeometry').length, 4);
+  assert.ok(bandejaFarinha.getObjectByName('farinha-na-bandeja'));
+  assert.ok(bandejaFarinha.children.filter(item => item.geometry?.type === 'BoxGeometry').every(item => item.material.metalness === 0.68));
+  assert.ok(triturador.getObjectByName('bica-farinha-padaria').rotation.x < 0);
   const rotor = triturador.getObjectByName('rotor-metal-padaria');
   assert.equal(rotor, visual.produtos.pao.rotor);
   assert.equal(rotor.children.filter(item => item.geometry?.type === 'BoxGeometry').length, 3);
@@ -134,10 +140,14 @@ function visualPadaria() {
 
 test('os dois padeiros seguem os movimentos originais durante o trabalho', () => {
   const visual = visualPadaria();
-  const padaria = visual.produtos.pao;
+  const padaria = visual.produtos.pao, forno = padaria.padeiros[1].userData;
   const cargas = [false, false], maos = [new Set(), new Set()];
+  let levouFarinha = false, levouPao = false;
   for (let quadro = 0; quadro < 900; quadro++) {
     Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 1, farinha: 1, paesProduzidos: 3 }, quadro / 60, 1 / 60);
+    levouFarinha ||= forno.cargaFarinha.visible;
+    levouPao ||= forno.cargaPao.visible;
+    if (forno.cargaFarinha.visible) assert.equal(padaria.farinha.visible, false, 'a farinha sai da bandeja quando aparece no saco');
     padaria.padeiros.forEach((padeiro, i) => {
       cargas[i] ||= padeiro.userData.cargaPadaria.visible;
       maos[i].add(padeiro.userData.bracoE.userData.mao.position.y.toFixed(2));
@@ -151,6 +161,11 @@ test('os dois padeiros seguem os movimentos originais durante o trabalho', () =>
     });
   }
   assert.deepEqual(cargas, [true, true]);
+  assert.equal(levouFarinha, true, 'o padeiro do forno coleta farinha no moinho');
+  assert.equal(levouPao, true, 'depois ele transporta os pães prontos');
+  assert.ok(forno.cargaFarinha.children.length >= 3);
+  assert.equal(padaria.roteiros[1][0].acao, 'receber');
+  assert.equal(padaria.roteiros[1][1].carga, 'farinha');
   assert.ok(maos[0].size > 10 && maos[1].size > 10);
   assert.ok(padaria.padeiros.every(p => p.userData.tempoPadaria > 6));
 });

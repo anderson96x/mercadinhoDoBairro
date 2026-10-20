@@ -1,6 +1,21 @@
 # Histórico de alterações
 
-## Versão atual: 0.49.4 — 2026-10-19
+## Versão atual: 0.50.2 — 2026-10-19
+
+- Remove a farinha da bandeja no mesmo quadro em que o saco aparece nas mãos do padeiro do forno. A farinha permanece retirada durante o ciclo e reaparece somente na próxima coleta no moinho.
+- Validação: 235 testes e build passaram.
+
+## 0.50.1 — 2026-10-19
+
+- Remodela a saída do moinho com uma bica inclinada e uma bandeja metálica mais larga, rebaixada e cercada por bordas, além de uma porção de farinha mais visível.
+- Validação: 235 testes e build passaram.
+
+## 0.50.0 — 2026-10-19
+
+- Faz o padeiro do forno buscar a farinha produzida no moinho, transportá-la em um saco aberto até o forno e, depois de assar, trocar a carga pela bandeja de pães destinada à vitrine.
+- Mantém as regras de produção e os salvamentos existentes. Validação: 235 testes e build passaram.
+
+## 0.49.4 — 2026-10-19
 
 - Suaviza a retomada e a parada dos padeiros: cada um passa a encarar o deslocamento real enquanto caminha, e os pontos intermediários redundantes são removidos dos trajetos de transição para evitar giros entre passos.
 - Validação: 235 testes e build passaram.
