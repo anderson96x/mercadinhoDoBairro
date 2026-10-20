@@ -23,9 +23,8 @@ export function segmentoLivre(inicio, fim, obstaculos, margem = 0) {
 }
 
 // Busca local em grade; cada segmento também respeita o espaço entre pessoas.
-export function buscarCaminho(inicio, destino, livre, limites) {
+export function buscarCaminho(inicio, destino, livre, limites, passo = 0.4) {
   if (!livre(destino, destino)) return [];
-  const passo = 0.4;
   const chave = p => `${Math.round(p.x / passo)},${Math.round(p.z / passo)}`;
   const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
   const primeiro = { ...inicio, custo: 0, estimativa: distancia(inicio, destino), anterior: null };

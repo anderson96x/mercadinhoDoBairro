@@ -1,5 +1,29 @@
 # Verificação da versão 0.1.0
 
+## Transições dos padeiros — 0.49.4 — 19/10/2026
+
+- A regressão acompanha cada quadro da parada e da retomada, exige deslocamento contínuo sem atravessar balcões e confirma que a direção do padeiro coincide com seu movimento.
+- 235 testes e build passaram.
+
+## Movimentos originais e alerta combinado — 0.49.3 — 19/10/2026
+
+- 235 testes e build passaram. As regressões verificam os gestos originais de braços e corpo durante o trabalho, ritmo dos trajetos, espera no interior e a condição conjunta do alerta: trigo zero e pães zero. Um pão na vitrine já oculta as exclamações; trigo disponível também as oculta.
+- Edge headless em 1280 × 900 e 390 × 844, WebGL e Canvas: conferidos vazio sem trigo, pão disponível sem trigo e retorno ao trabalho. Fixture isolada, sem salvamentos pessoais ou exceções JavaScript.
+- Capturas do trabalho: [desktop](previews/padeiros-original-desktop-webgl.png), [celular](previews/padeiros-original-mobile-webgl.png), [desktop Canvas](previews/padeiros-original-desktop-canvas.png), [celular Canvas](previews/padeiros-original-mobile-canvas.png).
+
+## Padeiros dentro da padaria — 0.49.2 — 19/10/2026
+
+- Os dois pontos de espera ficam atrás da vitrine, dentro da área de trabalho; o teste exige folga de 0,3 u dos móveis, orientação ao centro da loja, alertas de trigo e repouso com movimento apenas das cabeças.
+- 234 testes e build passaram. Edge headless em 1280 × 900 e 390 × 844, com WebGL e Canvas, confirmou os dois padeiros no interior sem exceções JavaScript. Fixture isolada, sem usar salvamentos pessoais.
+- Capturas: [desktop](previews/padeiros-interior-desktop-webgl.png), [celular](previews/padeiros-interior-mobile-webgl.png), [desktop Canvas](previews/padeiros-interior-desktop-canvas.png), [celular Canvas](previews/padeiros-interior-mobile-canvas.png).
+
+## Padeiros — 0.49.1 — 19/10/2026
+
+- 234 testes passaram; build e rotas até o nível 17 concluíram. As regressões cobrem falta de trigo, vitrine sem espaço para uma fornada, farinha restante, cabeça e chapéu em repouso, transporte da primeira fornada, parada, retomada e pausa sem atravessar os balcões.
+- Edge headless em 1280 × 900 e 390 × 844, usando WebGL e Canvas: sem trigo, os dois padeiros ficam diante da vitrine, voltados às prateleiras centrais e com exclamações; com insumos, retomam os roteiros; com 18 pães, voltam ao repouso sem alerta de trigo quando ainda há matéria-prima.
+- Capturas: [sem trigo em desktop](previews/padeiros-sem-trigo-desktop-webgl.png), [sem trigo em celular](previews/padeiros-sem-trigo-mobile-webgl.png), [trabalho](previews/padeiros-trabalho-desktop-webgl.png), [vitrine cheia em Canvas](previews/padeiros-cheia-desktop-canvas.png). As doze combinações de estado, tamanho e renderizador ficam em `previews/padeiros-*.png`.
+- Fixture isolada de padaria com estoque controlado e avanço da animação a 60 FPS, sem usar salvamentos pessoais. Nenhuma exceção JavaScript observada; conferência em aparelho físico não realizada.
+
 ## Trânsito reutilizado e fluxo misto — 0.46.1 — 16/10/2026
 
 - **219 testes passaram**, incluindo os vinte modelos em escala original nas seis vagas, limites do piso, separação do canteiro e de carros grandes estacionados nas vagas vizinhas. `npm run build` concluiu com o aviso existente de pacote acima de 500 kB.

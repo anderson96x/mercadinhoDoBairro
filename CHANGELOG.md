@@ -1,6 +1,30 @@
 # Histórico de alterações
 
-## Versão atual: 0.49.0 — 2026-10-19
+## Versão atual: 0.49.4 — 2026-10-19
+
+- Suaviza a retomada e a parada dos padeiros: cada um passa a encarar o deslocamento real enquanto caminha, e os pontos intermediários redundantes são removidos dos trajetos de transição para evitar giros entre passos.
+- Validação: 235 testes e build passaram.
+
+## 0.49.3 — 2026-10-19
+
+- Restaura o ritmo dos trajetos e os gestos originais dos padeiros durante o trabalho, mantendo a espera dentro da padaria.
+- Exibe as exclamações somente quando o trigo da padaria e a vitrine de pães estão vazios ao mesmo tempo. Preserva saves e regras de produção.
+- Validação: 235 testes e build passaram; trabalho e alertas conferidos em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/padeiros-original-*.png`.
+
+## 0.49.2 — 2026-10-19
+
+- Move os pontos de espera dos dois padeiros para dentro da padaria, atrás da vitrine e voltados às prateleiras centrais. Preserva os alertas de trigo e o movimento das cabeças em repouso.
+- Validação: 234 testes e build passaram; posições conferidas em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/padeiros-interior-*.png`.
+
+## 0.49.1 — 2026-10-19
+
+- Padeiros aguardam diante da vitrine, voltados às prateleiras centrais, quando não há insumos ou espaço para outra fornada. Em repouso, apenas as cabeças se movem, junto com os chapéus.
+- Exibe uma exclamação sobre cada padeiro quando o trigo acaba; a farinha restante ainda pode terminar de assar.
+- Diferencia gestos de moagem, uso do forno, transporte e exposição de pães; corrige etapas paradas interpretadas como caminhada e anima máquinas somente quando há produção possível.
+- Usa uma grade mais fina na passagem de serviço dos padeiros para voltar à vitrine e retomar o trabalho sem atravessar balcões. Mantém saves e regras de produção existentes.
+- Validação: 234 testes, rotas até o nível 17 e build passaram; estados sem trigo, em trabalho e com vitrine cheia conferidos no Edge em desktop e celular, com WebGL e Canvas. Capturas em `docs/previews/padeiros-*.png`.
+
+## 0.49.0 — 2026-10-19
 
 - Adiciona às ferramentas DEV um botão para completar até a capacidade máxima todas as prateleiras de produtos já liberados, marcar os produtos como apresentados e reiniciar o repositor sem perder sua carga.
 - Mantém bloqueados os produtos e móveis que ainda não fazem parte do progresso atual.
