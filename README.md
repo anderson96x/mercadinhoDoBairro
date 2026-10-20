@@ -6,7 +6,7 @@ Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhor
 
 As bancas de hortifruti possuem placas para tomate, milho, trigo e morango, alinhadas à frente de cada seção e ampliadas pelo zoom da câmera.
 
-A versão segue o formato **MAJOR.MINOR.PATCH**: mudanças incompatíveis em versões estáveis incrementam MAJOR, novas funcionalidades incrementam MINOR e correções incrementam PATCH. Durante o desenvolvimento inicial, o jogo permanece na série `0.x`, com reformulações amplas contabilizadas em MINOR. A versão é definida em `package.json` e exibida nos menus Ajuda e DEV. O [histórico de alterações](CHANGELOG.md) registra a classificação e a versão resultante de cada um dos 87 commits revisados, incluindo documentação e merges sem incremento.
+A versão segue o formato **MAJOR.MINOR.PATCH**: mudanças incompatíveis em versões estáveis incrementam MAJOR, novas funcionalidades compatíveis incrementam MINOR e correções compatíveis incrementam PATCH. Durante o desenvolvimento inicial, o jogo permanece na série `0.x`, com mudanças incompatíveis e reformulações amplas contabilizadas em MINOR. Todo conjunto de alterações deve incrementar a versão, incluindo testes, ajustes visuais e ferramentas; alterações exclusivamente de documentação não exigem incremento nem entrada de versão no changelog. As demais mudanças sem impacto em execução usam PATCH. A versão é definida em `package.json` e exibida nos menus Ajuda e DEV. Mantenha `package-lock.json`, este README e o [histórico de alterações](CHANGELOG.md) sincronizados conforme as regras de [AGENTS.md](AGENTS.md). Registros históricos anteriores à regra permanecem preservados.
 
 ## Stack e construção do jogo
 
