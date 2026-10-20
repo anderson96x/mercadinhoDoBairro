@@ -1,6 +1,13 @@
 # Histórico de alterações
 
-## Versão atual: 0.50.2 — 2026-10-19
+## Versão atual: 0.50.3 — 2026-10-19
+
+- Remodela os irrigadores com base fixa, mangueira, coluna metálica e cabeçote giratório de latão com dois bicos.
+- Substitui as gotas fixas por jatos de gotas em arco e respingos na terra. A água acompanha a direção do lançamento, respeita os limites de cada canteiro e congela com a pausa.
+- Preserva o efeito da melhoria no crescimento e os salvamentos existentes.
+- Validação: 237 testes e build passaram; quatro hortas conferidas em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/irrigador-*.png`.
+
+## 0.50.2 — 2026-10-19
 
 - Remove a farinha da bandeja no mesmo quadro em que o saco aparece nas mãos do padeiro do forno. A farinha permanece retirada durante o ciclo e reaparece somente na próxima coleta no moinho.
 - Validação: 235 testes e build passaram.

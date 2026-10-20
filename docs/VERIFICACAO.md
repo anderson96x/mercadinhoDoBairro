@@ -1,5 +1,12 @@
 # Verificação da versão 0.1.0
 
+## Irrigadores — 0.50.3 — 19/10/2026
+
+- Base e mangueira fixas, coluna metálica e cabeçote giratório com dois bicos de latão. Os jatos distribuem gotas em arco que conservam a direção do lançamento, caem dentro de cada canteiro e produzem pequenos respingos sobre a terra.
+- 237 testes e build passaram. As regressões verificam base fixa, movimento do cabeçote, subida e queda das gotas, limites da água e congelamento da animação ao repetir o tempo da simulação.
+- Edge headless em 1280 × 900 e 390 × 844, com WebGL e Canvas: tomate, milho, trigo e morango renderizaram e animaram sem exceções JavaScript nas dezesseis combinações. Fixture isolada com os modelos reais das hortas, sem salvamentos pessoais; aparelho físico não verificado.
+- Capturas: [desktop](previews/irrigador-desktop-webgl.png), [celular](previews/irrigador-mobile-webgl.png), [desktop Canvas](previews/irrigador-desktop-canvas.png), [celular Canvas](previews/irrigador-mobile-canvas.png).
+
 ## Retirada da farinha — 0.50.2 — 19/10/2026
 
 - A farinha da bandeja desaparece no mesmo quadro em que o saco carregado se torna visível e permanece ausente até o padeiro voltar ao moinho para a próxima coleta.

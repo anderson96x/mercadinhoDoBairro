@@ -20,6 +20,7 @@ import { criarPlacaProduto } from './placas-produtos.js';
 import { construirEstacionamento } from './estacionamento.js';
 import { construirPrateleirasImportados } from './prateleiras-importados.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
+import { criarIrrigador, animarIrrigador } from './irrigador.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
@@ -36,17 +37,6 @@ function estacaoDesbloqueada(id, estado) {
 function material(cor) {
   if (!materiais.has(cor)) materiais.set(cor, new THREE.MeshStandardMaterial({ color: cor, roughness: 0.8, metalness: 0 }));
   return materiais.get(cor);
-}
-function criarIrrigador(grupo, horta) {
-  const irrigador = new THREE.Group(); grupo.add(irrigador); irrigador.visible = false;
-  irrigador.position.set(horta.x, 0, horta.z);
-  cilindro(irrigador, 0.045, 0.055, 0.75, 0x547e80, 0, 0.85, 0);
-  caixa(irrigador, 0.4, 0.06, 0.06, 0x78b5ba, 0, 1.24, 0);
-  for (let i = 0; i < 8; i++) {
-    const angulo = i * Math.PI / 4;
-    esfera(irrigador, 0.035, 0xa4e0ef, Math.cos(angulo) * 0.7, 1.1, Math.sin(angulo) * 0.7);
-  }
-  return irrigador;
 }
 function objeto(geometria, cor, x = 0, y = 0, z = 0) {
   const m = new THREE.Mesh(geometria, material(cor)); m.position.set(x, y, z);
@@ -957,7 +947,7 @@ export class Cena {
       }
       f.position.copy(posicaoProdutoPrateleira(id, s, i)); grupo.add(f); frutas.push(f);
     }
-    const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h) : null;
+    const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h, p.canteiro) : null;
     this.produtos[id] = { grupo, frutos, frutas, galinhas, refrigerador, estante, irrigador, banca };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : id === 'leite' ? 'CURRAL' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'ovos' ? 3.1 : id === 'leite' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
@@ -1010,7 +1000,7 @@ export class Cena {
     for (let i = 0; i < p.capacidadePrateleira; i++) {
       const fruto = criarProduto(id, 1.1); fruto.position.copy(posicaoProdutoPrateleira(id, s, i)); grupo.add(fruto); frutas.push(fruto);
     }
-    const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h) : null;
+    const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h, p.canteiro) : null;
     this.produtos[id] = { grupo, frutos, frutas, galinhas: [], abelhas, irrigador, refrigerador, banca };
     this.criarLabel(`horta-${id}`, { ...h, y: id === 'morango' ? 2.6 : id === 'mel' ? 3 : 2 }, OFICINAS[id]?.nome.toLocaleUpperCase('pt-BR') || (id === 'mel' ? 'APIÁRIO' : 'ESTUFA DE MORANGOS'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...s, y: id === 'queijo' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
@@ -1841,7 +1831,7 @@ export class Cena {
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
       if (objetos.irrigador) {
         objetos.irrigador.visible = !!e.melhorias.irrigacao;
-        objetos.irrigador.rotation.y = tempo * 0.8;
+        if (objetos.irrigador.visible) animarIrrigador(objetos.irrigador, sim.tempo);
       }
       objetos.frutos.forEach((f, i) => { f.visible = i < estado.horta; f.position.y = (f.userData.baseY ?? (id === 'leite' ? 0.69 : id === 'trigo' ? 0.82 : 1)) + (id === 'mel' ? 0 : Math.sin(tempo * 2 + i) * 0.025); });
       if (objetos.abelhas?.length && objetos.grupo.visible) animarAbelhas(objetos.abelhas, PRODUTOS[id].horta, tempo);
