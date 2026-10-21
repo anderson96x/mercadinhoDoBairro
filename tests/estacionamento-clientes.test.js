@@ -7,7 +7,7 @@ import { PLANTA_ESTACIONAMENTO as P } from '../src/jogo/planta.js';
 import { pontoPortaCarro, volumeCarro } from '../src/jogo/estacionamento-clientes.js';
 import { construirEstacionamento } from '../src/jogo/estacionamento.js';
 import { salvar } from '../src/jogo/salvamento.js';
-import { MODELOS_CARROS, dimensoesCarro, Trafego } from '../src/jogo/trafego.js';
+import { criarCarro, MODELOS_CARROS, dimensoesCarro, Trafego } from '../src/jogo/trafego.js';
 
 function preparar() {
   const sim = new Simulacao();
@@ -57,16 +57,20 @@ test('construção fica vazia e espera a obra terminar antes da primeira chegada
 test('a 60 FPS, cliente dirige, estaciona, desembarca, compra, paga, volta ao próprio carro e vai embora', () => {
   const sim = preparar(); sim.criarCliente();
   const cliente = sim.clientes[0], carro = sim.estacionamento.carros[0];
-  const fases = new Set(); let abriuPorta = false, saiuComSacola = false;
+  const fases = new Set(), direcoes = new Set(); let abriuPorta = false, saiuComSacola = false, freou = false;
   const antes = sim.estado.estatisticas.clientes;
   for (let i = 0; i < 6000 && cliente.fase !== 'fim'; i++) {
     passo(sim, 1 / 60); fases.add(carro.fase);
+    if (carro.direcaoCurva) direcoes.add(carro.direcaoCurva);
+    freou ||= carro.freando;
     abriuPorta ||= carro.porta > 0.9;
     saiuComSacola ||= cliente.fase === 'saindo' && cliente.levaSacolas;
   }
   assert.equal(cliente.fase, 'fim');
   assert.equal(sim.estado.estatisticas.clientes, antes + 1);
   assert.ok(abriuPorta && saiuComSacola);
+  assert.deepEqual(direcoes, new Set(['direita', 'esquerda']));
+  assert.equal(freou, true);
   for (const fase of ['chegando', 'desembarcando', 'estacionado', 'embarcando', 're', 'engatando', 'partindo', 'fim']) assert.ok(fases.has(fase), fase);
   assert.equal(sim.estacionamento.carros.length, 0);
   assert.equal(sim.cestasEmUso, 0);
@@ -144,6 +148,26 @@ test('modelos animam rodas e porta e são removidos quando a viagem termina', ()
   visual.atualizar(true, 0.05, []);
   assert.equal(visual.carros.size, 0);
   assert.equal(modelo.parent, null);
+});
+
+test('piscas acompanham o lado da curva e luzes de freio acendem apenas ao frear', () => {
+  const visual = construirEstacionamento();
+  const modelo = criarCarro(MODELOS_CARROS[0], true);
+  visual.receberCarro(1, modelo);
+  const estado = { clienteId: 1, x: 0, z: 0, angulo: 0, porta: 0, rodas: 0,
+    velocidade: 1, fase: 'chegando', direcaoCurva: 'esquerda', freando: false };
+  visual.atualizar(true, 0.05, [estado], 0.2);
+  const piscas = modelo.userData.luzes.filter(luz => luz.name === 'pisca');
+  const freios = modelo.userData.luzes.filter(luz => luz.name === 'luz-freio');
+  assert.ok(piscas.filter(luz => luz.userData.lado === 'esquerda').every(luz => luz.material.emissiveIntensity > 0));
+  assert.ok(piscas.filter(luz => luz.userData.lado === 'direita').every(luz => luz.material.emissiveIntensity === 0));
+  assert.ok(freios.every(luz => luz.material.emissiveIntensity === 0));
+
+  estado.direcaoCurva = 'direita'; estado.freando = true;
+  visual.atualizar(true, 0.05, [estado], 0.2);
+  assert.ok(piscas.filter(luz => luz.userData.lado === 'direita').every(luz => luz.material.emissiveIntensity > 0));
+  assert.ok(piscas.filter(luz => luz.userData.lado === 'esquerda').every(luz => luz.material.emissiveIntensity === 0));
+  assert.ok(freios.every(luz => luz.material.emissiveIntensity > 0));
 });
 
 test('lotação reserva seis vagas únicas, impede sobreposição e libera as vagas após as compras', () => {

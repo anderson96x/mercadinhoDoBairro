@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.50.3 — 2026-10-19
+## Versão atual: 0.50.4 — 2026-10-21
+
+- Aciona somente o pisca do lado para o qual o carro está virando durante as manobras do estacionamento.
+- Acende as luzes de freio durante a desaceleração, em vez de mantê-las ligadas por causa da baixa velocidade.
+- Validação: 238 testes e build passaram.
+
+## 0.50.3 — 2026-10-19
 
 - Remodela os irrigadores com base fixa, mangueira, coluna metálica e cabeçote giratório de latão com dois bicos.
 - Substitui as gotas fixas por jatos de gotas em arco e respingos na terra. A água acompanha a direção do lançamento, respeita os limites de cada canteiro e congela com a pausa.

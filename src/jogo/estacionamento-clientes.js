@@ -90,6 +90,7 @@ export class EstacionamentoClientes {
       const cliente = sim.clientes.find(c => c.id === carro.clienteId);
       if (!cliente) { carro.fase = 'fim'; continue; }
       const fase = carro.fase;
+      carro.freando = false; carro.direcaoCurva = null;
       if (fase === 'aguardando' || fase === 'esperandoSaida') {
         const servico = sim.estado.banco.coleta || sim.estado.banco.assalto;
         if (fase === 'aguardando' && this.receberDoTrafego && !carro.recebido) {
@@ -116,8 +117,11 @@ export class EstacionamentoClientes {
         const volume = volumeCarro({ ...carro, ...p });
         const pedestres = [sim.estado.jogador, ...sim.clientes.filter(c => !c.noCarro)];
         if (pedestres.some(c => Math.abs(c.x - volume.x) < volume.w / 2 + 0.4 && Math.abs(c.z - volume.z) < volume.d / 2 + 0.4)) {
-          carro.velocidade = 0; continue;
+          carro.freando = carro.velocidade > 0; carro.velocidade = 0; continue;
         }
+        const giro = Math.atan2(Math.sin(p.angulo - carro.angulo), Math.cos(p.angulo - carro.angulo));
+        carro.direcaoCurva = giro > 0.002 ? 'esquerda' : giro < -0.002 ? 'direita' : null;
+        carro.freando = velocidade < carro.velocidade - 0.000001;
         carro.rodas -= (distancia - carro.distancia) / (0.28 * MODELOS_CARROS[carro.modelo].escala) * (fase === 're' ? -1 : 1);
         Object.assign(carro, p, { distancia, velocidade });
         cliente.x = carro.x; cliente.z = carro.z;

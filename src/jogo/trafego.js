@@ -196,7 +196,8 @@ export function criarCarro(modelo, animavel = false) {
       freio.material = freio.material.clone();
       for (const frente of [-1, 1]) {
         const seta = caixa(carro, 0.06, 0.08, 0.1, 0xffab32, frente * (c / 2 + 0.04), 0.85, lado * l * 0.43);
-        seta.name = 'pisca'; seta.material = seta.material.clone();
+        seta.name = 'pisca'; seta.userData.lado = lado < 0 ? 'esquerda' : 'direita';
+        seta.material = seta.material.clone();
       }
       const re = caixa(carro, 0.06, 0.07, 0.08, 0xfff3d3, -c / 2 - 0.04, 0.72, lado * l * 0.28);
       re.name = 'luz-re'; re.visible = false;

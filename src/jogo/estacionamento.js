@@ -109,8 +109,8 @@ export function construirEstacionamento() {
       for (const luz of carro.userData.luzes) {
         if (luz.name === 'luz-re') luz.visible = estado.fase === 're';
         else {
-          const acesa = luz.name === 'pisca' ? ['chegando', 're', 'partindo'].includes(estado.fase) && Math.sin(tempo * 9) > 0
-            : estado.velocidade < 1.5 && estado.fase !== 'estacionado';
+          const acesa = luz.name === 'pisca' ? luz.userData.lado === estado.direcaoCurva && Math.sin(tempo * 9) > 0
+            : estado.freando;
           luz.material.emissive.setHex(acesa ? (luz.name === 'pisca' ? 0xff8a15 : 0xff2515) : 0);
           luz.material.emissiveIntensity = acesa ? 0.9 : 0;
         }
