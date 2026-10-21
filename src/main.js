@@ -213,7 +213,7 @@ try {
         if (!entrada || typeof entrada.id !== 'string' || Object.keys(entrada).length !== 1) throw new Error('Informe apenas o identificador da melhoria.');
         const resultado = comprar(entrada.id);
         if (resultado.selecionarProduto) { if (ui.tipoPainel) ui.fechar(); ui.iniciarSelecaoHorta(); iniciarSelecaoHorta(); }
-        ui.atualizar(); if (ui.tipoPainel === 'melhorias') ui.renderizarPainel(); return resultado;
+        ui.atualizar(); if (['melhorias', 'importacoes'].includes(ui.tipoPainel)) ui.renderizarPainel(); return resultado;
       } }
     ]) {
       try { Promise.resolve(document.modelContext.registerTool(ferramenta, opcoes)).catch(() => {}); } catch { /* O jogo funciona sem essa API opcional. */ }

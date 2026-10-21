@@ -1,6 +1,14 @@
 # Histórico de alterações
 
-## Versão atual: 0.53.0 — 2026-10-21
+## Versão atual: 0.54.0 — 2026-10-21
+
+- Libera no nível 19 o botão **Importar produtos** no menu do celular, imediatamente abaixo de **Melhorias**, abrindo um catálogo próprio após a instalação de ao menos uma prateleira de importados.
+- Cada caixa custa R$ 270 e acrescenta 9 enlatados diretamente à primeira gôndola; cada unidade é vendida por R$ 30 e o expositor comporta até 36 unidades.
+- O catálogo mostra o estoque restante e quantas caixas cabem no saldo e na gôndola. Cada produto tem seu próprio contador, enquanto um único botão no rodapé finaliza o pedido combinado, preparando a tela para novas importações.
+- Inclui modelo próprio de lata, pedidos de clientes, persistência do estoque e bloqueio de novas caixas quando não há espaço para nove unidades.
+- Validação: 252 testes, build de produção e rotas de compra até o nível 19 passaram.
+
+## 0.53.0 — 2026-10-21
 
 - Remove completamente o escritório, incluindo paredes, porta, piso, mesa, computador, cadeira, estante, colisões, animações e interação de sentar.
 - Adiciona ao lado do painel superior um botão em formato de celular que abre as opções do mercado de qualquer lugar, incluindo melhorias, personalização, abertura da loja e depósito bancário.

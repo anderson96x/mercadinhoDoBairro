@@ -33,6 +33,15 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
 | 17 | Prateleiras de importados (2 níveis) | R$ 1.000 por nível | — |
 | 18 | Expansão dos fundos | R$ 10.000 | — |
+| 19 | Importar produtos: caixa com 9 enlatados | R$ 270 por caixa | R$ 30 por lata |
+
+## Importação de produtos no nível 19
+
+No nível 19, abra o celular e selecione o botão **Importar produtos**, localizado imediatamente abaixo de **Melhorias**. Essa opção abre o catálogo de importações disponíveis, inicialmente com **Enlatados**. A compra exige ao menos uma prateleira de importados instalada e custa **R$ 270 por caixa**. Cada caixa coloca **9 enlatados** diretamente na primeira gôndola; não é necessário transportar ou repor as unidades importadas.
+
+Cada enlatado é vendido por **R$ 30**. A gôndola comporta 36 unidades, equivalentes a quatro caixas, e novas importações ficam bloqueadas enquanto não houver espaço para uma caixa completa. Estoque e quantidade de caixas compradas são preservados no salvamento.
+
+O catálogo informa quantas unidades ainda estão na gôndola e quantas caixas podem ser pedidas conforme o espaço e o saldo disponíveis. Use os botões **−** e **+** de cada produto para montar o pedido e o botão **Finalizar pedido**, no rodapé, para confirmar todas as importações selecionadas de uma vez.
 
 ## Expansão no nível 18
 
@@ -58,7 +67,7 @@ No nível 17, abra **Celular → Melhorias → Mercado** e compre a melhoria **P
 
 São duas gôndolas metálicas idênticas de 5,775 unidades, quatro níveis e dois lados, paralelas ao hortifruti no centro do salão e alinhadas pela frente com o balcão da padaria, conforme a [planta N17](PLANTA-LOJA-N17.svg). Os corredores dão acesso aos expositores posteriores e preservam a fila de dez clientes. Cada móvel e sua colisão aparecem somente após a respectiva compra.
 
-**Por enquanto, as prateleiras ficam vazias.** A importação de produtos será implementada em uma etapa futura; o nível 18 libera a expansão dos fundos. Esta compra não cria estoque, receitas ou demanda de clientes. O nível comprado é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
+As prateleiras permanecem vazias até o nível 19, quando a opção **Importar produtos** libera a compra recorrente de caixas de enlatados. O nível comprado das gôndolas é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
 
 ## Estacionamento no nível 16
 

@@ -398,6 +398,9 @@ export class Simulacao {
     if (id === ALA_PADARIA.id && !this.estado.melhorias.alaProducao) {
       return { disponivel: false, motivo: 'Construa a ala dos ovos antes de abrir a padaria.', requisitoMelhoria: 'alaProducao' };
     }
+    if (m.tipo === 'importacao' && this.estado.produtos[m.produto].prateleira + 9 > this.produtos[m.produto].capacidadePrateleira) {
+      return { disponivel: false, motivo: 'A gôndola não tem espaço para outra caixa com 9 unidades.' };
+    }
     return { disponivel: true };
   }
   comprarMelhoria(id) {
@@ -422,6 +425,14 @@ export class Simulacao {
       this.reposicoes = new WeakMap();
     }
     this.estado.melhorias[id]++;
+    if (m.tipo === 'importacao') {
+      const estoque = this.estado.produtos[m.produto];
+      estoque.liberado = true;
+      estoque.apresentado = true;
+      estoque.prateleira += 9;
+      this.emitir('melhoria', { id, texto: 'Caixa importada! 9 enlatados foram colocados na gôndola.' });
+      return { sucesso: true, dinheiro: this.estado.dinheiro, quantidade: 9 };
+    }
     if (id === 'expansao') {
       this.emitir('expansao', { texto: 'Expansão pronta! O novo anexo fica atrás da loja e da cozinha. Use a porta de produção para acessá-lo e a nova saída dos fundos para chegar à fazenda.' });
     }
@@ -484,9 +495,14 @@ export class Simulacao {
           titulo: 'Amplie os fundos da loja', texto: 'No celular, compre Expansão por R$ 10.000 para construir um anexo atrás da loja e da cozinha e recuar a fazenda. Exige a padaria.',
           destino: 'celular', exibir: true };
       }
+      if (this.nivel >= 19 && !this.estado.produtos.enlatado.liberado) {
+        return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
+          titulo: 'Importe os primeiros produtos', texto: 'No celular, compre uma caixa com 9 enlatados por R$ 270. Cada lata é vendida por R$ 30.',
+          destino: 'celular', exibir: true };
+      }
       if (this.nivel >= 17 && this.estado.melhorias.prateleirasImportados < PRATELEIRAS_IMPORTADOS.length) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
-          titulo: 'Prepare as prateleiras de importados', texto: 'No celular, compre as duas prateleiras por R$ 1.000 cada. Elas ficam vazias; a importação será adicionada em uma etapa futura.',
+          titulo: 'Prepare as prateleiras de importados', texto: 'No celular, compre as duas prateleiras por R$ 1.000 cada. A primeira recebe enlatados importados a partir do nível 19.',
           destino: 'celular', exibir: true };
       }
       if (this.nivel >= 16 && !this.estado.melhorias.estacionamento) {
@@ -580,7 +596,7 @@ export class Simulacao {
     for (const [id, p] of Object.entries(this.produtos)) {
       if (!this.estado.produtos[id].liberado) continue;
       if (!['hortifruti', 'doces'].includes(p.prateleira.movel)) caixas.push(p.prateleira);
-      if (id !== 'pao') caixas.push(geometriaEstacao(id, 'coleta', this.produtos));
+      if (id !== 'pao' && p.origem !== 'importado') caixas.push(geometriaEstacao(id, 'coleta', this.produtos));
     }
     caixas.push(...volumesHortifruti(this.estado.produtos), ...volumesDoces(this.estado.produtos));
     caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
