@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_OFICINAS, oficinasConstruidas, PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
+import { construirDeposito } from './deposito.js';
+import { PLANTA_DEPOSITO, PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_OFICINAS, oficinasConstruidas, PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
 import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
 
@@ -256,6 +257,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     rodape(p);
   }
+  // A verga fica acima da passagem e não entra nas colisões do piso.
+  const passagemDeposito = new THREE.Group(); expansaoFundos.add(passagemDeposito); destino = passagemDeposito;
+  passagemDeposito.name = 'passagem-deposito';
+  const passagem = PLANTA_DEPOSITO.passagem, alturaVerga = 2.8 - passagem.h;
+  bloco(passagem.w, alturaVerga, passagem.d, 0xf1ead7,
+    passagem.x, 0.23 + passagem.h + alturaVerga / 2, passagem.z, 'parede');
+  bloco(passagem.w + 0.04, 0.1, passagem.d + 0.04, 0x286750,
+    passagem.x, 3.03, passagem.z, 'principal');
+  destino = expansaoFundos;
   for (const porta of PLANTA_EXPANSAO.portas) {
     for (const lado of [-1, 1]) {
       const x = porta.x + lado * porta.w / 2;
@@ -265,6 +275,9 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     }
     bloco(porta.w + 0.2, 0.22, 0.2, 0x286750, porta.x, 3.02, porta.z, 'principal');
   }
+  const deposito = construirDeposito(expansaoFundos, { caixa, vincular(mesh, papel) {
+    mesh.material = mesh.material.clone(); materiais.push({ material: mesh.material, papel });
+  } });
   const fundosAntigos = new THREE.Group(); grupo.add(fundosAntigos);
   fundosAntigos.name = 'parede-fundos-antiga';
   const lateral = new THREE.Group(); grupo.add(lateral);
@@ -516,6 +529,9 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       const angulos = angulosPortasEntrada(abertura);
       portaEntradaEsquerda.rotation.y = angulos.esquerda;
       portaEntradaDireita.rotation.y = angulos.direita;
+    },
+    animarDeposito(lojaAberta, dt) {
+      deposito.atualizar(lojaAberta, dt);
     },
     animarComputador(ativo, tempo) {
       telaComputador.material.emissive.set(ativo ? 0x5c9d91 : 0x000000);

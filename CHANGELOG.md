@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.51.0 — 2026-10-21
+## Versão atual: 0.52.0 — 2026-10-21
+
+- Inclui na compra da expansão do nível 18 um depósito atrás do estacionamento, com três estantes metálicas carregadas de caixas e dois pallets sobre piso de concreto.
+- Amplia o asfalto até a fachada inteira do depósito e a lateral da loja, ligando os dois espaços sem alterar as seis vagas, a entrada pela rua ou os trajetos dos carros. Antes da compra da expansão, o estacionamento mantém o formato original.
+- Abre uma passagem interna de 1,8 u, sem porta, entre o depósito e o anexo dos fundos. Parede, rodapé e colisões acompanham o vão, mantendo somente a verga acima da circulação.
+- Instala uma única porta de enrolar voltada para o estacionamento. Suas 18 lâminas descem até a soleira ao fechar a loja, recolhem para a caixa superior ao abrir e congelam durante a pausa.
+- Bloqueia o acesso externo quando o portão está fechado e mantém livre a passagem interna. Paredes, estantes, pallets e pacotes possuem colisões próprias, com corredores navegáveis.
+- Mantém custo, requisitos, estoques e receitas; partidas com a expansão já comprada recebem todo o conjunto ao carregar, sem novos campos salvos. Atualiza a planta N18 e os desbloqueios.
+- Validação: 254 testes, build e rotas até N18 passaram, incluindo compra, persistência, colisões, travessia interna e acesso pelo estacionamento. Desktop e celular foram conferidos no Edge com WebGL e Canvas; capturas em `docs/previews/deposito-n18-*.png`, `docs/previews/estacionamento-deposito-*.png`, `docs/previews/passagem-deposito-*.png` e `docs/previews/portao-deposito-fechado-*.png`.
+
+## 0.51.0 — 2026-10-21
 
 - Libera **Expansão** no nível 18 por R$ 10.000, uma única vez pelo escritório, após a padaria. Acrescenta um anexo de 6 u atrás da loja e da cozinha, ampliando o salão para 24 × 22 u e preservando as posições de venda, as divisórias do salão, o piso da cozinha e a porta de produção original.
 - Recua a fazenda, a cerca e o caminho de coleta em 6 u, amplia o terreno posterior e acrescenta piso ao redor da cozinha sem sobrepor seu piso original. Ajusta modelos, colisões, rotas, etiquetas, orientação e painel de produção à compra.

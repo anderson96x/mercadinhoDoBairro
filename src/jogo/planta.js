@@ -204,7 +204,7 @@ export const PLANTA_EXPANSAO = {
     { x: 16.6, z: -14.8, w: 8.6, d: 1 }
   ],
   terreno: { ...PLANTA_INICIAL.terreno, z: -8.5, d: 46 },
-  limites: { minX: -13.8, maxX: 22.5, minZ: -30.5, maxZ: 9 },
+  limites: { minX: -15.7, maxX: 22.5, minZ: -30.5, maxZ: 9 },
   portaProducao: { ...PLANTA_INICIAL.portaProducao, z: -15.3 },
   bancadas: Object.fromEntries([['queijo', PLANTA_QUEIJO], ['geleia', PLANTA_GELEIA]].map(([id, p]) => [id, {
     x: p.horta.x,
@@ -227,7 +227,10 @@ export function paredesExpansao() {
   }
   return [...paredes,
     { x: (inicio + 20.9) / 2, z: -15.3, w: 20.9 - inicio, d: 0.28, h: 2.8 },
-    { x: -3.1, z: -12.3, w: 0.28, d: 6, h: 2.8 },
+    ...[[-15.3, PLANTA_DEPOSITO.passagem.z - PLANTA_DEPOSITO.passagem.d / 2],
+      [PLANTA_DEPOSITO.passagem.z + PLANTA_DEPOSITO.passagem.d / 2, -9.3]].map(([inicio, fim]) => ({
+      x: PLANTA_DEPOSITO.passagem.x, z: (inicio + fim) / 2, w: 0.28, d: fim - inicio, h: 2.8
+    })),
     // Uma única lateral evita emendas de altura, espessura e acabamento.
     { x: 20.9, z: -4.3, w: 0.28, d: 22, h: 0.75, lateralContinua: true }
   ];
@@ -237,6 +240,50 @@ export function paredesOficinas(expandida = false) {
   if (!expandida) return PLANTA_OFICINAS.paredes;
   // A parede dos fundos e a lateral do prédio delimitam a cozinha ampliada.
   return [];
+}
+
+// Depósito N18: porta externa na face +z e passagem aberta para o anexo.
+// A lateral direita compartilha a parede do anexo.
+export const PLANTA_DEPOSITO = {
+  piso: { x: -9.3, z: -12.3, w: 12.4, d: 6 },
+  porta: { x: -9.3, z: -9.3, w: 2.8, d: 0.28 },
+  passagem: { x: -3.1, z: -12.6, w: 0.28, d: 1.8, h: 2.3 },
+  estantes: [-13.3, -9.3, -5.3].map((x, i) => ({
+    nome: `estante-deposito-${i + 1}`, x, z: -14.35, w: 3.1, d: 1.1, h: 2.5
+  })),
+  pallets: [-13.2, -5.4].map((x, i) => ({
+    nome: `pallet-deposito-${i + 1}`, x, z: -11, w: 1.8, d: 1.4, h: 1.4
+  }))
+};
+
+export function paredesDeposito() {
+  const { piso, porta } = PLANTA_DEPOSITO;
+  const minX = piso.x - piso.w / 2, maxX = piso.x + piso.w / 2;
+  return [
+    { x: piso.x, z: piso.z - piso.d / 2, w: piso.w, d: 0.28, h: 2.8 },
+    { x: minX, z: piso.z, w: 0.28, d: piso.d, h: 2.8 },
+    // Fachada em corte, como no salão, para revelar as caixas e os corredores.
+    ...[[minX, porta.x - porta.w / 2], [porta.x + porta.w / 2, maxX]].map(([inicio, fim]) => ({
+      x: (inicio + fim) / 2, z: porta.z, w: fim - inicio, d: porta.d, h: 0.75
+    }))
+  ];
+}
+
+export function pisoEstacionamento(expandida = false) {
+  const piso = PLANTA_ESTACIONAMENTO.piso;
+  if (!expandida) return piso;
+  const minX = piso.x - piso.w / 2, maxX = PLANTA_INICIAL.limites.minX;
+  const minZ = PLANTA_DEPOSITO.porta.z, maxZ = piso.z + piso.d / 2;
+  return { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2, w: maxX - minX, d: maxZ - minZ };
+}
+
+export function obstaculosDeposito() {
+  return [...paredesDeposito(), ...PLANTA_DEPOSITO.estantes, ...PLANTA_DEPOSITO.pallets];
+}
+
+export function volumePortaoDeposito() {
+  const p = PLANTA_DEPOSITO.porta;
+  return { x: p.x, z: p.z, w: p.w - 0.12, d: 0.12 };
 }
 
 export function folhasPortasExpansao() {

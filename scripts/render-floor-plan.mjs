@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs';
+import { PLANTA_DEPOSITO, pisoEstacionamento, paredesDeposito } from '../src/jogo/planta.js';
 import { produtosDaLoja, CONFIG, ESCRITORIO, ALA_PADARIA } from '../src/jogo/configuracao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_INICIAL, PLANTA_AMPLIADA, PRODUTOS_HORTIFRUTI, PRATELEIRAS_IMPORTADOS } from '../src/jogo/planta.js';
 import { PAREDES_LOJA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from '../src/jogo/bairro.js';
@@ -24,6 +25,19 @@ rect(expandida ? PLANTA_EXPANSAO.terreno : PLANTA_INICIAL.terreno, '#dfebd4', 's
 rect({ x: 4, z: 11.3, w: 40, d: 4.4 }, '#78817e');
 rect({ x: 4, z: 7.95, w: 40, d: 2.5 }, '#e8deca');
 text(13, 12, 'RUA');
+if (expandida) rect(pisoEstacionamento(true), '#78817e');
+if (expandida) {
+  rect(PLANTA_DEPOSITO.piso, '#c5cbc6');
+  for (const p of paredesDeposito()) rect(p, '#315c49');
+  for (const p of PLANTA_DEPOSITO.estantes) rect(p, '#8aafbf', 'stroke="#317c9d"');
+  for (const p of PLANTA_DEPOSITO.pallets) rect(p, '#c59355', 'stroke="#9b7347"');
+  rect(PLANTA_DEPOSITO.porta, '#aebbbd');
+  text(-9.3, -12.4, 'DEPÓSITO', 'small');
+  text(-9.3, -8.3, 'PORTÃO ÚNICO', 'small');
+  const passagem = PLANTA_DEPOSITO.passagem;
+  path([{ x: passagem.x - 1, z: passagem.z }, { x: passagem.x + 1, z: passagem.z }]);
+  text(passagem.x + 3, passagem.z + 0.8, 'PASSAGEM LIVRE', 'small');
+}
 rect(expandida ? PLANTA_EXPANSAO.salao : nivel >= 9 ? PLANTA_AMPLIADA.salao : PLANTA_INICIAL.salao, '#f4f0e5');
 const office = ESCRITORIO.limites;
 rect({ x: (office.minX + office.maxX) / 2, z: (office.minZ + office.maxZ) / 2, w: office.maxX - office.minX, d: office.maxZ - office.minZ }, '#dfd5df');
@@ -133,7 +147,7 @@ const notes = [
   '',
   'ESCOPO DESTA ETAPA',
   expandida ? 'N18: expansão de R$ 10.000.' : 'Departamentos posteriores ainda',
-  expandida ? 'Fazenda recuada em 6 u.' : 'mantêm as ampliações anteriores.',
+  expandida ? 'Depósito atrás do estacionamento.' : 'mantêm as ampliações anteriores.',
   nivel >= 9 ? 'N9: padaria voltada ao hortifruti.' : nivel >= 7 ? 'N7: trigo atrás do milho.' : nivel >= 5 ? 'N5: curral ao lado do galinheiro.' : nivel >= 4 ? 'N4: galinheiro atrás da loja.' : nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
   'u = unidade do jogo; rua em +z.'
 ];

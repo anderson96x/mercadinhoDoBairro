@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
-import { PLANTA_INICIAL, PLANTA_ESTACIONAMENTO as P, OBSTACULOS_ESTACIONAMENTO } from '../src/jogo/planta.js';
+import { PLANTA_INICIAL, PLANTA_ESTACIONAMENTO as P, PLANTA_DEPOSITO, OBSTACULOS_ESTACIONAMENTO } from '../src/jogo/planta.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { construirEstacionamento } from '../src/jogo/estacionamento.js';
 import { construirBairro, mobiliarioCalcada } from '../src/jogo/bairro.js';
@@ -143,4 +143,22 @@ test('construção substitui a vegetação e partidas carregadas mostram o estac
   assert.equal(novo.grupo.getObjectByName('equipamentos-estacionamento').scale.y, 1);
   const carregado = construirEstacionamento(); carregado.atualizar(true);
   assert.equal(carregado.grupo.getObjectByName('equipamentos-estacionamento').scale.y, 1);
+});
+
+test('expansão une o asfalto à fachada inteira do depósito sem meio-fio na porta', () => {
+  const estacionamento = construirEstacionamento();
+  estacionamento.atualizar(true);
+  const piso = estacionamento.grupo.getObjectByName('asfalto-estacionamento');
+  const antes = new THREE.Box3().setFromObject(piso);
+  estacionamento.atualizar(true, 0, [], 0, true);
+  const depois = new THREE.Box3().setFromObject(piso);
+  assert.ok(Math.abs(depois.min.z - PLANTA_DEPOSITO.porta.z) < 1e-6);
+  assert.ok(depois.min.x <= PLANTA_DEPOSITO.piso.x - PLANTA_DEPOSITO.piso.w / 2);
+  assert.ok(Math.abs(depois.max.x - (PLANTA_DEPOSITO.piso.x + PLANTA_DEPOSITO.piso.w / 2)) < 1e-6);
+  assert.ok(Math.abs(depois.max.z - antes.max.z) < 1e-6, 'entrada pela rua permanece na mesma posição');
+  assert.equal(estacionamento.grupo.getObjectByName('guia-fundo-estacionamento').visible, false);
+  assert.equal(piso.material, estacionamento.grupo.getObjectByName('acesso-estacionamento').material);
+  estacionamento.atualizar(true);
+  assert.deepEqual(new THREE.Box3().setFromObject(piso), antes);
+  assert.equal(estacionamento.grupo.getObjectByName('guia-fundo-estacionamento').visible, true);
 });

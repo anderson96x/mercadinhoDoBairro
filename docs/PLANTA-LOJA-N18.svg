@@ -8,6 +8,22 @@
 <rect x="114" y="805.6" width="640" height="70.4" fill="#78817e" />
 <rect x="114" y="767.2" width="640" height="40" fill="#e8deca" />
 <text x="578" y="852" text-anchor="middle" class="label">RUA</text>
+<rect x="117.19999999999999" y="511.2" width="203.20000000000002" height="251.20000000000002" fill="#78817e" />
+<rect x="122" y="415.2" width="198.4" height="96" fill="#c5cbc6" />
+<rect x="122" y="412.96" width="198.4" height="4.48" fill="#315c49" />
+<rect x="119.75999999999999" y="415.2" width="4.48" height="96" fill="#315c49" />
+<rect x="122" y="508.96" width="76.79999999999998" height="4.48" fill="#315c49" />
+<rect x="243.6" y="508.96" width="76.8" height="4.48" fill="#315c49" />
+<rect x="132.39999999999998" y="421.6" width="49.6" height="17.6" fill="#8aafbf" stroke="#317c9d"/>
+<rect x="196.39999999999998" y="421.6" width="49.6" height="17.6" fill="#8aafbf" stroke="#317c9d"/>
+<rect x="260.4" y="421.6" width="49.6" height="17.6" fill="#8aafbf" stroke="#317c9d"/>
+<rect x="144.4" y="472.8" width="28.8" height="22.4" fill="#c59355" stroke="#9b7347"/>
+<rect x="269.2" y="472.8" width="28.8" height="22.4" fill="#c59355" stroke="#9b7347"/>
+<rect x="198.79999999999998" y="508.96" width="44.8" height="4.48" fill="#aebbbd" />
+<text x="221.2" y="461.6" text-anchor="middle" class="small">DEPÓSITO</text>
+<text x="221.2" y="527.2" text-anchor="middle" class="small">PORTÃO ÚNICO</text>
+<path d="M304.4,458.4L336.4,458.4" class="route"/>
+<text x="368.4" y="471.20000000000005" text-anchor="middle" class="small">PASSAGEM LIVRE</text>
 <rect x="320.4" y="415.2" width="384" height="352" fill="#f4f0e5" />
 <rect x="320.4" y="511.2" width="67.2" height="56.000000000000014" fill="#dfd5df" />
 <rect x="320.4" y="508.96" width="83.2" height="4.48" fill="#315c49" />
@@ -22,7 +38,8 @@
 <rect x="370" y="565.76" width="17.6" height="2.88" fill="#315c49" />
 <rect x="320.4" y="412.96" width="83.2" height="4.48" fill="#315c49" />
 <rect x="451.6" y="412.96" width="252.79999999999998" height="4.48" fill="#315c49" />
-<rect x="318.15999999999997" y="415.2" width="4.48" height="96" fill="#315c49" />
+<rect x="318.15999999999997" y="415.2" width="4.48" height="28.80000000000001" fill="#315c49" />
+<rect x="318.15999999999997" y="472.8" width="4.48" height="38.39999999999998" fill="#315c49" />
 <rect x="702.16" y="415.2" width="4.48" height="352" fill="#315c49" />
 <rect x="335.6" y="514.8" width="43.2" height="13.6" fill="#b99269" />
 <rect x="324" y="514.4" width="7.2" height="27.2" fill="#b99269" />
@@ -205,7 +222,7 @@
 <text x="885" y="661" class="note"></text>
 <text x="885" y="692" class="label">ESCOPO DESTA ETAPA</text>
 <text x="885" y="723" class="note">N18: expansão de R$ 10.000.</text>
-<text x="885" y="754" class="note">Fazenda recuada em 6 u.</text>
+<text x="885" y="754" class="note">Depósito atrás do estacionamento.</text>
 <text x="885" y="785" class="note">N9: padaria voltada ao hortifruti.</text>
 <text x="885" y="816" class="note">u = unidade do jogo; rua em +z.</text>
 <text x="48" y="966" class="small">Gerado da configuração do jogo · Traço laranja: percurso de produção · Círculos: posições de fila apenas na documentação</text></svg>

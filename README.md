@@ -1,6 +1,6 @@
 ﻿# Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.51.0**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.52.0**.
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
 
@@ -96,7 +96,7 @@ Os níveis representam a evolução contínua da mesma loja. Atingir o nível li
 | 15 | Cozinha de geleias | R$ 2.200 | Produz geleias; exige o apiário. |
 | 16 | Estacionamento | R$ 10.000 | Seis vagas no terreno à esquerda da loja, com acesso pela rua, iluminação e canteiro central. |
 | 17 | Prateleiras de importados | R$ 1.000 por nível | Duas prateleiras centrais; produtos importados ficam para uma etapa futura. |
-| 18 | Expansão | R$ 10.000 | Acrescenta um anexo atrás da loja e da cozinha, mantendo o interior existente; recua a fazenda e exige a padaria. |
+| 18 | Expansão | R$ 10.000 | Acrescenta o anexo posterior e um depósito com estantes, caixas e porta única para o estacionamento; recua a fazenda e exige a padaria. |
 
 O nível 18 é o último marco de conteúdo atual. A expansão é comprada uma única vez no escritório, na aba Mercado, e fica salva. O mobiliário e as divisórias do salão permanecem no lugar; a compra acrescenta um anexo de 6 u nos fundos, com nova parede e uma saída. As duas bancadas da cozinha recuam até essa parede e a mureta atrás delas é removida. A porta de produção original dá acesso ao anexo. A fazenda, a cerca e o caminho recuam 6 u. Estoques, receitas e progresso são preservados. Veja a [planta N18](docs/PLANTA-LOJA-N18.svg) e os [desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
 

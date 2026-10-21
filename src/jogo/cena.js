@@ -785,7 +785,7 @@ export class Cena {
     this.bairro.atualizarEstagio(this.sim.estado.estagioLoja);
     this.bairro.atualizarExpansao(this.sim.estado.melhorias.expansao);
     this.estacionamento = construirEstacionamento(); this.cena.add(this.estacionamento.grupo);
-    this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento);
+    this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento, 0, [], 0, !!this.sim.estado.melhorias.expansao);
     this.bairro.atualizarEstacionamento(!!this.sim.estado.melhorias.estacionamento);
     this.bairro.atualizarOficinas(this.sim.estado.produtos);
     this.prateleirasImportados = construirPrateleirasImportados(caixa);
@@ -1668,10 +1668,11 @@ export class Cena {
     }
     this.prateleirasImportados.atualizar(e.melhorias);
     this.bairro.aplicar(e.personalizacao);
-    this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo);
+    this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo, !!e.melhorias.expansao);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);
     this.bairro.animarPorta(sim.aberturaPortaEscritorio);
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
+    this.bairro.animarDeposito(e.lojaAberta, dt);
     this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
     const base = this.baseCamera(), limites = CONFIG.limiteCamera;

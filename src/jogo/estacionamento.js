@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { PLANTA_ESTACIONAMENTO as P } from './planta.js';
+import { PLANTA_ESTACIONAMENTO as P, pisoEstacionamento } from './planta.js';
 
 export function construirEstacionamento() {
   const grupo = new THREE.Group(); grupo.name = 'estacionamento'; grupo.visible = false;
@@ -13,7 +13,7 @@ export function construirEstacionamento() {
     if (camada !== undefined) m.userData.fundo = camada;
     pai.add(m); return m;
   };
-  caixa(grupo, 'asfalto-estacionamento', P.piso.w, 0.12, P.piso.d, 0x48525a, P.piso.x, 0, P.piso.z, 3);
+  const asfalto = caixa(grupo, 'asfalto-estacionamento', P.piso.w, 0.12, P.piso.d, 0x48525a, P.piso.x, 0, P.piso.z, 3);
   // Asfalto contínuo entre as duas faixas e a rua, com a calçada recortada no bairro.
   const acesso = caixa(grupo, 'acesso-estacionamento', P.acesso.w, 0.12, P.acesso.d,
     0x48525a, P.acesso.x, 0, P.acesso.z, 5);
@@ -35,12 +35,11 @@ export function construirEstacionamento() {
   }
   const minX = P.piso.x - P.piso.w / 2, maxX = P.piso.x + P.piso.w / 2;
   const minZ = P.piso.z - P.piso.d / 2, maxZ = P.piso.z + P.piso.d / 2;
-  for (const x of [minX + 0.08, maxX - 0.08]) caixa(detalhes, 'guia-lateral-estacionamento', 0.16, 0.16, P.piso.d,
-    0xc8d0c9, x, 0.1, P.piso.z);
-  caixa(detalhes, 'guia-fundo-estacionamento', P.piso.w, 0.16, 0.16, 0xc8d0c9, P.piso.x, 0.1, minZ + 0.08);
-  for (const [inicio, fim] of [[minX, P.acesso.x - P.acesso.w / 2], [P.acesso.x + P.acesso.w / 2, maxX]]) {
-    caixa(detalhes, 'guia-frente-estacionamento', fim - inicio, 0.16, 0.16, 0xc8d0c9, (inicio + fim) / 2, 0.1, maxZ - 0.08);
-  }
+  const guiasLaterais = [minX + 0.08, maxX - 0.08].map(x => caixa(detalhes, 'guia-lateral-estacionamento', 0.16, 0.16, P.piso.d,
+    0xc8d0c9, x, 0.1, P.piso.z));
+  const guiaFundos = caixa(detalhes, 'guia-fundo-estacionamento', P.piso.w, 0.16, 0.16, 0xc8d0c9, P.piso.x, 0.1, minZ + 0.08);
+  const guiasFrente = [[minX, P.acesso.x - P.acesso.w / 2], [P.acesso.x + P.acesso.w / 2, maxX]].map(([inicio, fim]) =>
+    caixa(detalhes, 'guia-frente-estacionamento', fim - inicio, 0.16, 0.16, 0xc8d0c9, (inicio + fim) / 2, 0.1, maxZ - 0.08));
   for (const [i, vaga] of P.vagas.entries()) {
     const marcacao = new THREE.Group(); marcacao.name = `vaga-estacionamento-${i + 1}`; detalhes.add(marcacao);
     for (const z of [vaga.z - vaga.d / 2, vaga.z + vaga.d / 2]) caixa(marcacao, 'linha-vaga', vaga.w, 0.012, 0.055,
@@ -85,12 +84,28 @@ export function construirEstacionamento() {
   caixa(placa, 'letra-P', 0.085, 0.47, 0.02, 0xfff9df, -0.12, 1.7, 0.055);
   for (const y of [1.9, 1.7]) caixa(placa, 'letra-P', 0.29, 0.08, 0.02, 0xfff9df, 0, y, 0.055);
   caixa(placa, 'letra-P', 0.08, 0.2, 0.02, 0xfff9df, 0.12, 1.8, 0.055);
-  let compradoAntes, progresso = 1;
+  let compradoAntes, expansaoAnterior, progresso = 1;
   return { grupo, carros, receberCarro(id, carro) {
     carro.userData.luzes = [];
     carro.traverse(o => { if (['pisca', 'luz-freio', 'luz-re'].includes(o.name)) carro.userData.luzes.push(o); });
     carros.set(id, carro); grupo.add(carro);
-  }, atualizar(comprado, dt = 0, veiculos = [], tempo = 0) {
+  }, atualizar(comprado, dt = 0, veiculos = [], tempo = 0, expandida = false) {
+    if (expandida !== expansaoAnterior) {
+      expansaoAnterior = expandida;
+      const piso = pisoEstacionamento(expandida), direita = piso.x + piso.w / 2;
+      asfalto.scale.set(piso.w / P.piso.w, 1, piso.d / P.piso.d);
+      asfalto.position.set(piso.x, 0, piso.z);
+      for (const [indice, guia] of guiasLaterais.entries()) {
+        guia.scale.z = piso.d / P.piso.d;
+        guia.position.set(indice ? direita - 0.08 : minX + 0.08, 0.1, piso.z);
+      }
+      // O asfalto encosta no depósito e na loja, sem meio-fio no portão.
+      guiaFundos.visible = !expandida;
+      guiasLaterais[1].visible = !expandida;
+      const inicio = P.acesso.x + P.acesso.w / 2;
+      guiasFrente[1].scale.x = (direita - inicio) / (maxX - inicio);
+      guiasFrente[1].position.x = (inicio + direita) / 2;
+    }
     if (comprado && compradoAntes === false) progresso = 0;
     compradoAntes = comprado; grupo.visible = comprado;
     if (comprado) progresso = Math.min(1, progresso + dt / 4);
