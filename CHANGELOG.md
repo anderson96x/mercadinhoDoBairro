@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.54.0 — 2026-10-21
+## Versão atual: 0.54.1 — 2026-10-21
+
+- Mostra os enlatados na prateleira superior em quatro grupos de três latas. Cada cor representa uma das quatro caixas compradas.
+- Repete três latas azuis em cada prateleira inferior quando há estoque, preenchendo visualmente a gôndola sem alterar a capacidade real de 36 unidades ou a economia.
+- Validação: 4 testes focados de importação e build de produção passaram.
+
+## 0.54.0 — 2026-10-21
 
 - Libera no nível 19 o botão **Importar produtos** no menu do celular, imediatamente abaixo de **Melhorias**, abrindo um catálogo próprio após a instalação de ao menos uma prateleira de importados.
 - Cada caixa custa R$ 270 e acrescenta 9 enlatados diretamente à primeira gôndola; cada unidade é vendida por R$ 30 e o expositor comporta até 36 unidades.

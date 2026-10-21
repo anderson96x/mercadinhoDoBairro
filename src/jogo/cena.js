@@ -191,7 +191,7 @@ function criarSecaoHortifruti(pai, p) {
   return grupo;
 }
 
-export function criarProduto(id, escala = 1) {
+export function criarProduto(id, escala = 1, variante = 0) {
   const grupo = new THREE.Group();
   if (id === 'tomate') {
     esfera(grupo, 0.16, 0xff3f32, 0, 0, 0, 1, 0.86, 1);
@@ -245,10 +245,12 @@ export function criarProduto(id, escala = 1) {
       corte.rotation.z = 0.3;
     }
   } else if (id === 'enlatado') {
-    cilindro(grupo, 0.15, 0.15, 0.34, 0xd85b45, 0, 0, 0, 16);
+    const cores = [0xd94b3d, 0xf0a51f, 0x69ad3c, 0x2777c8];
+    const cor = cores[Math.floor(variante / 3) % cores.length];
+    cilindro(grupo, 0.15, 0.15, 0.34, cor, 0, 0, 0, 16);
     cilindro(grupo, 0.152, 0.152, 0.025, 0xd9ddda, 0, 0.18, 0, 16);
     cilindro(grupo, 0.152, 0.152, 0.025, 0xaeb6b3, 0, -0.18, 0, 16);
-    caixa(grupo, 0.255, 0.13, 0.012, 0xffe4a8, 0, 0, 0.147);
+    caixa(grupo, 0.255, 0.13, 0.012, variante % 2 ? 0xfff0bd : 0xf8f5df, 0, 0, 0.147);
   } else {
     esfera(grupo, 0.14, 0xffd22e, 0, 0, 0, 0.7, 1.5, 0.7);
     const folha = esfera(grupo, 0.12, 0x38a447, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;
@@ -963,15 +965,24 @@ export class Cena {
   }
   construirImportado(id, p) {
     const grupo = new THREE.Group(); grupo.name = `produto-importado-${id}`; this.cena.add(grupo);
-    const frutas = [];
-    for (let i = 0; i < p.capacidadePrateleira; i++) {
-      const produto = criarProduto(id, 0.9);
-      const nivel = Math.floor(i / 9), coluna = i % 9;
-      produto.position.set(p.prateleira.x - 0.66, 0.49 + nivel * 0.63, p.prateleira.z - 2.35 + coluna * 0.58);
+    const frutas = [], decoracoes = [];
+    // Cada caixa de nove unidades aparece como três latas da mesma cor.
+    // Quatro caixas formam doze latas, todas na prateleira superior.
+    for (let i = 0; i < 12; i++) {
+      const produto = criarProduto(id, 0.9, i);
+      produto.position.set(p.prateleira.x - 0.56, 2.52, p.prateleira.z - 2.31 + i * 0.42);
       produto.rotation.y = Math.PI / 2;
       grupo.add(produto); frutas.push(produto);
     }
-    this.produtos[id] = { grupo, frutos: [], frutas, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
+    // Repete o conjunto azul abaixo do topo para que os níveis inferiores
+    // pareçam abastecidos, sem acrescentar unidades ao estoque real.
+    for (let nivel = 0; nivel < 3; nivel++) for (let coluna = 0; coluna < 3; coluna++) {
+      const produto = criarProduto(id, 0.9, 9 + coluna);
+      produto.position.set(p.prateleira.x - 0.56, 0.65 + nivel * 0.63, p.prateleira.z + 1.47 + coluna * 0.42);
+      produto.rotation.y = Math.PI / 2;
+      grupo.add(produto); decoracoes.push(produto);
+    }
+    this.produtos[id] = { grupo, frutos: [], frutas, decoracoes, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
     this.criarLabel(`loja-${id}`, { ...p.prateleira, x: p.prateleira.x - 0.7, y: 2.8 }, 'ENLATADOS', '0 / 36', 'loja');
   }
   construirArtesanal(id, p) {
@@ -1875,7 +1886,8 @@ export class Cena {
       }
       const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
         .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);
-      objetos.frutas.forEach((f, i) => { f.visible = i < estado.prateleira && !emTransito.some(r => r.lugar === i); });
+      objetos.frutas.forEach((f, i) => { f.visible = (PRODUTOS[id].origem === 'importado' ? i < Math.ceil(estado.prateleira / 3) : i < estado.prateleira) && !emTransito.some(r => r.lugar === i); });
+      objetos.decoracoes?.forEach(item => { item.visible = estado.prateleira > 0; });
     }
     if (this.cuidadorVaca?.visible && this.produtos.leite.grupo.visible) {
       animarVaca(this.vaca, tempo);

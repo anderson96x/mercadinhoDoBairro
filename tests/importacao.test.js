@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import * as THREE from 'three';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
+import { Cena } from '../src/jogo/cena.js';
 
 function abrir(nivel = 19, dinheiro = 2000) {
   const sim = new Simulacao();
@@ -52,4 +54,22 @@ test('gôndola comporta quatro caixas e preserva o estoque ao recarregar', () =>
   const restaurado = new Simulacao(structuredClone(sim.estado));
   assert.equal(restaurado.estado.produtos.enlatado.prateleira, 36);
   assert.equal(restaurado.estado.melhorias.importarProdutos, 4);
+});
+
+test('gôndola cheia mostra três latas de cada caixa na prateleira superior', () => {
+  const visual = { cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
+  Cena.prototype.construirImportado.call(visual, 'enlatado', PRODUTOS.enlatado);
+  const latas = visual.produtos.enlatado.frutas;
+
+  assert.equal(latas.length, 12);
+  assert.equal(new Set(latas.map(lata => lata.position.y)).size, 1);
+  const cores = latas.map(lata => lata.children[0].material.color.getHex());
+  assert.equal(new Set(cores).size, 4);
+  for (const cor of new Set(cores)) {
+    assert.equal(cores.filter(item => item === cor).length, 3);
+  }
+  const azuisInferiores = visual.produtos.enlatado.decoracoes;
+  assert.equal(azuisInferiores.length, 9);
+  assert.equal(new Set(azuisInferiores.map(lata => lata.position.y)).size, 3);
+  assert.equal(new Set(azuisInferiores.map(lata => lata.children[0].material.color.getHex())).size, 1);
 });
