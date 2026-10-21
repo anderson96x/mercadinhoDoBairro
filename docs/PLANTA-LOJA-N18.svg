@@ -43,20 +43,20 @@
 <rect x="402" y="722.16" width="46.4" height="24.48" fill="#aeb9b5" />
 <text x="425.2" y="734.4" text-anchor="middle" class="small">CAIXA</text>
 <rect x="420.4" y="752" width="9.6" height="9.6" fill="#74858d" />
-<rect x="325.2" y="685.6" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
-<circle cx="330" cy="691.2" r="3" fill="#ef5a42"/>
-<circle cx="336.4" cy="691.2" r="3" fill="#ef5a42"/>
-<circle cx="342.8" cy="691.2" r="3" fill="#ef5a42"/>
-<circle cx="330" cy="699.2" r="3" fill="#ef5a42"/>
-<circle cx="336.4" cy="699.2" r="3" fill="#ef5a42"/>
-<circle cx="342.8" cy="699.2" r="3" fill="#ef5a42"/>
-<circle cx="330" cy="707.2" r="3" fill="#ef5a42"/>
-<circle cx="336.4" cy="707.2" r="3" fill="#ef5a42"/>
-<circle cx="342.8" cy="707.2" r="3" fill="#ef5a42"/>
-<circle cx="330" cy="715.2" r="3" fill="#ef5a42"/>
-<circle cx="336.4" cy="715.2" r="3" fill="#ef5a42"/>
-<circle cx="342.8" cy="715.2" r="3" fill="#ef5a42"/>
-<text x="370" y="703.2" text-anchor="middle" class="small">TOMATE</text>
+<rect x="325.2" y="658.4" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
+<circle cx="330" cy="664" r="3" fill="#ef5a42"/>
+<circle cx="336.4" cy="664" r="3" fill="#ef5a42"/>
+<circle cx="342.8" cy="664" r="3" fill="#ef5a42"/>
+<circle cx="330" cy="672" r="3" fill="#ef5a42"/>
+<circle cx="336.4" cy="672" r="3" fill="#ef5a42"/>
+<circle cx="342.8" cy="672" r="3" fill="#ef5a42"/>
+<circle cx="330" cy="680" r="3" fill="#ef5a42"/>
+<circle cx="336.4" cy="680" r="3" fill="#ef5a42"/>
+<circle cx="342.8" cy="680" r="3" fill="#ef5a42"/>
+<circle cx="330" cy="688" r="3" fill="#ef5a42"/>
+<circle cx="336.4" cy="688" r="3" fill="#ef5a42"/>
+<circle cx="342.8" cy="688" r="3" fill="#ef5a42"/>
+<text x="370" y="676" text-anchor="middle" class="small">TOMATE</text>
 <rect x="194" y="340.8" width="57.6" height="40" fill="#b77e50" stroke="#805634"/>
 <circle cx="205.20000000000002" cy="352" r="4" fill="#ef5a42"/>
 <circle cx="216.93333333333334" cy="352" r="4" fill="#ef5a42"/>
@@ -67,20 +67,20 @@
 <circle cx="228.66666666666669" cy="369.6" r="4" fill="#ef5a42"/>
 <circle cx="240.40000000000003" cy="369.6" r="4" fill="#ef5a42"/>
 <text x="222.8" y="334.40000000000003" text-anchor="middle" class="small">TOMATE</text>
-<rect x="325.2" y="650.4" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
-<circle cx="330" cy="656" r="3" fill="#f6c844"/>
-<circle cx="336.4" cy="656" r="3" fill="#f6c844"/>
-<circle cx="342.8" cy="656" r="3" fill="#f6c844"/>
-<circle cx="330" cy="664" r="3" fill="#f6c844"/>
-<circle cx="336.4" cy="664" r="3" fill="#f6c844"/>
-<circle cx="342.8" cy="664" r="3" fill="#f6c844"/>
-<circle cx="330" cy="672" r="3" fill="#f6c844"/>
-<circle cx="336.4" cy="672" r="3" fill="#f6c844"/>
-<circle cx="342.8" cy="672" r="3" fill="#f6c844"/>
-<circle cx="330" cy="680" r="3" fill="#f6c844"/>
-<circle cx="336.4" cy="680" r="3" fill="#f6c844"/>
-<circle cx="342.8" cy="680" r="3" fill="#f6c844"/>
-<text x="370" y="668" text-anchor="middle" class="small">MILHO</text>
+<rect x="325.2" y="623.2" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
+<circle cx="330" cy="628.8" r="3" fill="#f6c844"/>
+<circle cx="336.4" cy="628.8" r="3" fill="#f6c844"/>
+<circle cx="342.8" cy="628.8" r="3" fill="#f6c844"/>
+<circle cx="330" cy="636.8" r="3" fill="#f6c844"/>
+<circle cx="336.4" cy="636.8" r="3" fill="#f6c844"/>
+<circle cx="342.8" cy="636.8" r="3" fill="#f6c844"/>
+<circle cx="330" cy="644.8" r="3" fill="#f6c844"/>
+<circle cx="336.4" cy="644.8" r="3" fill="#f6c844"/>
+<circle cx="342.8" cy="644.8" r="3" fill="#f6c844"/>
+<circle cx="330" cy="652.8" r="3" fill="#f6c844"/>
+<circle cx="336.4" cy="652.8" r="3" fill="#f6c844"/>
+<circle cx="342.8" cy="652.8" r="3" fill="#f6c844"/>
+<text x="370" y="640.8" text-anchor="middle" class="small">MILHO</text>
 <rect x="194" y="268.8" width="57.6" height="40" fill="#b77e50" stroke="#805634"/>
 <circle cx="205.20000000000002" cy="280" r="4" fill="#f6c844"/>
 <circle cx="216.93333333333334" cy="280" r="4" fill="#f6c844"/>
@@ -91,20 +91,20 @@
 <circle cx="228.66666666666669" cy="297.6" r="4" fill="#f6c844"/>
 <circle cx="240.40000000000003" cy="297.6" r="4" fill="#f6c844"/>
 <text x="222.8" y="262.40000000000003" text-anchor="middle" class="small">MILHO</text>
-<rect x="325.2" y="615.2" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
-<circle cx="330" cy="620.8" r="3" fill="#e4bc57"/>
-<circle cx="336.4" cy="620.8" r="3" fill="#e4bc57"/>
-<circle cx="342.8" cy="620.8" r="3" fill="#e4bc57"/>
-<circle cx="330" cy="628.8" r="3" fill="#e4bc57"/>
-<circle cx="336.4" cy="628.8" r="3" fill="#e4bc57"/>
-<circle cx="342.8" cy="628.8" r="3" fill="#e4bc57"/>
-<circle cx="330" cy="636.8" r="3" fill="#e4bc57"/>
-<circle cx="336.4" cy="636.8" r="3" fill="#e4bc57"/>
-<circle cx="342.8" cy="636.8" r="3" fill="#e4bc57"/>
-<circle cx="330" cy="644.8" r="3" fill="#e4bc57"/>
-<circle cx="336.4" cy="644.8" r="3" fill="#e4bc57"/>
-<circle cx="342.8" cy="644.8" r="3" fill="#e4bc57"/>
-<text x="370" y="632.8" text-anchor="middle" class="small">TRIGO</text>
+<rect x="325.2" y="588" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
+<circle cx="330" cy="593.6" r="3" fill="#e4bc57"/>
+<circle cx="336.4" cy="593.6" r="3" fill="#e4bc57"/>
+<circle cx="342.8" cy="593.6" r="3" fill="#e4bc57"/>
+<circle cx="330" cy="601.6" r="3" fill="#e4bc57"/>
+<circle cx="336.4" cy="601.6" r="3" fill="#e4bc57"/>
+<circle cx="342.8" cy="601.6" r="3" fill="#e4bc57"/>
+<circle cx="330" cy="609.6" r="3" fill="#e4bc57"/>
+<circle cx="336.4" cy="609.6" r="3" fill="#e4bc57"/>
+<circle cx="342.8" cy="609.6" r="3" fill="#e4bc57"/>
+<circle cx="330" cy="617.6" r="3" fill="#e4bc57"/>
+<circle cx="336.4" cy="617.6" r="3" fill="#e4bc57"/>
+<circle cx="342.8" cy="617.6" r="3" fill="#e4bc57"/>
+<text x="370" y="605.6" text-anchor="middle" class="small">TRIGO</text>
 <rect x="194" y="196.8" width="57.6" height="40" fill="#b77e50" stroke="#805634"/>
 <circle cx="205.20000000000002" cy="208" r="4" fill="#e4bc57"/>
 <circle cx="216.93333333333334" cy="208" r="4" fill="#e4bc57"/>
@@ -115,20 +115,20 @@
 <circle cx="228.66666666666669" cy="225.60000000000002" r="4" fill="#e4bc57"/>
 <circle cx="240.40000000000003" cy="225.60000000000002" r="4" fill="#e4bc57"/>
 <text x="222.8" y="190.40000000000003" text-anchor="middle" class="small">TRIGO</text>
-<rect x="325.2" y="580" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
-<circle cx="330" cy="585.6" r="3" fill="#e74769"/>
-<circle cx="336.4" cy="585.6" r="3" fill="#e74769"/>
-<circle cx="342.8" cy="585.6" r="3" fill="#e74769"/>
-<circle cx="330" cy="593.6" r="3" fill="#e74769"/>
-<circle cx="336.4" cy="593.6" r="3" fill="#e74769"/>
-<circle cx="342.8" cy="593.6" r="3" fill="#e74769"/>
-<circle cx="330" cy="601.6" r="3" fill="#e74769"/>
-<circle cx="336.4" cy="601.6" r="3" fill="#e74769"/>
-<circle cx="342.8" cy="601.6" r="3" fill="#e74769"/>
-<circle cx="330" cy="609.6" r="3" fill="#e74769"/>
-<circle cx="336.4" cy="609.6" r="3" fill="#e74769"/>
-<circle cx="342.8" cy="609.6" r="3" fill="#e74769"/>
-<text x="370" y="597.6" text-anchor="middle" class="small">MORANGO</text>
+<rect x="325.2" y="552.8" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
+<circle cx="330" cy="558.4" r="3" fill="#e74769"/>
+<circle cx="336.4" cy="558.4" r="3" fill="#e74769"/>
+<circle cx="342.8" cy="558.4" r="3" fill="#e74769"/>
+<circle cx="330" cy="566.4" r="3" fill="#e74769"/>
+<circle cx="336.4" cy="566.4" r="3" fill="#e74769"/>
+<circle cx="342.8" cy="566.4" r="3" fill="#e74769"/>
+<circle cx="330" cy="574.4" r="3" fill="#e74769"/>
+<circle cx="336.4" cy="574.4" r="3" fill="#e74769"/>
+<circle cx="342.8" cy="574.4" r="3" fill="#e74769"/>
+<circle cx="330" cy="582.4" r="3" fill="#e74769"/>
+<circle cx="336.4" cy="582.4" r="3" fill="#e74769"/>
+<circle cx="342.8" cy="582.4" r="3" fill="#e74769"/>
+<text x="370" y="570.4" text-anchor="middle" class="small">MORANGO</text>
 <rect x="469.2" y="188.8" width="57.6" height="40" fill="#b77e50" stroke="#805634"/>
 <circle cx="480.4" cy="200" r="4" fill="#e74769"/>
 <circle cx="492.1333333333333" cy="200" r="4" fill="#e74769"/>

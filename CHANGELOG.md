@@ -5,6 +5,7 @@
 - Remove completamente o escritório, incluindo paredes, porta, piso, mesa, computador, cadeira, estante, colisões, animações e interação de sentar.
 - Adiciona ao lado do painel superior um botão em formato de celular que abre as opções do mercado de qualquer lugar, incluindo melhorias, personalização, abertura da loja e depósito bancário.
 - Uniformiza o botão do celular com o tamanho e o estilo dos demais botões de ícone do cabeçalho, como o botão de ajuda.
+- Reposiciona a banca completa de hortifruti na parede lateral, mantendo seções, interações e colisões alinhadas.
 - Atualiza objetivos, ajuda, documentação, plantas e testes para orientar o gerenciamento pelo celular. Saves existentes continuam compatíveis.
 - Validação: 249 testes, build e verificação de layout passaram.
 

@@ -313,7 +313,7 @@ export const FOLHAS_PORTA_PRODUCAO = [-1, 1].map(lado => ({
 export function compartimentoHortifruti(id) {
   const indice = PRODUTOS_HORTIFRUTI.indexOf(id);
   if (indice < 0) return null;
-  const z = 2.7 - indice * 2.2;
+  const z = 1 - indice * 2.2;
   return {
     prateleira: { x: -2.1, z, w: 1.4, d: 2.2, movel: 'hortifruti' },
     reposicao: { x: -0.8, z },
