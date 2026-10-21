@@ -30,7 +30,6 @@ if (expandida) {
   rect(PLANTA_DEPOSITO.piso, '#c5cbc6');
   for (const p of paredesDeposito()) rect(p, '#315c49');
   for (const p of PLANTA_DEPOSITO.estantes) rect(p, '#8aafbf', 'stroke="#317c9d"');
-  for (const p of PLANTA_DEPOSITO.pallets) rect(p, '#c59355', 'stroke="#9b7347"');
   rect(PLANTA_DEPOSITO.porta, '#aebbbd');
   text(-9.3, -12.4, 'DEPÓSITO', 'small');
   text(-9.3, -8.3, 'PORTÃO ÚNICO', 'small');

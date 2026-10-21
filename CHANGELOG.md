@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.54.2 — 2026-10-21
+## Versão atual: 0.54.3 — 2026-10-21
+
+- Remove os dois pallets com caixas do piso do depósito e suas colisões, liberando o espaço diante das estantes.
+- Atualiza a planta e a documentação do depósito para refletir a área livre.
+- Validação: teste focado do depósito, verificação de layout, suíte completa e build de produção passaram.
+
+## 0.54.2 — 2026-10-21
 
 - Adiciona às ferramentas DEV um botão para esvaziar todas as prateleiras e reiniciar clientes, cestas, carros e repositor.
 - Preserva os produtos liberados e apresentados para permitir novos testes de reposição e compra sem alterar a progressão.

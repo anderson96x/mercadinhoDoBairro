@@ -51,11 +51,11 @@ O salão original de **24 × 16 u**, seus expositores e a padaria mantêm suas p
 
 A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de produção original. A abertura junto à cozinha fica fechada. As bancadas da queijaria e da cozinha de geleias recuam até encostar nessa parede; os pontos de entrega e coleta acompanham as bancadas. A mureta que ficava atrás delas é removida. A lateral direita permanece em uma única peça contínua. O piso novo ocupa apenas os espaços adicionais, preservando o piso já construído da cozinha.
 
-A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Três estantes metálicas guardam caixas de papelão e dois pallets completam a carga no piso de concreto. A entrada e os corredores são caminháveis; paredes, estantes e pallets têm colisão. O depósito é cenográfico nesta etapa, sem alterar estoques ou receitas, e também aparece nas partidas que já compraram a expansão. Não exige comprar o estacionamento.
+A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Três estantes metálicas guardam caixas de papelão, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. O depósito é cenográfico nesta etapa, sem alterar estoques ou receitas, e também aparece nas partidas que já compraram a expansão. Não exige comprar o estacionamento.
 
 Quando o estacionamento também está comprado, o asfalto aumenta até encostar na fachada inteira do depósito e na parede esquerda da loja, eliminando a faixa de grama entre eles. O meio-fio posterior é removido, deixando o acesso ao portão contínuo; as seis vagas e a entrada pela rua mantêm suas posições.
 
-Uma **passagem interna de 1,8 u de largura, sem porta**, conecta a lateral direita do depósito ao anexo dos fundos da loja. Ela fica entre a fileira de estantes e os pallets e permite circulação nos dois sentidos. A abertura acompanha a compra da expansão e aparece também nos saves existentes.
+Uma **passagem interna de 1,8 u de largura, sem porta**, conecta a lateral direita do depósito ao anexo dos fundos da loja. Ela fica diante da fileira de estantes e permite circulação nos dois sentidos. A abertura acompanha a compra da expansão e aparece também nos saves existentes.
 
 O portão externo acompanha o funcionamento do mercado: suas lâminas descem suavemente até a soleira quando a loja fecha e se recolhem na caixa superior quando ela abre. O movimento congela durante a pausa. Fechado, o portão bloqueia o acesso pelo estacionamento; a passagem interna continua livre.
 

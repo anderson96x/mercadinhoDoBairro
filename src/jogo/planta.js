@@ -250,9 +250,6 @@ export const PLANTA_DEPOSITO = {
   passagem: { x: -3.1, z: -12.6, w: 0.28, d: 1.8, h: 2.3 },
   estantes: [-13.3, -9.3, -5.3].map((x, i) => ({
     nome: `estante-deposito-${i + 1}`, x, z: -14.35, w: 3.1, d: 1.1, h: 2.5
-  })),
-  pallets: [-13.2, -5.4].map((x, i) => ({
-    nome: `pallet-deposito-${i + 1}`, x, z: -11, w: 1.8, d: 1.4, h: 1.4
   }))
 };
 
@@ -278,7 +275,7 @@ export function pisoEstacionamento(expandida = false) {
 }
 
 export function obstaculosDeposito() {
-  return [...paredesDeposito(), ...PLANTA_DEPOSITO.estantes, ...PLANTA_DEPOSITO.pallets];
+  return [...paredesDeposito(), ...PLANTA_DEPOSITO.estantes];
 }
 
 export function volumePortaoDeposito() {

@@ -42,7 +42,7 @@ test('porta externa fica voltada ao estacionamento; paredes fora da passagem e m
   for (const x of [-15.5, -3.1]) {
     assert.equal(segmentoLivre({ x: x - 0.6, z: -10 }, { x: x + 0.6, z: -10 }, caixas, 0.32), false);
   }
-  for (const p of [...P.estantes, ...P.pallets]) {
+  for (const p of P.estantes) {
     assert.equal(segmentoLivre({ x: p.x, z: p.z - p.d }, { x: p.x, z: p.z + p.d }, caixas, 0.32), false, p.nome);
   }
   for (const produto of Object.values(sim.produtos)) {
@@ -104,7 +104,9 @@ test('construção acompanha a expansão, com estantes, embalagens e piso compat
   assert.ok(passagem);
   const limitePassagem = new THREE.Box3().setFromObject(passagem);
   assert.ok(limitePassagem.min.y >= 0.23 + P.passagem.h - 1e-6, 'nenhuma folha ou rodapé bloqueia o vão');
-  for (const p of [...P.estantes, ...P.pallets]) assert.ok(deposito.getObjectByName(p.nome));
+  for (const p of P.estantes) assert.ok(deposito.getObjectByName(p.nome));
+  assert.equal(deposito.getObjectByName('pallet-deposito-1'), undefined);
+  assert.equal(deposito.getObjectByName('pallet-deposito-2'), undefined);
   let embalagens = 0;
   deposito.traverse(objeto => { if (objeto.name === 'caixa-papelao') embalagens++; });
   assert.ok(embalagens > 20);

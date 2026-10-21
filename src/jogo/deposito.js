@@ -82,28 +82,6 @@ export function construirDeposito(pai, { caixa, vincular }) {
     }
   }
 
-  for (const [indice, p] of P.pallets.entries()) {
-    const pallet = new THREE.Group(); pallet.name = p.nome;
-    pallet.position.set(p.x, 0.23, p.z); grupo.add(pallet);
-    for (const x of [-0.66, 0, 0.66]) {
-      bloco(pallet, 'apoio-pallet', 0.17, 0.16, p.d, 0x9b7347, x, 0.08, 0);
-    }
-    for (let i = 0; i < 5; i++) {
-      bloco(pallet, 'tabua-pallet', p.w, 0.07, 0.22, 0xc69c67, 0, 0.195, (i - 2) * 0.28);
-    }
-    for (let nivel = 0; nivel < 2; nivel++) {
-      for (const x of [-0.43, 0.43]) {
-        pacote(pallet, x, 0.23 + nivel * 0.52, nivel ? -0.12 : 0.1,
-          0.77, 0.5, 0.98, indice + nivel);
-      }
-    }
-    // Marcações de carga no concreto, sem bloquear a passagem central.
-    for (const x of [-p.w / 2 - 0.14, p.w / 2 + 0.14]) {
-      const marca = bloco(pallet, 'faixa-pallet', 0.055, 0.012, p.d + 0.4,
-        0xe0ac51, x, 0.005, 0);
-      marca.userData.fundo = 5;
-    }
-  }
   let abertura = 1;
   const posicionarPortao = () => {
     for (const [indice, lamina] of laminas.entries()) {
