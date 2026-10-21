@@ -26,6 +26,26 @@ test('ferramenta DEV completa todas as prateleiras liberadas', () => {
   assert.equal(sim.preencherPrateleirasDev(), 0);
 });
 
+test('ferramenta DEV esvazia as prateleiras e reinicia clientes e repositor', () => {
+  const sim = new Simulacao();
+  sim.estado.produtos.tomate.prateleira = 7;
+  sim.estado.produtos.milho.prateleira = 3;
+  sim.estado.produtos.tomate.apresentado = true;
+  sim.clientes.push({ id: 1, cestaReservada: true, temCesta: true });
+  sim.estacionamento.carros.push({ clienteId: 1 });
+  Object.assign(sim.ajudante, { x: 8, z: -4, produto: 'milho', destino: 'prateleira', inventario: ['milho'], andando: true });
+  sim.tempo = 12;
+
+  assert.equal(sim.esvaziarPrateleirasDev(), 10);
+  assert.ok(Object.values(sim.estado.produtos).every(estoque => estoque.prateleira === 0));
+  assert.equal(sim.estado.produtos.tomate.apresentado, true);
+  assert.deepEqual(sim.clientes, []);
+  assert.deepEqual(sim.estacionamento.carros, []);
+  assert.deepEqual(sim.ajudante, estadoInicial().funcionarios.ajudante);
+  assert.equal(sim.proximoCliente, 14);
+  assert.equal(sim.esvaziarPrateleirasDev(), 0);
+});
+
 test('primeiros objetivos seguem as ações reais e continuam após recarregar', () => {
   const sim = new Simulacao();
   assert.equal(sim.missao().titulo, 'Colha seus primeiros tomates');

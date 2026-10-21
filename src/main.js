@@ -92,6 +92,13 @@ function preencherPrateleirasDev() {
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
   ui.mensagem(quantidade ? `${quantidade} produtos repostos. Todas as prateleiras estão cheias!` : 'Todas as prateleiras já estão cheias!');
 }
+function esvaziarPrateleirasDev() {
+  if (!import.meta.env.DEV) return;
+  const quantidade = sim.esvaziarPrateleirasDev();
+  gravar(); ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+  ui.mensagem(quantidade ? `${quantidade} produtos removidos. Clientes e repositor foram reiniciados.` : 'As prateleiras já estavam vazias. Clientes e repositor foram reiniciados.');
+}
 function aumentarReputacaoDev() {
   if (!import.meta.env.DEV) return;
   sim.aumentarReputacaoDev();
@@ -119,7 +126,7 @@ const ui = new Interface(sim, {
     if (resultado.sucesso) gravar();
     return resultado;
   },
-  pausar, comprar, alterarSaldo, preencherPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, aumentarReputacaoDev, iniciarSelecaoHorta,
+  pausar, comprar, alterarSaldo, preencherPrateleirasDev, esvaziarPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;

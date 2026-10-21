@@ -331,8 +331,8 @@ export class Interface {
         </section>
         <section class="dev-cartao" aria-label="Estoque das prateleiras">
           <div class="dev-cartao-topo"><span class="dev-rotulo">Estoque</span><strong>Prateleiras</strong></div>
-          <p>Completa todos os produtos liberados e reinicia o repositor.</p>
-          <div class="dev-acoes"><button id="dev-preencher-prateleiras">Encher todas as prateleiras</button></div>
+          <p>Encher reinicia o repositor. Esvaziar também reinicia clientes, cestas, carros e repositor.</p>
+          <div class="dev-acoes dev-acoes-duplas"><button id="dev-esvaziar-prateleiras">Esvaziar todas</button><button id="dev-preencher-prateleiras">Encher todas</button></div>
         </section>
         <section class="dev-cartao" aria-label="Tempo até o assalto">
           <div class="dev-cartao-topo"><span class="dev-rotulo">Prazo para depositar</span><strong>${this.sim.tempoEsperaAssalto}<small> s</small></strong></div>
@@ -442,6 +442,7 @@ export class Interface {
       this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-1000);
       this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(1000);
       this.el('dev-preencher-prateleiras').onclick = () => this.acoes.preencherPrateleirasDev();
+      this.el('dev-esvaziar-prateleiras').onclick = () => this.acoes.esvaziarPrateleirasDev();
       this.el('dev-nivel').onclick = () => this.acoes.aumentarNivelDev();
       this.el('dev-reputacao').onclick = () => this.acoes.aumentarReputacaoDev();
       this.el('dev-reset').onclick = () => this.abrir('reiniciar');

@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.54.1 — 2026-10-21
+## Versão atual: 0.54.2 — 2026-10-21
+
+- Adiciona às ferramentas DEV um botão para esvaziar todas as prateleiras e reiniciar clientes, cestas, carros e repositor.
+- Preserva os produtos liberados e apresentados para permitir novos testes de reposição e compra sem alterar a progressão.
+- Validação: teste focado da simulação e build de produção passaram.
+
+## 0.54.1 — 2026-10-21
 
 - Mostra os enlatados na prateleira superior em quatro grupos de três latas. Cada cor representa uma das quatro caixas compradas.
 - Repete três latas azuis em cada prateleira inferior quando há estoque, preenchendo visualmente a gôndola sem alterar a capacidade real de 36 unidades ou a economia.

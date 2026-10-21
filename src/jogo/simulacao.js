@@ -298,6 +298,21 @@ export class Simulacao {
     this.reposicoes.delete(this.ajudante);
     return quantidade;
   }
+  esvaziarPrateleirasDev() {
+    let quantidade = 0;
+    for (const estoque of Object.values(this.estado.produtos)) {
+      quantidade += estoque.prateleira;
+      estoque.prateleira = 0;
+    }
+    this.clientes = [];
+    this.estacionamento.carros = [];
+    this.caminhosClientes = new WeakMap();
+    this.proximoCliente = this.tempo + 2;
+    Object.assign(this.ajudante, estadoAjudanteInicial());
+    this.trajetosProducao.delete(this.ajudante);
+    this.reposicoes.delete(this.ajudante);
+    return quantidade;
+  }
   definirAssaltosAtivos(ativo) {
     this.assaltosAtivos = ativo;
     if (!ativo) {
