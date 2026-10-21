@@ -1,6 +1,6 @@
 ﻿# Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.54.3**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.55.0**.
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
 
@@ -97,9 +97,9 @@ Os níveis representam a evolução contínua da mesma loja. Atingir o nível li
 | 16 | Estacionamento | R$ 10.000 | Seis vagas no terreno à esquerda da loja, com acesso pela rua, iluminação e canteiro central. |
 | 17 | Prateleiras de importados | R$ 1.000 por nível | Duas prateleiras centrais; a primeira recebe importados no nível 19. |
 | 18 | Expansão | R$ 10.000 | Acrescenta o anexo posterior e um depósito com estantes, caixas e porta única para o estacionamento; recua a fazenda e exige a padaria. |
-| 19 | Importar produtos → Enlatados | R$ 270 por caixa | O catálogo de importações coloca 9 enlatados de R$ 30 diretamente na primeira gôndola. |
+| 19 | Importar produtos → Enlatados | R$ 270 por caixa | Caminhão entrega caixas de 9 enlatados no depósito, com 27 posições. Exige gôndola, expansão e estacionamento. |
 
-O nível 19 é o último marco de conteúdo atual. Nele, caixas com nove enlatados podem ser importadas repetidamente após a instalação de uma gôndola. A expansão do nível 18 é comprada uma única vez pelo celular, na aba Mercado, e fica salva. O mobiliário e as divisórias do salão permanecem no lugar; a compra acrescenta um anexo de 6 u nos fundos, com nova parede e uma saída. As duas bancadas da cozinha recuam até essa parede e a mureta atrás delas é removida. A porta de produção original dá acesso ao anexo. A fazenda, a cerca e o caminho recuam 6 u. Estoques, receitas e progresso são preservados. Veja a [planta N18](docs/PLANTA-LOJA-N18.svg) e os [desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
+O nível 19 é o último marco de conteúdo atual. Após instalar uma gôndola e comprar expansão e estacionamento, finalize pedidos de caixas de nove enlatados pelo celular. Cada pedido chega em seu próprio caminhão baú: ele aguarda as vagas ficarem livres, estaciona junto ao depósito e o entregador guarda uma caixa por viagem. As três estantes comportam 27 pacotes no total; pedidos pendentes também reservam posições. Jogador e repositor retiram os enlatados do depósito para abastecer a gôndola de 36 unidades. Cada lata é vendida por R$ 30. Caixas e pedidos pagos são preservados ao salvar, incluindo entregas parciais; estoques antigos na gôndola continuam disponíveis. A expansão do nível 18 acrescenta um anexo de 6 u nos fundos, recua bancadas e fazenda e conecta o depósito à loja. Veja a [planta N18](docs/PLANTA-LOJA-N18.svg) e os [desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
 
 O estacionamento do nível 16 começa com seis vagas vazias. Clientes chegam de carro, estacionam, desembarcam e caminham até a loja; depois das compras, voltam ao próprio carro e saem de ré antes de seguir pela rua. Rodas, direção, portas, piscas e luzes acompanham as manobras.
 

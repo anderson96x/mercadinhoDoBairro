@@ -37,11 +37,15 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 
 ## Importação de produtos no nível 19
 
-No nível 19, abra o celular e selecione o botão **Importar produtos**, localizado imediatamente abaixo de **Melhorias**. Essa opção abre o catálogo de importações disponíveis, inicialmente com **Enlatados**. A compra exige ao menos uma prateleira de importados instalada e custa **R$ 270 por caixa**. Cada caixa coloca **9 enlatados** diretamente na primeira gôndola; não é necessário transportar ou repor as unidades importadas.
+No nível 19, abra o celular e selecione **Importar produtos**, imediatamente abaixo de **Melhorias**. O catálogo começa com **Enlatados**, por **R$ 270 por caixa de 9 unidades**. É necessário ter ao menos uma prateleira de importados, a expansão com depósito e o estacionamento comprados.
 
-Cada enlatado é vendido por **R$ 30**. A gôndola comporta 36 unidades, equivalentes a quatro caixas, e novas importações ficam bloqueadas enquanto não houver espaço para uma caixa completa. Estoque e quantidade de caixas compradas são preservados no salvamento.
+Cada pedido confirmado gera **uma entrega de caminhão baú branco**. O caminhão aguarda os carros que já estão no estacionamento saírem, entra pelo acesso da rua e estaciona junto à fachada do depósito. Novos clientes chegam a pé enquanto o espaço está reservado. O entregador desce da cabine, abre o baú, leva uma caixa por viagem até as estantes e retorna ao veículo; terminada a descarga, o caminhão sai e o próximo pedido pode chegar. Se o mercado estiver fechado, a chegada aguarda a abertura. Pausar congela a entrega.
 
-O catálogo informa quantas unidades ainda estão na gôndola e quantas caixas podem ser pedidas conforme o espaço e o saldo disponíveis. Use os botões **−** e **+** de cada produto para montar o pedido e o botão **Finalizar pedido**, no rodapé, para confirmar todas as importações selecionadas de uma vez.
+As três estantes do depósito têm **27 posições no total (9 por estante)**. Cada caixa ocupa uma posição até ficar vazia. Caixas já guardadas e caixas de pedidos pendentes contam nesse limite; não é possível pagar por mais mercadoria do que cabe. As estantes começam vazias e exibem somente os pacotes realmente entregues.
+
+Retire os enlatados junto à estante central e leve-os à primeira gôndola, ou deixe o repositor fazer o transporte. Cada lata vale **R$ 30**, e a gôndola comporta **36 unidades**. O estoque não aparece na loja no momento da compra. O catálogo mostra unidades na gôndola e no depósito, ocupação das 27 posições e caixas a caminho. Monte o pedido com **−** e **+**, e confirme tudo de uma vez em **Finalizar pedido**; a cobrança ocorre somente se o pedido inteiro for válido.
+
+Estoque, caixas parcialmente abertas e pedidos pagos são salvos. Recarregar durante a descarga retoma a viagem com as caixas restantes, sem nova cobrança ou duplicação. Saves anteriores preservam os enlatados que já estavam na gôndola e recebem o depósito vazio.
 
 ## Expansão no nível 18
 
@@ -51,7 +55,7 @@ O salão original de **24 × 16 u**, seus expositores e a padaria mantêm suas p
 
 A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de produção original. A abertura junto à cozinha fica fechada. As bancadas da queijaria e da cozinha de geleias recuam até encostar nessa parede; os pontos de entrega e coleta acompanham as bancadas. A mureta que ficava atrás delas é removida. A lateral direita permanece em uma única peça contínua. O piso novo ocupa apenas os espaços adicionais, preservando o piso já construído da cozinha.
 
-A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Três estantes metálicas guardam caixas de papelão, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. O depósito é cenográfico nesta etapa, sem alterar estoques ou receitas, e também aparece nas partidas que já compraram a expansão. Não exige comprar o estacionamento.
+A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Três estantes metálicas comportam 27 caixas de papelão no total, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. No N18, as estantes ficam vazias; no N19, recebem as importações entregues pelo caminhão. O depósito também aparece nas partidas que já compraram a expansão. Construí-lo não exige estacionamento, mas receber pedidos exige ambos.
 
 Quando o estacionamento também está comprado, o asfalto aumenta até encostar na fachada inteira do depósito e na parede esquerda da loja, eliminando a faixa de grama entre eles. O meio-fio posterior é removido, deixando o acesso ao portão contínuo; as seis vagas e a entrada pela rua mantêm suas posições.
 

@@ -19,6 +19,7 @@ import { criarSol } from './iluminacao.js';
 import { criarPlacaProduto } from './placas-produtos.js';
 import { construirEstacionamento } from './estacionamento.js';
 import { construirPrateleirasImportados } from './prateleiras-importados.js';
+import { EntregasVisual } from './entregas-visual.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { criarIrrigador, animarIrrigador } from './irrigador.js';
 
@@ -740,6 +741,7 @@ export class Cena {
         rodas: carro.grupo.userData.rodas[0].rotation.z, velocidade: carro.velocidade };
     };
     this.coletaBanco = new ColetaBancoVisual(this.cena);
+    this.entregasVisual = new EntregasVisual(this.cena);
     this.assaltoVisual = new AssaltoVisual(this.cena);
     this.alertaCaixa = new THREE.Group();
     const fundoAlerta = new THREE.Mesh(new THREE.CircleGeometry(0.28, 20), new THREE.MeshBasicMaterial({ color: 0xc34f32, side: THREE.DoubleSide }));
@@ -984,6 +986,7 @@ export class Cena {
     }
     this.produtos[id] = { grupo, frutos: [], frutas, decoracoes, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
     this.criarLabel(`loja-${id}`, { ...p.prateleira, x: p.prateleira.x - 0.7, y: 2.8 }, 'ENLATADOS', '0 / 36', 'loja');
+    this.criarLabel(`horta-${id}`, { ...p.horta, y: 2.9 }, 'DEPÓSITO', '0 / 27 pacotes', id);
   }
   construirArtesanal(id, p) {
     const grupo = new THREE.Group(); grupo.name = `estacao-${id}`; this.cena.add(grupo);
@@ -1644,16 +1647,19 @@ export class Cena {
     const sim = this.sim, e = sim.estado;
     const coleta = e.banco.coleta;
     const assalto = e.banco.assalto;
-    if (coleta || assalto || sim.estacionamento.reservaRua) this.trafego.faixasReservadas.add(0);
+    if (coleta || assalto || sim.estacionamento.reservaRua || sim.entregas.reservaRua) this.trafego.faixasReservadas.add(0);
     else this.trafego.faixasReservadas.delete(0);
     this.trafego.atualizar(dt);
     sim.estacionamento.transitoLivre = !this.trafego.carros.some(c => c.faixa === 0);
+    sim.entregas.transitoLivre = sim.estacionamento.transitoLivre;
     const manobraAtiva = sim.estacionamento.carros.some(c => (c.fase === 'aguardando' && c.recebido)
-      || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase));
+      || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase)) || (sim.entregas.caminhao && ['chegando', 'partindo'].includes(sim.entregas.caminhao.fase));
     if (coleta?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
     if (assalto?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
     this.coletaBanco.atualizar(coleta);
     this.assaltoVisual.atualizar(assalto);
+    this.entregasVisual.atualizar(sim.entregas, dt);
+    this.bairro.atualizarPacotesDeposito(e.deposito.pacotes);
     const dtVisual = dt;
     this.tempoVisual += dtVisual;
     const tempo = this.tempoVisual;
@@ -1927,6 +1933,7 @@ export class Cena {
         // Os detalhes de fabricação ficam no painel fixo de produção.
         detalhe.textContent = '';
       }
+      else if (tipo === 'horta' && PRODUTOS[produto]?.origem === 'importado') detalhe.textContent = `${e.deposito.pacotes.length} / 27 pacotes · ${e.produtos[produto].horta} unidades`;
       else if (tipo === 'horta') detalhe.textContent = `${e.produtos[produto].horta} para colher`;
       else if (tipo === 'loja') detalhe.textContent = `${e.produtos[produto].prateleira} / ${PRODUTOS[produto].capacidadePrateleira}`;
     }

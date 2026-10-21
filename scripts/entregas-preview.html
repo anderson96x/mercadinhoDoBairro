@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verificação de entregas</title></head>
+<body>
+<div id="app"></div>
+<script type="module">
+  import '/src/interface/estilos.css';
+  import '/src/interface/clientes.css';
+  import '/src/interface/progresso.css';
+  import '/src/interface/banco.css';
+  import '/src/interface/artesanal.css';
+  import { Simulacao } from '/src/jogo/simulacao.js';
+  import { CONFIG } from '/src/jogo/configuracao.js';
+  import { Cena } from '/src/jogo/cena.js';
+  import { Interface } from '/src/interface/interface.js';
+
+  if (new URLSearchParams(location.search).has('canvas')) {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function(tipo, ...args) { return tipo === 'webgl2' ? null : original.call(this, tipo, ...args); };
+  }
+  const sim = new Simulacao(); sim.estado.dinheiro = 100000; sim.proximoCliente = Infinity;
+  sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
+  for (const id of ['alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', 'expansao', 'estacionamento', 'prateleirasImportados']) sim.comprarMelhoria(id);
+  const ui = new Interface(sim, {
+    pausar(valor) { sim.pausado = valor; }, comprar: id => sim.comprarMelhoria(id),
+    encomendarImportacoes: itens => sim.encomendarImportacoes(itens)
+  });
+  const cena = new Cena(document.getElementById('mundo'), sim);
+  // A interface de produção não exibe o botão DEV.
+  document.getElementById('dev-menu').hidden = true;
+  cena.trafego.carros.length = 0;
+  sim.entregas.transitoLivre = true;
+  sim.encomendarImportacoes({ importarProdutos: 4 });
+  function renderizar() {
+    cena.atualizar(0.05); ui.atualizar();
+  }
+  window.verificacao = {
+    sim, cena, ui,
+    fase(fase) {
+      sim.pausado = false;
+      for (let i = 0; i < 15000 && sim.entregas.caminhao?.fase !== fase; i++) sim.entregas.atualizar(sim, 0.05);
+      for (let i = 0; i < 15000 && !(sim.estado.deposito.pacotes.length >= 2 && sim.entregas.caminhao?.fase === 'levar' && sim.entregas.caminhao.entregador.z < -12.1); i++) sim.entregas.atualizar(sim, 0.05);
+      cena.camera.zoom = cena.mobile ? 0.8 : 1.65; cena.camera.updateProjectionMatrix();
+      const base = cena.baseCamera();
+      cena.alvoCamera.set(-9, 0, -10); cena.deslocamentoCamera.set(-9 - base.x, 0, -10 - base.z);
+      if (cena.mobile) { cena.alvoCamera.set(-11, 0, -10); cena.deslocamentoCamera.set(-11 - base.x, 0, -10 - base.z); }
+      renderizar();
+      return { fase: sim.entregas.caminhao?.fase, pacotes: sim.estado.deposito.pacotes.length, compativel: cena.modoCompativel };
+    },
+    concluir() {
+      for (let i = 0; i < 15000 && (sim.estado.deposito.pedidos.length || sim.entregas.caminhao); i++) sim.entregas.atualizar(sim, 0.05);
+      renderizar(); return { pacotes: sim.estado.deposito.pacotes.length, unidades: sim.estado.produtos.enlatado.horta };
+    },
+    catalogo() { ui.abrir('importacoes'); renderizar(); },
+    renderizar
+  };
+  renderizar();
+  // O primeiro quadro estabiliza a câmera após instalar a expansão.
+  renderizar();
+</script>
+</body>
+</html>

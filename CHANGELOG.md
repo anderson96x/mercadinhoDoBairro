@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.54.3 — 2026-10-21
+## Versão atual: 0.55.0 — 2026-10-21
+
+- Substitui a importação instantânea por entregas físicas: cada pedido chama um caminhão baú branco de três eixos, que entra pela rua, estaciona junto ao depósito e retorna após a descarga.
+- O entregador sai da cabine, retira uma caixa por vez do baú e caminha até as estantes. As 27 posições começam vazias e exibem somente caixas já guardadas. Caixas parcialmente abertas ocupam posição até o último produto ser retirado.
+- Pedidos exigem gôndola, expansão e estacionamento. O catálogo cobra o pedido completo de uma vez e reserva posições para caixas pendentes; estoque entregue mais encomendas nunca ultrapassa 27 pacotes de 9 enlatados.
+- Jogador e repositor coletam enlatados no depósito e abastecem a primeira gôndola, que mantém 36 unidades. O catálogo informa ocupação, unidades disponíveis e caixas a caminho; ajuda e objetivos acompanham o novo fluxo.
+- Coordena chegada e saída com os carros dos clientes, pedestres, trânsito e serviços do banco. A reserva aguarda os carros existentes saírem e temporariamente encaminha novos compradores a pé. Pausa congela a entrega.
+- Preserva enlatados e progresso dos saves anteriores. Caixas entregues, caixas parcialmente abertas e pedidos pagos são salvos; viagens interrompidas retomam com as caixas restantes, sem duplicação nem nova cobrança.
+- Validação: 264 testes passaram (incluindo 14 de entrega/importação), build e rotas até N19. Conferência no Edge em desktop e celular emulado de 390 px, com WebGL e Canvas; capturas em `docs/previews/entregas-*.png` e `docs/previews/catalogo-entregas-*.png`.
+
+## 0.54.3 — 2026-10-21
 
 - Remove os dois pallets com caixas do piso do depósito e suas colisões, liberando o espaço diante das estantes.
 - Atualiza a planta e a documentação do depósito para refletir a área livre.

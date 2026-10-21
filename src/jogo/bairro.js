@@ -480,6 +480,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     animarDeposito(lojaAberta, dt) {
       deposito.atualizar(lojaAberta, dt);
     },
+    atualizarPacotesDeposito(pacotes) { deposito.atualizarPacotes(pacotes); },
     vincular(mesh, papel) {
       mesh.material = mesh.material.clone(); materiais.push({ material: mesh.material, papel }); anterior = undefined;
     },

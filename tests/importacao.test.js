@@ -23,37 +23,46 @@ test('importação exige nível 19, gôndola e R$ 270', () => {
   const sim = abrir();
   assert.match(sim.comprarMelhoria('importarProdutos').motivo, /Prateleiras de importados/);
   sim.comprarMelhoria('prateleirasImportados');
+  assert.match(sim.comprarMelhoria('importarProdutos').motivo, /Expansão/);
+  sim.estado.melhorias.expansao = 1;
+  assert.match(sim.comprarMelhoria('importarProdutos').motivo, /Estacionamento/);
+  sim.estado.melhorias.estacionamento = 1;
   sim.estado.dinheiro = 269;
   assert.equal(sim.comprarMelhoria('importarProdutos').sucesso, false);
   assert.equal(sim.estado.produtos.enlatado.prateleira, 0);
 });
 
-test('cada caixa adiciona 9 enlatados vendidos por R$ 30', () => {
+test('cada caixa encomenda 9 enlatados vendidos por R$ 30, sem estoque instantâneo', () => {
   const sim = abrir();
   sim.comprarMelhoria('prateleirasImportados');
+  sim.estado.melhorias.expansao = 1; sim.estado.melhorias.estacionamento = 1;
   const saldo = sim.estado.dinheiro;
 
   assert.equal(sim.comprarMelhoria('importarProdutos').sucesso, true);
   assert.equal(sim.estado.dinheiro, saldo - 270);
-  assert.equal(sim.estado.produtos.enlatado.prateleira, 9);
+  assert.equal(sim.estado.produtos.enlatado.prateleira, 0);
+  assert.equal(sim.estado.produtos.enlatado.horta, 0);
+  assert.equal(sim.estado.deposito.pedidos[0].pacotes.length, 1);
   assert.equal(sim.estado.produtos.enlatado.liberado, true);
-  assert.equal(sim.estado.produtos.enlatado.apresentado, true);
+  assert.equal(sim.estado.produtos.enlatado.apresentado, false);
   assert.equal(PRODUTOS.enlatado.preco, 30);
 
   sim.comprarMelhoria('importarProdutos');
-  assert.equal(sim.estado.produtos.enlatado.prateleira, 18);
+  assert.equal(sim.estado.deposito.pedidos.length, 2);
 });
 
-test('gôndola comporta quatro caixas e preserva o estoque ao recarregar', () => {
+test('saves antigos preservam enlatados na gôndola e recebem depósito vazio', () => {
   const sim = abrir(19, 5000);
   sim.comprarMelhoria('prateleirasImportados');
-  for (let i = 0; i < 4; i++) assert.equal(sim.comprarMelhoria('importarProdutos').sucesso, true);
-  assert.equal(sim.estado.produtos.enlatado.prateleira, 36);
-  assert.match(sim.comprarMelhoria('importarProdutos').motivo, /espaço/);
+  sim.estado.melhorias.importarProdutos = 4;
+  Object.assign(sim.estado.produtos.enlatado, { liberado: true, apresentado: true, prateleira: 36 });
+  delete sim.estado.deposito;
 
   const restaurado = new Simulacao(structuredClone(sim.estado));
   assert.equal(restaurado.estado.produtos.enlatado.prateleira, 36);
   assert.equal(restaurado.estado.melhorias.importarProdutos, 4);
+  assert.deepEqual(restaurado.estado.deposito.pacotes, []);
+  assert.deepEqual(restaurado.estado.deposito.pedidos, []);
 });
 
 test('gôndola cheia mostra três latas de cada caixa na prateleira superior', () => {

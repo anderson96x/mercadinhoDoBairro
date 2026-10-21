@@ -70,6 +70,7 @@ export class EstacionamentoClientes {
   get reservaRua() { return this.carros.some(c => (c.fase === 'aguardando' && c.recebido)
     || ['chegando', 'esperandoSaida', 're', 'engatando', 'partindo'].includes(c.fase)); }
   reservar(cliente, tempo) {
+    if (this.bloqueadoEntrega) return false;
     if (tempo < this.prontoEm || this.manobrando || this.carros.some(c => c.fase === 'esperandoSaida')) return false;
     const vaga = P.vagas.findIndex((_, i) => !this.carros.some(c => c.vaga === i));
     if (vaga < 0) return false;

@@ -8,6 +8,7 @@ import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
 import { EstacionamentoClientes, pontoPortaCarro, volumeCarro, SAIDA_PEDESTRES } from './estacionamento-clientes.js';
+import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, UNIDADES_PACOTE, volumeCaminhao } from './entregas.js';
 
 // A fila vira para o fundo após sete lugares, cabendo no salão anterior ao N9.
 export function pontoFila(indice) {
@@ -30,6 +31,7 @@ export function estadoInicial() {
   return {
     versao: CONFIG.versaoSalvamento, versaoLayout: CONFIG.versaoLayout, dinheiro: CONFIG.dinheiroInicial,
     banco: estadoBanco(),
+    deposito: estadoDeposito(),
     lojaAberta: true,
     jogador: { ...CONFIG.inicio, inventario: [] },
     personalizacao: { ...PERSONALIZACAO_PADRAO },
@@ -114,6 +116,10 @@ export function validarEstado(dados) {
       crescimentoMelhorado: fertilizanteAtivo && p.origem === 'horta' && nivelSalvo >= 4 && salvo?.crescimentoMelhorado === true
     };
   }
+  base.deposito = validarDeposito(dados.deposito, base.produtos);
+  for (const [id, p] of Object.entries(PRODUTOS)) {
+    if (p.origem === 'importado') base.produtos[id].horta = base.deposito.pacotes.filter(p => p.produto === id).reduce((total, p) => total + p.unidades, 0);
+  }
   for (const [id, receita] of Object.entries(OFICINAS)) {
     if (!base.produtos[id].liberado) continue;
     const salvo = dados.oficinas?.[id], oficina = base.oficinas[id];
@@ -167,6 +173,8 @@ export class Simulacao {
     this.estado = validarEstado(salvo);
     this.clientes = [];
     this.estacionamento = new EstacionamentoClientes();
+    this.entregas = new Entregas();
+    this.estacionamento.bloqueadoEntrega = this.estado.deposito.pedidos.length > 0;
     this.aparenciasDisponiveis = [];
     this.ultimaAparenciaCliente = null;
     this.eventos = [];
@@ -291,7 +299,7 @@ export class Simulacao {
     }
     for (const id of this.ajudante.inventario) {
       const estoque = this.estado.produtos[id];
-      if (estoque) estoque.horta = Math.min(this.produtos[id].capacidadeHorta, estoque.horta + 1);
+      if (estoque && this.produtos[id].origem !== 'importado') estoque.horta = Math.min(this.produtos[id].capacidadeHorta, estoque.horta + 1);
     }
     Object.assign(this.ajudante, estadoAjudanteInicial());
     this.trajetosProducao.delete(this.ajudante);
@@ -413,14 +421,18 @@ export class Simulacao {
     if (id === ALA_PADARIA.id && !this.estado.melhorias.alaProducao) {
       return { disponivel: false, motivo: 'Construa a ala dos ovos antes de abrir a padaria.', requisitoMelhoria: 'alaProducao' };
     }
-    if (m.tipo === 'importacao' && this.estado.produtos[m.produto].prateleira + 9 > this.produtos[m.produto].capacidadePrateleira) {
-      return { disponivel: false, motivo: 'A gôndola não tem espaço para outra caixa com 9 unidades.' };
+    if (m.tipo === 'importacao') {
+      for (const requisito of ['expansao', 'estacionamento']) {
+        if (!this.estado.melhorias[requisito]) return { disponivel: false, motivo: `Compre ${requisito === 'expansao' ? 'Expansão' : 'Estacionamento'} para receber entregas.`, requisitoMelhoria: requisito };
+      }
+      if (vagasDeposito(this.estado.deposito) < 1) return { disponivel: false, motivo: 'O depósito não tem espaço: são 27 pacotes, incluindo entregas pendentes.' };
     }
     return { disponivel: true };
   }
   comprarMelhoria(id) {
     const m = MELHORIAS.find(m => m.id === id);
     if (!m) return { sucesso: false, motivo: 'Melhoria desconhecida.' };
+    if (m.tipo === 'importacao') return this.encomendarImportacoes({ [id]: 1 });
     const disponibilidade = this.disponibilidadeMelhoria(id);
     if (!disponibilidade.disponivel) return { sucesso: false, motivo: disponibilidade.motivo };
     if (this.estado.melhorias[id] >= m.max) return { sucesso: false, motivo: 'Essa melhoria já está completa.' };
@@ -440,14 +452,6 @@ export class Simulacao {
       this.reposicoes = new WeakMap();
     }
     this.estado.melhorias[id]++;
-    if (m.tipo === 'importacao') {
-      const estoque = this.estado.produtos[m.produto];
-      estoque.liberado = true;
-      estoque.apresentado = true;
-      estoque.prateleira += 9;
-      this.emitir('melhoria', { id, texto: 'Caixa importada! 9 enlatados foram colocados na gôndola.' });
-      return { sucesso: true, dinheiro: this.estado.dinheiro, quantidade: 9 };
-    }
     if (id === 'expansao') {
       this.emitir('expansao', { texto: 'Expansão pronta! O novo anexo fica atrás da loja e da cozinha. Use a porta de produção para acessá-lo e a nova saída dos fundos para chegar à fazenda.' });
     }
@@ -512,8 +516,15 @@ export class Simulacao {
       }
       if (this.nivel >= 19 && !this.estado.produtos.enlatado.liberado) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
-          titulo: 'Importe os primeiros produtos', texto: 'No celular, compre uma caixa com 9 enlatados por R$ 270. Cada lata é vendida por R$ 30.',
+          titulo: 'Importe os primeiros produtos', texto: 'Com estacionamento e expansão comprados, peça caixas de 9 enlatados por R$ 270 pelo celular. O caminhão entrega no depósito; depois abasteça a gôndola.',
           destino: 'celular', exibir: true };
+      }
+      if (this.nivel >= 19 && this.estado.produtos.enlatado.liberado && !this.estado.produtos.enlatado.apresentado) {
+        const disponivel = this.estado.produtos.enlatado.horta > 0 || this.estado.jogador.inventario.includes('enlatado');
+        return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
+          titulo: disponivel ? 'Abasteça os enlatados' : 'Aguarde a entrega',
+          texto: disponivel ? 'Retire enlatados nas estantes do depósito e leve-os à primeira gôndola. O repositor também pode ajudar.' : 'O caminhão aguarda o estacionamento ficar livre e o mercado abrir para descarregar as caixas no depósito.',
+          destino: disponivel ? this.estado.jogador.inventario.includes('enlatado') ? 'prateleira-enlatado' : 'coleta-enlatado' : 'celular', exibir: true };
       }
       if (this.nivel >= 17 && this.estado.melhorias.prateleirasImportados < PRATELEIRAS_IMPORTADOS.length) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
@@ -593,6 +604,37 @@ export class Simulacao {
     const m = MISSOES[indice];
     return { ...m, indice, valor: Math.min(m.alvo, this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) };
   }
+  encomendarImportacoes(quantidades) {
+    if (!quantidades || typeof quantidades !== 'object' || Array.isArray(quantidades)) return { sucesso: false, motivo: 'Pedido inválido.' };
+    let custo = 0;
+    const pacotes = [], itens = [];
+    for (const [id, quantidade] of Object.entries(quantidades)) {
+      const m = MELHORIAS.find(m => m.id === id && m.tipo === 'importacao');
+      if (!m || !Number.isInteger(quantidade) || quantidade < 0 || quantidade > 27) return { sucesso: false, motivo: 'Quantidade de caixas inválida.' };
+      if (!quantidade) continue;
+      const disponibilidade = this.disponibilidadeMelhoria(id);
+      if (!disponibilidade.disponivel) return { sucesso: false, motivo: disponibilidade.motivo };
+      pacotes.push(...Array(quantidade).fill(m.produto));
+      custo += this.custoMelhoria(id) * quantidade; itens.push({ id, quantidade, produto: m.produto });
+    }
+    if (!pacotes.length) return { sucesso: false, motivo: 'Selecione ao menos uma caixa.' };
+    if (pacotes.length > vagasDeposito(this.estado.deposito)) return { sucesso: false, motivo: 'O depósito não tem espaço para todas essas caixas (limite de 27 pacotes).' };
+    if (custo > this.estado.dinheiro) return { sucesso: false, motivo: 'Você ainda não tem dinheiro suficiente.' };
+    this.estado.dinheiro -= custo;
+    for (const item of itens) { this.estado.melhorias[item.id] += item.quantidade; this.estado.produtos[item.produto].liberado = true; }
+    const pedido = { id: this.estado.deposito.proximoId++, pacotes };
+    this.estado.deposito.pedidos.push(pedido);
+    this.estacionamento.bloqueadoEntrega = true;
+    this.emitir('melhoria', { id: 'importarProdutos', texto: `Pedido confirmado! ${pacotes.length} ${pacotes.length === 1 ? 'caixa a caminho' : 'caixas a caminho'} do depósito.` });
+    return { sucesso: true, pedidoId: pedido.id, caixas: pacotes.length, quantidade: pacotes.length * UNIDADES_PACOTE, dinheiro: this.estado.dinheiro };
+  }
+  retirarProdutoDeposito(id) {
+    const pacote = this.estado.deposito.pacotes.find(p => p.produto === id);
+    if (!pacote) return false;
+    pacote.unidades--; this.estado.produtos[id].horta--;
+    if (!pacote.unidades) this.estado.deposito.pacotes.splice(this.estado.deposito.pacotes.indexOf(pacote), 1);
+    return true;
+  }
   obstaculos() {
     const caixas = [
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
@@ -617,6 +659,7 @@ export class Simulacao {
     caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
       ...this.estacionamento.carros.filter(c => c.fase !== 'aguardando').map(volumeCarro));
+    if (this.entregas?.caminhao && this.entregas.caminhao.fase !== 'aguardando') caixas.push(volumeCaminhao(this.entregas.caminhao));
     return caixas;
   }
   get limitesClientes() {
@@ -746,6 +789,8 @@ export class Simulacao {
       }
     }
     this.atualizarProducao(dt);
+    this.estacionamento.bloqueadoEntrega = this.estado.deposito.pedidos.length > 0 || this.entregas.reservaEstacionamento;
+    this.entregas.atualizar(this, dt);
     this.interagir();
     this.atualizarClientes(dt);
     this.atualizarCaixa(dt);
@@ -851,10 +896,12 @@ export class Simulacao {
       }
       if (tipo === 'coleta') {
         if (jogador.inventario.length >= this.capacidade) { this.atividade = 'Inventário cheio · leve os produtos à prateleira'; return; }
-        if (!e.horta) { this.atividade = OFICINAS[id] ? 'Entregue os ingredientes e aguarde a produção' : id === 'mel' ? 'As abelhas estão produzindo mel…' : 'A colheita está crescendo…'; return; }
-        this.atividade = `Colhendo ${p.plural.toLocaleLowerCase('pt-BR')}…`;
+        if (!e.horta) { this.atividade = p.origem === 'importado' ? 'Depósito vazio · faça um pedido pelo celular e aguarde a entrega' : OFICINAS[id] ? 'Entregue os ingredientes e aguarde a produção' : id === 'mel' ? 'As abelhas estão produzindo mel…' : 'A colheita está crescendo…'; return; }
+        this.atividade = `${p.origem === 'importado' ? 'Retirando' : 'Colhendo'} ${p.plural.toLocaleLowerCase('pt-BR')}…`;
         if (this.tempo >= this.proximaInteracao) {
-          e.horta--; jogador.inventario.push(id); this.estado.estatisticas.colhidos++;
+          if (p.origem === 'importado') { if (!this.retirarProdutoDeposito(id)) return; }
+          else e.horta--;
+          jogador.inventario.push(id); this.estado.estatisticas.colhidos++;
           this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
           this.emitir('colheita', { id, ponto: p.coleta });
         }
@@ -1184,7 +1231,9 @@ export class Simulacao {
       if (this.caminharProducao(a, p.coleta, dt)) {
         const falta = p.capacidadePrateleira - e.prateleira;
         if (e.horta && falta > a.inventario.length && a.inventario.length < CONFIG.capacidadeAjudante && a.temporizador <= 0) {
-          e.horta--; a.inventario.push(a.produto); a.temporizador = 0.5;
+          if (p.origem === 'importado') { if (!this.retirarProdutoDeposito(a.produto)) return; }
+          else e.horta--;
+          a.inventario.push(a.produto); a.temporizador = 0.5;
         }
         if (a.inventario.length >= Math.min(CONFIG.capacidadeAjudante, falta) || (!e.horta && a.inventario.length)) a.destino = 'prateleira';
       }

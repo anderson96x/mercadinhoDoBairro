@@ -82,6 +82,14 @@ O campo salvo `apresentado` evita demanda dos novos produtos antes do primeiro a
 
 Para verificar essa fase isoladamente: `node --test tests/artesanal.test.js`. Os testes cobrem compras, receitas, pausa, migração, rotas, reposição e vendas reais no caixa.
 
+## Importações e entregas (N19)
+
+`Simulacao.encomendarImportacoes()` valida o pedido completo, cobra uma vez e reserva posições em `estado.deposito.pedidos`. `entregas.js` limita a ocupação a 27 pacotes (entregues mais pendentes), mantém a fila e controla caminhão e entregador independentemente do DOM. Cada pedido tem uma viagem, com chegada pelo acesso, descarga junto à fachada, caminhadas com colisão até as estantes e saída. A reserva impede novas vagas de clientes enquanto as existentes esvaziam; pedestres continuam comprando. A cena coordena a reserva da faixa da rua com tráfego, carro-forte e assalto.
+
+As caixas entregues ficam em `deposito.pacotes`, com `produto`, `unidades` restantes e `slot` entre 0 e 26. `deposito.js` exibe as 27 caixas somente conforme os slots ocupados; `entregas-visual.js` desenha o caminhão de três eixos e o trabalhador com a caixa nas mãos. Retirar enlatados chama `retirarProdutoDeposito()` e consome unidades da caixa; o último item libera o slot. Jogador e repositor usam as interações de coleta e reposição existentes. `produtos.enlatado.horta` espelha as unidades no depósito e é recalculado das caixas ao carregar.
+
+Uma caixa só sai do pedido quando é colocada na estante. Assim, carregar um save reinicia a viagem com o saldo pendente sem perder nem duplicar caixas que estavam sendo transportadas. Saves antigos mantêm as unidades na gôndola e recebem depósito vazio. Execute `node --test tests/entregas.test.js tests/importacao.test.js` para pedidos, limite, descarga, rotas do baú, pausa, migração e reposição. Com `npm run dev` ativo e Edge instalado, `node scripts/verificar-entregas.mjs` usa um perfil isolado e a fixture `scripts/entregas-preview.html` para capturar desktop/celular e WebGL/Canvas em `docs/previews/`.
+
 ## Cuidados com o salvamento
 
 - Salve apenas dados serializáveis; objetos 3D, áudio e elementos da página não entram no estado.

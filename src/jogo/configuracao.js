@@ -121,8 +121,8 @@ export const PRODUTOS = {
   },
   enlatado: {
     nome: 'Enlatado', plural: 'Enlatados', cor: 0xd85b45, preco: 30, origem: 'importado', nivelMinimo: 19,
-    capacidadeHorta: 0, capacidadePrateleira: 36,
-    horta: { x: 4.8, z: -2.5, w: 0, d: 0 }, coleta: { x: 4.8, z: -2.5 },
+    capacidadeHorta: 243, capacidadePrateleira: 36,
+    horta: { x: -9.3, z: -14.35, w: 3.1, d: 1.1 }, coleta: { x: -9.3, z: -12.9 },
     prateleira: { ...PRATELEIRAS_IMPORTADOS[0], movel: 'importados' },
     reposicao: { x: 3.45, z: -2.5 }, cliente: { x: 3.45, z: -2.5 },
     pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 3.45, z })), liberado: false
@@ -221,7 +221,7 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
-  { id: 'importarProdutos', titulo: 'Enlatados', descricao: 'Compre uma caixa com 9 enlatados para colocar diretamente na gôndola. Cada unidade é vendida por R$ 30.', custo: 270, icone: 'enlatado', max: 1000000000, tipo: 'importacao', produto: 'enlatado', categoria: 'importados', nivelMinimo: 19, requisitoMelhoria: 'prateleirasImportados', recorrente: true },
+  { id: 'importarProdutos', titulo: 'Enlatados', descricao: 'Cada caixa tem 9 enlatados. O caminhão entrega no depósito; leve os produtos à gôndola ou conte com o repositor. Cada unidade vale R$ 30.', custo: 270, icone: 'enlatado', max: 1000000000, tipo: 'importacao', produto: 'enlatado', categoria: 'importados', nivelMinimo: 19, requisitoMelhoria: 'prateleirasImportados', recorrente: true },
   { id: 'expansao', titulo: 'Expansão', descricao: 'Amplie os fundos da loja e da cozinha e ganhe um depósito atrás do estacionamento, com uma única porta externa, estantes e caixas. A fazenda recua e as bancadas da cozinha acompanham a nova parede dos fundos.', custo: 10000, icone: 'prateleira', max: 1, tipo: 'expansaoFundos', categoria: 'mercado', nivelMinimo: 18, requisitoMelhoria: 'alaPadaria' },
   { id: 'prateleirasImportados', titulo: 'Prateleiras de importados', descricao: 'Instale até duas prateleiras metálicas de dois lados no centro da loja. No nível 19, a primeira recebe produtos importados.', custo: 1000, icone: 'prateleira', max: 2, tipo: 'mobiliario', categoria: 'mercado', nivelMinimo: 17 },
   { id: 'estacionamento', titulo: 'Estacionamento', descricao: 'Construa seis vagas ao lado da loja. Clientes chegam de carro, estacionam e voltam ao veículo depois das compras.', custo: 10000, icone: 'estacionamento', max: 1, tipo: 'construcaoExterna', categoria: 'mercado', nivelMinimo: 16 },

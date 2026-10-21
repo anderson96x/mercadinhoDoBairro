@@ -3,6 +3,7 @@ import { PLANTA_DEPOSITO as P, paredesDeposito } from './planta.js';
 
 export function construirDeposito(pai, { caixa, vincular }) {
   const grupo = new THREE.Group(); grupo.name = 'deposito'; pai.add(grupo);
+  const pacotes = [];
   const bloco = (pai, nome, w, h, d, cor, x, y, z, papel) => {
     const mesh = caixa(pai, w, h, d, cor, x, y, z); mesh.name = nome;
     if (papel) vincular(mesh, papel);
@@ -56,6 +57,7 @@ export function construirDeposito(pai, { caixa, vincular }) {
       0xf1eada, w * 0.27, -h * 0.08, d / 2 + 0.01);
     bloco(pacote, 'codigo-caixa', w * 0.16, 0.035, 0.018,
       0x77736a, w * 0.27, -h * 0.08, d / 2 + 0.02);
+    return pacote;
   }
 
   for (const [indice, p] of P.estantes.entries()) {
@@ -77,7 +79,9 @@ export function construirDeposito(pai, { caixa, vincular }) {
         bloco(estante, 'prateleira-metalica', p.w / 3, 0.07, p.d, 0xb9c6c7, x, y, 0);
         bloco(estante, 'borda-prateleira', p.w / 3, 0.1, 0.06, 0x7a9eae, x, y - 0.025, p.d / 2);
         const h = 0.43 + (indice + nivel + i) % 3 * 0.08;
-        pacote(estante, (i - 1) * 0.94, y + 0.035, 0, 0.79, h, 0.78, indice + nivel + i);
+        const caixaEstoque = pacote(estante, (i - 1) * 0.94, y + 0.035, 0, 0.79, h, 0.78, indice + nivel + i);
+        caixaEstoque.visible = false;
+        pacotes.push(caixaEstoque);
       }
     }
   }
@@ -95,6 +99,10 @@ export function construirDeposito(pai, { caixa, vincular }) {
   return {
     grupo,
     get abertura() { return abertura; },
+    atualizarPacotes(estoque = []) {
+      const ocupados = new Set(estoque.map(p => p.slot));
+      pacotes.forEach((pacote, i) => { pacote.visible = ocupados.has(i); });
+    },
     atualizar(aberta, dt = 0) {
       const alvo = aberta ? 1 : 0;
       abertura = THREE.MathUtils.clamp(abertura + Math.sign(alvo - abertura) * dt * 0.85, 0, 1);

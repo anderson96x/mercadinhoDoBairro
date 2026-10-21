@@ -4,6 +4,7 @@ import { PRODUTOS, ALA_PADARIA } from './configuracao.js';
 export function geometriaEstacao(id, tipo, produtos = PRODUTOS) {
   if (id === 'pao') return ALA_PADARIA.entrada;
   const p = produtos[id];
+  if (p.origem === 'importado' && tipo === 'coleta') return p.horta;
   return tipo === 'reposicao' ? p.prateleira : {
     ...p.horta, ...(p.galinheiro ?? p.canteiro ?? p.curral ?? { w: 2.5, d: 3.6 })
   };

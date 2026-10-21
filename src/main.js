@@ -46,6 +46,7 @@ function pausar(valor) {
   if (controles) { controles.bloqueado = valor || sim.estado.melhoriaPendente === 'fertilizante'; controles.limpar(); }
 }
 function comprar(id) { const r = sim.comprarMelhoria(id); if (r.sucesso) gravar(); return r; }
+function encomendarImportacoes(quantidades) { const r = sim.encomendarImportacoes(quantidades); if (r.sucesso) gravar(); return r; }
 function iniciarSelecaoHorta() {
   if (!controles) return;
   controles.limpar(); controles.bloqueado = true;
@@ -126,7 +127,7 @@ const ui = new Interface(sim, {
     if (resultado.sucesso) gravar();
     return resultado;
   },
-  pausar, comprar, alterarSaldo, preencherPrateleirasDev, esvaziarPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, aumentarReputacaoDev, iniciarSelecaoHorta,
+  pausar, comprar, encomendarImportacoes, alterarSaldo, preencherPrateleirasDev, esvaziarPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;
@@ -187,6 +188,8 @@ try {
         if (evento.tipo === 'dinheiroRoubado') { gravar(); ui.mensagem(`Roubaram ${evento.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} do caixa!`); }
         if (evento.tipo === 'assaltoEncerrado') { gravar(); ui.mensagem('O assaltante fugiu. A reputação do mercadinho caiu para zero.'); }
         if (evento.tipo === 'assaltoConcluido') gravar();
+        if (evento.tipo === 'pacoteEntregue') gravar();
+        if (['entregaChegou', 'entregaConcluida'].includes(evento.tipo)) { gravar(); ui.mensagem(evento.texto); }
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
         if (evento.tipo === 'nivel') {
