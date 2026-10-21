@@ -194,7 +194,26 @@ export function selecionarExpositorPosterior(ator, produtos, catalogo = { ovos: 
   })?.[0];
 }
 
-// N18: anexo atrás da loja, preservando o salão, suas paredes e a cozinha.
+// Pátio privativo N18: separado das seis vagas e com entrada própria pela rua.
+export const PLANTA_CARGA = {
+  piso: { x: -22, z: -2.2, w: 11.2, d: 17.2 },
+  acesso: { x: -22, z: 7.83, w: 9.4, d: 2.86 },
+  ligacao: { x: -12.6, z: -8.48, w: 7.6, d: 1.36 },
+  vaga: { x: -21.6, z: -7.2, w: 6.8, d: 2.6 },
+  retirada: { x: -24.55, z: -7.2 },
+  cabine: { x: -19.85, z: -8.5 },
+  placa: { x: -16.85, z: 5.4 },
+  guias: [
+    { x: -27.5, z: -2.2, w: 0.2, d: 17.2 },
+    { x: -22, z: -10.7, w: 11.2, d: 0.2 },
+    { x: -16.3, z: 0.1, w: 0.2, d: 12.6 },
+    { x: -27.15, z: 6.3, w: 0.9, d: 0.2 },
+    { x: -16.85, z: 6.3, w: 0.9, d: 0.2 }
+  ]
+};
+export const obstaculosCarga = () => [...PLANTA_CARGA.guias, { ...PLANTA_CARGA.placa, w: 0.12, d: 0.12 }];
+
+// N18: amplia os fundos e a lateral esquerda sem deslocar a loja existente.
 export const PLANTA_EXPANSAO = {
   profundidade: 6,
   salao: { x: 8.9, z: -4.3, w: 24, d: 22 },
@@ -203,15 +222,16 @@ export const PLANTA_EXPANSAO = {
     // A cozinha já tem piso: acrescenta somente a faixa atrás dela.
     { x: 16.6, z: -14.8, w: 8.6, d: 1 }
   ],
-  terreno: { ...PLANTA_INICIAL.terreno, z: -8.5, d: 46 },
-  limites: { minX: -15.7, maxX: 22.5, minZ: -30.5, maxZ: 9 },
+  terreno: { x: -2, z: -8.5, w: 52, d: 46 },
+  limites: { minX: -27.7, maxX: 22.5, minZ: -30.5, maxZ: 9 },
+  limiteCamera: { minX: -28, maxX: 24, minZ: -31.5, maxZ: 14.5 },
   portaProducao: { ...PLANTA_INICIAL.portaProducao, z: -15.3 },
   bancadas: Object.fromEntries([['queijo', PLANTA_QUEIJO], ['geleia', PLANTA_GELEIA]].map(([id, p]) => [id, {
     x: p.horta.x,
     // Face posterior da bancada encostada na face interna da nova parede.
     z: -15.3 + 0.28 / 2 + p.curral.d / 2
   }])),
-  camera: { x: 5, z: -4.3, alturaDesktop: 41 },
+  camera: { x: 0, z: -4.3, alturaDesktop: 46 },
   portas: [
     { ...PLANTA_INICIAL.portaProducao, z: -15.3 }
   ]

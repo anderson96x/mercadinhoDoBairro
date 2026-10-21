@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { construirDeposito } from './deposito.js';
+import { construirPatioCarga } from './patio-carga.js';
 import { PLANTA_DEPOSITO, PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_OFICINAS, oficinasConstruidas, PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
 import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
@@ -129,6 +130,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   // O terreno inteiro existe desde o início; as construções ocupam espaço nele depois.
   const terreno = PLANTA_INICIAL.terreno;
   const pisoTerreno = chao(1, terreno.w, 0.3, terreno.d, 0x62b94b, terreno.x, -0.2, terreno.z);
+  pisoTerreno.name = 'terreno-principal';
   // Manchas suaves quebram o tapete verde sem criar obstaculos no terreno.
   for (const [x, z, rx, rz, cor] of [
     [-10.8, -8.4, 1.2, 0.7, 0x69bd4f], [-5.3, -4.8, 1.1, 0.6, 0x67b94d],
@@ -229,6 +231,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   }
   const expansaoFundos = new THREE.Group(); grupo.add(expansaoFundos); destino = expansaoFundos;
   expansaoFundos.name = 'expansao-fundos'; expansaoFundos.visible = false;
+  construirPatioCarga(expansaoFundos, caixa);
+  // A rua e a calçada crescem junto com a faixa de terreno comprada à esquerda.
+  destino = expansaoFundos;
+  chao(2, 12, 0.08, 4.4, 0x48525e, -22, 0, 11.3);
+  for (const [inicio, fim] of [[-28, -26.7], [-17.3, -16]]) {
+    chao(3, fim - inicio, 0.18, 2.5, 0xe0bc8c, (inicio + fim) / 2, 0.04, 7.95);
+    chao(4, fim - inicio, 0.22, 0.16, 0xf3e5ce, (inicio + fim) / 2, 0.07, 9.18);
+  }
+  for (let x = -26.5; x < -16; x += 2.5) chao(4, 1.2, 0.012, 0.1, 0xf2e7c9, x, 0.049, 11.6);
   for (const piso of PLANTA_EXPANSAO.pisos) {
     chao(3, piso.w, 0.2, piso.d, 0xc4b9a5, piso.x, 0.06, piso.z);
     chao(4, piso.w, 0.07, piso.d, 0xe3dcc8, piso.x, 0.19, piso.z, 'piso');
@@ -438,6 +449,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       cercaFazenda.position.z = recuo;
       pisoTerreno.scale.z = expandida ? PLANTA_EXPANSAO.terreno.d / terreno.d : 1;
       pisoTerreno.position.z = expandida ? PLANTA_EXPANSAO.terreno.z : terreno.z;
+      pisoTerreno.scale.x = expandida ? PLANTA_EXPANSAO.terreno.w / terreno.w : 1;
+      pisoTerreno.position.x = expandida ? PLANTA_EXPANSAO.terreno.x : terreno.x;
     },
     atualizarOficinas(produtos) {
       oficinas.visible = expandida || oficinasConstruidas(produtos);

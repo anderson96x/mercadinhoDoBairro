@@ -9,6 +9,7 @@ import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
 import { EstacionamentoClientes, pontoPortaCarro, volumeCarro, SAIDA_PEDESTRES } from './estacionamento-clientes.js';
 import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, UNIDADES_PACOTE, volumeCaminhao } from './entregas.js';
+import { obstaculosCarga } from './planta.js';
 
 // A fila vira para o fundo após sete lugares, cabendo no salão anterior ao N9.
 export function pontoFila(indice) {
@@ -174,7 +175,6 @@ export class Simulacao {
     this.clientes = [];
     this.estacionamento = new EstacionamentoClientes();
     this.entregas = new Entregas();
-    this.estacionamento.bloqueadoEntrega = this.estado.deposito.pedidos.length > 0;
     this.aparenciasDisponiveis = [];
     this.ultimaAparenciaCliente = null;
     this.eventos = [];
@@ -422,9 +422,7 @@ export class Simulacao {
       return { disponivel: false, motivo: 'Construa a ala dos ovos antes de abrir a padaria.', requisitoMelhoria: 'alaProducao' };
     }
     if (m.tipo === 'importacao') {
-      for (const requisito of ['expansao', 'estacionamento']) {
-        if (!this.estado.melhorias[requisito]) return { disponivel: false, motivo: `Compre ${requisito === 'expansao' ? 'Expansão' : 'Estacionamento'} para receber entregas.`, requisitoMelhoria: requisito };
-      }
+      if (!this.estado.melhorias.expansao) return { disponivel: false, motivo: 'Compre Expansão para receber entregas no pátio exclusivo.', requisitoMelhoria: 'expansao' };
       if (vagasDeposito(this.estado.deposito) < 1) return { disponivel: false, motivo: 'O depósito não tem espaço: são 27 pacotes, incluindo entregas pendentes.' };
     }
     return { disponivel: true };
@@ -516,14 +514,14 @@ export class Simulacao {
       }
       if (this.nivel >= 19 && !this.estado.produtos.enlatado.liberado) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
-          titulo: 'Importe os primeiros produtos', texto: 'Com estacionamento e expansão comprados, peça caixas de 9 enlatados por R$ 270 pelo celular. O caminhão entrega no depósito; depois abasteça a gôndola.',
+          titulo: 'Importe os primeiros produtos', texto: 'Com a expansão comprada, peça caixas de 9 enlatados por R$ 270 pelo celular. O caminhão usa o pátio exclusivo à esquerda e entrega no depósito; depois abasteça a gôndola.',
           destino: 'celular', exibir: true };
       }
       if (this.nivel >= 19 && this.estado.produtos.enlatado.liberado && !this.estado.produtos.enlatado.apresentado) {
         const disponivel = this.estado.produtos.enlatado.horta > 0 || this.estado.jogador.inventario.includes('enlatado');
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: disponivel ? 'Abasteça os enlatados' : 'Aguarde a entrega',
-          texto: disponivel ? 'Retire enlatados nas estantes do depósito e leve-os à primeira gôndola. O repositor também pode ajudar.' : 'O caminhão aguarda o estacionamento ficar livre e o mercado abrir para descarregar as caixas no depósito.',
+          texto: disponivel ? 'Retire enlatados nas estantes do depósito e leve-os à primeira gôndola. O repositor também pode ajudar.' : 'O caminhão usa o acesso exclusivo à esquerda. Mantenha o mercado aberto para receber as caixas no depósito.',
           destino: disponivel ? this.estado.jogador.inventario.includes('enlatado') ? 'prateleira-enlatado' : 'coleta-enlatado' : 'celular', exibir: true };
       }
       if (this.nivel >= 17 && this.estado.melhorias.prateleirasImportados < PRATELEIRAS_IMPORTADOS.length) {
@@ -624,7 +622,6 @@ export class Simulacao {
     for (const item of itens) { this.estado.melhorias[item.id] += item.quantidade; this.estado.produtos[item.produto].liberado = true; }
     const pedido = { id: this.estado.deposito.proximoId++, pacotes };
     this.estado.deposito.pedidos.push(pedido);
-    this.estacionamento.bloqueadoEntrega = true;
     this.emitir('melhoria', { id: 'importarProdutos', texto: `Pedido confirmado! ${pacotes.length} ${pacotes.length === 1 ? 'caixa a caminho' : 'caixas a caminho'} do depósito.` });
     return { sucesso: true, pedidoId: pedido.id, caixas: pacotes.length, quantidade: pacotes.length * UNIDADES_PACOTE, dinheiro: this.estado.dinheiro };
   }
@@ -642,7 +639,7 @@ export class Simulacao {
       ...volumesPortasEntrada(this.aberturaPortaEntrada),
       ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
-    if (this.estado.melhorias.expansao) caixas.push(...paredesExpansao(), ...folhasPortasExpansao(), ...obstaculosDeposito());
+    if (this.estado.melhorias.expansao) caixas.push(...paredesExpansao(), ...folhasPortasExpansao(), ...obstaculosDeposito(), ...obstaculosCarga());
     if (this.estado.melhorias.expansao && !this.estado.lojaAberta) caixas.push(volumePortaoDeposito());
     if (this.estado.melhorias.expansao || oficinasConstruidas(this.estado.produtos)) caixas.push(...paredesOficinas(!!this.estado.melhorias.expansao));
     if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes.filter(p => !this.estado.melhorias.expansao || p.x !== 20.9));
@@ -789,7 +786,6 @@ export class Simulacao {
       }
     }
     this.atualizarProducao(dt);
-    this.estacionamento.bloqueadoEntrega = this.estado.deposito.pedidos.length > 0 || this.entregas.reservaEstacionamento;
     this.entregas.atualizar(this, dt);
     this.interagir();
     this.atualizarClientes(dt);

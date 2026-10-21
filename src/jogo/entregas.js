@@ -1,9 +1,9 @@
-import { PLANTA_DEPOSITO } from './planta.js';
+import { PLANTA_DEPOSITO, PLANTA_CARGA } from './planta.js';
 
 export const CAPACIDADE_DEPOSITO = 27;
 export const UNIDADES_PACOTE = 9;
 export const ENTREGA = { comprimento: 5.2, largura: 1.65, velocidade: 2.6,
-  estacionamento: { x: -11.5, z: -7.25 }, retirada: { x: -14.45, z: -7.25 } };
+  estacionamento: { x: PLANTA_CARGA.vaga.x, z: PLANTA_CARGA.vaga.z }, retirada: PLANTA_CARGA.retirada };
 export const estadoDeposito = () => ({ pacotes: [], pedidos: [], proximoId: 1 });
 export const pacotesPendentes = deposito => deposito.pedidos.reduce((total, pedido) => total + pedido.pacotes.length, 0);
 export const vagasDeposito = deposito => CAPACIDADE_DEPOSITO - deposito.pacotes.length - pacotesPendentes(deposito);
@@ -27,7 +27,7 @@ export function validarDeposito(dados, produtos) {
   return base;
 }
 
-// Percursos de mão única; a faixa junto à fachada fica reservada à descarga.
+// Circuito privativo: entrada e saída à esquerda, sem cruzar as seis vagas.
 function curva(a, b, c, d) {
   return Array.from({ length: 81 }, (_, i) => {
     const t = i / 80, u = 1 - t;
@@ -46,19 +46,16 @@ function trajeto(segmentos) {
 }
 export const ROTAS_ENTREGA = {
   chegando: trajeto([
-    [[29, 10.15], [22, 10.15], [-7, 10.15], [-8.8, 10.15]],
-    [[-8.8, 10.15], [-10.07, 10.15], [-11.1, 9.12], [-11.1, 7.85]],
-    [[-11.1, 7.85], [-11.1, 7], [-11.1, 6], [-11.1, 5.5]],
-    [[-11.1, 5.5], [-11.1, 2], [-13.6, 0], [-13.6, -5.15]],
-    [[-13.6, -5.15], [-13.6, -6.31], [-12.66, -7.25], [-11.5, -7.25]]
+    [[29, 10.35], [15, 10.35], [-15, 10.35], [-21, 10.35]],
+    [[-21, 10.35], [-22.988, 10.35], [-24.6, 8.738], [-24.6, 6.75]],
+    [[-24.6, 6.75], [-24.6, 3], [-24.6, -1], [-24.6, -4.2]],
+    [[-24.6, -4.2], [-24.6, -5.857], [-23.257, -7.2], [-21.6, -7.2]]
   ]),
   partindo: trajeto([
-    [[-11.5, -7.25], [-10, -7.25], [-8.2, -7.25], [-7.6, -7.25]],
-    [[-7.6, -7.25], [-6.44, -7.25], [-5.5, -6.31], [-5.5, -5.15]],
-    [[-5.5, -5.15], [-5.5, -1.5], [-8.7, 1.5], [-8.7, 5]],
-    [[-8.7, 5], [-8.7, 6], [-8.7, 7], [-8.7, 7.85]],
-    [[-8.7, 7.85], [-8.7, 9.12], [-9.73, 10.15], [-11, 10.15]],
-    [[-11, 10.15], [-17, 10.15], [-25, 10.15], [-30, 10.15]]
+    [[-21.6, -7.2], [-20.274, -7.2], [-19.2, -6.126], [-19.2, -4.8]],
+    [[-19.2, -4.8], [-19.2, -1], [-19.2, 3], [-19.2, 6.75]],
+    [[-19.2, 6.75], [-19.2, 8.738], [-20.812, 10.35], [-22.8, 10.35]],
+    [[-22.8, 10.35], [-26, 10.35], [-30, 10.35], [-33, 10.35]]
   ])
 };
 export function amostrarEntrega(rota, distancia) {
@@ -75,23 +72,24 @@ export function volumeCaminhao(caminhao) {
 
 export class Entregas {
   constructor() { this.caminhao = null; this.transitoLivre = true; }
-  get reservaRua() { return !!this.caminhao && ['aguardando', 'chegando', 'partindo'].includes(this.caminhao.fase); }
-  get reservaEstacionamento() { return !!this.caminhao; }
+  get reservaRua() { return !!this.caminhao && (['aguardando', 'chegando'].includes(this.caminhao.fase)
+    || (this.caminhao.fase === 'partindo' && !!this.caminhao.partidaLiberada)); }
   atualizar(sim, dt) {
     if (!dt) return;
     const deposito = sim.estado.deposito;
-    if (!this.caminhao && deposito.pedidos.length && !sim.estacionamento.carros.length && sim.estado.lojaAberta && !sim.estado.banco.coleta && !sim.estado.banco.assalto) {
+    if (!this.caminhao && deposito.pedidos.length && sim.estado.melhorias.expansao && sim.estado.lojaAberta && !sim.estado.banco.coleta && !sim.estado.banco.assalto) {
       this.caminhao = { fase: 'aguardando', distancia: 0, rodas: 0, tempo: 0, ...amostrarEntrega(ROTAS_ENTREGA.chegando, 0), entregador: null };
     }
     const c = this.caminhao;
     if (!c) return;
     if (c.fase === 'aguardando') {
-      if (!sim.estado.lojaAberta || sim.estacionamento.carros.length || !this.transitoLivre || sim.estado.banco.coleta || sim.estado.banco.assalto) return;
+      if (!sim.estado.lojaAberta || sim.estacionamento.reservaRua || !this.transitoLivre || sim.estado.banco.coleta || sim.estado.banco.assalto) return;
       c.fase = 'chegando';
     }
     if (c.fase === 'chegando' || c.fase === 'partindo') {
       const rota = ROTAS_ENTREGA[c.fase];
-      if (c.fase === 'partindo' && c.distancia === 0 && (!this.transitoLivre || sim.estado.banco.coleta || sim.estado.banco.assalto)) return;
+      if (c.fase === 'partindo' && c.distancia === 0 && (!this.transitoLivre || sim.estacionamento.reservaRua || sim.estado.banco.coleta || sim.estado.banco.assalto)) return;
+      if (c.fase === 'partindo') c.partidaLiberada = true;
       const distancia = Math.min(rota.comprimento, c.distancia + dt * ENTREGA.velocidade);
       const proximo = amostrarEntrega(rota, distancia), volume = volumeCaminhao(proximo);
       const pedestres = [sim.estado.jogador, ...(sim.ajudanteContratado ? [sim.ajudante] : []), ...sim.clientes.filter(p => !p.noCarro)];
@@ -102,7 +100,7 @@ export class Entregas {
       if (c.fase === 'partindo') { this.caminhao = null; return; }
       c.fase = 'desembarcar'; c.tempo = 0;
       c.etapa = 0;
-      c.entregador = { x: c.x + 1.75, z: -8.5, angulo: 0, andando: false, carregando: false };
+      c.entregador = { ...PLANTA_CARGA.cabine, angulo: 0, andando: false, carregando: false };
       sim.emitir('entregaChegou', { texto: 'O caminhão chegou! O entregador vai guardar as caixas no depósito.' });
     }
     const ator = c.entregador, pedido = deposito.pedidos[0];

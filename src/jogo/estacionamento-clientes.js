@@ -70,7 +70,6 @@ export class EstacionamentoClientes {
   get reservaRua() { return this.carros.some(c => (c.fase === 'aguardando' && c.recebido)
     || ['chegando', 'esperandoSaida', 're', 'engatando', 'partindo'].includes(c.fase)); }
   reservar(cliente, tempo) {
-    if (this.bloqueadoEntrega) return false;
     if (tempo < this.prontoEm || this.manobrando || this.carros.some(c => c.fase === 'esperandoSaida')) return false;
     const vaga = P.vagas.findIndex((_, i) => !this.carros.some(c => c.vaga === i));
     if (vaga < 0) return false;
@@ -93,7 +92,8 @@ export class EstacionamentoClientes {
       const fase = carro.fase;
       carro.freando = false; carro.direcaoCurva = null;
       if (fase === 'aguardando' || fase === 'esperandoSaida') {
-        const servico = sim.estado.banco.coleta || sim.estado.banco.assalto;
+        const entregaNaRua = sim.entregas?.reservaRua && sim.entregas.caminhao.fase !== 'aguardando';
+        const servico = sim.estado.banco.coleta || sim.estado.banco.assalto || (entregaNaRua ? { tempo: 0 } : null);
         if (fase === 'aguardando' && this.receberDoTrafego && !carro.recebido) {
           if (servico) continue;
           const existente = this.receberDoTrafego(carro.clienteId);

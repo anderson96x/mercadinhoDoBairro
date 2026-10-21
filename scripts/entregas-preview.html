@@ -40,10 +40,10 @@
       sim.pausado = false;
       for (let i = 0; i < 15000 && sim.entregas.caminhao?.fase !== fase; i++) sim.entregas.atualizar(sim, 0.05);
       for (let i = 0; i < 15000 && !(sim.estado.deposito.pacotes.length >= 2 && sim.entregas.caminhao?.fase === 'levar' && sim.entregas.caminhao.entregador.z < -12.1); i++) sim.entregas.atualizar(sim, 0.05);
-      cena.camera.zoom = cena.mobile ? 0.8 : 1.65; cena.camera.updateProjectionMatrix();
+      cena.camera.zoom = cena.mobile ? 0.72 : 1.3; cena.camera.updateProjectionMatrix();
       const base = cena.baseCamera();
-      cena.alvoCamera.set(-9, 0, -10); cena.deslocamentoCamera.set(-9 - base.x, 0, -10 - base.z);
-      if (cena.mobile) { cena.alvoCamera.set(-11, 0, -10); cena.deslocamentoCamera.set(-11 - base.x, 0, -10 - base.z); }
+      cena.alvoCamera.set(-14, 0, -6); cena.deslocamentoCamera.set(-14 - base.x, 0, -6 - base.z);
+      if (cena.mobile) { cena.alvoCamera.set(-19, 0, -5); cena.deslocamentoCamera.set(-19 - base.x, 0, -5 - base.z); }
       renderizar();
       return { fase: sim.entregas.caminhao?.fase, pacotes: sim.estado.deposito.pacotes.length, compativel: cena.modoCompativel };
     },

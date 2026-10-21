@@ -1,5 +1,5 @@
 import { writeFileSync } from 'node:fs';
-import { PLANTA_DEPOSITO, pisoEstacionamento, paredesDeposito } from '../src/jogo/planta.js';
+import { PLANTA_DEPOSITO, PLANTA_CARGA, pisoEstacionamento, paredesDeposito } from '../src/jogo/planta.js';
 import { produtosDaLoja, CONFIG, ALA_PADARIA } from '../src/jogo/configuracao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_INICIAL, PLANTA_AMPLIADA, PRODUTOS_HORTIFRUTI, PRATELEIRAS_IMPORTADOS } from '../src/jogo/planta.js';
 import { PAREDES_LOJA } from '../src/jogo/bairro.js';
@@ -17,16 +17,21 @@ const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="100
 <rect width="1200" height="1000" fill="#faf9f5"/>
 <text x="48" y="54" class="title">Mercadinho do Bairro · nível ${nivel}</text>
 <text x="48" y="85" class="note">Nova planta · 2 u por cm anotado · cresce somente após as compras</text>`];
-const scale = expandida ? 16 : 19, X = x => 370 + x * scale, Y = z => (expandida ? 660 : 615) + z * scale;
+const scale = expandida ? 15 : 19, X = x => (expandida ? 470 : 370) + x * scale, Y = z => (expandida ? 660 : 615) + z * scale;
 const rect = (p, color, extra = '') => parts.push(`<rect x="${X(p.x - p.w / 2)}" y="${Y(p.z - p.d / 2)}" width="${p.w * scale}" height="${p.d * scale}" fill="${color}" ${extra}/>`);
 const text = (x, z, value, cls = 'label') => parts.push(`<text x="${X(x)}" y="${Y(z)}" text-anchor="middle" class="${cls}">${value}</text>`);
 const path = points => parts.push(`<path d="M${points.map(p => `${X(p.x)},${Y(p.z)}`).join('L')}" class="route"/>`);
 rect(expandida ? PLANTA_EXPANSAO.terreno : PLANTA_INICIAL.terreno, '#dfebd4', 'stroke="#9cb88e"');
-rect({ x: 4, z: 11.3, w: 40, d: 4.4 }, '#78817e');
-rect({ x: 4, z: 7.95, w: 40, d: 2.5 }, '#e8deca');
+rect({ x: expandida ? -2 : 4, z: 11.3, w: expandida ? 52 : 40, d: 4.4 }, '#78817e');
+rect({ x: expandida ? -2 : 4, z: 7.95, w: expandida ? 52 : 40, d: 2.5 }, '#e8deca');
 text(13, 12, 'RUA');
 if (expandida) rect(pisoEstacionamento(true), '#78817e');
 if (expandida) {
+  for (const p of [PLANTA_CARGA.piso, PLANTA_CARGA.acesso, PLANTA_CARGA.ligacao]) rect(p, '#78817e');
+  rect(PLANTA_CARGA.vaga, 'none', 'stroke="#e6bd54" stroke-width="2"');
+  for (const p of PLANTA_CARGA.guias) rect(p, '#d2d8cb');
+  text(-22, -8.9, 'CARGA EXCLUSIVA', 'small');
+  text(-22, 8.2, 'ACESSO DE CAMINHÕES', 'small');
   rect(PLANTA_DEPOSITO.piso, '#c5cbc6');
   for (const p of paredesDeposito()) rect(p, '#315c49');
   for (const p of PLANTA_DEPOSITO.estantes) rect(p, '#8aafbf', 'stroke="#317c9d"');
@@ -141,7 +146,7 @@ const notes = [
   '',
   'ESCOPO DESTA ETAPA',
   expandida ? 'N18: expansão de R$ 10.000.' : 'Departamentos posteriores ainda',
-  expandida ? 'Depósito atrás do estacionamento.' : 'mantêm as ampliações anteriores.',
+  expandida ? 'Pátio de carga exclusivo à esquerda.' : 'mantêm as ampliações anteriores.',
   nivel >= 9 ? 'N9: padaria voltada ao hortifruti.' : nivel >= 7 ? 'N7: trigo atrás do milho.' : nivel >= 5 ? 'N5: curral ao lado do galinheiro.' : nivel >= 4 ? 'N4: galinheiro atrás da loja.' : nivel >= 3 ? 'N3: milho atrás dos tomates.' : 'O novo salão final fica para N9.',
   'u = unidade do jogo; rua em +z.'
 ];

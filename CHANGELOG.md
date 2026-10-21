@@ -1,6 +1,15 @@
 # Histórico de alterações
 
-## Versão atual: 0.55.0 — 2026-10-21
+## Versão atual: 0.56.0 — 2026-10-21
+
+- Inclui na compra da expansão do N18 mais 12 u à esquerda do mapa, ampliando o terreno para 52 × 46 u e acompanhando rua, calçada, tráfego, câmera e limites de navegação/salvamento.
+- Constrói um pátio exclusivo para caminhões, com acesso próprio pela rua, circuito de entrada/saída, vaga de carga demarcada, setas, placa com pictograma e guias de separação. Um caminho pavimentado liga o pátio ao depósito.
+- Transfere todas as entregas para o circuito privativo. O caminhão não usa as seis vagas nem aguarda o estacionamento esvaziar; clientes continuam estacionando durante a descarga. Somente o trecho compartilhado da rua coordena manobras e serviços do banco.
+- Remove a exigência de comprar o estacionamento de clientes para importar produtos. Gôndola e expansão com depósito/pátio continuam necessárias, e o limite de 27 pacotes permanece.
+- Saves com expansão comprada recebem o terreno e o acesso exclusivos automaticamente, preservando pedidos, caixas, compras, dinheiro e estoques. Atualiza planta N18, documentação e capturas de verificação.
+- Validação: 269 testes passaram, incluindo pátio, entregas, importação, câmera e estacionamento; build e rotas até N19 aprovados. Desktop e celular emulado de 390 px conferidos no Edge com WebGL e Canvas; capturas em `docs/previews/entregas-*.png`.
+
+## 0.55.0 — 2026-10-21
 
 - Substitui a importação instantânea por entregas físicas: cada pedido chama um caminhão baú branco de três eixos, que entra pela rua, estaciona junto ao depósito e retorna após a descarga.
 - O entregador sai da cabine, retira uma caixa por vez do baú e caminha até as estantes. As 27 posições começam vazias e exibem somente caixas já guardadas. Caixas parcialmente abertas ocupam posição até o último produto ser retirado.

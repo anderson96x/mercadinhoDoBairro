@@ -5,7 +5,7 @@ import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG } from '../src/jogo/configuracao.js';
 import { ROTAS_ENTREGA, ENTREGA, volumeCaminhao, vagasDeposito, pacotesPendentes } from '../src/jogo/entregas.js';
 import { criarCaminhaoEntrega, EntregasVisual } from '../src/jogo/entregas-visual.js';
-import { OBSTACULOS_ESTACIONAMENTO, paredesDeposito, PLANTA_ESTACIONAMENTO, PLANTA_DEPOSITO } from '../src/jogo/planta.js';
+import { OBSTACULOS_ESTACIONAMENTO, paredesDeposito, PLANTA_ESTACIONAMENTO, PLANTA_DEPOSITO, PLANTA_CARGA, obstaculosCarga } from '../src/jogo/planta.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function loja() {
@@ -77,7 +77,7 @@ test('recarregar antes e durante descarga preserva o saldo e não duplica caixas
   }
 });
 
-test('pausa congela a entrega; loja fechada, tráfego e vagas ocupadas adiam chegada', () => {
+test('pausa congela a entrega; loja fechada e tráfego adiam chegada, mas vagas ocupadas não bloqueiam o pátio', () => {
   const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
   sim.estado.lojaAberta = false; sim.entregas.atualizar(sim, 1);
   assert.equal(sim.entregas.caminhao, null);
@@ -90,9 +90,11 @@ test('pausa congela a entrega; loja fechada, tráfego e vagas ocupadas adiam che
   sim.atualizar(0.05); assert.deepEqual(sim.entregas.caminhao, antes);
   sim.entregas.atualizar(sim, 0); assert.deepEqual(sim.entregas.caminhao, antes);
   const ocupado = loja(); ocupado.encomendarImportacoes({ importarProdutos: 1 });
-  ocupado.estacionamento.carros.push({ fase: 'estacionado' });
+  ocupado.estacionamento.carros.push({ fase: 'estacionado', modelo: 0, x: -13.95, z: -3.7, angulo: 0 });
   ocupado.entregas.atualizar(ocupado, 0.05);
-  assert.equal(ocupado.entregas.caminhao, null);
+  assert.equal(ocupado.entregas.caminhao.fase, 'chegando');
+  entregar(ocupado);
+  assert.equal(ocupado.estado.deposito.pacotes.length, 1);
 });
 
 test('jogador e repositor retiram produtos do depósito e abastecem a gôndola por caminhos livres', () => {
@@ -113,7 +115,7 @@ test('jogador e repositor retiram produtos do depósito e abastecem a gôndola p
 });
 
 test('rotas do caminhão não atravessam ilha, paredes, postes ou meio-fio', () => {
-  const obstaculos = [...OBSTACULOS_ESTACIONAMENTO, ...paredesDeposito(), { x: -3.1, z: -1.3, w: 0.28, d: 16 }, PLANTA_ESTACIONAMENTO.posteCalcada];
+  const obstaculos = [...OBSTACULOS_ESTACIONAMENTO, ...paredesDeposito(), ...obstaculosCarga(), { x: -3.1, z: -1.3, w: 0.28, d: 16 }, PLANTA_ESTACIONAMENTO.posteCalcada];
   for (const [fase, rota] of Object.entries(ROTAS_ENTREGA)) {
     for (let i = 1; i < rota.pontos.length; i++) {
       const a = rota.pontos[i - 1], p = rota.pontos[i];
@@ -125,9 +127,10 @@ test('rotas do caminhão não atravessam ilha, paredes, postes ou meio-fio', () 
       })));
       for (const canto of cantos) {
         const rua = canto.z >= 9.25;
-        const acesso = canto.z >= 6.4 && canto.z <= 9.3 && canto.x >= -13.1 && canto.x <= -6.7;
-        const estacionamento = canto.z >= -9.16 && canto.z <= 6.4 && canto.x >= -15.8 && canto.x <= -3.24;
-        assert.ok(rua || acesso || estacionamento, `${fase} ${i}: fora do asfalto ${JSON.stringify(canto)}`);
+        const acesso = canto.z >= 6.4 && canto.z <= 9.3 && Math.abs(canto.x - PLANTA_CARGA.acesso.x) <= PLANTA_CARGA.acesso.w / 2;
+        const patio = Math.abs(canto.z - PLANTA_CARGA.piso.z) <= PLANTA_CARGA.piso.d / 2 && Math.abs(canto.x - PLANTA_CARGA.piso.x) <= PLANTA_CARGA.piso.w / 2;
+        assert.ok(rua || acesso || patio, `${fase} ${i}: fora do asfalto ${JSON.stringify(canto)}`);
+        if (canto.z < 6.4) assert.ok(canto.x < PLANTA_ESTACIONAMENTO.piso.x - PLANTA_ESTACIONAMENTO.piso.w / 2, 'caminhão nunca invade as vagas de clientes');
       }
       for (const [a, b] of [[0, 1], [0, 2], [1, 3], [2, 3]]) assert.ok(segmentoLivre(cantos[a], cantos[b], obstaculos, 0), `${fase} ${i}: ${JSON.stringify(p)} obstáculo: ${JSON.stringify(obstaculos.find(o => !segmentoLivre(cantos[a], cantos[b], [o], 0)))}`);
     }
@@ -149,15 +152,39 @@ test('modelo de caminhão tem seis rodas e portas de baú; entregador carrega um
   assert.ok(volume.z - volume.d / 2 > PLANTA_DEPOSITO.porta.z);
 });
 
-test('simulação completa descarrega e libera estacionamento; clientes novos não reservam vagas durante entrega', () => {
+test('simulação completa descarrega sem reservar nem bloquear as vagas de clientes', () => {
   const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 2 });
-  assert.equal(sim.estacionamento.reservar({ id: 999 }, sim.tempo), false);
-  for (let i = 0; i < 8000 && (sim.estado.deposito.pedidos.length || sim.entregas.caminhao); i++) sim.atualizar(1 / 60);
+  sim.estacionamento.prontoEm = 0;
+  assert.equal(sim.estacionamento.reservar({ id: 999 }, sim.tempo), true);
+  for (let i = 0; i < 12000 && (sim.estado.deposito.pedidos.length || sim.entregas.caminhao); i++) sim.atualizar(1 / 60);
   assert.equal(sim.estado.deposito.pacotes.length, 2);
   assert.equal(sim.entregas.caminhao, null);
   sim.atualizar(1 / 60);
-  assert.equal(sim.estacionamento.bloqueadoEntrega, false);
   assert.equal(sim.estacionamento.reservar({ id: 999 }, sim.tempo), true);
+});
+
+test('acesso dedicado recebe entrega mesmo sem comprar estacionamento de clientes', () => {
+  const sim = loja(); sim.estado.melhorias.estacionamento = 0;
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
+  entregar(sim);
+  assert.equal(sim.estado.deposito.pacotes.length, 1);
+});
+
+test('saída aguarda manobra de clientes ou banco sem reservar a rua e impedir o serviço de terminar', () => {
+  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
+  sim.estado.banco.coleta = { tempo: -1 };
+  sim.entregas.atualizar(sim, 0.05);
+  assert.equal(sim.entregas.caminhao.distancia, 0);
+  assert.equal(sim.entregas.reservaRua, false);
+  sim.estado.banco.coleta = null;
+  sim.estacionamento.carros.push({ fase: 'esperandoSaida' });
+  sim.entregas.atualizar(sim, 0.05);
+  assert.equal(sim.entregas.reservaRua, false);
+  sim.estacionamento.carros = [];
+  sim.entregas.atualizar(sim, 0.05);
+  assert.equal(sim.entregas.reservaRua, true);
+  entregar(sim);
 });
 
 test('save adulterado não cria mais de 27 posições nem caixas negativas, inválidas ou infinitas', () => {

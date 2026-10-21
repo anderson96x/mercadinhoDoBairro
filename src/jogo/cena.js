@@ -1405,7 +1405,7 @@ export class Cena {
       .add(vertical.multiplyScalar(-dy * (this.camera.top - this.camera.bottom) / (this.h * this.camera.zoom)));
     deslocamento.addScaledVector(direcao, -deslocamento.y / direcao.y);
     const base = this.baseCamera();
-    const limites = CONFIG.limiteCamera;
+    const limites = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
     const x = THREE.MathUtils.clamp(base.x + this.deslocamentoCamera.x - deslocamento.x, limites.minX, limites.maxX);
     const z = THREE.MathUtils.clamp(base.z + this.deslocamentoCamera.z - deslocamento.z, limites.minZ, limites.maxZ);
     this.deslocamentoCamera.set(x - base.x, 0, z - base.z);
@@ -1649,11 +1649,12 @@ export class Cena {
     const assalto = e.banco.assalto;
     if (coleta || assalto || sim.estacionamento.reservaRua || sim.entregas.reservaRua) this.trafego.faixasReservadas.add(0);
     else this.trafego.faixasReservadas.delete(0);
+    this.trafego.atualizarExpansao(!!e.melhorias.expansao);
     this.trafego.atualizar(dt);
     sim.estacionamento.transitoLivre = !this.trafego.carros.some(c => c.faixa === 0);
     sim.entregas.transitoLivre = sim.estacionamento.transitoLivre;
     const manobraAtiva = sim.estacionamento.carros.some(c => (c.fase === 'aguardando' && c.recebido)
-      || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase)) || (sim.entregas.caminhao && ['chegando', 'partindo'].includes(sim.entregas.caminhao.fase));
+      || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase)) || (sim.entregas.reservaRua && sim.entregas.caminhao.fase !== 'aguardando');
     if (coleta?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
     if (assalto?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
     this.coletaBanco.atualizar(coleta);
@@ -1701,7 +1702,7 @@ export class Cena {
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
     this.bairro.animarDeposito(e.lojaAberta, dt);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
-    const base = this.baseCamera(), limites = CONFIG.limiteCamera;
+    const base = this.baseCamera(), limites = e.melhorias.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
     const alvo = new THREE.Vector3(
       THREE.MathUtils.clamp(base.x + this.deslocamentoCamera.x, limites.minX, limites.maxX), 0,
       THREE.MathUtils.clamp(base.z + this.deslocamentoCamera.z, limites.minZ, limites.maxZ)

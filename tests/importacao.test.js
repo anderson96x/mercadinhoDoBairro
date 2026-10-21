@@ -25,8 +25,6 @@ test('importação exige nível 19, gôndola e R$ 270', () => {
   sim.comprarMelhoria('prateleirasImportados');
   assert.match(sim.comprarMelhoria('importarProdutos').motivo, /Expansão/);
   sim.estado.melhorias.expansao = 1;
-  assert.match(sim.comprarMelhoria('importarProdutos').motivo, /Estacionamento/);
-  sim.estado.melhorias.estacionamento = 1;
   sim.estado.dinheiro = 269;
   assert.equal(sim.comprarMelhoria('importarProdutos').sucesso, false);
   assert.equal(sim.estado.produtos.enlatado.prateleira, 0);
