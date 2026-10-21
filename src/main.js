@@ -185,12 +185,11 @@ try {
         if (evento.tipo === 'nivel') {
           ui.subiuDeNivel(evento.nivel);
           const novidades = MELHORIAS.filter(m => m.ativa !== false && m.nivelMinimo === evento.nivel).map(m => m.titulo);
-          ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${novidades.length ? ` No escritório: ${novidades.join(' e ')}.` : ''}`);
+          ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${novidades.length ? ` No celular: ${novidades.join(' e ')}.` : ''}`);
         }
         if (evento.tipo === 'melhoria') ui.mensagem(evento.texto);
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
         if (['expansao', 'ovoPronto', 'leitePronto', 'paoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
-        if (evento.tipo === 'escritorio') ui.abrir('escritorio');
         if (evento.tipo === 'lixeira') ui.abrir('lixeira');
       }
       if (agora >= proximaUI) { ui.atualizar(); proximaUI = agora + 100; }

@@ -13,7 +13,6 @@ import { Interface } from '../src/interface/interface.js';
 test('aviso bancário reduz a barra até o prazo e a oculta após solicitar depósito', () => {
   const sim = new Simulacao();
   sim.estado.banco.noCaixa = BANCO.limite;
-  sim.estado.jogador.sentadoEscritorio = true;
   sim.definirTempoEsperaAssalto(60);
   const elementos = new Map();
   const el = id => {
@@ -55,7 +54,7 @@ function vender(sim) {
   sim.atualizarCaixa(CONFIG.tempoCaixa);
 }
 
-test('vendas acumulam caixa, coleta exige escritório e não altera o saldo', () => {
+test('vendas acumulam caixa e coleta pelo celular não altera o saldo', () => {
   const sim = new Simulacao();
   sim.estado.banco.noCaixa = 995;
   sim.estado.dinheiro = 230;
@@ -63,7 +62,6 @@ test('vendas acumulam caixa, coleta exige escritório e não altera o saldo', ()
   vender(sim);
   assert.equal(sim.estado.banco.noCaixa, 1000);
   assert.equal(sim.estado.dinheiro, 235);
-  sim.estado.jogador.sentadoEscritorio = true;
   assert.equal(sim.solicitarDeposito().sucesso, true);
   assert.equal(sim.solicitarDeposito().sucesso, false);
   assert.equal(sim.estado.banco.noCaixa, 1000);
@@ -88,7 +86,6 @@ test('recarregar antes ou depois da retirada preserva o depósito sem duplicar d
     const sim = new Simulacao();
     sim.estado.dinheiro = 800;
     sim.estado.banco.noCaixa = 1230;
-    sim.estado.jogador.sentadoEscritorio = true;
     sim.solicitarDeposito();
     if (tempo >= 0) { sim.estado.banco.coleta.tempo = 0; atualizarBanco(sim.estado.banco, tempo); }
     const retomado = new Simulacao(structuredClone(sim.estado));
@@ -106,7 +103,7 @@ test('recarregar antes ou depois da retirada preserva o depósito sem duplicar d
 
 test('pausa congela a coleta e cada novo acúmulo permite outro depósito', () => {
   const sim = new Simulacao();
-  sim.estado.banco.noCaixa = 1000; sim.estado.jogador.sentadoEscritorio = true;
+  sim.estado.banco.noCaixa = 1000;
   sim.solicitarDeposito(); sim.estado.banco.coleta.tempo = 9;
   sim.pausado = true; sim.atualizar(0.05);
   assert.equal(sim.estado.banco.coleta.tempo, 9);

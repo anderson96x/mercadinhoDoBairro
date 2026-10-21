@@ -1,6 +1,6 @@
 ﻿# Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.52.0**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.53.0**.
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
 
@@ -47,12 +47,12 @@ Em desenvolvimento, o botão **DEV** abre ferramentas para ajustar saldo, preenc
 2. Leve os tomates até a seção correspondente da banca para abastecê-la. Colheita e reposição acontecem automaticamente por proximidade.
 3. Sente-se na cadeira do caixa para atender os clientes que já fizeram suas compras e estão na fila.
 4. Atenda **25 clientes por nível**. Cada nível concede **R$ 100 de bônus** e pode liberar novas compras.
-5. Sente-se na cadeira do escritório e use o computador para contratar funcionários, comprar produtos e melhorias ou personalizar a loja.
+5. Use o botão em formato de celular ao lado do painel superior para contratar funcionários, comprar produtos e melhorias ou personalizar a loja.
 6. Continue abastecendo os produtos liberados e forneça ingredientes às estações de produção. O caixa contratado atende a fila; o repositor coleta e abastece produtos prontos.
 
 Mantenha as bancas abastecidas e a fila andando: a satisfação dos clientes afeta a reputação e o ritmo de chegada de novos compradores. A loja começa com cinco cestas para clientes; a melhoria do nível 8 permite receber até dez clientes ao mesmo tempo.
 
-Quando houver **R$ 1.000 ou mais no caixa**, solicite **Depositar no banco** pelo computador do escritório. O carro-forte recolhe o dinheiro, preservando seu saldo disponível para compras. Deixar dinheiro acumulado sem solicitar o depósito pode provocar um assalto.
+Quando houver **R$ 1.000 ou mais no caixa**, solicite **Depositar no banco** pelo celular. O carro-forte recolhe o dinheiro, preservando seu saldo disponível para compras. Deixar dinheiro acumulado sem solicitar o depósito pode provocar um assalto.
 
 ## Controles
 
@@ -65,7 +65,7 @@ Quando houver **R$ 1.000 ou mais no caixa**, solicite **Depositar no banco** pel
 | Repor produtos | Aproxime-se do expositor correspondente carregando o produto. |
 | Entregar ingredientes | Aproxime-se da estação de produção carregando os ingredientes. |
 | Atender clientes | Sente-se na cadeira do caixa enquanto há clientes esperando. |
-| Gerenciar e personalizar | Sente-se na cadeira do escritório e use o computador. |
+| Gerenciar e personalizar | Abra o botão de celular ao lado do painel superior. |
 | Descartar produtos | Aproxime-se da lixeira e escolha os itens no painel. |
 | Pausar | Botão de pausa ou Esc. |
 | Som, ajuda e novo jogo | Menu de pausa. |
@@ -74,7 +74,7 @@ O joystick aparece onde você começa a arrastar, e o movimento acompanha as dir
 
 ## Níveis e desbloqueios
 
-Os níveis representam a evolução contínua da mesma loja. Atingir o nível libera a compra; é preciso pagar pela melhoria no escritório e cumprir seus pré-requisitos. Os valores abaixo são dinheiro do jogo.
+Os níveis representam a evolução contínua da mesma loja. Atingir o nível libera a compra; é preciso pagá-la pelo celular e cumprir seus pré-requisitos. Os valores abaixo são dinheiro do jogo.
 
 | Nível | Compra liberada | Custo | Efeito ou requisito |
 | --- | --- | --- | --- |
@@ -98,7 +98,7 @@ Os níveis representam a evolução contínua da mesma loja. Atingir o nível li
 | 17 | Prateleiras de importados | R$ 1.000 por nível | Duas prateleiras centrais; produtos importados ficam para uma etapa futura. |
 | 18 | Expansão | R$ 10.000 | Acrescenta o anexo posterior e um depósito com estantes, caixas e porta única para o estacionamento; recua a fazenda e exige a padaria. |
 
-O nível 18 é o último marco de conteúdo atual. A expansão é comprada uma única vez no escritório, na aba Mercado, e fica salva. O mobiliário e as divisórias do salão permanecem no lugar; a compra acrescenta um anexo de 6 u nos fundos, com nova parede e uma saída. As duas bancadas da cozinha recuam até essa parede e a mureta atrás delas é removida. A porta de produção original dá acesso ao anexo. A fazenda, a cerca e o caminho recuam 6 u. Estoques, receitas e progresso são preservados. Veja a [planta N18](docs/PLANTA-LOJA-N18.svg) e os [desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
+O nível 18 é o último marco de conteúdo atual. A expansão é comprada uma única vez pelo celular, na aba Mercado, e fica salva. O mobiliário e as divisórias do salão permanecem no lugar; a compra acrescenta um anexo de 6 u nos fundos, com nova parede e uma saída. As duas bancadas da cozinha recuam até essa parede e a mureta atrás delas é removida. A porta de produção original dá acesso ao anexo. A fazenda, a cerca e o caminho recuam 6 u. Estoques, receitas e progresso são preservados. Veja a [planta N18](docs/PLANTA-LOJA-N18.svg) e os [desbloqueios por nível](docs/DESBLOQUEIOS-POR-NIVEL.md).
 
 O estacionamento do nível 16 começa com seis vagas vazias. Clientes chegam de carro, estacionam, desembarcam e caminham até a loja; depois das compras, voltam ao próprio carro e saem de ré antes de seguir pela rua. Rodas, direção, portas, piscas e luzes acompanham as manobras.
 

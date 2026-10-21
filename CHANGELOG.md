@@ -1,6 +1,14 @@
 # Histórico de alterações
 
-## Versão atual: 0.52.0 — 2026-10-21
+## Versão atual: 0.53.0 — 2026-10-21
+
+- Remove completamente o escritório, incluindo paredes, porta, piso, mesa, computador, cadeira, estante, colisões, animações e interação de sentar.
+- Adiciona ao lado do painel superior um botão em formato de celular que abre as opções do mercado de qualquer lugar, incluindo melhorias, personalização, abertura da loja e depósito bancário.
+- Uniformiza o botão do celular com o tamanho e o estilo dos demais botões de ícone do cabeçalho, como o botão de ajuda.
+- Atualiza objetivos, ajuda, documentação, plantas e testes para orientar o gerenciamento pelo celular. Saves existentes continuam compatíveis.
+- Validação: 249 testes, build e verificação de layout passaram.
+
+## 0.52.0 — 2026-10-21
 
 - Inclui na compra da expansão do nível 18 um depósito atrás do estacionamento, com três estantes metálicas carregadas de caixas e dois pallets sobre piso de concreto.
 - Amplia o asfalto até a fachada inteira do depósito e a lateral da loja, ligando os dois espaços sem alterar as seis vagas, a entrada pela rua ou os trajetos dos carros. Antes da compra da expansão, o estacionamento mantém o formato original.

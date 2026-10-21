@@ -1,6 +1,6 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, folhasPortasExpansao, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
-import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, PAREDES_ESCRITORIO, PORTA_ESCRITORIO, volumesPortasEntrada } from './bairro.js';
+import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
 import { produtosDaLoja, CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
@@ -180,7 +180,6 @@ export class Simulacao {
     this.proximaOrdemFila = 1;
     this.proximoLadoEntrada = Math.random() < 0.5 ? 0 : 1;
     this.proximoLadoSaida = Math.random() < 0.5 ? 0 : 1;
-    this.aberturaPortaEscritorio = 0;
     this.aberturaPortaEntrada = 0;
     this.progressoCaixa = 0;
     this.atividade = '';
@@ -314,7 +313,6 @@ export class Simulacao {
   solicitarDeposito() {
     const banco = this.estado.banco;
     if (banco.assalto) return { sucesso: false, motivo: 'Aguarde o fim do assalto para chamar o banco.' };
-    if (!this.estado.jogador.sentadoEscritorio) return { sucesso: false, motivo: 'Vá ao escritório para solicitar o depósito.' };
     if (banco.coleta) return { sucesso: false, motivo: 'Já existe uma coleta em andamento.' };
     if (banco.noCaixa < BANCO.limite) return { sucesso: false, motivo: 'O depósito fica disponível a partir de R$ 1.000 no caixa.' };
     banco.coleta = { valor: banco.noCaixa, tempo: -1, retirado: false };
@@ -483,57 +481,57 @@ export class Simulacao {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
       if (this.nivel >= 18 && !this.estado.melhorias.expansao) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
-          titulo: 'Amplie os fundos da loja', texto: 'No escritório, compre Expansão por R$ 10.000 para construir um anexo atrás da loja e da cozinha e recuar a fazenda. Exige a padaria.',
-          destino: 'escritorio', exibir: true };
+          titulo: 'Amplie os fundos da loja', texto: 'No celular, compre Expansão por R$ 10.000 para construir um anexo atrás da loja e da cozinha e recuar a fazenda. Exige a padaria.',
+          destino: 'celular', exibir: true };
       }
       if (this.nivel >= 17 && this.estado.melhorias.prateleirasImportados < PRATELEIRAS_IMPORTADOS.length) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
-          titulo: 'Prepare as prateleiras de importados', texto: 'No escritório, compre as duas prateleiras por R$ 1.000 cada. Elas ficam vazias; a importação será adicionada em uma etapa futura.',
-          destino: 'escritorio', exibir: true };
+          titulo: 'Prepare as prateleiras de importados', texto: 'No celular, compre as duas prateleiras por R$ 1.000 cada. Elas ficam vazias; a importação será adicionada em uma etapa futura.',
+          destino: 'celular', exibir: true };
       }
       if (this.nivel >= 16 && !this.estado.melhorias.estacionamento) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
-          titulo: 'Um lugar para estacionar', texto: 'No escritório, construa o estacionamento por R$ 10.000. Ele ocupa o terreno ao lado esquerdo da loja.',
-          destino: 'escritorio', exibir: true };
+          titulo: 'Um lugar para estacionar', texto: 'No celular, construa o estacionamento por R$ 10.000. Ele ocupa o terreno ao lado esquerdo da loja.',
+          destino: 'celular', exibir: true };
       }
       const orientacaoOvos = !this.estado.melhorias.alaProducao
-        ? { titulo: 'Construa o galinheiro', texto: 'Compre a ala dos ovos no escritório.', destino: 'escritorio' }
+        ? { titulo: 'Construa o galinheiro', texto: 'Compre a ala dos ovos pelo celular.', destino: 'celular' }
         : this.estado.produtos.ovos.prateleira < 1
           ? { titulo: 'Abasteça a prateleira de ovos', texto: 'Saia pela porta dos fundos para coletar ovos no galinheiro. Abasteça a estante na parede do fundo, à direita da porta.', destino: this.estado.jogador.inventario.includes('ovos') ? 'prateleiraOvos' : 'ovos', exibir: false }
           : this.ajudanteContratado
             ? { titulo: 'Mantenha a ala funcionando', texto: 'As galinhas produzem ovos automaticamente. Cuide das prateleiras e atenda o bairro.', destino: 'ovos', exibir: false }
             : { titulo: 'Atenda o bairro', texto: 'Os ovos já estão à venda. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacaoLeite = !this.estado.melhorias.alaLeite
-        ? { titulo: 'Construa o curral', texto: 'Compre a ala do leite no escritório por R$ 800.', destino: 'escritorio' }
+        ? { titulo: 'Construa o curral', texto: 'Compre a ala do leite pelo celular por R$ 800.', destino: 'celular' }
         : this.estado.produtos.leite.prateleira < 1
           ? { titulo: 'Leve leite ao refrigerador', texto: 'Saia pela porta dos fundos para recolher as garrafas no curral. Abasteça pela frente o refrigerador à direita dos ovos.', destino: this.estado.jogador.inventario.includes('leite') ? 'prateleiraLeite' : 'leite' }
           : { titulo: 'Atenda o bairro', texto: 'O leite já está à venda. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacaoTrigo = !this.estado.melhorias.alaTrigo
-        ? { titulo: 'Abra a plantação de trigo', texto: 'Compre a ala do trigo no escritório por R$ 400.', destino: 'escritorio' }
+        ? { titulo: 'Abra a plantação de trigo', texto: 'Compre a ala do trigo pelo celular por R$ 400.', destino: 'celular' }
         : this.estado.produtos.trigo.prateleira < 1
           ? { titulo: 'Abasteça a prateleira de trigo', texto: 'Colha o trigo entre o galinheiro e o curral e leve-o à nova prateleira.', destino: this.estado.jogador.inventario.includes('trigo') ? 'prateleiraTrigo' : 'trigo' }
           : { titulo: 'Atenda o bairro', texto: 'O trigo já está à venda por R$ 5. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacaoPadaria = !this.estado.melhorias.alaPadaria
-        ? { titulo: 'Abra a padaria', texto: 'Compre a padaria no escritório por R$ 1.400. Cada trigo rende 3 pães de R$ 10.', destino: 'escritorio' }
+        ? { titulo: 'Abra a padaria', texto: 'Compre a padaria pelo celular por R$ 1.400. Cada trigo rende 3 pães de R$ 10.', destino: 'celular' }
         : this.estado.producao.trigoPadaria === 0 && !this.estado.producao.farinha && !this.estado.produtos.pao.prateleira
           ? { titulo: 'Leve trigo à padaria', texto: 'Colha trigo e entregue na caixa ao fundo da padaria, junto à parede direita. Cada trigo rende 3 pães de R$ 10.', destino: this.estado.jogador.inventario.includes('trigo') ? 'padaria' : 'trigo' }
           : { titulo: 'Pães frescos para o bairro', texto: 'Cada trigo rende 3 pães de R$ 10. Reabasteça a padaria para manter a produção.', destino: 'padaria', exibir: false };
       const orientacoesNivel = {
         2: {
           titulo: 'Seu mercadinho pode crescer',
-          texto: 'Vá ao escritório para contratar um caixa.',
+          texto: 'Abra o celular para contratar um caixa.',
           exibir: !this.estado.melhorias.caixa
         },
         3: {
           titulo: 'Uma nova colheita',
-          texto: 'Vá ao escritório para abrir a horta e a prateleira de milho.',
+          texto: 'Abra o celular para liberar a horta e a prateleira de milho.',
           exibir: !this.estado.melhorias.milho
         },
         4: orientacaoOvos,
         5: orientacaoLeite,
         6: this.ajudanteContratado
           ? { titulo: 'Atenda o bairro', texto: 'O Repositor cuida das prateleiras. Continue atendendo seus clientes.', destino: 'caixa', exibir: false }
-          : { titulo: 'Contrate o Repositor', texto: 'Vá ao escritório e contrate o Repositor por R$ 900 para abastecer as prateleiras.', destino: 'escritorio' },
+          : { titulo: 'Contrate o Repositor', texto: 'Abra o celular e contrate o Repositor por R$ 900 para abastecer as prateleiras.', destino: 'celular' },
         7: orientacaoTrigo,
         9: orientacaoPadaria,
       };
@@ -543,7 +541,7 @@ export class Simulacao {
           .sort((a, b) => a.nivelMinimo - b.nivelMinimo)[0];
         const novoProduto = Object.entries(this.produtos).find(([id, p]) => p.nivelMinimo >= 11 && this.estado.produtos[id].liberado && !this.estado.produtos[id].apresentado && !this.estado.produtos[id].prateleira);
         orientacaoNivel = proxima
-          ? { titulo: proxima.titulo, texto: `${proxima.descricao} Compre no escritório por R$ ${proxima.custo.toLocaleString('pt-BR')}.`, destino: 'escritorio' }
+          ? { titulo: proxima.titulo, texto: `${proxima.descricao} Compre pelo celular por R$ ${proxima.custo.toLocaleString('pt-BR')}.`, destino: 'celular' }
           : { titulo: 'O sabor do bairro', texto: 'Cuide das colheitas, prepare receitas e mantenha as bancas abastecidas. Seu mercadinho chegou à fase artesanal!', destino: 'caixa', exibir: false };
         if (novoProduto) {
           const [id, produto] = novoProduto, receita = OFICINAS[id];
@@ -557,7 +555,7 @@ export class Simulacao {
           };
         }
       }
-      return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'escritorio' : 'caixa'), exibir: orientacaoNivel.exibir ?? Boolean(orientacaoNivel.titulo) };
+      return { ...recorrente, ...orientacaoNivel, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, destino: orientacaoNivel.destino ?? (orientacaoNivel.titulo ? 'celular' : 'caixa'), exibir: orientacaoNivel.exibir ?? Boolean(orientacaoNivel.titulo) };
     }
     const indice = MISSOES.findIndex(m => (this.estado.estatisticas[m.chave] ?? this.estado.melhorias[m.chave] ?? 0) < m.alvo);
     if (indice === -1) return { indice: MISSOES.length, completa: true, titulo: 'O bairro é seu!', texto: 'Continue cuidando da loja e descubra todas as melhorias.', valor: 1, alvo: 1 };
@@ -569,7 +567,7 @@ export class Simulacao {
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
       ...volumesPortasEntrada(this.aberturaPortaEntrada),
-      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...PAREDES_ESCRITORIO, ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
+      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
     ];
     if (this.estado.melhorias.expansao) caixas.push(...paredesExpansao(), ...folhasPortasExpansao(), ...obstaculosDeposito());
     if (this.estado.melhorias.expansao && !this.estado.lojaAberta) caixas.push(volumePortaoDeposito());
@@ -588,7 +586,6 @@ export class Simulacao {
     caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
       ...this.estacionamento.carros.filter(c => c.fase !== 'aguardando').map(volumeCarro));
-    if (this.aberturaPortaEscritorio < 0.85) caixas.push(PORTA_ESCRITORIO);
     return caixas;
   }
   get limitesClientes() {
@@ -700,23 +697,12 @@ export class Simulacao {
     const deposito = atualizarBanco(this.estado.banco, dt);
     if (deposito !== null) this.emitir('depositoConcluido', { valor: deposito });
     this.atualizarAssalto(dt);
-    const atoresPorta = [this.estado.jogador, ...this.clientes];
-    if (this.ajudanteContratado) atoresPorta.push(this.ajudante);
-    const abrirPorta = atoresPorta.some(ator => distancia(ator, PORTA_ESCRITORIO) < 1.8);
-    this.aberturaPortaEscritorio = limitar(this.aberturaPortaEscritorio + (abrirPorta ? 1 : -1) * dt * 2.5, 0, 1);
     const a = CONFIG.anguloCamera;
     this.mover(this.estado.jogador, entrada.x * Math.cos(a) + entrada.y * Math.sin(a), -entrada.x * Math.sin(a) + entrada.y * Math.cos(a), dt, this.velocidade);
     const jogador = this.estado.jogador;
-    const estavaNoEscritorio = !!jogador.sentadoEscritorio;
-    jogador.sentadoEscritorio = !jogador.andando && distancia(jogador, CONFIG.cadeiraEscritorio) < 0.65;
-    jogador.sentadoCaixa = !jogador.sentadoEscritorio && !this.estado.melhorias.caixa && !jogador.andando && distancia(jogador, CONFIG.cadeiraCaixa) < 0.65;
-    jogador.sentado = jogador.sentadoEscritorio || jogador.sentadoCaixa;
-    if (jogador.sentadoEscritorio) {
-      jogador.x = CONFIG.cadeiraEscritorio.x; jogador.z = CONFIG.cadeiraEscritorio.z;
-      jogador.angulo = CONFIG.anguloEscritorio;
-      this.atividade = 'Usando o computador…';
-      if (!estavaNoEscritorio) this.emitir('escritorio');
-    } else if (jogador.sentadoCaixa) {
+    jogador.sentadoCaixa = !this.estado.melhorias.caixa && !jogador.andando && distancia(jogador, CONFIG.cadeiraCaixa) < 0.65;
+    jogador.sentado = jogador.sentadoCaixa;
+    if (jogador.sentadoCaixa) {
       jogador.x = CONFIG.cadeiraCaixa.x; jogador.z = CONFIG.cadeiraCaixa.z;
       jogador.angulo = CONFIG.anguloCaixa;
     }
@@ -753,8 +739,8 @@ export class Simulacao {
   }
   interagir() {
     const jogador = this.estado.jogador;
-    this.atividade = jogador.sentadoEscritorio ? 'Usando o computador…' : '';
-    if (jogador.sentadoEscritorio || jogador.sentado) return;
+    this.atividade = '';
+    if (jogador.sentado) return;
     const pertoLixeira = this.pertoDaLixeira();
     if (!pertoLixeira) this.lixeiraVisitada = false;
     const candidatos = [];

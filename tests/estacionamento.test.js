@@ -46,9 +46,9 @@ test('compra persiste e partidas antigas recebem estacionamento bloqueado sem pe
   assert.equal(new Simulacao(adulterado).estado.melhorias.estacionamento, 0);
 });
 
-test('objetivo do nível 16 aponta para a compra no escritório', () => {
+test('objetivo do nível 16 aponta para a compra no celular', () => {
   const sim = nivel(16);
-  assert.equal(sim.missao().destino, 'escritorio');
+  assert.equal(sim.missao().destino, 'celular');
   assert.match(sim.missao().texto, /10\.000/);
   sim.comprarMelhoria('estacionamento');
   assert.notEqual(sim.missao().titulo, 'Um lugar para estacionar');

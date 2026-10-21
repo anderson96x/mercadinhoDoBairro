@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CONFIG, PRODUTOS, ESCRITORIO } from '../src/jogo/configuracao.js';
+import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { geometriaEstacao, intervaloEstacoes, distanciaEstacao, estacoesSeparadasPorParede } from '../src/jogo/estacoes.js';
 import { PAREDES_LOJA } from '../src/jogo/bairro.js';
@@ -49,22 +49,6 @@ test('inventário misto abastece apenas a banca visitada', () => {
     assert.deepEqual(sim.estado.jogador.inventario,outros,id);
     for(const [outro,e] of Object.entries(sim.estado.produtos)) assert.equal(e.prateleira,outro===id?1:0,outro);
   }
-});
-
-test('escritório compacto fica separado do milho e devolve acesso ao salão', () => {
-  const sim=lojaCompleta(); sim.estado.jogador.inventario=['milho'];
-  Object.assign(sim.estado.jogador,{x:0.9,z:ESCRITORIO.limites.maxZ-0.35});
-  assert.equal(segmentoLivre(sim.estado.jogador, PRODUTOS.milho.prateleira, sim.obstaculos()), false);
-  assert.ok(distanciaEstacao(sim.estado.jogador, PRODUTOS.milho.prateleira) >= CONFIG.raioInteracao);
-  sim.tempo=1; sim.interagir();
-  assert.deepEqual(sim.estado.jogador.inventario,['milho']);
-  assert.equal(sim.estado.produtos.milho.prateleira,0);
-  Object.assign(sim.estado.jogador,PRODUTOS.milho.reposicao);
-  assert.equal(segmentoLivre(sim.estado.jogador, sim.estado.jogador, sim.obstaculos(), 0.27), true);
-  assert.ok(distanciaEstacao(sim.estado.jogador, PRODUTOS.milho.prateleira) < CONFIG.raioInteracao);
-  sim.interagir();
-  assert.deepEqual(sim.estado.jogador.inventario,[]);
-  assert.equal(sim.estado.produtos.milho.prateleira,1);
 });
 
 test('passagem entre estufa e oficina não entrega ingredientes nem recolhe lotes', () => {

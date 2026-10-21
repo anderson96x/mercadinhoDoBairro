@@ -1,8 +1,8 @@
 import { writeFileSync } from 'node:fs';
 import { PLANTA_DEPOSITO, pisoEstacionamento, paredesDeposito } from '../src/jogo/planta.js';
-import { produtosDaLoja, CONFIG, ESCRITORIO, ALA_PADARIA } from '../src/jogo/configuracao.js';
+import { produtosDaLoja, CONFIG, ALA_PADARIA } from '../src/jogo/configuracao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_INICIAL, PLANTA_AMPLIADA, PRODUTOS_HORTIFRUTI, PRATELEIRAS_IMPORTADOS } from '../src/jogo/planta.js';
-import { PAREDES_LOJA, PAREDES_ESCRITORIO, PORTA_ESCRITORIO } from '../src/jogo/bairro.js';
+import { PAREDES_LOJA } from '../src/jogo/bairro.js';
 import { geometriaEstacao } from '../src/jogo/estacoes.js';
 
 // Generate implemented new-plan milestones; V2 images stay historical.
@@ -12,7 +12,7 @@ const PRODUTOS = produtosDaLoja({ melhorias: { expansao: expandida } });
 const portaProducao = expandida ? PLANTA_EXPANSAO.portaProducao : CONFIG.portaProducao;
 const ativos = nivel >= 11 ? ['tomate', 'milho', 'trigo', 'morango'] : nivel >= 7 ? ['tomate', 'milho', 'trigo'] : nivel >= 3 ? ['tomate', 'milho'] : ['tomate'];
 const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" role="img" aria-labelledby="title desc">
-<title id="title">Nova planta — nível ${nivel}</title><desc id="desc">${expandida ? 'Terreno ampliado nos fundos' : 'Terreno quadrado'}, salão de ${nivel >= 9 ? 24 : 14} por ${expandida ? 22 : 16} unidades, escritório ao fundo, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. ${nivel >= 3 ? 'Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.' : 'Somente tomate disponível.'}</desc>
+<title id="title">Nova planta — nível ${nivel}</title><desc id="desc">${expandida ? 'Terreno ampliado nos fundos' : 'Terreno quadrado'}, salão de ${nivel >= 9 ? 24 : 14} por ${expandida ? 22 : 16} unidades, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. ${nivel >= 3 ? 'Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.' : 'Somente tomate disponível.'}</desc>
 <style>text{font-family:Arial,sans-serif;fill:#294439}.title{font-size:30px;font-weight:bold}.label{font-size:13px;font-weight:bold}.note{font-size:15px}.small{font-size:11px}.wall{fill:#315c49}.route{fill:none;stroke:#bf743a;stroke-width:3;stroke-dasharray:7 5}</style>
 <rect width="1200" height="1000" fill="#faf9f5"/>
 <text x="48" y="54" class="title">Mercadinho do Bairro · nível ${nivel}</text>
@@ -39,12 +39,7 @@ if (expandida) {
   text(passagem.x + 3, passagem.z + 0.8, 'PASSAGEM LIVRE', 'small');
 }
 rect(expandida ? PLANTA_EXPANSAO.salao : nivel >= 9 ? PLANTA_AMPLIADA.salao : PLANTA_INICIAL.salao, '#f4f0e5');
-const office = ESCRITORIO.limites;
-rect({ x: (office.minX + office.maxX) / 2, z: (office.minZ + office.maxZ) / 2, w: office.maxX - office.minX, d: office.maxZ - office.minZ }, '#dfd5df');
-for (const p of [...PAREDES_LOJA.filter(p => nivel < 9 || !p.lateral), ...(nivel >= 9 ? ALA_PADARIA.paredes.filter(p => !expandida || p.x !== 20.9) : []), ...PAREDES_ESCRITORIO, ...(expandida ? [...paredesOficinas(true), ...paredesExpansao()] : [])]) rect(p, '#315c49');
-for (const p of [ESCRITORIO.mesa, ESCRITORIO.estante]) rect(p, '#b99269');
-rect(PORTA_ESCRITORIO, '#94b7b5');
-text(-0.8, -6.3, 'ESCRITÓRIO', 'small');
+for (const p of [...PAREDES_LOJA.filter(p => nivel < 9 || !p.lateral), ...(nivel >= 9 ? ALA_PADARIA.paredes.filter(p => !expandida || p.x !== 20.9) : []), ...(expandida ? [...paredesOficinas(true), ...paredesExpansao()] : [])]) rect(p, '#315c49');
 rect(CONFIG.lixeira, '#387448');
 rect({ ...CONFIG.cestas, w: 0.9, d: 1.25 }, '#739b72');
 text(0.8, 6.3, 'CESTAS', 'small');
@@ -132,7 +127,7 @@ const notes = [
   expandida ? 'Salão ampliado: 24 × 22 u.' : nivel >= 9 ? 'Salão ampliado: 24 × 16 u.' : 'Salão inicial: 7 × 8 cm → 14 × 16 u.',
   expandida ? 'Terreno: 40 × 46 u.' : 'Terreno: 20 × 20 cm → 40 × 40 u.',
   nivel >= 7 ? 'Tomate, milho e trigo na banca.' : nivel >= 3 ? 'Tomate + milho na mesma banca.' : 'Tomates na banca junto à esquerda.',
-  nivel >= 5 ? 'Ovos + leite na parede do fundo.' : nivel >= 4 ? 'Ovos na parede do fundo.' : 'Escritório e lixeira ao fundo.',
+  nivel >= 5 ? 'Ovos + leite na parede do fundo.' : nivel >= 4 ? 'Ovos na parede do fundo.' : 'Lixeira ao fundo e área livre na loja.',
   'Entrada frontal e acesso posterior.',
   'Caixa com acesso livre à cadeira.',
   nivel >= 17 ? 'P1 e P2: prateleiras vazias.' : 'Cinco cestas e cinco lugares de fila.',

@@ -75,7 +75,7 @@ test('o prazo escolhido para teste altera o gatilho sem zerar o tempo já decorr
 
 test('depósito cancela o risco; assalto interrompe clientes, rouba o caixa uma vez e zera a reputação', () => {
   const seguro = new Simulacao();
-  seguro.estado.banco.noCaixa = 1000; seguro.estado.jogador.sentadoEscritorio = true;
+  seguro.estado.banco.noCaixa = 1000;
   seguro.atualizarAssalto(ASSALTO.espera / 2);
   assert.equal(seguro.solicitarDeposito().sucesso, true);
   seguro.atualizarAssalto(ASSALTO.espera * 2);
@@ -90,7 +90,6 @@ test('depósito cancela o risco; assalto interrompe clientes, rouba o caixa uma 
   sim.atualizarAssalto(ASSALTO.espera);
   assert.ok(sim.estado.banco.assalto);
   assert.equal(sim.criarCliente(), false);
-  sim.estado.jogador.sentadoEscritorio = true;
   assert.equal(sim.solicitarDeposito().sucesso, false);
   sim.estado.banco.assalto.tempo = 0;
   sim.atualizarAssalto(ASSALTO.entrada);

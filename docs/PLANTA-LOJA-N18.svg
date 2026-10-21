@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" role="img" aria-labelledby="title desc">
-<title id="title">Nova planta — nível 18</title><desc id="desc">Terreno ampliado nos fundos, salão de 24 por 22 unidades, escritório ao fundo, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.</desc>
+<title id="title">Nova planta — nível 18</title><desc id="desc">Terreno ampliado nos fundos, salão de 24 por 22 unidades, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.</desc>
 <style>text{font-family:Arial,sans-serif;fill:#294439}.title{font-size:30px;font-weight:bold}.label{font-size:13px;font-weight:bold}.note{font-size:15px}.small{font-size:11px}.wall{fill:#315c49}.route{fill:none;stroke:#bf743a;stroke-width:3;stroke-dasharray:7 5}</style>
 <rect width="1200" height="1000" fill="#faf9f5"/>
 <text x="48" y="54" class="title">Mercadinho do Bairro · nível 18</text>
@@ -25,7 +25,6 @@
 <path d="M304.4,458.4L336.4,458.4" class="route"/>
 <text x="368.4" y="471.20000000000005" text-anchor="middle" class="small">PASSAGEM LIVRE</text>
 <rect x="320.4" y="415.2" width="384" height="352" fill="#f4f0e5" />
-<rect x="320.4" y="511.2" width="67.2" height="56.000000000000014" fill="#dfd5df" />
 <rect x="320.4" y="508.96" width="83.2" height="4.48" fill="#315c49" />
 <rect x="451.6" y="508.96" width="92.80000000000001" height="4.48" fill="#315c49" />
 <rect x="318.15999999999997" y="511.2" width="4.48" height="256" fill="#315c49" />
@@ -33,18 +32,11 @@
 <rect x="373.2" y="764.96" width="171.20000000000002" height="4.48" fill="#315c49" />
 <rect x="544.4" y="508.96" width="160" height="4.48" fill="#315c49" />
 <rect x="544.4" y="764.96" width="160" height="4.48" fill="#315c49" />
-<rect x="386.16" y="511.2" width="2.88" height="56.000000000000014" fill="#315c49" />
-<rect x="320.4" y="565.76" width="27.2" height="2.88" fill="#315c49" />
-<rect x="370" y="565.76" width="17.6" height="2.88" fill="#315c49" />
 <rect x="320.4" y="412.96" width="83.2" height="4.48" fill="#315c49" />
 <rect x="451.6" y="412.96" width="252.79999999999998" height="4.48" fill="#315c49" />
 <rect x="318.15999999999997" y="415.2" width="4.48" height="28.80000000000001" fill="#315c49" />
 <rect x="318.15999999999997" y="472.8" width="4.48" height="38.39999999999998" fill="#315c49" />
 <rect x="702.16" y="415.2" width="4.48" height="352" fill="#315c49" />
-<rect x="335.6" y="514.8" width="43.2" height="13.6" fill="#b99269" />
-<rect x="324" y="514.4" width="7.2" height="27.2" fill="#b99269" />
-<rect x="347.6" y="566.24" width="22.4" height="1.92" fill="#94b7b5" />
-<text x="357.2" y="559.2" text-anchor="middle" class="small">ESCRITÓRIO</text>
 <rect x="389.04" y="513.44" width="13.44" height="13.12" fill="#387448" />
 <rect x="375.6" y="733.2" width="14.4" height="20" fill="#739b72" />
 <text x="382.8" y="760.8" text-anchor="middle" class="small">CESTAS</text>

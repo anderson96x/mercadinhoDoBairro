@@ -5,7 +5,7 @@ import { CONFIG, PRODUTOS, MELHORIAS } from '../src/jogo/configuracao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, selecionarExpositorPosterior } from '../src/jogo/planta.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
-import { construirBairro, PAREDES_LOJA, PAREDES_ESCRITORIO } from '../src/jogo/bairro.js';
+import { construirBairro, PAREDES_LOJA } from '../src/jogo/bairro.js';
 import { Cena } from '../src/jogo/cena.js';
 import { atualizarPainelProducao } from '../src/interface/producao.js';
 import { geometriaEstacao, intervaloEstacoes } from '../src/jogo/estacoes.js';
@@ -45,7 +45,7 @@ test('expansão exige nível 18, padaria e R$ 10.000, com uma única compra', ()
 test('compra acrescenta o anexo, recua a fazenda e encosta as bancadas na parede sem mover os expositores', () => {
   const sim = loja(), outra = loja();
   const estoques = structuredClone(sim.estado.produtos);
-  const paredes = sim.obstaculos().filter(p => PAREDES_LOJA.includes(p) || PAREDES_ESCRITORIO.includes(p));
+  const paredes = sim.obstaculos().filter(p => PAREDES_LOJA.includes(p));
   assert.equal(sim.produtos, PRODUTOS);
   sim.comprarMelhoria('expansao');
   for (const id of ['tomate', 'milho', 'trigo', 'ovos', 'leite', 'morango', 'mel']) {

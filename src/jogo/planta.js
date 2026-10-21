@@ -8,7 +8,7 @@ export const PLANTA_INICIAL = {
   portaProducao: { x: 3.6, z: -9.3, w: 3, d: 0.12 },
   cercaFundos: { minX: -10.3, maxX: 3.6, z: -25 },
   // Painel N1: tomate na faixa posterior esquerda, acima da parede do fundo.
-  // Referência visual: canteiro compacto, com oito plantas, atrás do escritório.
+  // Referência visual: canteiro compacto, com oito plantas, atrás da loja.
   fazendaTomate: {
     horta: { x: -9.2, z: -12.7 }, canteiro: { w: 3.6, d: 2.5 },
     coleta: { x: -9.2, z: -10.9 }

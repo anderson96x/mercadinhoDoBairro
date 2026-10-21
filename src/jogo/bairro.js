@@ -2,20 +2,11 @@ import * as THREE from 'three';
 import { construirDeposito } from './deposito.js';
 import { PLANTA_DEPOSITO, PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_OFICINAS, oficinasConstruidas, PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
-import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ESCRITORIO, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
+import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = paredesPlantaInicial(ALTURA_PAREDE_BAIXA);
 
-const limitesEscritorio = ESCRITORIO.limites;
-export const PAREDES_ESCRITORIO = [
-  // O fundo e a lateral esquerda usam as paredes externas, sem divisória duplicada.
-  { x: limitesEscritorio.maxX, z: (limitesEscritorio.minZ + limitesEscritorio.maxZ) / 2, w: 0.18, d: limitesEscritorio.maxZ - limitesEscritorio.minZ, h: 1.45 },
-  { x: -2.25, z: limitesEscritorio.maxZ, w: 1.7, d: 0.18, h: 1.45 },
-  { x: 0.55, z: limitesEscritorio.maxZ, w: 1.1, d: 0.18, h: 1.45 }
-];
-export const PORTA_ESCRITORIO = { x: -0.7, z: limitesEscritorio.maxZ, w: 1.4, d: 0.12 };
-export const POSICAO_PORTA_ESCRITORIO = { fechada: -1.4, aberta: -2.75 };
 export const ANGULOS_PORTAS_ENTRADA = {
   fechadas: { esquerda: 0, direita: 0 },
   abertas: { esquerda: -Math.PI / 2, direita: Math.PI / 2 }
@@ -34,11 +25,6 @@ export function volumesPortasEntrada(abertura) {
   });
 }
 
-export function posicaoPortaEscritorio(abertura) {
-  const t = THREE.MathUtils.smoothstep(abertura, 0, 1);
-  return THREE.MathUtils.lerp(POSICAO_PORTA_ESCRITORIO.fechada, POSICAO_PORTA_ESCRITORIO.aberta, t);
-}
-
 export function angulosPortasEntrada(abertura) {
   const t = THREE.MathUtils.smoothstep(abertura, 0, 1);
   return {
@@ -48,8 +34,6 @@ export function angulosPortasEntrada(abertura) {
 }
 
 export const MOBILIARIO_LOJA = [
-  ESCRITORIO.mesa,
-  ESCRITORIO.estante,
   CONFIG.lixeira
 ];
 
@@ -294,7 +278,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const andaimeTrigo = andaime.clone(); grupo.add(andaimeTrigo);
   andaimeTrigo.name = 'andaime-padaria'; andaimeTrigo.position.x = 9; andaimeTrigo.visible = false;
   destino = grupo;
-  for (const p of [...PAREDES_LOJA, ...PAREDES_ESCRITORIO]) {
+  for (const p of PAREDES_LOJA) {
     destino = p.lateral ? lateral : p.z === -9.3 && PAREDES_LOJA.includes(p) ? fundosAntigos : grupo;
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
@@ -326,39 +310,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const coletaTomate = PRODUTOS.tomate.coleta;
   for (let x = coletaTomate.x; x <= servico.x; x += 0.65) chao(3, 0.5, 0.06, 0.65, 0xd6c7ac, x, 0.08, coletaTomate.z);
   destino = grupo;
-  // Escritório no canto esquerdo, com paredes e porta à meia altura para manter o interior visível.
-  chao(6, 3.85, 0.012, limitesEscritorio.maxZ - limitesEscritorio.minZ - 0.2, 0xd5c2d5, -1, 0.241, (limitesEscritorio.minZ + limitesEscritorio.maxZ) / 2);
-  for (const x of [-1.4, 0]) bloco(0.09, 1.25, 0.23, 0x286750, x, 0.855, PORTA_ESCRITORIO.z, 'principal');
-  const porta = new THREE.Group(); porta.position.set(POSICAO_PORTA_ESCRITORIO.fechada, 0.23, PORTA_ESCRITORIO.z); grupo.add(porta); destino = porta;
-  bloco(1.32, 1.22, 0.09, 0x286750, 0.7, 0.61, 0, 'principal');
-  bloco(1.1, 0.72, 0.015, 0xa8c7c9, 0.7, 0.72, 0.053);
-  bloco(1.1, 0.72, 0.015, 0xa8c7c9, 0.7, 0.72, -0.053);
-  for (const z of [-0.1, 0.1]) bloco(0.18, 0.045, 0.08, 0xe7b65a, 1.14, 0.55, z, 'destaque');
-  const mesa = new THREE.Group(); mesa.name = 'mesa-escritorio';
-  mesa.position.set(ESCRITORIO.mesa.x, 0, ESCRITORIO.mesa.z); grupo.add(mesa); destino = mesa;
-  bloco(ESCRITORIO.mesa.w, 0.14, ESCRITORIO.mesa.d, 0xbc8752, 0, 1.02, 0);
-  for (const x of [-1.1, 1.1]) bloco(0.35, 0.72, 0.65, 0xa87244, x, 0.6, 0);
-  bloco(1.02, 0.72, 0.08, 0x414846, 0.1, 1.48, -0.12);
-  const telaComputador = bloco(0.88, 0.57, 0.015, 0x94b7b5, 0.1, 1.5, -0.075);
-  telaComputador.material = telaComputador.material.clone();
-  bloco(0.1, 0.2, 0.12, 0x414846, 0.1, 1.16, -0.12);
-  bloco(0.6, 0.035, 0.2, 0x606b67, 0.1, 1.11, 0.26);
-  cilindro(mesa, 0.15, 0.11, 0.25, 0xc07a42, 1, 1.22, 0);
-  esfera(mesa, 0.25, 0x4bb356, 1, 1.5, 0, 0.8, 1.3, 0.8);
-  const cadeira = new THREE.Group(); cadeira.name = 'cadeira-escritorio';
-  cadeira.position.set(ESCRITORIO.cadeira.x, 0, ESCRITORIO.cadeira.z); grupo.add(cadeira); destino = cadeira;
-  bloco(0.55, 0.12, 0.55, 0x777d82, 0, 0.63, 0);
-  bloco(0.55, 0.55, 0.1, 0x777d82, 0, 0.95, 0.26);
-  cilindro(cadeira, 0.07, 0.12, 0.4, 0x555b60, 0, 0.42, 0);
-  const estante = new THREE.Group(); estante.name = 'estante-escritorio';
-  estante.position.set(ESCRITORIO.estante.x, 0, ESCRITORIO.estante.z); grupo.add(estante); destino = estante;
-  bloco(ESCRITORIO.estante.w, 1.6, ESCRITORIO.estante.d, 0x8c613d, 0, 1.03, 0);
-  for (let i = 0; i < 3; i++) {
-    bloco(0.045, 0.07, 1.6, 0xc79765, 0.25, 0.55 + i * 0.49, 0);
-    for (let j = 0; j < 5; j++) bloco(0.13, 0.3, 0.17, [0x78998a,0xd8b57d,0xc67e64][j % 3], 0.26, 0.75 + i * 0.49, -0.65 + j * 0.28);
-  }
-  destino = grupo;
-  // Contentor verde com tampa, pega e duas rodas no canto entre escritório e fundo.
+  // Contentor verde com tampa, pega e duas rodas junto à parede do fundo.
   const lixeira = new THREE.Group(); lixeira.name = 'lixeira';
   lixeira.position.set(CONFIG.lixeira.x, 0.23, CONFIG.lixeira.z); grupo.add(lixeira);
   const corpoLixeira = new THREE.BoxGeometry(0.7, 1.02, 0.68);
@@ -395,8 +347,6 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     cubo.rotation.z = Math.PI / 2;
   }
   for (const x of [-0.2, 0.2]) caixa(lixeira, 0.13, 0.12, 0.16, 0x285b32, x, 0.12, 0.23);
-  cilindro(grupo, 0.15, 0.11, 0.25, 0xc07a42, -2.3, 0.36, PORTA_ESCRITORIO.z - 0.3);
-  esfera(grupo, 0.25, 0x4bb356, -2.3, 0.65, PORTA_ESCRITORIO.z - 0.3, 0.8, 1.3, 0.8);
   // Vitrine e portas duplas que abrem quando um cliente atravessa o vão.
   const entrada = new THREE.Group(); entrada.position.x = -8.82; grupo.add(entrada); destino = entrada;
   for (const x of [6, 9.05]) {
@@ -522,9 +472,6 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       arvoreLateral.visible = !ampliada;
       return estagio ? equipamentos : 0;
     },
-    animarPorta(abertura) {
-      porta.position.x = posicaoPortaEscritorio(abertura);
-    },
     animarEntrada(abertura, lojaAberta) {
       const angulos = angulosPortasEntrada(abertura);
       portaEntradaEsquerda.rotation.y = angulos.esquerda;
@@ -532,10 +479,6 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     },
     animarDeposito(lojaAberta, dt) {
       deposito.atualizar(lojaAberta, dt);
-    },
-    animarComputador(ativo, tempo) {
-      telaComputador.material.emissive.set(ativo ? 0x5c9d91 : 0x000000);
-      telaComputador.material.emissiveIntensity = ativo ? 0.45 + Math.sin(tempo * 3) * 0.08 : 0;
     },
     vincular(mesh, papel) {
       mesh.material = mesh.material.clone(); materiais.push({ material: mesh.material, papel }); anterior = undefined;

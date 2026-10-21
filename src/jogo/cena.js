@@ -1459,7 +1459,7 @@ export class Cena {
     const delta = Math.atan2(Math.sin(alvo - modelo.rotation.y), Math.cos(alvo - modelo.rotation.y));
     modelo.rotation.y += delta * (1 - Math.exp(-12 * dt));
     const marcha = atualizarMarcha(d, ator, dt);
-    const dtPose = ator.sentadoEscritorio && dt === 0 ? 1 / 60 : dt;
+    const dtPose = dt;
     d.sentar = THREE.MathUtils.clamp(d.sentar + (ator.sentado ? 1 : -1) * dtPose * 3, 0, 1);
     const sentado = d.sentar * d.sentar * (3 - 2 * d.sentar);
     const intensidade = marcha.intensidade * (1 - sentado);
@@ -1554,15 +1554,6 @@ export class Cena {
     posicionarBraco(d.bracoE, maoE);
     posicionarBraco(d.bracoD, mao);
   }
-  animarComputador(modelo, tempo, ativo) {
-    const d = modelo.userData;
-    if (!ativo) return;
-    d.corpo.rotation.x = -0.06;
-    const teclaE = Math.max(0, Math.sin(tempo * 12)) * 0.055;
-    const teclaD = Math.max(0, Math.sin(tempo * 12 + Math.PI)) * 0.055;
-    posicionarBraco(d.bracoE, new THREE.Vector3(-0.25, 0.69 - teclaE, 0.76 + teclaE));
-    posicionarBraco(d.bracoD, new THREE.Vector3(0.25, 0.69 - teclaD, 0.76 + teclaD));
-  }
   animarSustoCaixa(modelo, tempo) {
     const tremor = Math.sin(tempo * 17) * 0.025;
     posicionarBraco(modelo.userData.bracoE, new THREE.Vector3(-0.52, 1.48 + tremor, 0.1));
@@ -1633,7 +1624,7 @@ export class Cena {
     if (assalto?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
     this.coletaBanco.atualizar(coleta);
     this.assaltoVisual.atualizar(assalto);
-    const dtVisual = dt || (e.jogador.sentadoEscritorio ? 1 / 60 : 0);
+    const dtVisual = dt;
     this.tempoVisual += dtVisual;
     const tempo = this.tempoVisual;
     for (let i = this.efeitosCrescimento.length - 1; i >= 0; i--) {
@@ -1670,10 +1661,8 @@ export class Cena {
     this.bairro.aplicar(e.personalizacao);
     this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo, !!e.melhorias.expansao);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);
-    this.bairro.animarPorta(sim.aberturaPortaEscritorio);
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
     this.bairro.animarDeposito(e.lojaAberta, dt);
-    this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
     const base = this.baseCamera(), limites = CONFIG.limiteCamera;
     const alvo = new THREE.Vector3(
@@ -1697,7 +1686,6 @@ export class Cena {
     const atendendoNoCaixa = sim.progressoCaixa > 0;
     const progressoCaixa = sim.progressoCaixa / CONFIG.tempoCaixa;
     this.animarAtendimento(this.jogador, tempo, atendendoNoCaixa && !e.melhorias.caixa && e.jogador.sentado, progressoCaixa);
-    this.animarComputador(this.jogador, tempo, !!e.jogador.sentadoEscritorio);
     if (sim.assaltoNaLoja && !e.melhorias.caixa && e.jogador.sentadoCaixa) this.animarSustoCaixa(this.jogador, tempo);
     const unidadePorPixel = (this.camera.top - this.camera.bottom) / (this.camera.zoom * this.h);
     this.marcadorJogador.quaternion.copy(this.camera.quaternion);

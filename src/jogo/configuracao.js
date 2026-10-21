@@ -1,13 +1,6 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
 import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti } from './planta.js';
 export const ALTURA_PAREDE_BAIXA = 0.75;
-export const ESCRITORIO = {
-  limites: { minX: -3.1, maxX: 1.1, minZ: -9.3, maxZ: -5.8 },
-  mesa: { x: -0.8, z: -8.65, w: 2.7, d: 0.85 },
-  estante: { x: -2.65, z: -8.25, w: 0.45, d: 1.7 },
-  cadeira: { x: -0.9, z: -7.55 }
-};
-
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
@@ -54,12 +47,10 @@ export const CONFIG = {
   acessoCaixa: { x: 1.55, z: 4.65 },
   clienteCaixa: { x: 2.2, z: 3.5 },
   cadeiraCaixa: { x: 3.45, z: 6.05 },
-  cadeiraEscritorio: ESCRITORIO.cadeira,
-  // Encostada na face externa do escritório e na face interna da parede do fundo.
-  lixeira: { x: ESCRITORIO.limites.maxX + 0.09 + 0.42, z: ESCRITORIO.limites.minZ + 0.14 + 0.41, w: 0.84, d: 0.82 },
+  // Encostada na face interna da parede do fundo.
+  lixeira: { x: 1.61, z: -8.75, w: 0.84, d: 0.82 },
   areaFuncionarioCaixa: { x: 3.45, z: 6.05, w: 0.8, d: 0.9 },
   anguloCaixa: Math.PI,
-  anguloEscritorio: Math.PI,
   entrada: { x: -1.3, z: 8.4 },
   portaEntrada: { x: -1.3, z: 6.7 },
   cestas: { x: 0.8, z: 5.2 },

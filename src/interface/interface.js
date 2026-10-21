@@ -24,6 +24,7 @@ export class Interface {
           <div class="marca"><div class="marca-topo"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div></div><div class="progresso-nivel"><progress id="nivel-progresso" value="0" max="25" aria-label="Progresso para o próximo nível"></progress><span id="nivel-contagem">0 / 25</span><span class="nivel" id="nivel" role="status" aria-live="polite">NÍVEL 1</span></div></div>
           <div class="saldo" aria-label="Resumo do mercado"><div class="saldo-linha"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div></div><div class="reputacao-topo media" id="reputacao-painel" aria-label="Satisfação média, 60 de 100"><span class="satisfacao-rosto" id="satisfacao-rosto">${icone('neutro')}</span><progress id="reputacao-progresso" value="60" max="100" aria-label="Satisfação do mercadinho"></progress><small id="reputacao-meta">Média · 60 / 100</small></div></div>
           <nav class="ferramentas" aria-label="Opções do jogo">
+            <button class="botao-icone" id="celular" title="Abrir opções" aria-label="Abrir opções">${icone('celular')}</button>
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
             <button class="botao-icone" id="ajuda" title="Como jogar" aria-label="Como jogar">${icone('ajuda')}</button>
             <button class="botao-icone" id="fullscreen" title="Jogar em tela cheia" aria-label="Jogar em tela cheia">${icone('tela')}</button>
@@ -79,6 +80,7 @@ export class Interface {
     const dinheiroCaixa = document.createElement('div'); dinheiroCaixa.id = 'dinheiro-caixa'; dinheiroCaixa.className = 'dinheiro-caixa';
     this.el('saldo').closest('.saldo').append(dinheiroCaixa);
     this.el('som').onclick = () => { this.acoes.som(); this.atualizarSom(); };
+    this.el('celular').onclick = () => this.abrir('opcoes');
     this.el('ajuda').onclick = () => this.abrir('ajuda');
     this.atualizarTelaCheia();
     this.el('fullscreen').onclick = async () => {
@@ -185,7 +187,6 @@ export class Interface {
       prateleiraTrigo: { ponto: PRODUTOS.trigo.reposicao, nome: 'PRATELEIRA DE TRIGO' },
       padaria: { ponto: PRODUTOS.pao.reposicao, nome: 'PADARIA' },
       caixa: { ponto: CONFIG.cadeiraCaixa, nome: 'CAIXA' },
-      escritorio: { ponto: CONFIG.cadeiraEscritorio, nome: 'ESCRITÓRIO' }
     };
     for (const [id, p] of Object.entries(PRODUTOS)) {
       destinos[`coleta-${id}`] = { ponto: p.coleta, nome: p.nome.toLocaleUpperCase('pt-BR') };
@@ -241,18 +242,18 @@ export class Interface {
       ? assalto.roubado ? `${reais(assalto.valor)} foram roubados do caixa. Reputação: ${this.sim.reputacao} / 100.` : 'Os clientes estão assustados. O caixa corre perigo!'
       : banco.coleta
       ? `Coleta de ${reais(banco.coleta.valor)}. Seu saldo disponível permanece o mesmo.`
-      : `${reais(banco.noCaixa)} no caixa. Vá ao escritório e deposite no banco. Sem depósito, o mercadinho pode ser assaltado.`;
+      : `${reais(banco.noCaixa)} no caixa. Abra o celular e deposite no banco. Sem depósito, o mercadinho pode ser assaltado.`;
   }
   renderizarPainel() {
     const tipo = this.tipoPainel;
-    const titulos = { lixeira: 'Descartar produtos', escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
+    const titulos = { lixeira: 'Descartar produtos', opcoes: 'Opções do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
     let conteudo = '';
     if (tipo === 'lixeira') {
       const inventario = this.sim.estado.jogador.inventario;
       conteudo = `<p class="painel-subtitulo">Escolha o que jogar fora. Produtos descartados não rendem dinheiro e não podem ser recuperados.</p>${Object.entries(PRODUTOS).filter(([id]) => inventario.includes(id)).map(([id, p]) => `<button class="botao-secundario" data-descartar="${id}">${icone(id)} Descartar 1 ${p.nome.toLocaleLowerCase('pt-BR')} · ${inventario.filter(item => item === id).length} no inventário</button>`).join('')}<button class="botao-principal" data-descartar="tudo" ${inventario.length ? '' : 'disabled'}>Esvaziar inventário (${inventario.length})</button><button class="botao-secundario" data-fechar>Voltar à loja</button>`;
-    } else if (tipo === 'escritorio') {
+    } else if (tipo === 'opcoes') {
       const aberta = this.sim.estado.lojaAberta;
-      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho sem sair do escritório.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
+      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho pelo celular, de onde estiver.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
       const banco = this.sim.estado.banco;
       conteudo += `<section class="deposito-banco"><h3>Depósito bancário</h3>
         <dl><div><dt>Dinheiro no caixa</dt><dd>${reais(banco.noCaixa)}</dd></div><div><dt>Total depositado</dt><dd>${reais(banco.depositado)}</dd></div></dl>
@@ -272,7 +273,7 @@ export class Interface {
         const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? disponibilidade.requisitoProduto ? 'Ovos' : disponibilidade.requisitoMelhoria ? 'Requer melhoria' : `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
         const aria = completa ? `${m.titulo} concluída` : !disponibilidade.disponivel ? disponibilidade.motivo : `Comprar ${m.titulo} por ${reais(custo)}`;
         return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.produto ? `<strong class="preco-venda-melhoria">Preço de venda: ${reais(PRODUTOS[m.produto].preco)}</strong>` : ''}<span class="nivel-melhoria">${m.max > 1 ? `Nível ${nivelExibido} de ${maxExibido} · ` : ''}Disponível no nível ${m.nivelMinimo || 1}</span>${!completa && disponibilidade.requisitoMelhoria ? `<p class="requisito-melhoria">${disponibilidade.motivo}</p>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${aria}">${rotulo}</button></div>`;
-      }).join('')}</div><button class="botao-secundario" id="voltar-escritorio">Voltar ao gerenciamento</button>`;
+      }).join('')}</div><button class="botao-secundario" id="voltar-opcoes">Voltar às opções</button>`;
     } else if (tipo === 'personalizacao') {
       titulos.personalizacao = 'Sua loja, do seu jeito';
       conteudo = `<p class="painel-subtitulo">Dê personalidade ao seu cantinho do bairro.</p>
@@ -281,18 +282,18 @@ export class Interface {
           <label for="nome-loja">Nome do mercadinho</label><input id="nome-loja" name="nome" maxlength="32" required autocomplete="off">
           <label for="slogan-loja">Slogan</label><input id="slogan-loja" name="slogan" maxlength="60" required autocomplete="off">
           <fieldset><legend>Paleta de cores</legend><div class="paletas-loja">${PALETAS.map(p => `<label class="paleta-loja"><input type="radio" name="paleta" value="${p.id}" ${p.id === this.sim.estado.personalizacao.paleta ? 'checked' : ''}><span class="paleta-cores" aria-hidden="true">${[p.principal,p.destaque,p.parede,p.piso].map(cor => `<i style="background:${cor}"></i>`).join('')}</span><span>${p.nome}</span></label>`).join('')}</div></fieldset>
-          <button type="submit" class="botao-principal">Salvar personalização</button><button type="button" class="botao-secundario" id="voltar-personalizacao">Voltar ao gerenciamento</button>
+          <button type="submit" class="botao-principal">Salvar personalização</button><button type="button" class="botao-secundario" id="voltar-personalizacao">Voltar às opções</button>
         </form>`;
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
         <p class="nota">Versão ${versaoJogo}</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p><p>Para mover o mapa, arraste com o <b>botão direito</b> ou <b>Shift</b>; no celular, use <b>dois dedos</b>. <b>Shift + setas</b> também move a câmera. Para aproximar ou afastar, use a <b>roda do mouse</b> ou a <b>pinça com dois dedos</b>.</p></div></div>
-          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 4, construa o galinheiro. As galinhas produzem ovos automaticamente.</p></div></li><li><span>5</span><div><b>Abra a ala do leite</b><p>No nível 5, construa o curral por R$ 800. Recolha as garrafas de vidro e abasteça a prateleira de leite.</p></div></li><li><span>6</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>7</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
+          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 4, construa o galinheiro. As galinhas produzem ovos automaticamente.</p></div></li><li><span>5</span><div><b>Abra a ala do leite</b><p>No nível 5, construa o curral por R$ 800. Recolha as garrafas de vidro e abasteça a prateleira de leite.</p></div></li><li><span>6</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>7</span><div><b>Use o celular</b><p>Abra o botão de celular no topo para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">No nível 7, abra a ala do trigo por R$ 400. Colha na plantação entre o galinheiro e o curral e abasteça a nova prateleira. Cada trigo vale R$ 5.</p>
         <p class="nota">No nível 9, abra a padaria por R$ 1.400. A loja se amplia à direita. Entregue trigo na caixa ao fundo da padaria; o balcão fica de frente para o hortifruti. Dois padeiros fazem farinha e assam três pães por trigo. Cada pão vale R$ 10.</p>
         <p class="nota">Do nível 10 ao 15: melhore sua cesta, abra a ala artesanal ao fundo da loja e construa a estufa, o apiário, a queijaria e a cozinha de geleias. No nível 14, irrigação e reposição ágil ajudam a cuidar da loja maior.</p>
         <p class="nota">Nas oficinas, aproxime-se com os ingredientes para entregá-los. Uma garrafa de leite rende 2 queijos; 2 morangos e 1 mel rendem 3 geleias. Recolha os produtos prontos e abasteça as bancas. O repositor também coleta a produção pronta. Os novos produtos só entram nos pedidos depois do primeiro abastecimento.</p>
-        <p class="nota">No nível 16, construa o estacionamento pelo escritório por R$ 10.000. As seis vagas começam vazias. Parte dos clientes chega nos carros da rua, estaciona, faz compras e volta ao próprio veículo. Passantes e compradores a pé continuam circulando pela calçada.</p>
+        <p class="nota">No nível 16, construa o estacionamento pelo celular por R$ 10.000. As seis vagas começam vazias. Parte dos clientes chega nos carros da rua, estaciona, faz compras e volta ao próprio veículo. Passantes e compradores a pé continuam circulando pela calçada.</p>
         <p class="nota">No nível 17, evolua Prateleiras de importados até o nível 2 em Melhorias → Mercado, por R$ 1.000 por nível. Elas ficam vazias por enquanto; a importação será adicionada em uma etapa futura.</p>
         <p class="nota">No nível 18, compre Expansão em Melhorias → Mercado por R$ 10.000, após a padaria. Um novo anexo é construído atrás da loja e da cozinha, mantendo as divisórias e os móveis existentes. A fazenda recua; use a porta de produção e a nova saída dos fundos.</p>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
@@ -345,7 +346,7 @@ export class Interface {
     } else {
       conteudo = `<p class="painel-subtitulo">O dinheiro, as melhorias e o progresso deste mercadinho serão apagados neste navegador.</p><button class="botao-principal perigo" id="confirmar-reinicio">${icone('reiniciar')} Apagar e começar de novo</button><button class="botao-secundario" id="cancelar-reinicio">Voltar para minha loja</button>`;
     }
-    this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : tipo === 'dev' ? 'dev' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
+    this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : tipo === 'dev' ? 'dev' : tipo === 'opcoes' ? 'celular' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
     this.el('painel').querySelectorAll('[data-fechar]').forEach(b => b.onclick = () => this.fechar());
     this.el('painel').querySelectorAll('[data-descartar]').forEach(b => b.onclick = () => {
       const resultado = this.acoes.descartar(b.dataset.descartar === 'tudo' ? null : b.dataset.descartar);
@@ -370,7 +371,7 @@ export class Interface {
       } else this.mensagem(resultado.motivo);
       this.atualizar();
     });
-    if (tipo === 'escritorio') {
+    if (tipo === 'opcoes') {
       this.el('depositar-banco').onclick = () => {
         const resultado = this.acoes.depositarBanco();
         if (resultado.sucesso) { this.fechar(); this.mensagem('Carro-forte chamado! Um agente vai recolher o dinheiro no caixa.'); }
@@ -385,7 +386,7 @@ export class Interface {
         this.mensagem(aberta ? 'Mercado aberto!' : 'Mercado fechado para novos clientes.');
       };
     }
-    if (tipo === 'melhorias') this.el('voltar-escritorio').onclick = () => this.abrir('escritorio');
+    if (tipo === 'melhorias') this.el('voltar-opcoes').onclick = () => this.abrir('opcoes');
     if (tipo === 'reiniciar') {
       this.el('cancelar-reinicio').onclick = () => this.fechar();
       this.el('confirmar-reinicio').onclick = () => this.acoes.reiniciar();
@@ -422,7 +423,7 @@ export class Interface {
         const salvo = this.acoes.personalizar(Object.fromEntries(new FormData(form)));
         if (salvo) this.mensagem('Seu mercadinho ganhou uma nova identidade!');
       };
-      this.el('voltar-personalizacao').onclick = () => this.abrir('escritorio');
+      this.el('voltar-personalizacao').onclick = () => this.abrir('opcoes');
     }
   }
   mensagem(texto) {

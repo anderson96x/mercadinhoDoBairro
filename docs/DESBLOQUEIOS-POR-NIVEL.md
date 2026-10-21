@@ -36,9 +36,9 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 
 ## Expansão no nível 18
 
-No nível 18, abra **Escritório → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra.
+No nível 18, abra **Celular → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra.
 
-O salão original de **24 × 16 u**, seus expositores, a padaria e o escritório mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
+O salão original de **24 × 16 u**, seus expositores e a padaria mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
 
 A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de produção original. A abertura junto à cozinha fica fechada. As bancadas da queijaria e da cozinha de geleias recuam até encostar nessa parede; os pontos de entrega e coleta acompanham as bancadas. A mureta que ficava atrás delas é removida. A lateral direita permanece em uma única peça contínua. O piso novo ocupa apenas os espaços adicionais, preservando o piso já construído da cozinha.
 
@@ -54,7 +54,7 @@ Toda a fazenda — tomate, milho, trigo, galinheiro, curral, estufa e apiário �
 
 ## Prateleiras de importados no nível 17
 
-No nível 17, abra **Escritório → Melhorias → Mercado** e compre a melhoria **Prateleiras de importados**. Ela tem dois níveis; cada nível custa **R$ 1.000** e instala uma prateleira, sem depender do estacionamento.
+No nível 17, abra **Celular → Melhorias → Mercado** e compre a melhoria **Prateleiras de importados**. Ela tem dois níveis; cada nível custa **R$ 1.000** e instala uma prateleira, sem depender do estacionamento.
 
 São duas gôndolas metálicas idênticas de 5,775 unidades, quatro níveis e dois lados, paralelas ao hortifruti no centro do salão e alinhadas pela frente com o balcão da padaria, conforme a [planta N17](PLANTA-LOJA-N17.svg). Os corredores dão acesso aos expositores posteriores e preservam a fila de dez clientes. Cada móvel e sua colisão aparecem somente após a respectiva compra.
 
@@ -62,7 +62,7 @@ São duas gôndolas metálicas idênticas de 5,775 unidades, quatro níveis e do
 
 ## Estacionamento no nível 16
 
-Ao alcançar o nível 16, sente-se no escritório e abra **Melhorias → Mercado → Estacionamento**. A construção custa **R$ 10.000**, pode ser comprada uma única vez e ocupa o terreno à esquerda da loja, entre o salão e a borda lateral do terreno, com acesso pela rua.
+Ao alcançar o nível 16, abra **Celular → Melhorias → Mercado → Estacionamento**. A construção custa **R$ 10.000**, pode ser comprada uma única vez e ocupa o terreno à esquerda da loja, entre o salão e a borda lateral do terreno, com acesso pela rua.
 
 O estacionamento tem seis vagas demarcadas que começam vazias, setas de circulação, passagem pela calçada, canteiro central com arbustos, iluminação e placa de estacionamento. Parte dos compradores usa os carros que j? circulam na rua, preservando modelo, cor e tamanho. Cada motorista reserva uma vaga, estaciona com uma curva suave, abre a porta e caminha até a loja. Após comprar, volta ao mesmo carro, embarca, sai de ré e segue pela rua. A vaga só fica livre quando o carro vai embora; novas chegadas esperam quando o estacionamento está cheio. Rodas, direção, portas, piscas e luzes de freio e ré são animados. Os carros cedem passagem aos pedestres e coordenam o uso da rua com o trânsito e os veículos do banco.
 
