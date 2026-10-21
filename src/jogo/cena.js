@@ -1,6 +1,6 @@
 import { construirBalcoesDecorados, criarVitrineCurva } from './padaria-decoracao.js';
 import { criarExpositorHortifruti } from './hortifruti.js';
-import { MODELO_PADARIA, pontoPadaria } from './planta.js';
+import { PLANTA_EXPANSAO, MODELO_PADARIA, pontoPadaria } from './planta.js';
 import { construirBairro } from './bairro.js';
 import { geometriaEstacao, distanciaEstacao } from './estacoes.js';
 import { Trafego, MODELOS_CARROS } from './trafego.js';
@@ -8,7 +8,7 @@ import { ColetaBancoVisual } from './coleta-banco.js';
 import { AssaltoVisual } from './assalto-visual.js';
 import { BANCO } from './banco.js';
 import * as THREE from 'three';
-import { CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
+import { produtosDaLoja, CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
@@ -760,6 +760,8 @@ export class Cena {
     this.cena.add(this.marcadorJogador);
     this.clientes = new Map(); this.retratosClientes = new Map(); this.labels = []; this.alvosHorta = []; this.efeitosCrescimento = [];
     this.raycaster = new THREE.Raycaster(); this.ponteiroRaycast = new THREE.Vector2();
+    const PRODUTOS = produtosDaLoja(this.sim.estado);
+    this.expansaoConstruida = !!this.sim.estado.melhorias.expansao;
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (id === 'pao') this.construirPadaria();
@@ -781,6 +783,7 @@ export class Cena {
     const c = new THREE.Group(); c.position.set(-5.5, 0, -4.1); suporte.add(c);
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera });
     this.bairro.atualizarEstagio(this.sim.estado.estagioLoja);
+    this.bairro.atualizarExpansao(this.sim.estado.melhorias.expansao);
     this.estacionamento = construirEstacionamento(); this.cena.add(this.estacionamento.grupo);
     this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento);
     this.bairro.atualizarEstacionamento(!!this.sim.estado.melhorias.estacionamento);
@@ -909,7 +912,7 @@ export class Cena {
       cilindro(grupo, 0.15, 0.15, 0.015, 0xf4f3e9, h.x - 0.55, 0.385, h.z - 0.25);
       caixa(grupo, 1.35, 0.28, 0.7, 0xb98250, h.x + 0.9, 0.27, h.z + 0.85);
     } else {
-      const { w, d } = geometriaEstacao(id, 'coleta');
+      const { w, d } = geometriaEstacao(id, 'coleta', produtosDaLoja(this.sim?.estado));
       caixa(grupo, w, 0.35, d, 0xbd7545, h.x, 0.22, h.z);
       caixa(grupo, w - 0.27, 0.05, d - 0.28, 0x70401f, h.x, 0.42, h.z);
       const alvoHorta = caixa(grupo, w, 1.5, d, 0xffffff, h.x, 0.9, h.z);
@@ -1006,6 +1009,7 @@ export class Cena {
     this.criarLabel(`loja-${id}`, { ...s, y: id === 'queijo' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   construirPadaria() {
+    const PRODUTOS = produtosDaLoja(this.sim?.estado);
     const p = MODELO_PADARIA.prateleira;
     const grupo = new THREE.Group(); grupo.name = 'padaria'; this.cena.add(grupo);
     construirBalcoesDecorados(grupo, MODELO_PADARIA.fechamento, { caixa, esfera });
@@ -1195,6 +1199,7 @@ export class Cena {
     this.criarLabel('loja-pao', { ...PRODUTOS.pao.prateleira, y: 1.85 }, 'PADARIA', '0 / 18', 'loja');
   }
   animarPadeiros(objetos, producao, tempo, dt) {
+    const PRODUTOS = produtosDaLoja(this.sim?.estado);
     const maquinas = [objetos.moinho.position, objetos.forno.position];
     const paes = this.sim.estado.produtos.pao.prateleira;
     const cheia = paes + ALA_PADARIA.paesPorTrigo > PRODUTOS.pao.capacidadePrateleira;
@@ -1340,7 +1345,7 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const camera = this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const altura = this.mobile ? 18.8 : Math.max(camera.alturaDesktop, 37 / proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
@@ -1374,7 +1379,7 @@ export class Cena {
     this.alvoCamera.set(x, 0, z);
   }
   baseCamera() {
-    const camera = this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const jogador = this.sim.estado.jogador;
     const acompanhamento = this.mobile ? 1 : THREE.MathUtils.clamp((this.camera.zoom - 1) / (ZOOM_MAXIMO - 1), 0, 1);
     return { x: THREE.MathUtils.lerp(camera.x, jogador.x, acompanhamento), z: THREE.MathUtils.lerp(camera.z, jogador.z, acompanhamento) };
@@ -1394,6 +1399,7 @@ export class Cena {
     return this.raycaster.intersectObjects(alvos, false)[0]?.object.userData.produtoHorta ?? null;
   }
   animarMelhoriaHorta(id) {
+    const PRODUTOS = produtosDaLoja(this.sim?.estado);
     const horta = PRODUTOS[id]?.horta;
     if (!horta) return;
     const grupo = new THREE.Group(); grupo.position.set(horta.x, 0.48, horta.z); this.cena.add(grupo);
@@ -1407,6 +1413,7 @@ export class Cena {
     this.efeitosCrescimento.push({ grupo, anel, particulas, inicio: this.tempoVisual, duracao: 1.8 });
   }
   animarPersonagem(modelo, ator, dt, tempo, inventario = [], origem = 'horta', duracao = 0.26) {
+    const PRODUTOS = produtosDaLoja(this.sim?.estado);
     modelo.position.set(ator.x, 0.23, ator.z);
     const d = modelo.userData;
     const evento = this.sim?.reposicoes.get(ator);
@@ -1612,6 +1619,7 @@ export class Cena {
     return { cliente, progresso, embalados };
   }
   atualizar(dt) {
+    const PRODUTOS = produtosDaLoja(this.sim?.estado);
     const sim = this.sim, e = sim.estado;
     const coleta = e.banco.coleta;
     const assalto = e.banco.assalto;
@@ -1641,7 +1649,23 @@ export class Cena {
         particula.scale.setScalar(1 - progresso * 0.65);
       });
     }
+    this.bairro.atualizarExpansao(e.melhorias.expansao);
     this.bairro.atualizarOficinas(e.produtos);
+    if (this.expansaoConstruida !== !!e.melhorias.expansao) {
+      this.expansaoConstruida = !!e.melhorias.expansao;
+      this.alvosHorta = [];
+      this.labels = this.labels.filter(label => {
+        if (label.id.endsWith('-pao')) return true;
+        label.el.remove(); return false;
+      });
+      for (const [id, p] of Object.entries(PRODUTOS)) {
+        if (id === 'pao') continue;
+        const anterior = this.produtos[id].grupo;
+        this.cena.remove(anterior); liberarGeometrias(anterior);
+        this.construirEstacao(id, p);
+      }
+      this.redimensionar();
+    }
     this.prateleirasImportados.atualizar(e.melhorias);
     this.bairro.aplicar(e.personalizacao);
     this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo);
@@ -1859,7 +1883,7 @@ export class Cena {
       const [tipo, produto] = id.split('-');
       const construcao = (produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (produto === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (produto === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
       if (produto && (!estacaoDesbloqueada(produto, e) || ((['ovos', 'leite', 'trigo'].includes(produto) || PRODUTOS[produto]?.nivelMinimo >= 11) && construcao < 1))) { el.hidden = true; continue; }
-      const estacao = PRODUTOS[produto] && geometriaEstacao(produto, tipo === 'horta' ? 'coleta' : 'reposicao');
+      const estacao = PRODUTOS[produto] && geometriaEstacao(produto, tipo === 'horta' ? 'coleta' : 'reposicao', PRODUTOS);
       const perto = estacao && distanciaEstacao(e.jogador, estacao) < CONFIG.raioInteracao + 0.3;
       if (!perto) { el.hidden = true; continue; }
       const pos = this.projetar(ponto);

@@ -183,8 +183,8 @@ export const PLANTA_LEITE = {
   pontosCompra: [-0.65, 0, 0.65].map(dx => ({ x: 9.45 + dx, z: -7.15 }))
 };
 
-export function selecionarExpositorPosterior(ator, produtos) {
-  const ativos = [['ovos', PLANTA_OVOS.prateleira], ['leite', PLANTA_LEITE.prateleira], ['queijo', PLANTA_QUEIJO.prateleira]]
+export function selecionarExpositorPosterior(ator, produtos, catalogo = { ovos: PLANTA_OVOS, leite: PLANTA_LEITE, queijo: PLANTA_QUEIJO }) {
+  const ativos = ['ovos', 'leite', 'queijo'].map(id => [id, catalogo[id].prateleira])
     .filter(([id]) => produtos[id]?.liberado);
   return ativos.find(([id, p], i) => {
     const anterior = ativos[i - 1]?.[1], proximo = ativos[i + 1]?.[1];
@@ -192,6 +192,57 @@ export function selecionarExpositorPosterior(ator, produtos) {
     const maxX = proximo ? (p.x + p.w / 2 + proximo.x - proximo.w / 2) / 2 : p.x + p.w / 2;
     return ator.z >= p.z + p.d / 2 && ator.x >= minX - 1e-8 && ator.x <= maxX + 1e-8;
   })?.[0];
+}
+
+// N18: anexo atrás da loja, preservando o salão, suas paredes e a cozinha.
+export const PLANTA_EXPANSAO = {
+  profundidade: 6,
+  salao: { x: 8.9, z: -4.3, w: 24, d: 22 },
+  pisos: [
+    { x: 4.6, z: -12.3, w: 15.4, d: 6 },
+    // A cozinha já tem piso: acrescenta somente a faixa atrás dela.
+    { x: 16.6, z: -14.8, w: 8.6, d: 1 }
+  ],
+  terreno: { ...PLANTA_INICIAL.terreno, z: -8.5, d: 46 },
+  limites: { minX: -13.8, maxX: 22.5, minZ: -30.5, maxZ: 9 },
+  portaProducao: { ...PLANTA_INICIAL.portaProducao, z: -15.3 },
+  bancadas: Object.fromEntries([['queijo', PLANTA_QUEIJO], ['geleia', PLANTA_GELEIA]].map(([id, p]) => [id, {
+    x: p.horta.x,
+    // Face posterior da bancada encostada na face interna da nova parede.
+    z: -15.3 + 0.28 / 2 + p.curral.d / 2
+  }])),
+  camera: { x: 5, z: -4.3, alturaDesktop: 41 },
+  portas: [
+    { ...PLANTA_INICIAL.portaProducao, z: -15.3 }
+  ]
+};
+
+export function paredesExpansao() {
+  const paredes = [];
+  let inicio = -3.1;
+  for (const porta of PLANTA_EXPANSAO.portas) {
+    const fim = porta.x - porta.w / 2;
+    paredes.push({ x: (inicio + fim) / 2, z: porta.z, w: fim - inicio, d: 0.28, h: 2.8 });
+    inicio = porta.x + porta.w / 2;
+  }
+  return [...paredes,
+    { x: (inicio + 20.9) / 2, z: -15.3, w: 20.9 - inicio, d: 0.28, h: 2.8 },
+    { x: -3.1, z: -12.3, w: 0.28, d: 6, h: 2.8 },
+    // Uma única lateral evita emendas de altura, espessura e acabamento.
+    { x: 20.9, z: -4.3, w: 0.28, d: 22, h: 0.75, lateralContinua: true }
+  ];
+}
+
+export function paredesOficinas(expandida = false) {
+  if (!expandida) return PLANTA_OFICINAS.paredes;
+  // A parede dos fundos e a lateral do prédio delimitam a cozinha ampliada.
+  return [];
+}
+
+export function folhasPortasExpansao() {
+  return PLANTA_EXPANSAO.portas.flatMap(porta => [-1, 1].map(lado => ({
+    x: porta.x + lado * porta.w / 2, z: porta.z - 0.72, w: 0.12, d: 1.44
+  })));
 }
 
 export function paredesPlantaInicial(alturaBaixa) {

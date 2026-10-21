@@ -32,6 +32,17 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 15 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote de geleia |
 | 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
 | 17 | Prateleiras de importados (2 níveis) | R$ 1.000 por nível | — |
+| 18 | Expansão dos fundos | R$ 10.000 | — |
+
+## Expansão no nível 18
+
+No nível 18, abra **Escritório → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra.
+
+O salão original de **24 × 16 u**, seus expositores, a padaria e o escritório mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
+
+A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de produção original. A abertura junto à cozinha fica fechada. As bancadas da queijaria e da cozinha de geleias recuam até encostar nessa parede; os pontos de entrega e coleta acompanham as bancadas. A mureta que ficava atrás delas é removida. A lateral direita permanece em uma única peça contínua. O piso novo ocupa apenas os espaços adicionais, preservando o piso já construído da cozinha.
+
+Toda a fazenda — tomate, milho, trigo, galinheiro, curral, estufa e apiário — recua 6 unidades, junto com a cerca e o caminho de coleta. O terreno cresce nos fundos para acomodar os cultivos. Estoques, ingredientes, produção e melhorias são preservados. Saves antigos recebem a expansão desmarcada; partidas com a compra mantêm a nova planta ao recarregar.
 
 ## Prateleiras de importados no nível 17
 
@@ -39,7 +50,7 @@ No nível 17, abra **Escritório → Melhorias → Mercado** e compre a melhoria
 
 São duas gôndolas metálicas idênticas de 5,775 unidades, quatro níveis e dois lados, paralelas ao hortifruti no centro do salão e alinhadas pela frente com o balcão da padaria, conforme a [planta N17](PLANTA-LOJA-N17.svg). Os corredores dão acesso aos expositores posteriores e preservam a fila de dez clientes. Cada móvel e sua colisão aparecem somente após a respectiva compra.
 
-**Por enquanto, as prateleiras ficam vazias.** A importação de produtos está planejada para o **nível 18** e será implementada em uma próxima etapa. Esta compra não cria estoque, receitas ou demanda de clientes. O nível comprado é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
+**Por enquanto, as prateleiras ficam vazias.** A importação de produtos será implementada em uma etapa futura; o nível 18 libera a expansão dos fundos. Esta compra não cria estoque, receitas ou demanda de clientes. O nível comprado é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
 
 ## Estacionamento no nível 16
 

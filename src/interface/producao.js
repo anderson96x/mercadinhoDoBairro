@@ -1,4 +1,4 @@
-import { ALA_PADARIA, CONFIG, OFICINAS, PRODUTOS } from '../jogo/configuracao.js';
+import { produtosDaLoja, ALA_PADARIA, CONFIG, OFICINAS, PRODUTOS } from '../jogo/configuracao.js';
 import { distanciaEstacao, geometriaEstacao } from '../jogo/estacoes.js';
 import { icone } from './icones.js';
 
@@ -42,7 +42,7 @@ export function resumoProducao(estado) {
 export function atualizarPainelProducao(painel, estado) {
   const oficinas = resumoProducao(estado).filter(({ id }) =>
     (id === 'pao' ? [ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, PRODUTOS.pao.prateleira]
-      : [geometriaEstacao(id, 'coleta')]).some(estacao => distanciaEstacao(estado.jogador, estacao) < CONFIG.raioInteracao));
+      : [geometriaEstacao(id, 'coleta', produtosDaLoja(estado))]).some(estacao => distanciaEstacao(estado.jogador, estacao) < CONFIG.raioInteracao));
   painel.hidden = !oficinas.length;
   if (!oficinas.length) return;
   const chave = JSON.stringify(oficinas);

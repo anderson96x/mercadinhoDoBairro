@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="1000" viewBox="0 0 1200 1000" role="img" aria-labelledby="title desc">
+<title id="title">Nova planta — nível 18</title><desc id="desc">Terreno ampliado nos fundos, salão de 24 por 22 unidades, escritório ao fundo, banca modular de hortifruti, caixa frontal e porta posterior para os canteiros. Milho alinhado atrás do tomate, ambos inteiramente atrás da loja.</desc>
+<style>text{font-family:Arial,sans-serif;fill:#294439}.title{font-size:30px;font-weight:bold}.label{font-size:13px;font-weight:bold}.note{font-size:15px}.small{font-size:11px}.wall{fill:#315c49}.route{fill:none;stroke:#bf743a;stroke-width:3;stroke-dasharray:7 5}</style>
+<rect width="1200" height="1000" fill="#faf9f5"/>
+<text x="48" y="54" class="title">Mercadinho do Bairro · nível 18</text>
+<text x="48" y="85" class="note">Nova planta · 2 u por cm anotado · cresce somente após as compras</text>
+<rect x="114" y="156" width="640" height="736" fill="#dfebd4" stroke="#9cb88e"/>
+<rect x="114" y="805.6" width="640" height="70.4" fill="#78817e" />
+<rect x="114" y="767.2" width="640" height="40" fill="#e8deca" />
+<text x="578" y="852" text-anchor="middle" class="label">RUA</text>
+<rect x="320.4" y="415.2" width="384" height="352" fill="#f4f0e5" />
+<rect x="320.4" y="511.2" width="67.2" height="56.000000000000014" fill="#dfd5df" />
+<rect x="320.4" y="508.96" width="83.2" height="4.48" fill="#315c49" />
+<rect x="451.6" y="508.96" width="92.80000000000001" height="4.48" fill="#315c49" />
+<rect x="318.15999999999997" y="511.2" width="4.48" height="256" fill="#315c49" />
+<rect x="320.4" y="764.96" width="4.800000000000004" height="4.48" fill="#315c49" />
+<rect x="373.2" y="764.96" width="171.20000000000002" height="4.48" fill="#315c49" />
+<rect x="544.4" y="508.96" width="160" height="4.48" fill="#315c49" />
+<rect x="544.4" y="764.96" width="160" height="4.48" fill="#315c49" />
+<rect x="386.16" y="511.2" width="2.88" height="56.000000000000014" fill="#315c49" />
+<rect x="320.4" y="565.76" width="27.2" height="2.88" fill="#315c49" />
+<rect x="370" y="565.76" width="17.6" height="2.88" fill="#315c49" />
+<rect x="320.4" y="412.96" width="83.2" height="4.48" fill="#315c49" />
+<rect x="451.6" y="412.96" width="252.79999999999998" height="4.48" fill="#315c49" />
+<rect x="318.15999999999997" y="415.2" width="4.48" height="96" fill="#315c49" />
+<rect x="702.16" y="415.2" width="4.48" height="352" fill="#315c49" />
+<rect x="335.6" y="514.8" width="43.2" height="13.6" fill="#b99269" />
+<rect x="324" y="514.4" width="7.2" height="27.2" fill="#b99269" />
+<rect x="347.6" y="566.24" width="22.4" height="1.92" fill="#94b7b5" />
+<text x="357.2" y="559.2" text-anchor="middle" class="small">ESCRITÓRIO</text>
+<rect x="389.04" y="513.44" width="13.44" height="13.12" fill="#387448" />
+<rect x="375.6" y="733.2" width="14.4" height="20" fill="#739b72" />
+<text x="382.8" y="760.8" text-anchor="middle" class="small">CESTAS</text>
+<rect x="402" y="722.16" width="46.4" height="24.48" fill="#aeb9b5" />
+<text x="425.2" y="734.4" text-anchor="middle" class="small">CAIXA</text>
+<rect x="420.4" y="752" width="9.6" height="9.6" fill="#74858d" />
+<rect x="325.2" y="685.6" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
+<circle cx="330" cy="691.2" r="3" fill="#ef5a42"/>
+<circle cx="336.4" cy="691.2" r="3" fill="#ef5a42"/>
+<circle cx="342.8" cy="691.2" r="3" fill="#ef5a42"/>
+<circle cx="330" cy="699.2" r="3" fill="#ef5a42"/>
+<circle cx="336.4" cy="699.2" r="3" fill="#ef5a42"/>
+<circle cx="342.8" cy="699.2" r="3" fill="#ef5a42"/>
+<circle cx="330" cy="707.2" r="3" fill="#ef5a42"/>
+<circle cx="336.4" cy="707.2" r="3" fill="#ef5a42"/>
+<circle cx="342.8" cy="707.2" r="3" fill="#ef5a42"/>
+<circle cx="330" cy="715.2" r="3" fill="#ef5a42"/>
+<circle cx="336.4" cy="715.2" r="3" fill="#ef5a42"/>
+<circle cx="342.8" cy="715.2" r="3" fill="#ef5a42"/>
+<text x="370" y="703.2" text-anchor="middle" class="small">TOMATE</text>
+<rect x="194" y="340.8" width="57.6" height="40" fill="#b77e50" stroke="#805634"/>
+<circle cx="205.20000000000002" cy="352" r="4" fill="#ef5a42"/>
+<circle cx="216.93333333333334" cy="352" r="4" fill="#ef5a42"/>
+<circle cx="228.66666666666669" cy="352" r="4" fill="#ef5a42"/>
+<circle cx="240.40000000000003" cy="352" r="4" fill="#ef5a42"/>
+<circle cx="205.20000000000002" cy="369.6" r="4" fill="#ef5a42"/>
+<circle cx="216.93333333333334" cy="369.6" r="4" fill="#ef5a42"/>
+<circle cx="228.66666666666669" cy="369.6" r="4" fill="#ef5a42"/>
+<circle cx="240.40000000000003" cy="369.6" r="4" fill="#ef5a42"/>
+<text x="222.8" y="334.40000000000003" text-anchor="middle" class="small">TOMATE</text>
+<rect x="325.2" y="650.4" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
+<circle cx="330" cy="656" r="3" fill="#f6c844"/>
+<circle cx="336.4" cy="656" r="3" fill="#f6c844"/>
+<circle cx="342.8" cy="656" r="3" fill="#f6c844"/>
+<circle cx="330" cy="664" r="3" fill="#f6c844"/>
+<circle cx="336.4" cy="664" r="3" fill="#f6c844"/>
+<circle cx="342.8" cy="664" r="3" fill="#f6c844"/>
+<circle cx="330" cy="672" r="3" fill="#f6c844"/>
+<circle cx="336.4" cy="672" r="3" fill="#f6c844"/>
+<circle cx="342.8" cy="672" r="3" fill="#f6c844"/>
+<circle cx="330" cy="680" r="3" fill="#f6c844"/>
+<circle cx="336.4" cy="680" r="3" fill="#f6c844"/>
+<circle cx="342.8" cy="680" r="3" fill="#f6c844"/>
+<text x="370" y="668" text-anchor="middle" class="small">MILHO</text>
+<rect x="194" y="268.8" width="57.6" height="40" fill="#b77e50" stroke="#805634"/>
+<circle cx="205.20000000000002" cy="280" r="4" fill="#f6c844"/>
+<circle cx="216.93333333333334" cy="280" r="4" fill="#f6c844"/>
+<circle cx="228.66666666666669" cy="280" r="4" fill="#f6c844"/>
+<circle cx="240.40000000000003" cy="280" r="4" fill="#f6c844"/>
+<circle cx="205.20000000000002" cy="297.6" r="4" fill="#f6c844"/>
+<circle cx="216.93333333333334" cy="297.6" r="4" fill="#f6c844"/>
+<circle cx="228.66666666666669" cy="297.6" r="4" fill="#f6c844"/>
+<circle cx="240.40000000000003" cy="297.6" r="4" fill="#f6c844"/>
+<text x="222.8" y="262.40000000000003" text-anchor="middle" class="small">MILHO</text>
+<rect x="325.2" y="615.2" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
+<circle cx="330" cy="620.8" r="3" fill="#e4bc57"/>
+<circle cx="336.4" cy="620.8" r="3" fill="#e4bc57"/>
+<circle cx="342.8" cy="620.8" r="3" fill="#e4bc57"/>
+<circle cx="330" cy="628.8" r="3" fill="#e4bc57"/>
+<circle cx="336.4" cy="628.8" r="3" fill="#e4bc57"/>
+<circle cx="342.8" cy="628.8" r="3" fill="#e4bc57"/>
+<circle cx="330" cy="636.8" r="3" fill="#e4bc57"/>
+<circle cx="336.4" cy="636.8" r="3" fill="#e4bc57"/>
+<circle cx="342.8" cy="636.8" r="3" fill="#e4bc57"/>
+<circle cx="330" cy="644.8" r="3" fill="#e4bc57"/>
+<circle cx="336.4" cy="644.8" r="3" fill="#e4bc57"/>
+<circle cx="342.8" cy="644.8" r="3" fill="#e4bc57"/>
+<text x="370" y="632.8" text-anchor="middle" class="small">TRIGO</text>
+<rect x="194" y="196.8" width="57.6" height="40" fill="#b77e50" stroke="#805634"/>
+<circle cx="205.20000000000002" cy="208" r="4" fill="#e4bc57"/>
+<circle cx="216.93333333333334" cy="208" r="4" fill="#e4bc57"/>
+<circle cx="228.66666666666669" cy="208" r="4" fill="#e4bc57"/>
+<circle cx="240.40000000000003" cy="208" r="4" fill="#e4bc57"/>
+<circle cx="205.20000000000002" cy="225.60000000000002" r="4" fill="#e4bc57"/>
+<circle cx="216.93333333333334" cy="225.60000000000002" r="4" fill="#e4bc57"/>
+<circle cx="228.66666666666669" cy="225.60000000000002" r="4" fill="#e4bc57"/>
+<circle cx="240.40000000000003" cy="225.60000000000002" r="4" fill="#e4bc57"/>
+<text x="222.8" y="190.40000000000003" text-anchor="middle" class="small">TRIGO</text>
+<rect x="325.2" y="580" width="22.4" height="35.2" fill="#cc9d78" stroke="#91603c"/>
+<circle cx="330" cy="585.6" r="3" fill="#e74769"/>
+<circle cx="336.4" cy="585.6" r="3" fill="#e74769"/>
+<circle cx="342.8" cy="585.6" r="3" fill="#e74769"/>
+<circle cx="330" cy="593.6" r="3" fill="#e74769"/>
+<circle cx="336.4" cy="593.6" r="3" fill="#e74769"/>
+<circle cx="342.8" cy="593.6" r="3" fill="#e74769"/>
+<circle cx="330" cy="601.6" r="3" fill="#e74769"/>
+<circle cx="336.4" cy="601.6" r="3" fill="#e74769"/>
+<circle cx="342.8" cy="601.6" r="3" fill="#e74769"/>
+<circle cx="330" cy="609.6" r="3" fill="#e74769"/>
+<circle cx="336.4" cy="609.6" r="3" fill="#e74769"/>
+<circle cx="342.8" cy="609.6" r="3" fill="#e74769"/>
+<text x="370" y="597.6" text-anchor="middle" class="small">MORANGO</text>
+<rect x="469.2" y="188.8" width="57.6" height="40" fill="#b77e50" stroke="#805634"/>
+<circle cx="480.4" cy="200" r="4" fill="#e74769"/>
+<circle cx="492.1333333333333" cy="200" r="4" fill="#e74769"/>
+<circle cx="503.8666666666667" cy="200" r="4" fill="#e74769"/>
+<circle cx="515.6" cy="200" r="4" fill="#e74769"/>
+<circle cx="480.4" cy="217.60000000000002" r="4" fill="#e74769"/>
+<circle cx="492.1333333333333" cy="217.60000000000002" r="4" fill="#e74769"/>
+<circle cx="503.8666666666667" cy="217.60000000000002" r="4" fill="#e74769"/>
+<circle cx="515.6" cy="217.60000000000002" r="4" fill="#e74769"/>
+<text x="498" y="182.40000000000003" text-anchor="middle" class="small">MORANGO</text>
+<path d="M382.8,644L427.6,525.6L427.6,389.6L222.8,389.6" class="route"/>
+<path d="M277.2,317.6L277.2,245.60000000000002L222.8,245.60000000000002" class="route"/>
+<path d="M277.2,389.6L277.2,317.6L222.8,317.6" class="route"/>
+<rect x="466" y="513.6" width="35.2" height="22.4" fill="#cc9d78" stroke="#91603c"/>
+<text x="483.6" y="544" text-anchor="middle" class="small">OVOS</text>
+<rect x="311.6" y="199.2" width="40" height="35.2" fill="#b99269" stroke="#805634"/>
+<text x="331.6" y="191.2" text-anchor="middle" class="small">GALINHEIRO</text>
+<path d="M427.6,389.6L427.6,243.2L331.6,243.2" class="route"/>
+<text x="427.6" y="384" text-anchor="middle" class="small">PORTA DE PRODUÇÃO · 3 u</text>
+<rect x="503.6" y="513.6" width="35.2" height="22.4" fill="#d3e6e3" stroke="#63868d"/>
+<text x="521.2" y="544" text-anchor="middle" class="small">LEITE</text>
+<rect x="384.4" y="191.2" width="54.4" height="51.2" fill="#bed19d" stroke="#9b6a43"/>
+<text x="411.6" y="216.8" text-anchor="middle" class="small">CURRAL</text>
+<path d="M427.6,389.6L427.6,252.8L411.6,252.8" class="route"/>
+<text x="349.2" y="796" text-anchor="middle" class="small">ENTRADA DUPLA</text>
+<circle cx="405.2" cy="716" r="4" fill="#b79069"/>
+<circle cx="423.6" cy="716" r="4" fill="#b79069"/>
+<circle cx="442" cy="716" r="4" fill="#b79069"/>
+<circle cx="460.4" cy="716" r="4" fill="#b79069"/>
+<circle cx="478.8" cy="716" r="4" fill="#b79069"/>
+<text x="512.4" y="639.2" text-anchor="middle" class="label">SALÃO · 24 × 22 u</text>
+<rect x="633.2" y="655.6" width="63.2" height="10.4" fill="#d7b58a" stroke="#936238"/>
+<rect x="633.2" y="564.4" width="29.6" height="10.4" fill="#d7b58a" stroke="#936238"/>
+<rect x="618.8" y="564.4" width="14.4" height="23.6" fill="#d7b58a" stroke="#936238"/>
+<rect x="618.8" y="642.4" width="14.4" height="23.6" fill="#d7b58a" stroke="#936238"/>
+<rect x="618.8" y="588" width="14.4" height="54.4" fill="#d3e6e3" stroke="#63868d"/>
+<rect x="662.8" y="564.4" width="33.6" height="10.4" fill="#acb3ad" />
+<text x="679.6" y="569.6" text-anchor="middle" class="small">TRIGO</text>
+<rect x="673.5999999999999" y="581.2" width="13.6" height="13.6" fill="#acb3ad" />
+<text x="680.4" y="588" text-anchor="middle" class="small">MOINHO</text>
+<rect x="671.2" y="634" width="18.4" height="16.8" fill="#acb3ad" />
+<text x="680.4" y="642.4" text-anchor="middle" class="small">FORNO</text>
+<text x="602" y="588" text-anchor="middle" class="small">PADARIA</text>
+<path d="M609.2,615.2L578,596" class="route"/>
+<rect x="649.6" y="417.44" width="42.4" height="28" fill="#b56d85" stroke="#805634"/>
+<text x="670.8" y="410.64" text-anchor="middle" class="small">COZINHA</text>
+<rect x="574.8" y="741.6" width="51.2" height="22.4" fill="#b94470" stroke="#805634"/>
+<text x="600.4" y="752.8" text-anchor="middle" class="small">GELEIA</text>
+<path d="M670.8,454.64L427.6,454.64L427.6,415.2L498,676L600.4,732" class="route"/>
+<rect x="574.4" y="417.44" width="42.4" height="28" fill="#73a9a5" stroke="#63868d"/>
+<text x="595.6" y="410.64" text-anchor="middle" class="small">QUEIJARIA</text>
+<rect x="541.2" y="513.6" width="35.2" height="22.4" fill="#d3e6e3" stroke="#63868d"/>
+<text x="558.8" y="524.8" text-anchor="middle" class="small">DELI</text>
+<path d="M595.6,454.64L427.6,454.64L427.6,415.2L498,671.2L558.8,545.6" class="route"/>
+<rect x="561.2" y="180" width="40" height="57.6" fill="#dca66a" stroke="#805634"/>
+<text x="581.2" y="208.8" text-anchor="middle" class="small">APIÁRIO</text>
+<rect x="626" y="741.6" width="51.2" height="22.4" fill="#e7a92b" stroke="#805634"/>
+<text x="651.6" y="752.8" text-anchor="middle" class="small">MEL</text>
+<path d="M581.2,247.2L427.6,247.2L427.6,415.2L498,676L651.6,732" class="route"/>
+<rect x="437.2" y="573.6" width="19.2" height="92.4" fill="#d5dfe2" stroke="#71838d"/>
+<text x="446.8" y="619.8" text-anchor="middle" class="small">P1</text>
+<text x="446.8" y="675.6" text-anchor="middle" class="small">R$ 1.000</text>
+<rect x="526.8" y="573.6" width="19.2" height="92.4" fill="#d5dfe2" stroke="#71838d"/>
+<text x="536.4" y="619.8" text-anchor="middle" class="small">P2</text>
+<text x="536.4" y="675.6" text-anchor="middle" class="small">R$ 1.000</text>
+<path d="M860 140V900" stroke="#dedfd7"/>
+<text x="885" y="165" class="label">IMPLEMENTADO NO NÍVEL 18</text>
+<text x="885" y="196" class="note">Salão ampliado: 24 × 22 u.</text>
+<text x="885" y="227" class="note">Terreno: 40 × 46 u.</text>
+<text x="885" y="258" class="note">Tomate, milho e trigo na banca.</text>
+<text x="885" y="289" class="note">Ovos + leite na parede do fundo.</text>
+<text x="885" y="320" class="note">Entrada frontal e acesso posterior.</text>
+<text x="885" y="351" class="note">Caixa com acesso livre à cadeira.</text>
+<text x="885" y="382" class="note">P1 e P2: prateleiras vazias.</text>
+<text x="885" y="413" class="note"></text>
+<text x="885" y="444" class="label">BANCA MODULAR</text>
+<text x="885" y="475" class="note">Só tomates aparecem no início.</text>
+<text x="885" y="506" class="note">Milho, trigo e morango acrescentam</text>
+<text x="885" y="537" class="note">seções após as respectivas compras.</text>
+<text x="885" y="568" class="note">Estoques e alvos são independentes.</text>
+<text x="885" y="599" class="note">Pontilhado: reserva neste desenho,</text>
+<text x="885" y="630" class="note">sem móvel ou colisão no jogo.</text>
+<text x="885" y="661" class="note"></text>
+<text x="885" y="692" class="label">ESCOPO DESTA ETAPA</text>
+<text x="885" y="723" class="note">N18: expansão de R$ 10.000.</text>
+<text x="885" y="754" class="note">Fazenda recuada em 6 u.</text>
+<text x="885" y="785" class="note">N9: padaria voltada ao hortifruti.</text>
+<text x="885" y="816" class="note">u = unidade do jogo; rua em +z.</text>
+<text x="48" y="966" class="small">Gerado da configuração do jogo · Traço laranja: percurso de produção · Círculos: posições de fila apenas na documentação</text></svg>

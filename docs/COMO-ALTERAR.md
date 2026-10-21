@@ -50,6 +50,8 @@ Os clientes escolhem entre os produtos liberados; ovos e leite só entram nos pe
 
 ## Alterar o mapa
 
+No N18, `PLANTA_EXPANSAO` define o anexo posterior de 6 u, o terreno maior, uma nova saída e `bancadas`, com a queijaria e a cozinha de geleias encostadas na face interna da parede dos fundos. Preserve pisos, estações de venda e divisórias do salão. Os novos `pisos` contornam o piso existente das oficinas. `paredesOficinas(true)` retorna uma lista vazia para remover a mureta da cozinha e sua antiga lateral; as paredes externas vêm de `paredesExpansao()`, sem duplicar trechos. `folhasPortasExpansao()` fornece as colisões da nova porta. `produtosDaLoja(estado)` seleciona o catálogo conforme a compra `expansao`, recuando a fazenda e ajustando as origens/coletas das bancadas; use `sim.produtos` para posições em execução. Nunca altere o catálogo global ao comprar: outras partidas e os níveis anteriores devem manter sua planta. `node scripts/check-store-layout.mjs` inclui as rotas do N18; o gerador também produz a planta N18.
+
 As coordenadas usam `x` para os lados, `z` para a profundidade e `y` para a altura. A origem fica perto do centro da loja. O chão está em `y = 0` e o piso elevado da loja em aproximadamente `y = 0.2`.
 
 Mantenha os pontos de coleta e reposição fora dos objetos sólidos. A ala de produção define piso e paredes da pequena extensão, galinheiro na fazenda, prateleira e limites fixos do terreno em `ALA_PRODUCAO`; `construirBairro()` desenha a ala e `Simulacao.obstaculos()` usa a mesma configuração para colisão e busca de caminho. Teste as rotas de clientes e ajudante após mudar qualquer estação.

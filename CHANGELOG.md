@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.50.4 — 2026-10-21
+## Versão atual: 0.51.0 — 2026-10-21
+
+- Libera **Expansão** no nível 18 por R$ 10.000, uma única vez pelo escritório, após a padaria. Acrescenta um anexo de 6 u atrás da loja e da cozinha, ampliando o salão para 24 × 22 u e preservando as posições de venda, as divisórias do salão, o piso da cozinha e a porta de produção original.
+- Recua a fazenda, a cerca e o caminho de coleta em 6 u, amplia o terreno posterior e acrescenta piso ao redor da cozinha sem sobrepor seu piso original. Ajusta modelos, colisões, rotas, etiquetas, orientação e painel de produção à compra.
+- Mantém uma nova saída alinhada à porta de produção e fecha com parede a abertura dos fundos junto à cozinha. Unifica a lateral direita em uma parede de 22 u e alinha altura, espessura, rodapé e acabamento das paredes baixas da cozinha.
+- Encosta as duas bancadas da cozinha na face interna da nova parede dos fundos, acompanha suas posições com os pontos de entrega de ingredientes e coleta e remove a mureta atrás delas, incluindo sua colisão.
+- Preserva expositores, receitas, estoques, ingredientes, progresso e saves anteriores; partidas sem a compra mantêm sua planta.
+- Atualiza os desbloqueios, a planta N18 e a orientação sobre importados, que permanecem para uma etapa futura.
+- Validação: 246 testes, build e rotas até N18 passaram, incluindo compra, preservação da planta, posicionamento das bancadas, colisões, entrega/coleta, reposição e acesso à fazenda. Compra pelo painel e recarga conferidas no Edge; desktop e celular verificados com WebGL e Canvas, sem exceções JavaScript. Capturas em `docs/previews/expansao-n18-*.png` e `docs/previews/paredes-cozinha-n18-desktop.png`.
+
+## 0.50.4 — 2026-10-21
 
 - Aciona somente o pisca do lado para o qual o carro está virando durante as manobras do estacionamento.
 - Acende as luzes de freio durante a desaceleração, em vez de mantê-las ligadas por causa da baixa velocidade.
