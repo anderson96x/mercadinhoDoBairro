@@ -1608,6 +1608,14 @@ export class Cena {
   animarEntregador(modelo, ator, caminhao, dt, tempo) {
     this.animarPersonagem(modelo, { ...ator, temCesta: false }, dt, tempo);
     const d = modelo.userData;
+    if ((caminhao.fase === 'desembarcar' && caminhao.tempo < 1.85)
+      || (caminhao.fase === 'embarcar' && caminhao.etapa >= 2)) {
+      const abertura = caminhao.aberturaCabine || 0;
+      posicionarBraco(d.bracoE, new THREE.Vector3(-0.28, 0.88, 0.58));
+      posicionarBraco(d.bracoD, new THREE.Vector3(0.42 + abertura * 0.12, 0.92, 0.72));
+      d.corpo.rotation.x = caminhao.fase === 'embarcar' ? abertura * 0.22 : -abertura * 0.12;
+      return;
+    }
     if (caminhao.fase === 'abrirBau' || caminhao.fase === 'fecharBau') {
       const movimento = caminhao.fase === 'abrirBau' ? caminhao.aberturaBau : 1 - caminhao.aberturaBau;
       posicionarBraco(d.bracoE, new THREE.Vector3(-0.32, 0.82, 0.72));

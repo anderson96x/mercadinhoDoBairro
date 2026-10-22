@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS, MELHORIAS } from '../src/jogo/configuracao.js';
 import { ROTAS_ENTREGA, ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
-import { criarCaminhaoEntrega, EntregasVisual, ANGULO_PORTAS_BAU } from '../src/jogo/entregas-visual.js';
+import { criarCaminhaoEntrega, EntregasVisual, ANGULO_PORTAS_BAU, ANGULO_PORTA_CABINE } from '../src/jogo/entregas-visual.js';
 import { Cena, criarEntregador } from '../src/jogo/cena.js';
 import { Trafego } from '../src/jogo/trafego.js';
 import { OBSTACULOS_ESTACIONAMENTO, paredesDeposito, PLANTA_ESTACIONAMENTO, PLANTA_DEPOSITO, PLANTA_CARGA, PLANTA_EXPANSAO, obstaculosCarga } from '../src/jogo/planta.js';
@@ -190,6 +190,10 @@ test('modelo de caminhão tem seis rodas e portas de baú; entregador carrega um
   const caminhao = criarCaminhaoEntrega();
   assert.equal(caminhao.userData.rodas.length, 6);
   assert.equal(caminhao.userData.portas.length, 2);
+  assert.ok(caminhao.userData.portaCabine);
+  assert.equal(caminhao.userData.piscas.length, 4);
+  assert.ok(caminhao.getObjectByName('interior-cabine-entrega'));
+  assert.equal(caminhao.getObjectByName('logo-enlatados-caminhao').parent, caminhao);
   const visual = new EntregasVisual(new THREE.Scene());
   const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
   entregar(sim, () => sim.entregas.caminhao?.fase === 'levar');
@@ -199,6 +203,34 @@ test('modelo de caminhão tem seis rodas e portas de baú; entregador carrega um
   assert.equal(visual.caminhao.position.z, ENTREGA.estacionamento.z);
   const volume = volumeCaminhao(sim.entregas.caminhao);
   assert.ok(volume.z - volume.d / 2 > PLANTA_DEPOSITO.porta.z);
+});
+
+test('entregador abre e fecha a porta da cabine ao desembarcar e embarcar', () => {
+  const visual = new EntregasVisual(new THREE.Scene());
+  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'desembarcar' && sim.entregas.caminhao.tempo > 0.4);
+  visual.atualizar(sim.entregas, 0.05);
+  assert.ok(Math.abs(visual.caminhao.userData.portaCabine.rotation.y) > 0);
+  assert.equal(visual.entregador.visible, false, 'motorista permanece dentro enquanto a porta abre');
+  visual.caminhao.updateMatrixWorld(true);
+  const porta = visual.caminhao.userData.portaCabine;
+  const dobradica = porta.getWorldPosition(new THREE.Vector3());
+  const ponta = porta.localToWorld(new THREE.Vector3(-1.02, 0, 0));
+  assert.ok(dobradica.x > sim.entregas.caminhao.x, 'porta fica do lado da rota do entregador');
+  assert.ok(ponta.x > dobradica.x, 'porta abre para fora da cabine');
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'desembarcar' && sim.entregas.caminhao.tempo > 0.8);
+  visual.atualizar(sim.entregas, 0.05);
+  assert.equal(visual.caminhao.userData.portaCabine.rotation.y, -ANGULO_PORTA_CABINE,
+    'porta termina de abrir antes de o motorista sair');
+  assert.equal(visual.entregador.visible, true);
+  assert.equal(sim.entregas.caminhao.entregador.andando, true, 'motorista atravessa a porta aberta');
+  assert.ok(Math.abs(visual.caminhao.userData.portaCabine.rotation.y) < ANGULO_PORTA_CABINE + 0.001);
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'embarcar' && sim.entregas.caminhao.etapa >= 2 && sim.entregas.caminhao.tempo > 0.3);
+  visual.atualizar(sim.entregas, 0.05);
+  assert.ok(Math.abs(visual.caminhao.userData.portaCabine.rotation.y) > 0);
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
+  visual.atualizar(sim.entregas, 0.05);
+  assert.equal(Math.abs(visual.caminhao.userData.portaCabine.rotation.y), 0);
 });
 
 test('portas traseiras abrem antes da descarga e fecham antes de o caminhão sair', () => {

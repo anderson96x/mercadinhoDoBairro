@@ -3,7 +3,10 @@
 ## Versão atual: 0.57.4 — 2026-10-22
 
 - Amplia os quatro hatchbacks para o mesmo comprimento e largura do sedã preto, preservando a carroceria hatch tanto no trânsito quanto no estacionamento de clientes.
-- Validação: teste de regressão confere o porte dos hatchbacks; suíte completa e build de produção aprovados. Saves e progressão não são alterados.
+- Remodela o caminhão de importações com cabine construída em peças, interior visível, bancos, painel, volante, retrovisores, seis rodas e luzes funcionais de direção, freio e ré.
+- Identifica a carga de enlatados pela cor da estante do depósito, aplicada ao baú e ao uniforme do entregador, e usa nas duas laterais um logotipo com lata vertical, aros metálicos e rótulo de tomate.
+- Corrige a porta da cabine para o lado do percurso do entregador, com banco e volante alinhados ao motorista. A porta abre por completo antes de ele sair, permanece aberta durante a passagem e fecha antes de ele seguir ao baú; o processo inverso ocorre ao embarcar.
+- Amplia os testes para cobrir o porte dos hatchbacks, interior e sinalização do caminhão, identidade da categoria, orientação da porta e sequência de desembarque. Os 284 testes e o build de produção foram aprovados; saves e progressão permanecem compatíveis. Nenhuma captura foi gerada.
 
 ## 0.57.3 — 2026-10-21
 
