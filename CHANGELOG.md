@@ -1,6 +1,11 @@
 # Histórico de alterações
 
-## Versão atual: 0.57.3 — 2026-10-21
+## Versão atual: 0.57.4 — 2026-10-22
+
+- Amplia os quatro hatchbacks para o mesmo comprimento e largura do sedã preto, preservando a carroceria hatch tanto no trânsito quanto no estacionamento de clientes.
+- Validação: teste de regressão confere o porte dos hatchbacks; suíte completa e build de produção aprovados. Saves e progressão não são alterados.
+
+## 0.57.3 — 2026-10-21
 
 - Mantém todo o caminhão sobre o asfalto desde o primeiro quadro até desaparecer, usando as bordas reais da rua expandida como pontos de entrada e saída.
 - Faz o entregador caminhar até o baú, abrir as portas, descarregar, fechar as portas e só então retornar à cabine; o caminhão continua esperando o fechamento completo antes de partir.
