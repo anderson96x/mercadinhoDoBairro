@@ -1,6 +1,6 @@
-// Com npm run dev ativo, gera capturas em perfil temporário sem ler saves pessoais.
+// Com npm run dev ativo, verifica o navegador sem salvar imagens nem ler saves pessoais.
 import { spawn } from 'node:child_process';
-import { mkdtemp, writeFile, mkdir } from 'node:fs/promises';
+import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
@@ -34,7 +34,6 @@ try {
   };
   await chamar('Runtime.enable'); await chamar('Page.enable');
   const estabilizar = () => avaliar('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 150))))');
-  await mkdir('docs/previews', { recursive: true });
   for (const canvas of [false, true]) for (const mobile of [false, true]) {
     await chamar('Emulation.setDeviceMetricsOverride', { width: mobile ? 390 : 1440, height: mobile ? 844 : 1000, deviceScaleFactor: 1, mobile });
     await chamar('Page.navigate', { url: `http://localhost:4173/scripts/entregas-preview.html${canvas ? '?canvas' : ''}` });
@@ -46,28 +45,20 @@ try {
     const manobra = await avaliar('window.verificacao.manobra()');
     if (manobra.fase !== 'chegando' || !manobra.re || manobra.angulo >= 0 || manobra.angulo <= -Math.PI / 2) throw new Error(JSON.stringify(manobra));
     await estabilizar();
-    const capturaManobra = await chamar('Page.captureScreenshot', { format: 'png' });
-    await writeFile(`docs/previews/entregas-manobra-${sufixo}.png`, Buffer.from(capturaManobra.data, 'base64'));
     const fase = await avaliar("window.verificacao.fase('levar')");
     if (fase.fase !== 'levar') throw new Error(JSON.stringify(fase));
     await estabilizar();
-    const captura = await chamar('Page.captureScreenshot', { format: 'png' });
-    await writeFile(`docs/previews/entregas-${sufixo}.png`, Buffer.from(captura.data, 'base64'));
     const entrega = await avaliar('window.verificacao.concluir()');
     if (entrega.pacotes !== 4 || entrega.unidades !== 36) throw new Error(JSON.stringify(entrega));
     const travessia = await avaliar('window.verificacao.travessia()');
     if (travessia.nascimento.x !== -27.5 || travessia.nascimento.z !== 8.4 || Math.abs(travessia.x + 18) > 0.15
       || travessia.z !== 8.4 || travessia.fase !== 'passando' || travessia.listras < 6) throw new Error(JSON.stringify(travessia));
     await estabilizar();
-    const capturaTravessia = await chamar('Page.captureScreenshot', { format: 'png' });
-    await writeFile(`docs/previews/pedestres-travessia-${sufixo}.png`, Buffer.from(capturaTravessia.data, 'base64'));
     await avaliar('window.verificacao.catalogo()');
     await avaliar(`for(let i=0;i<3;i++)document.querySelector('[data-importacao-quantidade="1"]').click()`);
     await estabilizar();
     const largura = await avaliar('({documento:document.documentElement.scrollWidth,janela:innerWidth})');
     if (mobile && (largura.documento !== 390 || largura.janela !== 390)) throw new Error(`Layout móvel excede 390 px: ${JSON.stringify(largura)}`);
-    const catalogo = await chamar('Page.captureScreenshot', { format: 'png' });
-    await writeFile(`docs/previews/catalogo-entregas-${sufixo}.png`, Buffer.from(catalogo.data, 'base64'));
     const pedido = await avaliar('document.getElementById("finalizar-importacao").click(); ({pedidos:verificacao.sim.estado.deposito.pedidos.length,caixas:verificacao.sim.estado.deposito.pedidos[0]?.pacotes.length})');
     if (pedido.pedidos !== 1 || pedido.caixas !== 3) throw new Error(`Pedido pela interface: ${JSON.stringify(pedido)}`);
     console.log(JSON.stringify({ modo: sufixo, ...fase, ...entrega, travessia, largura }));

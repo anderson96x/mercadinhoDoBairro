@@ -1,6 +1,6 @@
 # Nova planta — nível 9
 
-Implementado em 14/10/2026. [Planta técnica](PLANTA-LOJA-N9.svg) · [Vista geral](previews/nova-planta-n9-geral.png) · [Padaria](previews/nova-planta-n9-padaria.png).
+Implementado em 14/10/2026. [Planta técnica](PLANTA-LOJA-N9.svg).
 
 A compra alaPadaria amplia o salão de 14 × 16 para 24 × 16 u. Frente, parede esquerda, escritório, caixa, porta posterior, hortifruti e expositores de ovos/leite conservam suas posições. O novo limite direito é x = 20,9; a faixa acrescentada mede 10 × 16 u. Apenas subir de nível não constrói a expansão.
 
@@ -12,6 +12,6 @@ O piso fica disponível inteiro após a compra; a parede lateral inicial desapar
 
 A compra mantém nível 9, custo R$ 1.400 e requisitos anteriores (trigo e ovos). Cada trigo vira uma farinha e três pães; capacidade, tempos e preço de R$ 10 continuam iguais. A versão espacial 12 preserva compras, ingredientes, produção parcial, pães e cargas ao recuperar posições e rotas.
 
-Validação: 188 testes passaram, incluindo comparação com o painel N9 do SVG, dimensões, frente de atendimento, modelos girados, trajetos dos padeiros, cadeia de produção, venda e migração. Verificação de rotas N1–N15 aprovada. Revisão visual em WebGL e Canvas 2D registrada nas imagens; tela móvel emulada, sem teste em aparelho físico.
+Validação: 188 testes passaram, incluindo comparação com o painel N9 do SVG, dimensões, frente de atendimento, modelos girados, trajetos dos padeiros, cadeia de produção, venda e migração. Verificação de rotas N1–N15 aprovada. Revisão visual em WebGL e Canvas 2D realizada; tela móvel emulada, sem teste em aparelho físico.
 
-A planta técnica reflete a remoção dos balcões posteriores. As capturas acima registram a etapa anterior a essa remoção.
+A planta técnica reflete a remoção dos balcões posteriores.

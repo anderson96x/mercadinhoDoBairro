@@ -8,8 +8,6 @@ A planta está implementada no jogo. A coleta, a entrega de ingredientes e a rep
 
 O desenho usa coordenadas do jogo, sem equivalência com metros. [Etapas de expansão](PLANTA-LOJA-ETAPAS.svg) e [crescimento futuro](PLANTA-LOJA-CRESCIMENTO.svg) acompanham a mesma configuração.
 
-Capturas de referência (anteriores ao novo espaçamento das oficinas): [loja inicial](previews/loja-n1.png), [leite no N5](previews/loja-n5.png), [loja no N15](previews/loja-n15.png), [celular](previews/loja-n15-mobile.png) e [escritório com paredes alinhadas](previews/escritorio.png).
-
 ## Organização e dimensões
 
 O terreno aumentou para **40 × 37 u**, centrado em `(4; -4)`. A câmera e a navegação acompanham as novas bordas. A rua e a calçada foram prolongadas à direita.
@@ -74,8 +72,8 @@ O alcance considera o retângulo real da estação, sem exigir um ponto no piso.
 
 Os **19 envelopes de coleta e reposição** têm separação superior a duas vezes o raio de interação; portanto, produtos diferentes não compartilham alcance. O teste também verifica todos os lados acessíveis dos objetos, corredor entre estufa e oficina, separação do escritório e acesso ao salão recuperado, e preservação de dinheiro, compras, ingredientes e cargas na migração.
 
-Regenerar as plantas com `node scripts/render-floor-plan.mjs`. Verificar ida e volta de todos os pontos de coleta, reposição e compra nos níveis 1, 3, 4, 5, 7, 9, 11, 12, 13 e 15 com `node scripts/check-store-layout.mjs`. Rodar `npm test` e `npm run build` para conferir circulação com dez clientes, produção, repositor, animações e salvamentos.
+Gerar plantas técnicas com `node scripts/render-floor-plan.mjs` somente quando solicitado explicitamente pelo usuário. Verificar ida e volta de todos os pontos de coleta, reposição e compra nos níveis 1, 3, 4, 5, 7, 9, 11, 12, 13 e 15 com `node scripts/check-store-layout.mjs`. Rodar `npm test` e `npm run build` para conferir circulação com dez clientes, produção, repositor, animações e salvamentos.
 
 Validação concluída: **146 testes passam**, assim como a compilação e as rotas de ida e volta em todos os níveis verificados.
 
-O renderizador alternativo utiliza os mesmos modelos e posições. As capturas existentes são anteriores a este ajuste; toque em aparelho físico ainda não foi medido.
+O renderizador alternativo utiliza os mesmos modelos e posições. Toque em aparelho físico ainda não foi medido.

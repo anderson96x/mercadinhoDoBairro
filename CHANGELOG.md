@@ -1,13 +1,20 @@
 # Histórico de alterações
 
-## Versão atual: 0.56.1 — 2026-10-21
+## Versão atual: 0.56.2 — 2026-10-21
+
+- Define que as prévias são fornecidas manualmente pelo usuário e que plantas SVG só são geradas mediante solicitação explícita.
+- Remove as 109 imagens de prévia e suas referências na documentação.
+- Mantém as verificações de entregas no navegador sem capturar ou salvar imagens.
+- Validação: 275 testes e build de produção aprovados; verificações de entregas em desktop/celular e WebGL/Canvas concluídas sem salvar imagens. Nenhuma referência aos arquivos removidos permanece na documentação.
+
+## 0.56.1 — 2026-10-21
 
 - Reduz o pátio e seu acesso de duas faixas para uma faixa de 4 u, com uma única vaga longitudinal de 2,6 × 7,2 u. O piso encosta no estacionamento de clientes, termina alinhado à fachada do depósito e mantém somente as guias entre as áreas.
 - Move a vaga em direção à rua e usa três linhas, com a entrada aberta para comportar caminhões maiores no futuro.
 - O caminhão surge à esquerda da rua, avança além do acesso, para para engatar a ré e recua pela curva até a vaga. A cabine fica voltada para a rua e a saída usa a mesma faixa, de frente.
 - Ajusta o caminho do entregador ao baú voltado para os fundos, inclui os retrovisores na largura de colisão e coordena as duas faixas da rua durante a manobra. Preserva saves, pedidos e caixas existentes.
 - Adiciona uma faixa de pedestres no acesso do caminhão. Após a expansão, pedestres nascem e saem na nova extremidade esquerda da calçada e usam a travessia, inclusive após restaurar um save durante assaltos.
-- Atualiza a planta N18, documentação e capturas da manobra, descarga e travessia em desktop e celular, com WebGL e Canvas.
+- Atualiza a planta N18 e a documentação da manobra, descarga e travessia em desktop e celular, com WebGL e Canvas.
 - Validação: 275 testes, build de produção e rotas até N19 aprovados. Pedestres e caminhão completam suas rotas durante chegada e partida sem travar.
 
 ## 0.56.0 — 2026-10-21
@@ -16,8 +23,8 @@
 - Constrói um pátio exclusivo para caminhões, com acesso próprio pela rua, circuito de entrada/saída, vaga de carga demarcada, setas, placa com pictograma e guias de separação. Um caminho pavimentado liga o pátio ao depósito.
 - Transfere todas as entregas para o circuito privativo. O caminhão não usa as seis vagas nem aguarda o estacionamento esvaziar; clientes continuam estacionando durante a descarga. Somente o trecho compartilhado da rua coordena manobras e serviços do banco.
 - Remove a exigência de comprar o estacionamento de clientes para importar produtos. Gôndola e expansão com depósito/pátio continuam necessárias, e o limite de 27 pacotes permanece.
-- Saves com expansão comprada recebem o terreno e o acesso exclusivos automaticamente, preservando pedidos, caixas, compras, dinheiro e estoques. Atualiza planta N18, documentação e capturas de verificação.
-- Validação: 269 testes passaram, incluindo pátio, entregas, importação, câmera e estacionamento; build e rotas até N19 aprovados. Desktop e celular emulado de 390 px conferidos no Edge com WebGL e Canvas; capturas em `docs/previews/entregas-*.png`.
+- Saves com expansão comprada recebem o terreno e o acesso exclusivos automaticamente, preservando pedidos, caixas, compras, dinheiro e estoques. Atualiza planta N18 e documentação de verificação.
+- Validação: 269 testes passaram, incluindo pátio, entregas, importação, câmera e estacionamento; build e rotas até N19 aprovados. Desktop e celular emulado de 390 px conferidos no Edge com WebGL e Canvas.
 
 ## 0.55.0 — 2026-10-21
 
@@ -27,7 +34,7 @@
 - Jogador e repositor coletam enlatados no depósito e abastecem a primeira gôndola, que mantém 36 unidades. O catálogo informa ocupação, unidades disponíveis e caixas a caminho; ajuda e objetivos acompanham o novo fluxo.
 - Coordena chegada e saída com os carros dos clientes, pedestres, trânsito e serviços do banco. A reserva aguarda os carros existentes saírem e temporariamente encaminha novos compradores a pé. Pausa congela a entrega.
 - Preserva enlatados e progresso dos saves anteriores. Caixas entregues, caixas parcialmente abertas e pedidos pagos são salvos; viagens interrompidas retomam com as caixas restantes, sem duplicação nem nova cobrança.
-- Validação: 264 testes passaram (incluindo 14 de entrega/importação), build e rotas até N19. Conferência no Edge em desktop e celular emulado de 390 px, com WebGL e Canvas; capturas em `docs/previews/entregas-*.png` e `docs/previews/catalogo-entregas-*.png`.
+- Validação: 264 testes passaram (incluindo 14 de entrega/importação), build e rotas até N19. Conferência no Edge em desktop e celular emulado de 390 px, com WebGL e Canvas.
 
 ## 0.54.3 — 2026-10-21
 
@@ -72,7 +79,7 @@
 - Instala uma única porta de enrolar voltada para o estacionamento. Suas 18 lâminas descem até a soleira ao fechar a loja, recolhem para a caixa superior ao abrir e congelam durante a pausa.
 - Bloqueia o acesso externo quando o portão está fechado e mantém livre a passagem interna. Paredes, estantes, pallets e pacotes possuem colisões próprias, com corredores navegáveis.
 - Mantém custo, requisitos, estoques e receitas; partidas com a expansão já comprada recebem todo o conjunto ao carregar, sem novos campos salvos. Atualiza a planta N18 e os desbloqueios.
-- Validação: 254 testes, build e rotas até N18 passaram, incluindo compra, persistência, colisões, travessia interna e acesso pelo estacionamento. Desktop e celular foram conferidos no Edge com WebGL e Canvas; capturas em `docs/previews/deposito-n18-*.png`, `docs/previews/estacionamento-deposito-*.png`, `docs/previews/passagem-deposito-*.png` e `docs/previews/portao-deposito-fechado-*.png`.
+- Validação: 254 testes, build e rotas até N18 passaram, incluindo compra, persistência, colisões, travessia interna e acesso pelo estacionamento. Desktop e celular foram conferidos no Edge com WebGL e Canvas.
 
 ## 0.51.0 — 2026-10-21
 
@@ -82,7 +89,7 @@
 - Encosta as duas bancadas da cozinha na face interna da nova parede dos fundos, acompanha suas posições com os pontos de entrega de ingredientes e coleta e remove a mureta atrás delas, incluindo sua colisão.
 - Preserva expositores, receitas, estoques, ingredientes, progresso e saves anteriores; partidas sem a compra mantêm sua planta.
 - Atualiza os desbloqueios, a planta N18 e a orientação sobre importados, que permanecem para uma etapa futura.
-- Validação: 246 testes, build e rotas até N18 passaram, incluindo compra, preservação da planta, posicionamento das bancadas, colisões, entrega/coleta, reposição e acesso à fazenda. Compra pelo painel e recarga conferidas no Edge; desktop e celular verificados com WebGL e Canvas, sem exceções JavaScript. Capturas em `docs/previews/expansao-n18-*.png` e `docs/previews/paredes-cozinha-n18-desktop.png`.
+- Validação: 246 testes, build e rotas até N18 passaram, incluindo compra, preservação da planta, posicionamento das bancadas, colisões, entrega/coleta, reposição e acesso à fazenda. Compra pelo painel e recarga conferidas no Edge; desktop e celular verificados com WebGL e Canvas, sem exceções JavaScript.
 
 ## 0.50.4 — 2026-10-21
 
@@ -95,7 +102,7 @@
 - Remodela os irrigadores com base fixa, mangueira, coluna metálica e cabeçote giratório de latão com dois bicos.
 - Substitui as gotas fixas por jatos de gotas em arco e respingos na terra. A água acompanha a direção do lançamento, respeita os limites de cada canteiro e congela com a pausa.
 - Preserva o efeito da melhoria no crescimento e os salvamentos existentes.
-- Validação: 237 testes e build passaram; quatro hortas conferidas em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/irrigador-*.png`.
+- Validação: 237 testes e build passaram; quatro hortas conferidas em desktop e celular com WebGL e Canvas.
 
 ## 0.50.2 — 2026-10-19
 
@@ -121,12 +128,12 @@
 
 - Restaura o ritmo dos trajetos e os gestos originais dos padeiros durante o trabalho, mantendo a espera dentro da padaria.
 - Exibe as exclamações somente quando o trigo da padaria e a vitrine de pães estão vazios ao mesmo tempo. Preserva saves e regras de produção.
-- Validação: 235 testes e build passaram; trabalho e alertas conferidos em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/padeiros-original-*.png`.
+- Validação: 235 testes e build passaram; trabalho e alertas conferidos em desktop e celular com WebGL e Canvas.
 
 ## 0.49.2 — 2026-10-19
 
 - Move os pontos de espera dos dois padeiros para dentro da padaria, atrás da vitrine e voltados às prateleiras centrais. Preserva os alertas de trigo e o movimento das cabeças em repouso.
-- Validação: 234 testes e build passaram; posições conferidas em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/padeiros-interior-*.png`.
+- Validação: 234 testes e build passaram; posições conferidas em desktop e celular com WebGL e Canvas.
 
 ## 0.49.1 — 2026-10-19
 
@@ -134,7 +141,7 @@
 - Exibe uma exclamação sobre cada padeiro quando o trigo acaba; a farinha restante ainda pode terminar de assar.
 - Diferencia gestos de moagem, uso do forno, transporte e exposição de pães; corrige etapas paradas interpretadas como caminhada e anima máquinas somente quando há produção possível.
 - Usa uma grade mais fina na passagem de serviço dos padeiros para voltar à vitrine e retomar o trabalho sem atravessar balcões. Mantém saves e regras de produção existentes.
-- Validação: 234 testes, rotas até o nível 17 e build passaram; estados sem trigo, em trabalho e com vitrine cheia conferidos no Edge em desktop e celular, com WebGL e Canvas. Capturas em `docs/previews/padeiros-*.png`.
+- Validação: 234 testes, rotas até o nível 17 e build passaram; estados sem trigo, em trabalho e com vitrine cheia conferidos no Edge em desktop e celular, com WebGL e Canvas.
 
 ## 0.49.0 — 2026-10-19
 
@@ -147,7 +154,7 @@
 - Libera uma melhoria de dois níveis no nível 17; cada compra de R$ 1.000 instala uma prateleira metálica de dois lados pelo escritório, na aba Mercado.
 - Instala dois móveis vazios idênticos de 5,775 unidades nos corredores centrais, alinhados pela frente com o balcão da padaria e terminando juntos antes dos expositores do fundo. Mantém colisão por compra, espaço para a fila e acesso aos produtos existentes. A importação fica planejada para o nível 18, sem novos produtos nesta etapa.
 - Preserva saves antigos e o progresso parcial do formato provisório com duas opções; acrescenta testes de compra, saldo, limite, salvamento, instalação e circulação, além da planta N17.
-- Validação: 230 testes, rotas até o nível 17 e build passaram. Compras e visual conferidos no Edge em desktop e celular, com WebGL e Canvas, sem exceções JavaScript; capturas em `docs/previews/prateleiras-importados-n17-*.png`.
+- Validação: 230 testes, rotas até o nível 17 e build passaram. Compras e visual conferidos no Edge em desktop e celular, com WebGL e Canvas, sem exceções JavaScript.
 
 ## 0.47.0 — 2026-10-16
 
@@ -155,7 +162,7 @@
 - Reúne queijaria e cozinha de geleias nessa sala, mantendo compras, receitas e estoques existentes.
 - Remove a parede curta esquerda e aproxima as duas máquinas da parede baixa do fundo, ampliando a circulação na frente.
 - Compartilha a planta entre visual e colisões; atualiza a migração de posições e verifica acesso com qualquer uma das oficinas comprada primeiro.
-- Validação: 222 testes, rotas de todos os níveis e build passaram; prévia no Edge/WebGL sem erros JavaScript em `docs/previews/sala-oficinas.png`.
+- Validação: 222 testes, rotas de todos os níveis e build passaram; verificação no Edge/WebGL sem erros JavaScript.
 
 ## 0.46.3 — 2026-10-16
 
