@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS, MELHORIAS } from '../src/jogo/configuracao.js';
-import { ROTAS_ENTREGA, ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
-import { criarCaminhaoEntrega, EntregasVisual } from '../src/jogo/entregas-visual.js';
+import { ROTAS_ENTREGA, ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
+import { criarCaminhaoEntrega, EntregasVisual, ANGULO_PORTAS_BAU } from '../src/jogo/entregas-visual.js';
+import { Cena, criarEntregador } from '../src/jogo/cena.js';
+import { Trafego } from '../src/jogo/trafego.js';
 import { OBSTACULOS_ESTACIONAMENTO, paredesDeposito, PLANTA_ESTACIONAMENTO, PLANTA_DEPOSITO, PLANTA_CARGA, PLANTA_EXPANSAO, obstaculosCarga } from '../src/jogo/planta.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
 
@@ -121,10 +123,11 @@ test('jogador e repositor retiram produtos do depósito e abastecem a gôndola p
   assert.equal(sim.estado.deposito.pacotes.length, 0);
 });
 
-test('caminhão surge à esquerda, para antes de engatar a ré e estaciona com a frente para a rua', () => {
+test('caminhão surge e desaparece inteiro dentro da rua, para antes de engatar a ré e estaciona com a frente para a rua', () => {
   const rota = ROTAS_ENTREGA.chegando;
   const inicio = amostrarEntrega(rota, 0);
-  assert.ok(inicio.x < PLANTA_EXPANSAO.terreno.x - PLANTA_EXPANSAO.terreno.w / 2 - ENTREGA.comprimento / 2);
+  assert.equal(inicio.x, LIMITES_ROTA_ENTREGA.minX);
+  assert.ok(inicio.x - ENTREGA.comprimento / 2 > PLANTA_EXPANSAO.terreno.x - PLANTA_EXPANSAO.terreno.w / 2);
   assert.ok(Math.abs(inicio.angulo) < 1e-8);
   assert.equal(inicio.re, false);
   const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
@@ -152,6 +155,9 @@ test('caminhão surge à esquerda, para antes de engatar a ré e estaciona com a
   assert.equal(saida.x, estacionado.x);
   assert.equal(saida.z, estacionado.z);
   assert.ok(Math.abs(saida.angulo - estacionado.angulo) < 1e-8);
+  const fim = amostrarEntrega(ROTAS_ENTREGA.partindo, ROTAS_ENTREGA.partindo.comprimento);
+  assert.equal(fim.x, LIMITES_ROTA_ENTREGA.maxX);
+  assert.ok(fim.x + ENTREGA.comprimento / 2 < 23);
 });
 
 test('rotas do caminhão não atravessam ilha, paredes, postes ou meio-fio', () => {
@@ -195,6 +201,70 @@ test('modelo de caminhão tem seis rodas e portas de baú; entregador carrega um
   assert.ok(volume.z - volume.d / 2 > PLANTA_DEPOSITO.porta.z);
 });
 
+test('portas traseiras abrem antes da descarga e fecham antes de o caminhão sair', () => {
+  const visual = new EntregasVisual(new THREE.Scene());
+  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'chegando' && sim.entregas.caminhao.distancia > 0);
+  visual.atualizar(sim.entregas, 0.05);
+  assert.ok(visual.caminhao.userData.portas.every(porta => porta.rotation.y === 0));
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'abrirBau');
+  assert.ok(sim.entregas.caminhao.entregador, 'entregador chega à traseira antes de abrir');
+  visual.atualizar(sim.entregas, 0.05);
+  assert.ok(visual.caminhao.userData.portas.every(porta => Math.abs(porta.rotation.y) > 0 && Math.abs(porta.rotation.y) < ANGULO_PORTAS_BAU));
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'retirar');
+  visual.atualizar(sim.entregas, 0.05);
+  assert.ok(visual.caminhao.userData.portas.every(porta => Math.abs(porta.rotation.y) === ANGULO_PORTAS_BAU));
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'fecharBau');
+  assert.ok(sim.entregas.caminhao.entregador, 'entregador permanece na traseira para fechar');
+  const distancia = sim.entregas.caminhao.distancia;
+  sim.entregas.atualizar(sim, 0.25); visual.atualizar(sim.entregas, 0.25);
+  assert.equal(sim.entregas.caminhao.distancia, distancia, 'caminhão espera as portas fecharem');
+  assert.ok(visual.caminhao.userData.portas.every(porta => Math.abs(porta.rotation.y) < ANGULO_PORTAS_BAU));
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'embarcar');
+  assert.ok(sim.entregas.caminhao.entregador, 'entregador só retorna à cabine após fechar');
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
+  visual.atualizar(sim.entregas, 0.05);
+  assert.ok(visual.caminhao.userData.portas.every(porta => porta.rotation.y === 0));
+  entregar(sim);
+  assert.equal(sim.entregas.caminhao, null);
+});
+
+test('entregador usa o modelo de NPC fornecido com uniforme próprio', () => {
+  let criado = 0;
+  const npc = criarEntregador();
+  const visual = new EntregasVisual(new THREE.Scene(), () => { criado++; return npc; });
+  assert.equal(criado, 1);
+  assert.equal(visual.entregador, npc);
+  assert.equal(visual.entregador.userData.funcao, 'entrega');
+  assert.equal(npc.userData.aparencia.genero, 'homem');
+  assert.equal(npc.userData.aparencia.porte, 'regular');
+  assert.equal(npc.userData.aparencia.idoso, false);
+  assert.equal(npc.userData.corpulento, false);
+  assert.equal(npc.userData.barriga, null);
+});
+
+test('portas deixam uma abertura real no baú e giram para fora durante a descarga', () => {
+  const visual = new EntregasVisual(new THREE.Scene());
+  const caminhao = visual.caminhao;
+  const raio = new THREE.Raycaster(new THREE.Vector3(-3.4, 1.8, 0.2), new THREE.Vector3(1, 0, 0), 0, 1.4);
+  const c = { fase: 'abrirBau', x: 0, z: 0, angulo: 0, rodas: 0, aberturaBau: 0, entregador: null };
+  visual.atualizar({ caminhao: c }, 0.05); caminhao.updateMatrixWorld(true);
+  assert.ok(raio.intersectObject(caminhao, true).length > 0, 'portas fechadas cobrem a traseira');
+  c.aberturaBau = 0.5;
+  visual.atualizar({ caminhao: c }, 0.05); caminhao.updateMatrixWorld(true);
+  for (const porta of caminhao.userData.portas) {
+    const centro = new THREE.Vector3(0, 1, -Math.sign(porta.position.z) * 0.395);
+    porta.localToWorld(centro);
+    assert.ok(centro.x < -2.41, 'folhas giram para trás, fora do volume do baú');
+  }
+  c.aberturaBau = 1;
+  visual.atualizar({ caminhao: c }, 0.05); caminhao.updateMatrixWorld(true);
+  assert.equal(raio.intersectObject(caminhao, true).length, 0, 'nenhum bloco ou folha permanece na abertura');
+  const abertura = caminhao.userData.portas.map(p => p.rotation.y);
+  visual.atualizar({ caminhao: c }, 0);
+  assert.deepEqual(caminhao.userData.portas.map(p => p.rotation.y), abertura);
+});
+
 test('simulação completa descarrega sem reservar nem bloquear as vagas de clientes', () => {
   const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 2 });
   sim.estacionamento.prontoEm = 0;
@@ -204,6 +274,24 @@ test('simulação completa descarrega sem reservar nem bloquear as vagas de clie
   assert.equal(sim.entregas.caminhao, null);
   sim.atualizar(1 / 60);
   assert.equal(sim.estacionamento.reservar({ id: 999 }, sim.tempo), true);
+});
+
+test('caminhão termina a entrega com tráfego contínuo nas duas faixas e libera a rua', () => {
+  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
+  const cena = { sim, trafego: new Trafego(new THREE.Scene(), () => 0.5) };
+  cena.trafego.atualizarExpansao(true);
+  for (const faixa of [0, 1]) cena.trafego.criarNaFaixa(faixa);
+  Cena.prototype.atualizarTrafego.call(cena, 0.05);
+  assert.equal(sim.entregas.transitoLivre, false);
+  for (let i = 0; i < 6000 && sim.entregas.caminhao; i++) {
+    sim.entregas.atualizar(sim, 0.05);
+    Cena.prototype.atualizarTrafego.call(cena, 0.05);
+  }
+  assert.equal(sim.entregas.caminhao, null);
+  assert.equal(sim.entregas.reservaRua, false);
+  assert.equal(cena.trafego.faixasReservadas.size, 0);
+  assert.equal(sim.estado.deposito.pacotes.length, 1);
 });
 
 test('acesso dedicado recebe entrega mesmo sem comprar estacionamento de clientes', () => {

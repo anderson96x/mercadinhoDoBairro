@@ -638,7 +638,7 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
   const g = new THREE.Group();
   const corpo = new THREE.Group(); g.add(corpo);
   const corpulento = visual?.porte === 'corpulento';
-  const funcionario = funcao === 'caixa' || funcao === 'ajudante' || funcao === 'padaria';
+  const funcionario = ['caixa', 'ajudante', 'padaria', 'entrega'].includes(funcao);
   const uniformizado = jogador || funcionario;
   const sombra = new THREE.Mesh(new THREE.CircleGeometry(0.38, 20), new THREE.MeshBasicMaterial({ color: 0x204c31, transparent: true, opacity: 0.13, depthWrite: false }));
   sombra.rotation.x = -Math.PI / 2; sombra.position.y = 0.014; sombra.scale.setScalar(corpulento ? 1.5 : 1); g.add(sombra);
@@ -708,6 +708,14 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
   return g;
 }
 
+export function criarEntregador() {
+  const aparencia = { ...APARENCIAS_CLIENTES.find(p => p.genero === 'homem' && p.porte === 'regular' && !p.idoso),
+    roupa: 'camisa', corRoupa: 0x28705c, corCalca: 0x263d49, corSapato: 0x20282b, acessorio: 'bolso' };
+  const modelo = personagem(aparencia.corRoupa, aparencia.pele, false, [], aparencia, 'entrega');
+  modelo.userData.aparencia = aparencia;
+  return modelo;
+}
+
 export class Cena {
   constructor(container, simulacao) {
     this.sim = simulacao; this.container = container;
@@ -743,7 +751,8 @@ export class Cena {
         rodas: carro.grupo.userData.rodas[0].rotation.z, velocidade: carro.velocidade };
     };
     this.coletaBanco = new ColetaBancoVisual(this.cena);
-    this.entregasVisual = new EntregasVisual(this.cena);
+    this.entregasVisual = new EntregasVisual(this.cena, criarEntregador,
+      (modelo, ator, caminhao, dt, tempo) => this.animarEntregador(modelo, ator, caminhao, dt, tempo));
     this.assaltoVisual = new AssaltoVisual(this.cena);
     this.alertaCaixa = new THREE.Group();
     const fundoAlerta = new THREE.Mesh(new THREE.CircleGeometry(0.28, 20), new THREE.MeshBasicMaterial({ color: 0xc34f32, side: THREE.DoubleSide }));
@@ -1596,6 +1605,22 @@ export class Cena {
     modelo.userData.corpo.rotation.x = -0.08;
     modelo.userData.corpo.rotation.z = tremor;
   }
+  animarEntregador(modelo, ator, caminhao, dt, tempo) {
+    this.animarPersonagem(modelo, { ...ator, temCesta: false }, dt, tempo);
+    const d = modelo.userData;
+    if (caminhao.fase === 'abrirBau' || caminhao.fase === 'fecharBau') {
+      const movimento = caminhao.fase === 'abrirBau' ? caminhao.aberturaBau : 1 - caminhao.aberturaBau;
+      posicionarBraco(d.bracoE, new THREE.Vector3(-0.32, 0.82, 0.72));
+      posicionarBraco(d.bracoD, new THREE.Vector3(0.28 + movimento * 0.12, 1.12, 0.93));
+      return;
+    }
+    if (ator.carregando || caminhao.fase === 'retirar' || caminhao.fase === 'guardar') {
+      const t = Math.min(1, Math.max(0, (caminhao.tempo - 0.35) / 0.35));
+      const deslocamento = caminhao.fase === 'retirar' ? 0.58 * (1 - t) : 0;
+      posicionarBraco(d.bracoE, new THREE.Vector3(-0.34, 0.72 - deslocamento, 0.58));
+      posicionarBraco(d.bracoD, new THREE.Vector3(0.34, 0.72 - deslocamento, 0.58));
+    }
+  }
   animarAtendimento(modelo, tempo, ativo, progresso = 0) {
     if (!ativo) return;
     const fase = tempo * 8;
@@ -1644,8 +1669,7 @@ export class Cena {
     ajustarSacola(this.sacolaEmbalagem, cliente.quantidade, preenchimento / Math.max(1, cliente.quantidade));
     return { cliente, progresso, embalados };
   }
-  atualizar(dt) {
-    const PRODUTOS = produtosDaLoja(this.sim?.estado);
+  atualizarTrafego(dt) {
     const sim = this.sim, e = sim.estado;
     const coleta = e.banco.coleta;
     const assalto = e.banco.assalto;
@@ -1662,6 +1686,13 @@ export class Cena {
       || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase)) || (sim.entregas.reservaRua && sim.entregas.caminhao.fase !== 'aguardando');
     if (coleta?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
     if (assalto?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
+  }
+  atualizar(dt) {
+    const PRODUTOS = produtosDaLoja(this.sim?.estado);
+    const sim = this.sim, e = sim.estado;
+    const coleta = e.banco.coleta;
+    const assalto = e.banco.assalto;
+    this.atualizarTrafego(dt);
     this.coletaBanco.atualizar(coleta);
     this.assaltoVisual.atualizar(assalto);
     this.entregasVisual.atualizar(sim.entregas, dt);

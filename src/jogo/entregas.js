@@ -76,10 +76,15 @@ function trajeto(segmentos) {
   return { pontos, comprimento: distancia };
 }
 const xFaixa = ENTREGA.estacionamento.x;
+export const LIMITES_ROTA_ENTREGA = Object.freeze({
+  minX: -15 - 12 + ENTREGA.comprimento / 2 + 0.06,
+  maxX: 23 - ENTREGA.comprimento / 2 - 0.06,
+  z: 12.2
+});
 export const ROTAS_ENTREGA = {
   chegando: trajeto([
-    { pontos: [[-33, 12.2], [-32, 12.2], [-30, 12.2], [-29, 12.2]] },
-    { pontos: [[-29, 12.2], [xFaixa - 3.4, 12.2], [xFaixa + 0.6, 11.7], [xFaixa + 4, 11.7]] },
+    { pontos: [[LIMITES_ROTA_ENTREGA.minX, LIMITES_ROTA_ENTREGA.z], [-23.8, 12.2], [-22.7, 12.2], [-22, 12.2]] },
+    { pontos: [[-22, 12.2], [xFaixa - 3.4, 12.2], [xFaixa + 0.6, 11.7], [xFaixa + 4, 11.7]] },
     { re: true, pontos: [[xFaixa + 4, 11.7], [xFaixa + 1.791, 11.7], [xFaixa, 9.909], [xFaixa, 7.7]] },
     { re: true, pontos: [[xFaixa, 7.7], [xFaixa, 3], [xFaixa, -2], [xFaixa, ENTREGA.estacionamento.z]] }
   ]),
@@ -87,7 +92,7 @@ export const ROTAS_ENTREGA = {
     { pontos: [[xFaixa, ENTREGA.estacionamento.z], [xFaixa, -2], [xFaixa, 3], [xFaixa, 7.7]] },
     { pontos: [[xFaixa, 7.7], [xFaixa, 9.909], [xFaixa + 1.791, 11.7], [xFaixa + 4, 11.7]] },
     { pontos: [[xFaixa + 4, 11.7], [xFaixa + 10.6, 11.7], [xFaixa + 16.6, 12.2], [xFaixa + 22.6, 12.2]] },
-    { pontos: [[xFaixa + 22.6, 12.2], [10, 12.2], [20, 12.2], [29, 12.2]] }
+    { pontos: [[xFaixa + 22.6, 12.2], [10, 12.2], [16, 12.2], [LIMITES_ROTA_ENTREGA.maxX, LIMITES_ROTA_ENTREGA.z]] }
   ])
 };
 export function amostrarEntrega(rota, distancia) {
@@ -107,12 +112,13 @@ export function volumeCaminhao(caminhao) {
 export class Entregas {
   constructor() { this.caminhao = null; this.transitoLivre = true; }
   get reservaRua() { return !!this.caminhao && (['aguardando', 'chegando'].includes(this.caminhao.fase)
-    || (this.caminhao.fase === 'partindo' && !!this.caminhao.partidaLiberada)); }
+    || (this.caminhao.fase === 'partindo' && (this.caminhao.reservaPartida || !!this.caminhao.partidaLiberada))); }
   atualizar(sim, dt) {
     if (!dt) return;
     const deposito = sim.estado.deposito;
     if (!this.caminhao && deposito.pedidos.length && sim.estado.melhorias.expansao && sim.estado.lojaAberta && !sim.estado.banco.coleta && !sim.estado.banco.assalto) {
-      this.caminhao = { fase: 'aguardando', distancia: 0, rodas: 0, tempo: 0, ...amostrarEntrega(ROTAS_ENTREGA.chegando, 0), entregador: null };
+      this.caminhao = { fase: 'aguardando', distancia: 0, rodas: 0, tempo: 0, aberturaBau: 0,
+        ...amostrarEntrega(ROTAS_ENTREGA.chegando, 0), entregador: null };
     }
     const c = this.caminhao;
     if (!c) return;
@@ -122,7 +128,12 @@ export class Entregas {
     }
     if (c.fase === 'chegando' || c.fase === 'partindo') {
       const rota = ROTAS_ENTREGA[c.fase];
-      if (c.fase === 'partindo' && c.distancia === 0 && (!this.transitoLivre || sim.estacionamento.reservaRua || sim.estado.banco.coleta || sim.estado.banco.assalto)) return;
+      if (c.fase === 'partindo' && c.distancia === 0) {
+        // Serviços já em espera terminam primeiro. Depois, impeça novos carros
+        // de nascer enquanto o tráfego existente esvazia as duas faixas.
+        c.reservaPartida = !sim.estacionamento.reservaRua && !sim.estado.banco.coleta && !sim.estado.banco.assalto;
+        if (!c.reservaPartida || !this.transitoLivre) return;
+      }
       if (c.fase === 'partindo') c.partidaLiberada = true;
       const distancia = Math.min(rota.comprimento, c.distancia + dt * (c.re ? ENTREGA.velocidadeRe : ENTREGA.velocidade));
       const proximo = amostrarEntrega(rota, distancia), volume = volumeCaminhao(proximo);
@@ -137,8 +148,7 @@ export class Entregas {
       Object.assign(c, proximo, { distancia });
       if (distancia < rota.comprimento) return;
       if (c.fase === 'partindo') { this.caminhao = null; return; }
-      c.fase = 'desembarcar'; c.tempo = 0;
-      c.etapa = 0;
+      c.fase = 'desembarcar'; c.tempo = 0; c.etapa = 0; c.aberturaBau = 0;
       c.entregador = { ...PLANTA_CARGA.cabine, angulo: 0, andando: false, carregando: false };
       sim.emitir('entregaChegou', { texto: 'O caminhão chegou! O entregador vai guardar as caixas no depósito.' });
     }
@@ -149,6 +159,12 @@ export class Entregas {
       const pontos = [PLANTA_CARGA.contornoCabine, ENTREGA.retirada];
       if (!sim.caminharCliente(ator, pontos[c.etapa], dt, 2.5)) return;
       if (++c.etapa < pontos.length) return;
+      c.fase = 'abrirBau'; c.tempo = 0; ator.andando = false; ator.angulo = 0;
+    }
+    if (c.fase === 'abrirBau') {
+      ator.andando = false; ator.angulo = 0;
+      c.aberturaBau = Math.min(1, c.aberturaBau + dt * 1.25);
+      if (c.aberturaBau < 1) return;
       c.fase = 'retirar'; c.tempo = 0;
     }
     if (c.fase === 'retirar') {
@@ -168,7 +184,7 @@ export class Entregas {
       const rota = c.fase === 'levar' ? pontos : [...pontos].reverse().slice(1).concat(ENTREGA.retirada);
       if (sim.caminharCliente(ator, rota[c.etapa], dt, 2.5)) {
         c.etapa++;
-        if (c.etapa >= rota.length) { c.fase = c.fase === 'levar' ? 'guardar' : pedido.pacotes.length ? 'retirar' : 'embarcar'; c.tempo = 0; c.etapa = 0; }
+        if (c.etapa >= rota.length) { c.fase = c.fase === 'levar' ? 'guardar' : pedido.pacotes.length ? 'retirar' : 'fecharBau'; c.tempo = 0; c.etapa = 0; }
       }
     } else if (c.fase === 'guardar') {
       c.tempo += dt;
@@ -178,6 +194,11 @@ export class Entregas {
       sim.estado.produtos[produto].horta += UNIDADES_PACOTE;
       ator.carregando = false; c.fase = 'voltar'; c.etapa = 0;
       sim.emitir('pacoteEntregue', { produto, slot: c.slot });
+    } else if (c.fase === 'fecharBau') {
+      ator.andando = false; ator.angulo = 0;
+      c.aberturaBau = Math.max(0, c.aberturaBau - dt * 1.25);
+      if (c.aberturaBau > 0) return;
+      c.fase = 'embarcar'; c.tempo = 0; c.etapa = 0;
     } else if (c.fase === 'embarcar') {
       const pontos = [PLANTA_CARGA.contornoCabine, PLANTA_CARGA.cabine];
       if (c.etapa < pontos.length) {
@@ -185,9 +206,9 @@ export class Entregas {
         return;
       }
       c.tempo += dt;
-      if (c.tempo < 1.2) return;
+      if (c.tempo < 0.8) return;
       deposito.pedidos.shift();
-      c.entregador = null; c.fase = 'partindo'; c.distancia = 0; c.re = false;
+      c.entregador = null; c.fase = 'partindo'; c.distancia = 0; c.re = false; c.tempo = 0;
       sim.emitir('entregaConcluida', { texto: 'Entrega concluída! Retire os produtos na estante da classe para abastecer a gôndola.' });
     }
   }

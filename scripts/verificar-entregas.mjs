@@ -1,19 +1,24 @@
-// Com npm run dev ativo, verifica o navegador sem salvar imagens nem ler saves pessoais.
+// Com npm run dev ativo, verifica o navegador sem ler saves pessoais.
+// --capturar salva imagens de diagnóstico somente quando autorizado pelo usuário.
 import { spawn } from 'node:child_process';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, readFile, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 const perfil = await mkdtemp(path.join(tmpdir(), 'mercadinho-entregas-'));
-const porta = 9337;
+let porta;
 const navegador = process.env.EDGE_PATH || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
 const processo = spawn(navegador, ['--headless=new', '--no-first-run', '--disable-extensions', '--disable-background-networking',
-  `--user-data-dir=${perfil}`, `--remote-debugging-port=${porta}`, 'about:blank'], { windowsHide: true, stdio: 'ignore' });
+  `--user-data-dir=${perfil}`, '--remote-debugging-port=0', 'about:blank'], { windowsHide: true, stdio: 'ignore' });
 let socket;
 try {
   let paginas;
   for (let i = 0; i < 80; i++) {
-    try { paginas = await (await fetch(`http://localhost:${porta}/json/list`)).json(); if (paginas.length) break; } catch {}
+    try {
+      porta = Number((await readFile(path.join(perfil, 'DevToolsActivePort'), 'utf8')).split('\n')[0]);
+      paginas = await (await fetch(`http://localhost:${porta}/json/list`)).json();
+      if (paginas.length) break;
+    } catch {}
     await new Promise(r => setTimeout(r, 100));
   }
   if (!paginas?.length) throw new Error('Edge não disponibilizou a conexão de verificação.');
@@ -26,7 +31,12 @@ try {
     if (mensagem.method === 'Runtime.exceptionThrown') erros.push(mensagem.params.exceptionDetails);
     if (mensagem.id) { const p = pendentes.get(mensagem.id); pendentes.delete(mensagem.id); mensagem.error ? p.reject(mensagem.error) : p.resolve(mensagem.result); }
   });
-  const chamar = (method, params = {}) => new Promise((resolve, reject) => { const numero = ++id; pendentes.set(numero, { resolve, reject }); socket.send(JSON.stringify({ id: numero, method, params })); });
+  const chamar = (method, params = {}) => new Promise((resolve, reject) => {
+    const numero = ++id;
+    const prazo = setTimeout(() => { pendentes.delete(numero); reject(new Error(`Sem resposta do Edge: ${method}`)); }, 20000);
+    pendentes.set(numero, { resolve: valor => { clearTimeout(prazo); resolve(valor); }, reject: erro => { clearTimeout(prazo); reject(erro); } });
+    socket.send(JSON.stringify({ id: numero, method, params }));
+  });
   const avaliar = async expression => {
     const r = await chamar('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true });
     if (r.exceptionDetails) throw new Error(JSON.stringify(r.exceptionDetails));
@@ -45,11 +55,24 @@ try {
     const manobra = await avaliar('window.verificacao.manobra()');
     if (manobra.fase !== 'chegando' || !manobra.re || manobra.angulo >= 0 || manobra.angulo <= -Math.PI / 2) throw new Error(JSON.stringify(manobra));
     await estabilizar();
+    const portas = await avaliar('window.verificacao.portas()');
+    if (!(portas.abertura > portas.inicio && portas.abertura < 1) || portas.angulos[0] >= 0 || portas.angulos[1] <= 0
+      || portas.aparencia.genero !== 'homem' || portas.aparencia.porte !== 'regular' || portas.aparencia.idoso) throw new Error(`Portas e entregador: ${JSON.stringify(portas)}`);
+    await estabilizar();
+    if (process.argv.includes('--capturar')) {
+      await mkdir('.browser-check', { recursive: true });
+      const captura = await chamar('Page.captureScreenshot', { format: 'png' });
+      await writeFile(path.join('.browser-check', `bau-abrindo-${sufixo}.png`), Buffer.from(captura.data, 'base64'));
+      await avaliar('window.verificacao.inspecionarBau()');
+      await estabilizar();
+      const aberta = await chamar('Page.captureScreenshot', { format: 'png' });
+      await writeFile(path.join('.browser-check', `bau-aberto-${sufixo}.png`), Buffer.from(aberta.data, 'base64'));
+    }
     const fase = await avaliar("window.verificacao.fase('levar')");
     if (fase.fase !== 'levar') throw new Error(JSON.stringify(fase));
     await estabilizar();
     const entrega = await avaliar('window.verificacao.concluir()');
-    if (entrega.pacotes !== 4 || entrega.unidades !== 36) throw new Error(JSON.stringify(entrega));
+    if (entrega.pacotes !== 4 || entrega.unidades !== 36 || !entrega.saiu || !entrega.aguardouTrafego || !entrega.fechouBau) throw new Error(JSON.stringify(entrega));
     const travessia = await avaliar('window.verificacao.travessia()');
     if (travessia.nascimento.x !== -27.5 || travessia.nascimento.z !== 8.4 || Math.abs(travessia.x + 18) > 0.15
       || travessia.z !== 8.4 || travessia.fase !== 'passando' || travessia.listras < 6) throw new Error(JSON.stringify(travessia));
@@ -75,7 +98,7 @@ try {
     if (pedido.pedidos !== 1 || pedido.caixas !== 3) throw new Error(`Pedido pela interface: ${JSON.stringify(pedido)}`);
     await avaliar('window.verificacao.catalogo()');
     if (!await avaliar(`document.querySelector('[data-importacao-quantidade="1"]').disabled`)) throw new Error('Pedidos a caminho não reservaram vagas.');
-    console.log(JSON.stringify({ modo: sufixo, ...fase, ...entrega, estantes, travessia, largura, limitePorClasse: true }));
+    console.log(JSON.stringify({ modo: sufixo, ...fase, ...entrega, portas, estantes, travessia, largura, limitePorClasse: true }));
   }
   if (erros.length) throw new Error(JSON.stringify(erros));
 } finally {

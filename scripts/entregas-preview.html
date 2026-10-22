@@ -44,6 +44,26 @@
   }
   window.verificacao = {
     sim, cena, ui,
+    portas() {
+      for (let i = 0; i < 15000 && sim.entregas.caminhao?.fase !== 'abrirBau'; i++) sim.entregas.atualizar(sim, 0.05);
+      const inicio = sim.entregas.caminhao.aberturaBau;
+      sim.entregas.atualizar(sim, 0.15);
+      enquadrar({ x: PLANTA_CARGA.vaga.x, z: PLANTA_CARGA.vaga.z - 1.5 });
+      const visual = cena.entregasVisual;
+      return { inicio, abertura: sim.entregas.caminhao.aberturaBau,
+        angulos: visual.caminhao.userData.portas.map(p => p.rotation.y),
+        aparencia: visual.entregador.userData.aparencia };
+    },
+    inspecionarBau() {
+      for (let i = 0; i < 15000 && sim.entregas.caminhao?.fase !== 'retirar'; i++) sim.entregas.atualizar(sim, 0.05);
+      renderizar();
+      const p = PLANTA_CARGA.vaga;
+      cena.camera.position.set(p.x - 6, 7, p.z - 10);
+      cena.camera.lookAt(p.x, 1.2, p.z - 2.2);
+      cena.camera.zoom = cena.mobile ? 1.5 : 3;
+      cena.camera.updateProjectionMatrix();
+      cena.renderer.render(cena.cena, cena.camera);
+    },
     manobra() {
       for (let i = 0; i < 15000 && !(sim.entregas.caminhao?.re && sim.entregas.caminhao.z < 9.5); i++) sim.entregas.atualizar(sim, 0.05);
       enquadrar(cena.mobile ? sim.entregas.caminhao : undefined);
@@ -57,8 +77,21 @@
       return { fase: sim.entregas.caminhao?.fase, pacotes: sim.estado.deposito.pacotes.length, compativel: cena.modoCompativel };
     },
     concluir() {
-      for (let i = 0; i < 15000 && (sim.estado.deposito.pedidos.length || sim.entregas.caminhao); i++) sim.entregas.atualizar(sim, 0.05);
-      renderizar(); return { pacotes: sim.estado.deposito.pacotes.length, unidades: sim.estado.produtos.enlatado.horta };
+      // Exercita a mesma coordenação com o tráfego usada no jogo, sem forçar rua livre.
+      let viuSaidaComTrafego = false, aguardouTrafego = false, fechouBau = false;
+      for (let i = 0; i < 15000 && (sim.estado.deposito.pedidos.length || sim.entregas.caminhao); i++) {
+        const c = sim.entregas.caminhao;
+        if (c?.fase === 'partindo' && !viuSaidaComTrafego) {
+          for (const faixa of [0, 1]) cena.trafego.criarNaFaixa(faixa);
+          viuSaidaComTrafego = true;
+        }
+        cena.atualizarTrafego(0.05);
+        if (c?.fase === 'partindo' && !sim.entregas.transitoLivre) aguardouTrafego = true;
+        if (c?.fase === 'partindo' && c.aberturaBau === 0) fechouBau = true;
+        sim.entregas.atualizar(sim, 0.05);
+      }
+      renderizar(); return { pacotes: sim.estado.deposito.pacotes.length, unidades: sim.estado.produtos.enlatado.horta,
+        saiu: sim.entregas.caminhao === null, aguardouTrafego, fechouBau };
     },
     travessia() {
       const aleatorio = sim.aleatorio;

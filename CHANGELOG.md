@@ -1,6 +1,24 @@
 # Histórico de alterações
 
-## Versão atual: 0.57.0 — 2026-10-21
+## Versão atual: 0.57.3 — 2026-10-21
+
+- Mantém todo o caminhão sobre o asfalto desde o primeiro quadro até desaparecer, usando as bordas reais da rua expandida como pontos de entrada e saída.
+- Faz o entregador caminhar até o baú, abrir as portas, descarregar, fechar as portas e só então retornar à cabine; o caminhão continua esperando o fechamento completo antes de partir.
+- Corrige os braços do entregador ao posicionar mãos, cotovelos e ombros pelo sistema articulado do NPC ao carregar caixas e operar as portas.
+- Corrige a espera infinita na saída com tráfego contínuo: a entrega reserva as duas faixas antes de aguardar os carros existentes saírem, preservando a prioridade de manobras de clientes e serviços bancários já em espera. Libera a rua ao terminar.
+- Substitui o bloco sólido do baú por laterais, teto, parede frontal e piso, deixando uma abertura real atrás das portas. As folhas agora giram para fora, tornando a abertura e o fechamento visíveis.
+- Seleciona explicitamente um NPC masculino adulto de porte regular para o entregador, com uniforme próprio.
+- Amplia as verificações para usar a coordenação real do tráfego, confirmar que o caminhão deixa o mapa e conferir a abertura física do baú. Capturas de diagnóstico são opcionais e dependem de autorização do usuário.
+- Validação: 283 testes e build de produção aprovados; navegador conferido em desktop/celular e WebGL/Canvas, com captura autorizada para inspecionar as portas e o entregador. Saves e pedidos preservados.
+
+## 0.57.1 — 2026-10-21
+
+- Corrige o encerramento das entregas: após descarregar, o trabalhador retorna à cabine, o baú fecha completamente e o caminhão inicia a saída, sem ficar preso no pátio.
+- Anima as duas portas traseiras do baú, abrindo antes de retirar a primeira caixa e fechando antes de o veículo partir.
+- Reutiliza um modelo de cliente como entregador, com uniforme próprio, caminhada completa, balanço corporal e movimentos de pegar, carregar e elevar as caixas nas estantes.
+- Validação: 281 testes, build de produção e rotas até N19 aprovados. Verificação visual automatizada não executada porque o acesso externo ao Edge não foi autorizado; nenhuma imagem ou planta SVG foi gerada.
+
+## 0.57.0 — 2026-10-21
 
 - Organiza importações por classe de produto: cada classe tem uma estante exclusiva com quatro pacotes de nove unidades. Caixas guardadas e pedidos a caminho compartilham o limite; pedidos mistos são validados integralmente antes da cobrança.
 - Substitui as três estantes do depósito por quatro estantes menores, com dois níveis de duas caixas cada. Enlatados usa a primeira estante, identificada por cor, símbolo e etiqueta, com coleta e entrega no mesmo local. As duas gôndolas reservam duas classes cada; Higiene fica prevista, sem novos produtos disponíveis.
