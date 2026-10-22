@@ -43,6 +43,11 @@ try {
       await new Promise(r => setTimeout(r, 100));
     }
     const sufixo = `${mobile ? 'mobile' : 'desktop'}${canvas ? '-canvas' : ''}`;
+    const manobra = await avaliar('window.verificacao.manobra()');
+    if (manobra.fase !== 'chegando' || !manobra.re || manobra.angulo >= 0 || manobra.angulo <= -Math.PI / 2) throw new Error(JSON.stringify(manobra));
+    await estabilizar();
+    const capturaManobra = await chamar('Page.captureScreenshot', { format: 'png' });
+    await writeFile(`docs/previews/entregas-manobra-${sufixo}.png`, Buffer.from(capturaManobra.data, 'base64'));
     const fase = await avaliar("window.verificacao.fase('levar')");
     if (fase.fase !== 'levar') throw new Error(JSON.stringify(fase));
     await estabilizar();
@@ -50,6 +55,12 @@ try {
     await writeFile(`docs/previews/entregas-${sufixo}.png`, Buffer.from(captura.data, 'base64'));
     const entrega = await avaliar('window.verificacao.concluir()');
     if (entrega.pacotes !== 4 || entrega.unidades !== 36) throw new Error(JSON.stringify(entrega));
+    const travessia = await avaliar('window.verificacao.travessia()');
+    if (travessia.nascimento.x !== -27.5 || travessia.nascimento.z !== 8.4 || Math.abs(travessia.x + 18) > 0.15
+      || travessia.z !== 8.4 || travessia.fase !== 'passando' || travessia.listras < 6) throw new Error(JSON.stringify(travessia));
+    await estabilizar();
+    const capturaTravessia = await chamar('Page.captureScreenshot', { format: 'png' });
+    await writeFile(`docs/previews/pedestres-travessia-${sufixo}.png`, Buffer.from(capturaTravessia.data, 'base64'));
     await avaliar('window.verificacao.catalogo()');
     await avaliar(`for(let i=0;i<3;i++)document.querySelector('[data-importacao-quantidade="1"]').click()`);
     await estabilizar();
@@ -59,7 +70,7 @@ try {
     await writeFile(`docs/previews/catalogo-entregas-${sufixo}.png`, Buffer.from(catalogo.data, 'base64'));
     const pedido = await avaliar('document.getElementById("finalizar-importacao").click(); ({pedidos:verificacao.sim.estado.deposito.pedidos.length,caixas:verificacao.sim.estado.deposito.pedidos[0]?.pacotes.length})');
     if (pedido.pedidos !== 1 || pedido.caixas !== 3) throw new Error(`Pedido pela interface: ${JSON.stringify(pedido)}`);
-    console.log(JSON.stringify({ modo: sufixo, ...fase, ...entrega, largura }));
+    console.log(JSON.stringify({ modo: sufixo, ...fase, ...entrega, travessia, largura }));
   }
   if (erros.length) throw new Error(JSON.stringify(erros));
 } finally {

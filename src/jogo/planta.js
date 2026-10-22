@@ -194,21 +194,25 @@ export function selecionarExpositorPosterior(ator, produtos, catalogo = { ovos: 
   })?.[0];
 }
 
-// Pátio privativo N18: separado das seis vagas e com entrada própria pela rua.
+// Uma única faixa de carga: entrada de ré e saída de frente para a rua.
+const EIXO_CARGA = PLANTA_INICIAL.terreno.x - PLANTA_INICIAL.terreno.w / 2 - 2;
+const BORDA_ESQUERDA_DEPOSITO = -15.5;
+const FUNDO_ESTACIONAMENTOS = -9.3;
 export const PLANTA_CARGA = {
-  piso: { x: -22, z: -2.2, w: 11.2, d: 17.2 },
-  acesso: { x: -22, z: 7.83, w: 9.4, d: 2.86 },
-  ligacao: { x: -12.6, z: -8.48, w: 7.6, d: 1.36 },
-  vaga: { x: -21.6, z: -7.2, w: 6.8, d: 2.6 },
-  retirada: { x: -24.55, z: -7.2 },
-  cabine: { x: -19.85, z: -8.5 },
-  placa: { x: -16.85, z: 5.4 },
+  piso: { x: EIXO_CARGA, z: -1.45, w: 4, d: 15.7 },
+  acesso: { x: EIXO_CARGA, z: 7.83, w: 4, d: 2.86 },
+  travessia: { x: EIXO_CARGA, z: 8.25, w: 4, d: 0.85 },
+  ligacao: { x: -12.4, z: -8.48, w: 7.2, d: 1.7 },
+  vaga: { x: EIXO_CARGA, z: -3.7, w: 2.6, d: 7.2 },
+  retirada: { x: EIXO_CARGA, z: -7.2 },
+  cabine: { x: EIXO_CARGA + 1.45, z: -1.95 },
+  contornoCabine: { x: EIXO_CARGA + 1.45, z: -7.2 },
+  placa: { x: EIXO_CARGA + 2.35, z: 5.4 },
   guias: [
-    { x: -27.5, z: -2.2, w: 0.2, d: 17.2 },
-    { x: -22, z: -10.7, w: 11.2, d: 0.2 },
-    { x: -16.3, z: 0.1, w: 0.2, d: 12.6 },
-    { x: -27.15, z: 6.3, w: 0.9, d: 0.2 },
-    { x: -16.85, z: 6.3, w: 0.9, d: 0.2 }
+    { x: EIXO_CARGA - 1.9, z: -1.45, w: 0.2, d: 15.7 },
+    { x: (EIXO_CARGA - 2 + BORDA_ESQUERDA_DEPOSITO) / 2, z: FUNDO_ESTACIONAMENTOS + 0.1,
+      w: BORDA_ESQUERDA_DEPOSITO - (EIXO_CARGA - 2), d: 0.2 },
+    { x: EIXO_CARGA + 1.9, z: 0.1, w: 0.2, d: 12.6 }
   ]
 };
 export const obstaculosCarga = () => [...PLANTA_CARGA.guias, { ...PLANTA_CARGA.placa, w: 0.12, d: 0.12 }];
@@ -289,7 +293,7 @@ export function paredesDeposito() {
 export function pisoEstacionamento(expandida = false) {
   const piso = PLANTA_ESTACIONAMENTO.piso;
   if (!expandida) return piso;
-  const minX = piso.x - piso.w / 2, maxX = PLANTA_INICIAL.limites.minX;
+  const minX = PLANTA_CARGA.piso.x + PLANTA_CARGA.piso.w / 2, maxX = PLANTA_INICIAL.limites.minX;
   const minZ = PLANTA_DEPOSITO.porta.z, maxZ = piso.z + piso.d / 2;
   return { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2, w: maxX - minX, d: maxZ - minZ };
 }

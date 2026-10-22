@@ -8,18 +8,26 @@
 <rect x="50" y="796.5" width="780" height="66" fill="#78817e" />
 <rect x="50" y="760.5" width="780" height="37.5" fill="#e8deca" />
 <text x="665" y="840" text-anchor="middle" class="label">RUA</text>
-<rect x="233" y="520.5" width="190.50000000000003" height="235.50000000000003" fill="#78817e" />
-<rect x="56" y="498" width="168" height="258" fill="#78817e" />
-<rect x="69.5" y="756" width="141" height="42.9" fill="#78817e" />
-<rect x="224.00000000000003" y="522.6" width="114" height="20.400000000000002" fill="#78817e" />
-<rect x="95" y="532.5" width="102" height="39" fill="none" stroke="#e6bd54" stroke-width="2"/>
-<rect x="56" y="498" width="3" height="258" fill="#d2d8cb" />
-<rect x="56" y="498" width="168" height="3" fill="#d2d8cb" />
-<rect x="223.99999999999997" y="567" width="3" height="189" fill="#d2d8cb" />
-<rect x="56.00000000000006" y="753" width="13.5" height="3" fill="#d2d8cb" />
-<rect x="210.5" y="753" width="13.5" height="3" fill="#d2d8cb" />
-<text x="140" y="526.5" text-anchor="middle" class="small">CARGA EXCLUSIVA</text>
-<text x="140" y="783" text-anchor="middle" class="small">ACESSO DE CAMINHÕES</text>
+<rect x="230" y="520.5" width="193.5" height="235.50000000000003" fill="#78817e" />
+<rect x="170" y="520.5" width="60" height="235.5" fill="#78817e" />
+<rect x="170" y="756" width="60" height="42.9" fill="#78817e" />
+<rect x="230" y="520.05" width="108" height="25.5" fill="#78817e" />
+<line x1="180.5" y1="550.5" x2="219.5" y2="550.5" stroke="#e6bd54" stroke-width="2"/>
+<line x1="180.5" y1="550.5" x2="180.5" y2="658.5" stroke="#e6bd54" stroke-width="2"/>
+<line x1="219.5" y1="550.5" x2="219.5" y2="658.5" stroke="#e6bd54" stroke-width="2"/>
+<rect x="170" y="520.5" width="3" height="235.5" fill="#d2d8cb" />
+<rect x="170" y="520.5" width="67.5" height="3" fill="#d2d8cb" />
+<rect x="226.99999999999994" y="567" width="3" height="189" fill="#d2d8cb" />
+<rect x="173.29999999999995" y="777.375" width="3" height="12.75" fill="#f7f4df" />
+<rect x="180.5" y="777.375" width="3" height="12.75" fill="#f7f4df" />
+<rect x="187.7" y="777.375" width="3" height="12.75" fill="#f7f4df" />
+<rect x="194.89999999999998" y="777.375" width="3" height="12.75" fill="#f7f4df" />
+<rect x="202.09999999999997" y="777.375" width="3" height="12.75" fill="#f7f4df" />
+<rect x="209.29999999999995" y="777.375" width="3" height="12.75" fill="#f7f4df" />
+<rect x="216.49999999999997" y="777.375" width="3" height="12.75" fill="#f7f4df" />
+<rect x="223.7" y="777.375" width="3" height="12.75" fill="#f7f4df" />
+<text x="200" y="490.5" text-anchor="middle" class="small">CARGA · VAGA ÚNICA</text>
+<text x="200" y="766.5" text-anchor="middle" class="small">ENTRADA DE RÉ</text>
 <rect x="237.5" y="430.5" width="186" height="90" fill="#c5cbc6" />
 <rect x="237.5" y="428.4" width="186" height="4.2" fill="#315c49" />
 <rect x="235.39999999999998" y="430.5" width="4.2" height="90" fill="#315c49" />
@@ -206,7 +214,7 @@
 <path d="M860 140V900" stroke="#dedfd7"/>
 <text x="885" y="165" class="label">IMPLEMENTADO NO NÍVEL 18</text>
 <text x="885" y="196" class="note">Salão ampliado: 24 × 22 u.</text>
-<text x="885" y="227" class="note">Terreno: 40 × 46 u.</text>
+<text x="885" y="227" class="note">Terreno: 52 × 46 u.</text>
 <text x="885" y="258" class="note">Tomate, milho e trigo na banca.</text>
 <text x="885" y="289" class="note">Ovos + leite na parede do fundo.</text>
 <text x="885" y="320" class="note">Entrada frontal e acesso posterior.</text>

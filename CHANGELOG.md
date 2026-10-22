@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.56.0 — 2026-10-21
+## Versão atual: 0.56.1 — 2026-10-21
+
+- Reduz o pátio e seu acesso de duas faixas para uma faixa de 4 u, com uma única vaga longitudinal de 2,6 × 7,2 u. O piso encosta no estacionamento de clientes, termina alinhado à fachada do depósito e mantém somente as guias entre as áreas.
+- Move a vaga em direção à rua e usa três linhas, com a entrada aberta para comportar caminhões maiores no futuro.
+- O caminhão surge à esquerda da rua, avança além do acesso, para para engatar a ré e recua pela curva até a vaga. A cabine fica voltada para a rua e a saída usa a mesma faixa, de frente.
+- Ajusta o caminho do entregador ao baú voltado para os fundos, inclui os retrovisores na largura de colisão e coordena as duas faixas da rua durante a manobra. Preserva saves, pedidos e caixas existentes.
+- Adiciona uma faixa de pedestres no acesso do caminhão. Após a expansão, pedestres nascem e saem na nova extremidade esquerda da calçada e usam a travessia, inclusive após restaurar um save durante assaltos.
+- Atualiza a planta N18, documentação e capturas da manobra, descarga e travessia em desktop e celular, com WebGL e Canvas.
+- Validação: 275 testes, build de produção e rotas até N19 aprovados. Pedestres e caminhão completam suas rotas durante chegada e partida sem travar.
+
+## 0.56.0 — 2026-10-21
 
 - Inclui na compra da expansão do N18 mais 12 u à esquerda do mapa, ampliando o terreno para 52 × 46 u e acompanhando rua, calçada, tráfego, câmera e limites de navegação/salvamento.
 - Constrói um pátio exclusivo para caminhões, com acesso próprio pela rua, circuito de entrada/saída, vaga de carga demarcada, setas, placa com pictograma e guias de separação. Um caminho pavimentado liga o pátio ao depósito.

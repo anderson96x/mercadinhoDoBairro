@@ -64,6 +64,12 @@ export const CONFIG = {
   cameraIsometrica: { x: 18, y: 18, z: 18 }
 };
 
+const EXTREMOS_CALCADA_EXPANSAO = CONFIG.extremosCalcada.map((ponto, lado) => ({
+  ...ponto,
+  x: PLANTA_EXPANSAO.terreno.x + (lado ? 1 : -1) * (PLANTA_EXPANSAO.terreno.w / 2 - 0.5)
+}));
+export const extremosCalcadaDaLoja = estado => estado?.melhorias?.expansao ? EXTREMOS_CALCADA_EXPANSAO : CONFIG.extremosCalcada;
+
 export const PRODUTOS = {
   tomate: {
     nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 5, origem: 'horta',

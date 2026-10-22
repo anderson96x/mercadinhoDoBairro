@@ -1649,10 +1649,13 @@ export class Cena {
     const assalto = e.banco.assalto;
     if (coleta || assalto || sim.estacionamento.reservaRua || sim.entregas.reservaRua) this.trafego.faixasReservadas.add(0);
     else this.trafego.faixasReservadas.delete(0);
+    // A entrega vem pela esquerda e cruza a rua para alinhar a entrada de ré.
+    if (sim.entregas.reservaRua) this.trafego.faixasReservadas.add(1);
+    else this.trafego.faixasReservadas.delete(1);
     this.trafego.atualizarExpansao(!!e.melhorias.expansao);
     this.trafego.atualizar(dt);
     sim.estacionamento.transitoLivre = !this.trafego.carros.some(c => c.faixa === 0);
-    sim.entregas.transitoLivre = sim.estacionamento.transitoLivre;
+    sim.entregas.transitoLivre = this.trafego.carros.length === 0;
     const manobraAtiva = sim.estacionamento.carros.some(c => (c.fase === 'aguardando' && c.recebido)
       || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase)) || (sim.entregas.reservaRua && sim.entregas.caminhao.fase !== 'aguardando');
     if (coleta?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;

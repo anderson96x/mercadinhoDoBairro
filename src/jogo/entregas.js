@@ -2,7 +2,7 @@ import { PLANTA_DEPOSITO, PLANTA_CARGA } from './planta.js';
 
 export const CAPACIDADE_DEPOSITO = 27;
 export const UNIDADES_PACOTE = 9;
-export const ENTREGA = { comprimento: 5.2, largura: 1.65, velocidade: 2.6,
+export const ENTREGA = { comprimento: 5.2, largura: 2.12, velocidade: 2.6, velocidadeRe: 1.5,
   estacionamento: { x: PLANTA_CARGA.vaga.x, z: PLANTA_CARGA.vaga.z }, retirada: PLANTA_CARGA.retirada };
 export const estadoDeposito = () => ({ pacotes: [], pedidos: [], proximoId: 1 });
 export const pacotesPendentes = deposito => deposito.pedidos.reduce((total, pedido) => total + pedido.pacotes.length, 0);
@@ -27,7 +27,7 @@ export function validarDeposito(dados, produtos) {
   return base;
 }
 
-// Circuito privativo: entrada e saída à esquerda, sem cruzar as seis vagas.
+// Aproximação pela esquerda; o caminhão passa do acesso antes de engatar a ré.
 function curva(a, b, c, d) {
   return Array.from({ length: 81 }, (_, i) => {
     const t = i / 80, u = 1 - t;
@@ -37,25 +37,26 @@ function curva(a, b, c, d) {
 }
 function trajeto(segmentos) {
   let distancia = 0;
-  const pontos = segmentos.flatMap((s, i) => curva(...s).slice(i ? 1 : 0));
+  const pontos = segmentos.flatMap((s, i) => curva(...s.pontos).slice(i ? 1 : 0).map(p => ({ ...p, re: !!s.re })));
   pontos.forEach((p, i) => {
     if (i) distancia += Math.hypot(p.x - pontos[i - 1].x, p.z - pontos[i - 1].z);
     p.distancia = distancia;
   });
   return { pontos, comprimento: distancia };
 }
+const xFaixa = ENTREGA.estacionamento.x;
 export const ROTAS_ENTREGA = {
   chegando: trajeto([
-    [[29, 10.35], [15, 10.35], [-15, 10.35], [-21, 10.35]],
-    [[-21, 10.35], [-22.988, 10.35], [-24.6, 8.738], [-24.6, 6.75]],
-    [[-24.6, 6.75], [-24.6, 3], [-24.6, -1], [-24.6, -4.2]],
-    [[-24.6, -4.2], [-24.6, -5.857], [-23.257, -7.2], [-21.6, -7.2]]
+    { pontos: [[-33, 12.2], [-32, 12.2], [-30, 12.2], [-29, 12.2]] },
+    { pontos: [[-29, 12.2], [xFaixa - 3.4, 12.2], [xFaixa + 0.6, 11.7], [xFaixa + 4, 11.7]] },
+    { re: true, pontos: [[xFaixa + 4, 11.7], [xFaixa + 1.791, 11.7], [xFaixa, 9.909], [xFaixa, 7.7]] },
+    { re: true, pontos: [[xFaixa, 7.7], [xFaixa, 3], [xFaixa, -2], [xFaixa, ENTREGA.estacionamento.z]] }
   ]),
   partindo: trajeto([
-    [[-21.6, -7.2], [-20.274, -7.2], [-19.2, -6.126], [-19.2, -4.8]],
-    [[-19.2, -4.8], [-19.2, -1], [-19.2, 3], [-19.2, 6.75]],
-    [[-19.2, 6.75], [-19.2, 8.738], [-20.812, 10.35], [-22.8, 10.35]],
-    [[-22.8, 10.35], [-26, 10.35], [-30, 10.35], [-33, 10.35]]
+    { pontos: [[xFaixa, ENTREGA.estacionamento.z], [xFaixa, -2], [xFaixa, 3], [xFaixa, 7.7]] },
+    { pontos: [[xFaixa, 7.7], [xFaixa, 9.909], [xFaixa + 1.791, 11.7], [xFaixa + 4, 11.7]] },
+    { pontos: [[xFaixa + 4, 11.7], [xFaixa + 10.6, 11.7], [xFaixa + 16.6, 12.2], [xFaixa + 22.6, 12.2]] },
+    { pontos: [[xFaixa + 22.6, 12.2], [10, 12.2], [20, 12.2], [29, 12.2]] }
   ])
 };
 export function amostrarEntrega(rota, distancia) {
@@ -63,7 +64,9 @@ export function amostrarEntrega(rota, distancia) {
   const i = indice < 0 ? rota.pontos.length - 1 : Math.max(1, indice);
   const a = rota.pontos[i - 1], b = rota.pontos[i];
   const t = Math.min(1, Math.max(0, (distancia - a.distancia) / (b.distancia - a.distancia || 1)));
-  return { x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t, angulo: Math.atan2(-(b.z - a.z), b.x - a.x) };
+  const sentido = b.re ? -1 : 1;
+  return { x: a.x + (b.x - a.x) * t, z: a.z + (b.z - a.z) * t,
+    angulo: Math.atan2(-sentido * (b.z - a.z), sentido * (b.x - a.x)), re: b.re };
 }
 export function volumeCaminhao(caminhao) {
   const c = Math.abs(Math.cos(caminhao.angulo)), s = Math.abs(Math.sin(caminhao.angulo));
@@ -90,11 +93,16 @@ export class Entregas {
       const rota = ROTAS_ENTREGA[c.fase];
       if (c.fase === 'partindo' && c.distancia === 0 && (!this.transitoLivre || sim.estacionamento.reservaRua || sim.estado.banco.coleta || sim.estado.banco.assalto)) return;
       if (c.fase === 'partindo') c.partidaLiberada = true;
-      const distancia = Math.min(rota.comprimento, c.distancia + dt * ENTREGA.velocidade);
+      const distancia = Math.min(rota.comprimento, c.distancia + dt * (c.re ? ENTREGA.velocidadeRe : ENTREGA.velocidade));
       const proximo = amostrarEntrega(rota, distancia), volume = volumeCaminhao(proximo);
+      if (proximo.re !== c.re) {
+        c.tempo += dt;
+        if (c.tempo < 0.7) return;
+      }
       const pedestres = [sim.estado.jogador, ...(sim.ajudanteContratado ? [sim.ajudante] : []), ...sim.clientes.filter(p => !p.noCarro)];
       if (pedestres.some(p => Math.abs(p.x - volume.x) < volume.w / 2 + 0.32 && Math.abs(p.z - volume.z) < volume.d / 2 + 0.32)) return;
-      c.rodas -= (distancia - c.distancia) / 0.39;
+      c.tempo = 0;
+      c.rodas -= (distancia - c.distancia) * (proximo.re ? -1 : 1) / 0.39;
       Object.assign(c, proximo, { distancia });
       if (distancia < rota.comprimento) return;
       if (c.fase === 'partindo') { this.caminhao = null; return; }
@@ -107,7 +115,7 @@ export class Entregas {
     if (c.fase === 'desembarcar') {
       c.tempo += dt;
       if (c.tempo < 1.2) return;
-      const pontos = [{ x: ENTREGA.retirada.x, z: -8.5 }, ENTREGA.retirada];
+      const pontos = [PLANTA_CARGA.contornoCabine, ENTREGA.retirada];
       if (!sim.caminharCliente(ator, pontos[c.etapa], dt, 2.5)) return;
       if (++c.etapa < pontos.length) return;
       c.fase = 'retirar'; c.tempo = 0;
@@ -121,7 +129,7 @@ export class Entregas {
     if (c.fase === 'levar' || c.fase === 'voltar') {
       const estante = PLANTA_DEPOSITO.estantes[Math.floor(c.slot / 9)];
       const pontos = [
-        { x: ENTREGA.retirada.x, z: -8.45 }, { x: PLANTA_DEPOSITO.porta.x, z: -8.45 },
+        PLANTA_CARGA.contornoCabine, { x: PLANTA_CARGA.contornoCabine.x, z: -8.45 }, { x: PLANTA_DEPOSITO.porta.x, z: -8.45 },
         { x: PLANTA_DEPOSITO.porta.x, z: -10.3 }, { x: estante.x, z: -12.9 }
       ];
       const rota = c.fase === 'levar' ? pontos : [...pontos].reverse().slice(1).concat(ENTREGA.retirada);
@@ -138,7 +146,7 @@ export class Entregas {
       ator.carregando = false; c.fase = 'voltar'; c.etapa = 0;
       sim.emitir('pacoteEntregue', { produto, slot: c.slot });
     } else if (c.fase === 'embarcar') {
-      const pontos = [{ x: ENTREGA.retirada.x, z: -8.5 }, { x: c.x + 1.75, z: -8.5 }];
+      const pontos = [PLANTA_CARGA.contornoCabine, PLANTA_CARGA.cabine];
       if (c.etapa < pontos.length) {
         if (sim.caminharCliente(ator, pontos[c.etapa], dt, 2.5)) c.etapa++;
         return;
@@ -146,7 +154,7 @@ export class Entregas {
       c.tempo += dt;
       if (c.tempo < 1.2) return;
       deposito.pedidos.shift();
-      c.entregador = null; c.fase = 'partindo'; c.distancia = 0;
+      c.entregador = null; c.fase = 'partindo'; c.distancia = 0; c.re = false;
       sim.emitir('entregaConcluida', { texto: 'Entrega concluída! Retire enlatados no depósito para abastecer a gôndola.' });
     }
   }

@@ -11,6 +11,7 @@
   import '/src/interface/artesanal.css';
   import { Simulacao } from '/src/jogo/simulacao.js';
   import { CONFIG } from '/src/jogo/configuracao.js';
+  import { PLANTA_CARGA } from '/src/jogo/planta.js';
   import { Cena } from '/src/jogo/cena.js';
   import { Interface } from '/src/interface/interface.js';
 
@@ -34,22 +35,44 @@
   function renderizar() {
     cena.atualizar(0.05); ui.atualizar();
   }
+  function enquadrar(alvo) {
+    cena.camera.zoom = cena.mobile ? 0.72 : 1.3; cena.camera.updateProjectionMatrix();
+    const base = cena.baseCamera();
+    const ponto = alvo || (cena.mobile ? { x: -19, z: -5 } : { x: -14, z: -6 });
+    cena.alvoCamera.set(ponto.x, 0, ponto.z); cena.deslocamentoCamera.set(ponto.x - base.x, 0, ponto.z - base.z);
+    renderizar();
+  }
   window.verificacao = {
     sim, cena, ui,
+    manobra() {
+      for (let i = 0; i < 15000 && !(sim.entregas.caminhao?.re && sim.entregas.caminhao.z < 9.5); i++) sim.entregas.atualizar(sim, 0.05);
+      enquadrar(cena.mobile ? sim.entregas.caminhao : undefined);
+      return { fase: sim.entregas.caminhao?.fase, re: sim.entregas.caminhao?.re, angulo: sim.entregas.caminhao?.angulo };
+    },
     fase(fase) {
       sim.pausado = false;
       for (let i = 0; i < 15000 && sim.entregas.caminhao?.fase !== fase; i++) sim.entregas.atualizar(sim, 0.05);
       for (let i = 0; i < 15000 && !(sim.estado.deposito.pacotes.length >= 2 && sim.entregas.caminhao?.fase === 'levar' && sim.entregas.caminhao.entregador.z < -12.1); i++) sim.entregas.atualizar(sim, 0.05);
-      cena.camera.zoom = cena.mobile ? 0.72 : 1.3; cena.camera.updateProjectionMatrix();
-      const base = cena.baseCamera();
-      cena.alvoCamera.set(-14, 0, -6); cena.deslocamentoCamera.set(-14 - base.x, 0, -6 - base.z);
-      if (cena.mobile) { cena.alvoCamera.set(-19, 0, -5); cena.deslocamentoCamera.set(-19 - base.x, 0, -5 - base.z); }
-      renderizar();
+      enquadrar();
       return { fase: sim.entregas.caminhao?.fase, pacotes: sim.estado.deposito.pacotes.length, compativel: cena.modoCompativel };
     },
     concluir() {
       for (let i = 0; i < 15000 && (sim.estado.deposito.pedidos.length || sim.entregas.caminhao); i++) sim.entregas.atualizar(sim, 0.05);
       renderizar(); return { pacotes: sim.estado.deposito.pacotes.length, unidades: sim.estado.produtos.enlatado.horta };
+    },
+    travessia() {
+      const aleatorio = sim.aleatorio;
+      sim.aleatorio = () => 0.99; sim.proximoLadoEntrada = 0;
+      if (!sim.criarCliente()) throw new Error('Não foi possível criar o pedestre de verificação.');
+      sim.aleatorio = aleatorio;
+      const cliente = sim.clientes.at(-1), nascimento = { x: cliente.x, z: cliente.z };
+      Object.assign(cliente, { fase: 'passando', cestaReservada: false, ladoSaida: 1 });
+      for (let i = 0; i < 2000 && cliente.x < PLANTA_CARGA.travessia.x; i++) {
+        sim.tempo += 0.05; sim.atualizarClientes(0.05);
+      }
+      enquadrar(cena.mobile ? { x: PLANTA_CARGA.travessia.x, z: CONFIG.entrada.z } : { x: -16, z: 1 });
+      return { nascimento, x: cliente.x, z: cliente.z, fase: cliente.fase,
+        listras: cena.cena.getObjectsByProperty('name', 'travessia-carga').length };
     },
     catalogo() { ui.abrir('importacoes'); renderizar(); },
     renderizar

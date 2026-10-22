@@ -19,6 +19,7 @@ const parts = [`<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="100
 <text x="48" y="85" class="note">Nova planta · 2 u por cm anotado · cresce somente após as compras</text>`];
 const scale = expandida ? 15 : 19, X = x => (expandida ? 470 : 370) + x * scale, Y = z => (expandida ? 660 : 615) + z * scale;
 const rect = (p, color, extra = '') => parts.push(`<rect x="${X(p.x - p.w / 2)}" y="${Y(p.z - p.d / 2)}" width="${p.w * scale}" height="${p.d * scale}" fill="${color}" ${extra}/>`);
+const line = (x1, z1, x2, z2, color) => parts.push(`<line x1="${X(x1)}" y1="${Y(z1)}" x2="${X(x2)}" y2="${Y(z2)}" stroke="${color}" stroke-width="2"/>`);
 const text = (x, z, value, cls = 'label') => parts.push(`<text x="${X(x)}" y="${Y(z)}" text-anchor="middle" class="${cls}">${value}</text>`);
 const path = points => parts.push(`<path d="M${points.map(p => `${X(p.x)},${Y(p.z)}`).join('L')}" class="route"/>`);
 rect(expandida ? PLANTA_EXPANSAO.terreno : PLANTA_INICIAL.terreno, '#dfebd4', 'stroke="#9cb88e"');
@@ -28,10 +29,15 @@ text(13, 12, 'RUA');
 if (expandida) rect(pisoEstacionamento(true), '#78817e');
 if (expandida) {
   for (const p of [PLANTA_CARGA.piso, PLANTA_CARGA.acesso, PLANTA_CARGA.ligacao]) rect(p, '#78817e');
-  rect(PLANTA_CARGA.vaga, 'none', 'stroke="#e6bd54" stroke-width="2"');
+  const vaga = PLANTA_CARGA.vaga;
+  line(vaga.x - vaga.w / 2, vaga.z - vaga.d / 2, vaga.x + vaga.w / 2, vaga.z - vaga.d / 2, '#e6bd54');
+  line(vaga.x - vaga.w / 2, vaga.z - vaga.d / 2, vaga.x - vaga.w / 2, vaga.z + vaga.d / 2, '#e6bd54');
+  line(vaga.x + vaga.w / 2, vaga.z - vaga.d / 2, vaga.x + vaga.w / 2, vaga.z + vaga.d / 2, '#e6bd54');
   for (const p of PLANTA_CARGA.guias) rect(p, '#d2d8cb');
-  text(-22, -8.9, 'CARGA EXCLUSIVA', 'small');
-  text(-22, 8.2, 'ACESSO DE CAMINHÕES', 'small');
+  const travessia = PLANTA_CARGA.travessia, listras = Math.floor(travessia.w / 0.48);
+  for (let i = 0; i < listras; i++) rect({ x: travessia.x + (i - (listras - 1) / 2) * 0.48, z: travessia.z, w: 0.2, d: travessia.d }, '#f7f4df');
+  text(PLANTA_CARGA.vaga.x, -11.3, 'CARGA · VAGA ÚNICA', 'small');
+  text(PLANTA_CARGA.vaga.x, 7.1, 'ENTRADA DE RÉ', 'small');
   rect(PLANTA_DEPOSITO.piso, '#c5cbc6');
   for (const p of paredesDeposito()) rect(p, '#315c49');
   for (const p of PLANTA_DEPOSITO.estantes) rect(p, '#8aafbf', 'stroke="#317c9d"');
@@ -129,7 +135,7 @@ parts.push('<path d="M860 140V900" stroke="#dedfd7"/>');
 const notes = [
   `IMPLEMENTADO NO NÍVEL ${nivel}`,
   expandida ? 'Salão ampliado: 24 × 22 u.' : nivel >= 9 ? 'Salão ampliado: 24 × 16 u.' : 'Salão inicial: 7 × 8 cm → 14 × 16 u.',
-  expandida ? 'Terreno: 40 × 46 u.' : 'Terreno: 20 × 20 cm → 40 × 40 u.',
+  expandida ? 'Terreno: 52 × 46 u.' : 'Terreno: 20 × 20 cm → 40 × 40 u.',
   nivel >= 7 ? 'Tomate, milho e trigo na banca.' : nivel >= 3 ? 'Tomate + milho na mesma banca.' : 'Tomates na banca junto à esquerda.',
   nivel >= 5 ? 'Ovos + leite na parede do fundo.' : nivel >= 4 ? 'Ovos na parede do fundo.' : 'Lixeira ao fundo e área livre na loja.',
   'Entrada frontal e acesso posterior.',

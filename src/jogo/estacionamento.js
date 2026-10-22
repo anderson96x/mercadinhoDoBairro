@@ -92,12 +92,12 @@ export function construirEstacionamento() {
   }, atualizar(comprado, dt = 0, veiculos = [], tempo = 0, expandida = false) {
     if (expandida !== expansaoAnterior) {
       expansaoAnterior = expandida;
-      const piso = pisoEstacionamento(expandida), direita = piso.x + piso.w / 2;
+      const piso = pisoEstacionamento(expandida), esquerda = piso.x - piso.w / 2, direita = piso.x + piso.w / 2;
       asfalto.scale.set(piso.w / P.piso.w, 1, piso.d / P.piso.d);
       asfalto.position.set(piso.x, 0, piso.z);
       for (const [indice, guia] of guiasLaterais.entries()) {
         guia.scale.z = piso.d / P.piso.d;
-        guia.position.set(indice ? direita - 0.08 : minX + 0.08, 0.1, piso.z);
+        guia.position.set(indice ? direita - 0.08 : esquerda + 0.08, 0.1, piso.z);
       }
       // O asfalto encosta no depósito e na loja, sem meio-fio no portão.
       guiaFundos.visible = !expandida;

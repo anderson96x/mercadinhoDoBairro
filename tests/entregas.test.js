@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG } from '../src/jogo/configuracao.js';
-import { ROTAS_ENTREGA, ENTREGA, volumeCaminhao, vagasDeposito, pacotesPendentes } from '../src/jogo/entregas.js';
+import { ROTAS_ENTREGA, ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes } from '../src/jogo/entregas.js';
 import { criarCaminhaoEntrega, EntregasVisual } from '../src/jogo/entregas-visual.js';
-import { OBSTACULOS_ESTACIONAMENTO, paredesDeposito, PLANTA_ESTACIONAMENTO, PLANTA_DEPOSITO, PLANTA_CARGA, obstaculosCarga } from '../src/jogo/planta.js';
+import { OBSTACULOS_ESTACIONAMENTO, paredesDeposito, PLANTA_ESTACIONAMENTO, PLANTA_DEPOSITO, PLANTA_CARGA, PLANTA_EXPANSAO, obstaculosCarga } from '../src/jogo/planta.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function loja() {
@@ -114,19 +114,55 @@ test('jogador e repositor retiram produtos do depósito e abastecem a gôndola p
   assert.equal(sim.estado.deposito.pacotes.length, 0);
 });
 
+test('caminhão surge à esquerda, para antes de engatar a ré e estaciona com a frente para a rua', () => {
+  const rota = ROTAS_ENTREGA.chegando;
+  const inicio = amostrarEntrega(rota, 0);
+  assert.ok(inicio.x < PLANTA_EXPANSAO.terreno.x - PLANTA_EXPANSAO.terreno.w / 2 - ENTREGA.comprimento / 2);
+  assert.ok(Math.abs(inicio.angulo) < 1e-8);
+  assert.equal(inicio.re, false);
+  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
+  entregar(sim, () => sim.entregas.caminhao?.tempo > 0 && sim.entregas.caminhao?.fase === 'chegando');
+  const parado = structuredClone(sim.entregas.caminhao);
+  sim.entregas.atualizar(sim, 0.2);
+  assert.equal(sim.entregas.caminhao.distancia, parado.distancia);
+  assert.equal(sim.entregas.caminhao.rodas, parado.rodas);
+  entregar(sim, () => sim.entregas.caminhao?.re);
+  const antes = structuredClone(sim.entregas.caminhao);
+  sim.entregas.atualizar(sim, 0.05);
+  const depois = sim.entregas.caminhao;
+  assert.ok((depois.x - antes.x) * Math.cos(depois.angulo) - (depois.z - antes.z) * Math.sin(depois.angulo) < 0, 'ré desloca o caminhão para trás');
+  assert.ok(depois.rodas > antes.rodas, 'rodas invertem o giro na ré');
+  assert.ok(Math.abs(depois.distancia - antes.distancia - ENTREGA.velocidadeRe * 0.05) < 1e-8);
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'desembarcar');
+  const estacionado = sim.entregas.caminhao;
+  assert.equal(estacionado.x, PLANTA_CARGA.vaga.x);
+  assert.equal(estacionado.z, PLANTA_CARGA.vaga.z);
+  assert.ok(Math.abs(estacionado.angulo + Math.PI / 2) < 1e-8);
+  const volume = volumeCaminhao(estacionado);
+  assert.ok(volume.w <= PLANTA_CARGA.vaga.w && volume.d <= PLANTA_CARGA.vaga.d);
+  const saida = amostrarEntrega(ROTAS_ENTREGA.partindo, 0);
+  assert.equal(saida.re, false);
+  assert.equal(saida.x, estacionado.x);
+  assert.equal(saida.z, estacionado.z);
+  assert.ok(Math.abs(saida.angulo - estacionado.angulo) < 1e-8);
+});
+
 test('rotas do caminhão não atravessam ilha, paredes, postes ou meio-fio', () => {
-  const obstaculos = [...OBSTACULOS_ESTACIONAMENTO, ...paredesDeposito(), ...obstaculosCarga(), { x: -3.1, z: -1.3, w: 0.28, d: 16 }, PLANTA_ESTACIONAMENTO.posteCalcada];
+  const guiasCalcada = [[-28, PLANTA_CARGA.acesso.x - PLANTA_CARGA.acesso.w / 2], [PLANTA_CARGA.acesso.x + PLANTA_CARGA.acesso.w / 2, -16]]
+    .filter(([inicio, fim]) => fim > inicio)
+    .map(([inicio, fim]) => ({ x: (inicio + fim) / 2, z: 9.18, w: fim - inicio, d: 0.16 }));
+  const obstaculos = [...OBSTACULOS_ESTACIONAMENTO, ...paredesDeposito(), ...obstaculosCarga(), ...guiasCalcada, { x: -3.1, z: -1.3, w: 0.28, d: 16 }, PLANTA_ESTACIONAMENTO.posteCalcada];
   for (const [fase, rota] of Object.entries(ROTAS_ENTREGA)) {
     for (let i = 1; i < rota.pontos.length; i++) {
-      const a = rota.pontos[i - 1], p = rota.pontos[i];
-      const angulo = Math.atan2(-(p.z - a.z), p.x - a.x);
+      const p = rota.pontos[i];
+      const { angulo } = amostrarEntrega(rota, p.distancia);
       // Contorno real girado, incluindo as quatro arestas do baú.
       const cantos = [-1, 1].flatMap(lx => [-1, 1].map(lz => ({
         x: p.x + lx * ENTREGA.comprimento / 2 * Math.cos(angulo) + lz * ENTREGA.largura / 2 * Math.sin(angulo),
         z: p.z - lx * ENTREGA.comprimento / 2 * Math.sin(angulo) + lz * ENTREGA.largura / 2 * Math.cos(angulo)
       })));
       for (const canto of cantos) {
-        const rua = canto.z >= 9.25;
+        const rua = canto.z >= 9.25 && canto.z <= 13.5;
         const acesso = canto.z >= 6.4 && canto.z <= 9.3 && Math.abs(canto.x - PLANTA_CARGA.acesso.x) <= PLANTA_CARGA.acesso.w / 2;
         const patio = Math.abs(canto.z - PLANTA_CARGA.piso.z) <= PLANTA_CARGA.piso.d / 2 && Math.abs(canto.x - PLANTA_CARGA.piso.x) <= PLANTA_CARGA.piso.w / 2;
         assert.ok(rua || acesso || patio, `${fase} ${i}: fora do asfalto ${JSON.stringify(canto)}`);

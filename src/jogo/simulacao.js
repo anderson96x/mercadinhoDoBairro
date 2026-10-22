@@ -1,7 +1,7 @@
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, folhasPortasExpansao, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
-import { produtosDaLoja, CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
+import { produtosDaLoja, extremosCalcadaDaLoja, CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
@@ -9,7 +9,7 @@ import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
 import { EstacionamentoClientes, pontoPortaCarro, volumeCarro, SAIDA_PEDESTRES } from './estacionamento-clientes.js';
 import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, UNIDADES_PACOTE, volumeCaminhao } from './entregas.js';
-import { obstaculosCarga } from './planta.js';
+import { PLANTA_CARGA, obstaculosCarga } from './planta.js';
 
 // A fila vira para o fundo após sete lugares, cabendo no salão anterior ao N9.
 export function pontoFila(indice) {
@@ -220,6 +220,7 @@ export class Simulacao {
     this.missaoAnterior = this.missao().indice;
   }
   get produtos() { return produtosDaLoja(this.estado); }
+  get extremosCalcada() { return extremosCalcadaDaLoja(this.estado); }
   get portaProducao() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.portaProducao : CONFIG.portaProducao; }
   get limitesMundo() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.limites : this.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.limites : this.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.limites : this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
   get capacidade() { return CONFIG.capacidadeInicial + 4 * this.estado.melhorias.logistica + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
@@ -662,8 +663,8 @@ export class Simulacao {
   get limitesClientes() {
     const limites = this.limitesMundo;
     return { ...limites,
-      minX: Math.min(limites.minX, ...CONFIG.extremosCalcada.map(p => p.x)),
-      maxX: Math.max(limites.maxX, ...CONFIG.extremosCalcada.map(p => p.x)),
+      minX: Math.min(limites.minX, ...this.extremosCalcada.map(p => p.x)),
+      maxX: Math.max(limites.maxX, ...this.extremosCalcada.map(p => p.x)),
       // Reserva espaço para o corpo antes do meio-fio, sem entrar na rua.
       maxZ: Math.min(limites.maxZ, CONFIG.entrada.z + 0.45)
     };
@@ -707,6 +708,19 @@ export class Simulacao {
     if (d < velocidade * dt + 0.03) { ator.x = ponto.x; ator.z = ponto.z; ator.andando = false; return true; }
     this.mover(ator, (ponto.x - ator.x) / d, (ponto.z - ator.z) / d, dt, velocidade, false);
     return false;
+  }
+  caminharCalcada(ator, ponto, dt) {
+    if (this.estado.melhorias.expansao && ator.z >= CONFIG.portaEntrada.z && ponto.z >= CONFIG.portaEntrada.z) {
+      const faixa = PLANTA_CARGA.travessia, sentido = Math.sign(ponto.x - ator.x);
+      const inicio = faixa.x - sentido * (faixa.w / 2 + 0.5), fim = faixa.x + sentido * (faixa.w / 2 + 0.5);
+      if (sentido * (ponto.x - fim) >= 0 && sentido * (fim - ator.x) > 0.025) {
+        // Alinha antes de atravessar; desvios de postes adiante não cortam a faixa.
+        const x = sentido * (inicio - ator.x) > 0.025 ? inicio : fim;
+        this.caminharCliente(ator, { x, z: CONFIG.entrada.z }, dt);
+        return false;
+      }
+    }
+    return this.caminharCliente(ator, ponto, dt);
   }
   caminharCliente(ator, ponto, dt, velocidade = 2.4) {
     ator.andando = false;
@@ -1007,7 +1021,7 @@ export class Simulacao {
     }
     const produto = compras[0].produto;
     const ordemEntradas = [this.proximoLadoEntrada, 1 - this.proximoLadoEntrada];
-    const ladoEntrada = ordemEntradas.find(indice => !this.clientes.some(c => distancia(c, CONFIG.extremosCalcada[indice]) < CONFIG.distanciaClientes));
+    const ladoEntrada = ordemEntradas.find(indice => !this.clientes.some(c => distancia(c, this.extremosCalcada[indice]) < CONFIG.distanciaClientes));
     if (ladoEntrada === undefined) return false;
     this.proximoLadoEntrada = 1 - ladoEntrada;
     const ladoSaida = this.proximoLadoSaida;
@@ -1029,7 +1043,7 @@ export class Simulacao {
     }
     const aparencia = this.aparenciasDisponiveis.pop();
     this.ultimaAparenciaCliente = aparencia;
-    this.clientes.push({ id: this.proximaId++, ...CONFIG.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: compras[0].desejado, compras, compraAtual: 0, itens: [], fase: cestaReservada ? 'chegando' : 'passando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida: cestaReservada ? ladoSaida : 1 - ladoEntrada, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada, temCesta: false, levaSacolas: false });
+    this.clientes.push({ id: this.proximaId++, ...this.extremosCalcada[ladoEntrada], produto, quantidade: 0, desejado: compras[0].desejado, compras, compraAtual: 0, itens: [], fase: cestaReservada ? 'chegando' : 'passando', etapa: 0, espera: 0, aparencia, ladoEntrada, ladoSaida: cestaReservada ? ladoSaida : 1 - ladoEntrada, pontoCompra: Math.max(0, pontoCompra), andando: false, cestaReservada, temCesta: false, levaSacolas: false });
     if (deCarro) this.estacionamento.reservar(this.clientes.at(-1), this.tempo);
     return true;
   }
@@ -1126,7 +1140,7 @@ export class Simulacao {
           continue;
         }
         if (c.etapa === 0) {
-          if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;
+          if (this.caminharCalcada(c, CONFIG.entrada, dt)) c.etapa = 1;
           continue;
         }
         if (c.etapa === 1 && c.cestaReservada === true) {
@@ -1164,7 +1178,7 @@ export class Simulacao {
         const indice = Math.max(0, fila.indexOf(c));
         if (this.caminharCliente(c, pontoFila(indice), dt)) { c.andando = false; c.angulo = CONFIG.anguloCaixa + Math.PI; }
       } else if (c.fase === 'passando') {
-        if (this.caminharCliente(c, CONFIG.extremosCalcada[c.ladoSaida], dt)) c.fase = 'fim';
+        if (this.caminharCalcada(c, this.extremosCalcada[c.ladoSaida], dt)) c.fase = 'fim';
       } else if (c.fase === 'saindo') {
         if (c.etapa === 0) {
           if (this.caminharCliente(c, CONFIG.entrada, dt)) c.etapa = 1;
@@ -1174,7 +1188,7 @@ export class Simulacao {
             if (c.etapa === 1) {
               if (this.caminharCliente(c, SAIDA_PEDESTRES, dt)) c.etapa = 2;
             } else if (this.caminharCliente(c, pontoPortaCarro(carro), dt)) this.estacionamento.embarcar(c);
-          } else if (this.caminharCliente(c, CONFIG.extremosCalcada[c.ladoSaida ?? 1], dt)) c.fase = 'fim';
+          } else if (this.caminharCalcada(c, this.extremosCalcada[c.ladoSaida ?? 1], dt)) c.fase = 'fim';
         }
       }
     }

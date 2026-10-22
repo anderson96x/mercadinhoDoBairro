@@ -3,10 +3,21 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG } from '../src/jogo/configuracao.js';
-import { PLANTA_EXPANSAO, PLANTA_CARGA, PLANTA_INICIAL } from '../src/jogo/planta.js';
+import { PLANTA_EXPANSAO, PLANTA_CARGA, PLANTA_DEPOSITO, PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, pisoEstacionamento } from '../src/jogo/planta.js';
 import { construirBairro } from '../src/jogo/bairro.js';
 import { Cena } from '../src/jogo/cena.js';
 import { Trafego } from '../src/jogo/trafego.js';
+import { ENTREGA } from '../src/jogo/entregas.js';
+import { construirEstacionamento } from '../src/jogo/estacionamento.js';
+
+function primitivas() {
+  const caixa = (pai, w, h, d, cor, x, y, z) => {
+    const objeto = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: cor }));
+    objeto.position.set(x, y, z); pai.add(objeto); return objeto;
+  };
+  return { caixa, cilindro: (pai, a, b, h, cor, x, y, z) => caixa(pai, a * 2, h, b * 2, cor, x, y, z),
+    esfera: (pai, r, cor, x, y, z) => caixa(pai, r * 2, r * 2, r * 2, cor, x, y, z) };
+}
 
 test('compra do N18 amplia 12 u à esquerda e preserva jogadores no novo terreno ao salvar', () => {
   const sim = new Simulacao(); sim.estado.dinheiro = 100000;
@@ -41,12 +52,60 @@ test('pátio, rua e terreno ampliados acompanham compra e recarga, sem depender 
   const terreno = new THREE.Box3().setFromObject(cena.getObjectByName('terreno-principal'));
   assert.equal(terreno.min.x, -28); assert.equal(terreno.max.x, 24);
   const acesso = new THREE.Box3().setFromObject(patio.getObjectByName('acesso-exclusivo-carga'));
-  assert.ok(acesso.max.x < -16, 'acesso privado fica inteiramente fora do mapa anterior');
+  assert.ok(acesso.max.x <= -16, 'acesso privado termina na borda do mapa anterior');
   assert.ok(Math.abs(acesso.max.z - 9.26) < 1e-6);
   assert.ok(patio.getObjectByName('placa-carga-exclusiva'));
+  const listras = patio.getObjectsByProperty('name', 'travessia-carga');
+  assert.ok(listras.length >= 6);
+  for (const listra of listras) {
+    const faixa = new THREE.Box3().setFromObject(listra);
+    assert.ok(faixa.min.x >= acesso.min.x && faixa.max.x <= acesso.max.x);
+    assert.ok(faixa.min.z < CONFIG.entrada.z && faixa.max.z > CONFIG.entrada.z, 'faixa acompanha o caminho dos pedestres');
+    assert.ok(faixa.min.y > acesso.max.y, 'faixa fica visível sobre o asfalto');
+    assert.equal(listra.userData.fundo, 6, 'Canvas desenha a faixa depois do acesso');
+  }
+  assert.equal(PLANTA_CARGA.piso.w, PLANTA_CARGA.acesso.w);
+  assert.ok(PLANTA_CARGA.piso.w < ENTREGA.largura * 2, 'pavimento tem espaço para uma única faixa de caminhão');
+  assert.ok(PLANTA_CARGA.vaga.w > ENTREGA.largura && PLANTA_CARGA.vaga.d > ENTREGA.comprimento);
+  assert.equal(patio.getObjectByName('divisoria-faixas-carga'), undefined);
+  const guiasCalcada = patio.parent.children.filter(objeto => objeto.name === 'guia-calcada-carga')
+    .map(objeto => new THREE.Box3().setFromObject(objeto)).sort((a, b) => a.min.x - b.min.x);
+  assert.equal(guiasCalcada.length, 1);
+  assert.ok(Math.abs(guiasCalcada[0].max.x - acesso.min.x) < 1e-6);
   bairro.atualizarExpansao(false);
   assert.equal(patio.parent.visible, false);
   assert.equal(new THREE.Box3().setFromObject(cena.getObjectByName('terreno-principal')).min.x, -16);
+});
+
+test('pátio encosta no estacionamento ampliado com apenas as guias entre os pisos', () => {
+  const estacionamento = construirEstacionamento();
+  estacionamento.atualizar(true, 4, [], 0, true);
+  const asfalto = new THREE.Box3().setFromObject(estacionamento.grupo.getObjectByName('asfalto-estacionamento'));
+  const bordaCarga = PLANTA_CARGA.piso.x + PLANTA_CARGA.piso.w / 2;
+  assert.ok(Math.abs(asfalto.min.x - bordaCarga) < 1e-6, 'nenhuma faixa de grama entre os pisos');
+  const guiaClientes = estacionamento.grupo.getObjectsByProperty('name', 'guia-lateral-estacionamento')
+    .map(objeto => new THREE.Box3().setFromObject(objeto)).sort((a, b) => a.min.x - b.min.x)[0];
+  const guiaCarga = PLANTA_CARGA.guias.find(guia => guia.d > guia.w && guia.x > PLANTA_CARGA.piso.x);
+  assert.ok(Math.abs(guiaClientes.min.x - (guiaCarga.x + guiaCarga.w / 2)) < 1e-6, 'guias se tocam na divisa');
+  assert.deepEqual(pisoEstacionamento(false), PLANTA_ESTACIONAMENTO.piso, 'N16 mantém a planta original');
+});
+
+test('guia dos fundos do pátio termina exatamente na parede do depósito', () => {
+  const guiaFundos = PLANTA_CARGA.guias.find(guia => guia.z < PLANTA_CARGA.vaga.z);
+  const bordaEsquerdaDeposito = PLANTA_DEPOSITO.piso.x - PLANTA_DEPOSITO.piso.w / 2;
+  assert.equal(guiaFundos.x + guiaFundos.w / 2, bordaEsquerdaDeposito);
+  assert.ok(Math.abs(PLANTA_CARGA.piso.z - PLANTA_CARGA.piso.d / 2 - PLANTA_DEPOSITO.porta.z) < 1e-9,
+    'pátio de carga termina alinhado ao estacionamento dos carros');
+});
+
+test('vaga de carga tem três linhas, abertura para a rua e reserva comprimento para caminhões maiores', () => {
+  const cena = new THREE.Scene();
+  const bairro = construirBairro(cena, primitivas()); bairro.atualizarExpansao(true);
+  const linhas = cena.getObjectByName('patio-carga').getObjectsByProperty('name', 'linha-vaga-carga');
+  assert.equal(linhas.length, 3);
+  assert.ok(PLANTA_CARGA.vaga.d > ENTREGA.comprimento + 1.5);
+  assert.ok(linhas.every(linha => linha.position.z < PLANTA_CARGA.vaga.z + PLANTA_CARGA.vaga.d / 2),
+    'lado voltado para a rua permanece aberto');
 });
 
 test('câmera alcança o pátio no N18 e tráfego percorre a extensão da rua', () => {
