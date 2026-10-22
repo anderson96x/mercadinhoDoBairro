@@ -92,7 +92,8 @@ export class EstacionamentoClientes {
       const fase = carro.fase;
       carro.freando = false; carro.direcaoCurva = null;
       if (fase === 'aguardando' || fase === 'esperandoSaida') {
-        const servico = sim.estado.banco.coleta || sim.estado.banco.assalto;
+        const entregaNaRua = sim.entregas?.reservaRua && sim.entregas.caminhao.fase !== 'aguardando';
+        const servico = sim.estado.banco.coleta || sim.estado.banco.assalto || (entregaNaRua ? { tempo: 0 } : null);
         if (fase === 'aguardando' && this.receberDoTrafego && !carro.recebido) {
           if (servico) continue;
           const existente = this.receberDoTrafego(carro.clienteId);
@@ -101,7 +102,11 @@ export class EstacionamentoClientes {
           cliente.x = carro.x; cliente.z = carro.z;
         }
         if (!this.transitoLivre || (servico && !(carro.recebido && fase === 'aguardando' && servico.tempo < 0))) continue;
-        if (fase === 'esperandoSaida' && this.manobrando) continue;
+        // Uma reserva ainda sem carro não ocupa a rua. Deixe a saída liberar
+        // a entrega, que suspende o tráfego necessário para atender essa reserva.
+        if (fase === 'esperandoSaida' && this.carros.some(outro =>
+          !['estacionado', 'esperandoSaida'].includes(outro.fase)
+          && !(outro.fase === 'aguardando' && this.receberDoTrafego && !outro.recebido))) continue;
         carro.fase = fase === 'aguardando' ? 'chegando' : 're';
         if (fase === 'esperandoSaida') { carro.distancia = 0; carro.velocidade = 0; }
       } else if (['chegando', 're', 'partindo'].includes(fase)) {

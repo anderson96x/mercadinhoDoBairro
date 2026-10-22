@@ -33,8 +33,4 @@ A versão espacial passa de **5 para 6**. A migração conserva compras, dinheir
 
 ## Evidências
 
-![Vista geral do nível 3](previews/nova-planta-n3-geral.png)
-
-As capturas usam uma partida isolada de nível 3, com caixa e milho comprados e quatro unidades de cada produto colhidas e repostas na banca. As hortas tiveram tempo para regenerar. Essa preparação não altera o salvamento do jogador.
-
-[Verificações e resultados](VERIFICACAO.md). Regenerar as plantas N1 e N3 com `node scripts/render-floor-plan.mjs`.
+[Verificações e resultados](VERIFICACAO.md). Gerar plantas técnicas com `node scripts/render-floor-plan.mjs` somente quando solicitado explicitamente pelo usuário.

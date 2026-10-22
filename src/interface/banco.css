@@ -15,6 +15,9 @@
 .aviso-banco.assalto-em-andamento{border-color:#bd5538;border-left-color:#bd5538;background:#fff5f1}
 .balao-reacao.assustado{background:#fff3ee;color:#ad402f}
 .coleta-em-andamento .aviso-banco-icone{background:#43745a}
+.aviso-entrega{border-color:#b9cdbc;border-left-color:#43745a;background:#f7fbf4}
+.aviso-entrega .aviso-banco-icone{background:#43745a}.aviso-entrega .aviso-banco-icone .icone{width:18px;height:18px}
+.aviso-banco:not([hidden])+.aviso-entrega{bottom:174px}
 @keyframes aviso-banco-entrada{from{opacity:0;translate:0 8px}to{opacity:1;translate:0 0}}
 .deposito-banco{margin-top:22px;padding:18px;border:1px solid #d3ddcf;border-radius:15px;background:#f0f3eb;color:#294736}
 .deposito-banco h3{font-size:20px}
@@ -25,5 +28,5 @@
 .deposito-banco p{font-size:12px;color:#64715e;line-height:1.5}
 .deposito-banco .deposito-nota{margin-top:10px;font-size:11px}
 .deposito-banco button:disabled{background:#dbe2d5;color:#7c8877}
-@media(max-width:700px){.dinheiro-caixa{font-size:10px;margin-top:5px;padding-top:4px}.aviso-banco{bottom:112px;padding:11px 13px;gap:9px}.aviso-banco strong{font-size:14px}.aviso-banco p{font-size:11px}.deposito-banco{padding:14px}}
+@media(max-width:700px){.dinheiro-caixa{font-size:10px;margin-top:5px;padding-top:4px}.aviso-banco{bottom:112px;padding:11px 13px;gap:9px}.aviso-banco:not([hidden])+.aviso-entrega{bottom:252px}.aviso-banco strong{font-size:14px}.aviso-banco p{font-size:11px}.deposito-banco{padding:14px}}
 @media(prefers-reduced-motion:reduce){.aviso-banco{animation:none}.aviso-banco-progresso span{transition:none}}

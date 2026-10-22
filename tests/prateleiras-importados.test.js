@@ -107,7 +107,7 @@ test('as duas prateleiras têm o mesmo tamanho e terminam nas mesmas linhas', ()
 test('objetivo do nível 17 orienta as duas compras sem exigir estacionamento', () => {
   const sim = nivel();
   assert.match(sim.missao().texto, /1\.000 cada/);
-  assert.equal(sim.missao().destino, 'escritorio');
+  assert.equal(sim.missao().destino, 'celular');
   sim.comprarMelhoria('prateleirasImportados');
   assert.match(sim.missao().titulo, /prateleiras/);
   sim.comprarMelhoria('prateleirasImportados');

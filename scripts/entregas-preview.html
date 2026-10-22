@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verificação de entregas</title></head>
+<body>
+<div id="app"></div>
+<script type="module">
+  import '/src/interface/estilos.css';
+  import '/src/interface/clientes.css';
+  import '/src/interface/progresso.css';
+  import '/src/interface/banco.css';
+  import '/src/interface/artesanal.css';
+  import { Simulacao } from '/src/jogo/simulacao.js';
+  import { CONFIG } from '/src/jogo/configuracao.js';
+  import { PLANTA_CARGA } from '/src/jogo/planta.js';
+  import { Cena } from '/src/jogo/cena.js';
+  import { Interface } from '/src/interface/interface.js';
+
+  if (new URLSearchParams(location.search).has('canvas')) {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function(tipo, ...args) { return tipo === 'webgl2' ? null : original.call(this, tipo, ...args); };
+  }
+  const sim = new Simulacao(); sim.estado.dinheiro = 100000; sim.proximoCliente = Infinity;
+  sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
+  for (const id of ['alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', 'expansao', 'estacionamento', 'prateleirasImportados']) sim.comprarMelhoria(id);
+  const ui = new Interface(sim, {
+    pausar(valor) { sim.pausado = valor; }, comprar: id => sim.comprarMelhoria(id),
+    encomendarImportacoes: itens => sim.encomendarImportacoes(itens)
+  });
+  const cena = new Cena(document.getElementById('mundo'), sim);
+  // A interface de produção não exibe o botão DEV.
+  document.getElementById('dev-menu').hidden = true;
+  cena.trafego.carros.length = 0;
+  sim.entregas.transitoLivre = true;
+  sim.encomendarImportacoes({ importarProdutos: 4 });
+  function renderizar() {
+    cena.atualizar(0.05); ui.atualizar();
+  }
+  function enquadrar(alvo) {
+    cena.camera.zoom = cena.mobile ? 0.72 : 1.3; cena.camera.updateProjectionMatrix();
+    const base = cena.baseCamera();
+    const ponto = alvo || (cena.mobile ? { x: -19, z: -5 } : { x: -14, z: -6 });
+    cena.alvoCamera.set(ponto.x, 0, ponto.z); cena.deslocamentoCamera.set(ponto.x - base.x, 0, ponto.z - base.z);
+    renderizar();
+  }
+  window.verificacao = {
+    sim, cena, ui,
+    portas() {
+      for (let i = 0; i < 15000 && sim.entregas.caminhao?.fase !== 'abrirBau'; i++) sim.entregas.atualizar(sim, 0.05);
+      const inicio = sim.entregas.caminhao.aberturaBau;
+      sim.entregas.atualizar(sim, 0.15);
+      enquadrar({ x: PLANTA_CARGA.vaga.x, z: PLANTA_CARGA.vaga.z - 1.5 });
+      const visual = cena.entregasVisual;
+      return { inicio, abertura: sim.entregas.caminhao.aberturaBau,
+        angulos: visual.caminhao.userData.portas.map(p => p.rotation.y),
+        aparencia: visual.entregador.userData.aparencia };
+    },
+    inspecionarBau() {
+      for (let i = 0; i < 15000 && sim.entregas.caminhao?.fase !== 'retirar'; i++) sim.entregas.atualizar(sim, 0.05);
+      renderizar();
+      const p = PLANTA_CARGA.vaga;
+      cena.camera.position.set(p.x - 6, 7, p.z - 10);
+      cena.camera.lookAt(p.x, 1.2, p.z - 2.2);
+      cena.camera.zoom = cena.mobile ? 1.5 : 3;
+      cena.camera.updateProjectionMatrix();
+      cena.renderer.render(cena.cena, cena.camera);
+    },
+    manobra() {
+      for (let i = 0; i < 15000 && !(sim.entregas.caminhao?.re && sim.entregas.caminhao.z < 9.5); i++) sim.entregas.atualizar(sim, 0.05);
+      enquadrar(cena.mobile ? sim.entregas.caminhao : undefined);
+      return { fase: sim.entregas.caminhao?.fase, re: sim.entregas.caminhao?.re, angulo: sim.entregas.caminhao?.angulo };
+    },
+    fase(fase) {
+      sim.pausado = false;
+      for (let i = 0; i < 15000 && sim.entregas.caminhao?.fase !== fase; i++) sim.entregas.atualizar(sim, 0.05);
+      for (let i = 0; i < 15000 && !(sim.estado.deposito.pacotes.length >= 2 && sim.entregas.caminhao?.fase === 'levar' && sim.entregas.caminhao.entregador.z < -12.1); i++) sim.entregas.atualizar(sim, 0.05);
+      enquadrar();
+      return { fase: sim.entregas.caminhao?.fase, pacotes: sim.estado.deposito.pacotes.length, compativel: cena.modoCompativel };
+    },
+    concluir() {
+      // Exercita a mesma coordenação com o tráfego usada no jogo, sem forçar rua livre.
+      let viuSaidaComTrafego = false, aguardouTrafego = false, fechouBau = false;
+      for (let i = 0; i < 15000 && (sim.estado.deposito.pedidos.length || sim.entregas.caminhao); i++) {
+        const c = sim.entregas.caminhao;
+        if (c?.fase === 'partindo' && !viuSaidaComTrafego) {
+          for (const faixa of [0, 1]) cena.trafego.criarNaFaixa(faixa);
+          viuSaidaComTrafego = true;
+        }
+        cena.atualizarTrafego(0.05);
+        if (c?.fase === 'partindo' && !sim.entregas.transitoLivre) aguardouTrafego = true;
+        if (c?.fase === 'partindo' && c.aberturaBau === 0) fechouBau = true;
+        sim.entregas.atualizar(sim, 0.05);
+      }
+      renderizar(); return { pacotes: sim.estado.deposito.pacotes.length, unidades: sim.estado.produtos.enlatado.horta,
+        saiu: sim.entregas.caminhao === null, aguardouTrafego, fechouBau };
+    },
+    travessia() {
+      const aleatorio = sim.aleatorio;
+      sim.aleatorio = () => 0.99; sim.proximoLadoEntrada = 0;
+      if (!sim.criarCliente()) throw new Error('Não foi possível criar o pedestre de verificação.');
+      sim.aleatorio = aleatorio;
+      const cliente = sim.clientes.at(-1), nascimento = { x: cliente.x, z: cliente.z };
+      Object.assign(cliente, { fase: 'passando', cestaReservada: false, ladoSaida: 1 });
+      for (let i = 0; i < 2000 && cliente.x < PLANTA_CARGA.travessia.x; i++) {
+        sim.tempo += 0.05; sim.atualizarClientes(0.05);
+      }
+      enquadrar(cena.mobile ? { x: PLANTA_CARGA.travessia.x, z: CONFIG.entrada.z } : { x: -16, z: 1 });
+      return { nascimento, x: cliente.x, z: cliente.z, fase: cliente.fase,
+        listras: cena.cena.getObjectsByProperty('name', 'travessia-carga').length };
+    },
+    catalogo() { ui.abrir('importacoes'); renderizar(); },
+    renderizar
+  };
+  renderizar();
+  // O primeiro quadro estabiliza a câmera após instalar a expansão.
+  renderizar();
+</script>
+</body>
+</html>

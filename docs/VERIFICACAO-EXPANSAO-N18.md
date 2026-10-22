@@ -10,14 +10,4 @@ Versão 0.51.0. Compra única de R$ 10.000 em Escritório → Melhorias → Merc
 - Visual: desktop 1440 × 1000 e celular 390 × 844, nos renderizadores WebGL e Canvas. Nenhuma exceção JavaScript durante as verificações.
 - Compatibilidade: mantém o formato de salvamento e a planta de partidas sem a compra. A ampliação não libera produtos nem altera receitas ou demanda.
 
-Capturas:
-
-- [Detalhe das paredes contínuas da cozinha](previews/paredes-cozinha-n18-desktop.png)
-- [Antes da compra](previews/expansao-n18-antes-desktop.png)
-- [Compra no escritório](previews/expansao-n18-compra.png)
-- [Desktop WebGL](previews/expansao-n18-desktop.png)
-- [Celular WebGL](previews/expansao-n18-mobile.png)
-- [Desktop Canvas](previews/expansao-n18-canvas-desktop.png)
-- [Celular Canvas](previews/expansao-n18-canvas-mobile.png)
-
 Comandos: `npm test`, `npm run build`, `node scripts/check-store-layout.mjs` e `node scripts/render-floor-plan.mjs`.

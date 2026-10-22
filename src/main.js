@@ -46,6 +46,7 @@ function pausar(valor) {
   if (controles) { controles.bloqueado = valor || sim.estado.melhoriaPendente === 'fertilizante'; controles.limpar(); }
 }
 function comprar(id) { const r = sim.comprarMelhoria(id); if (r.sucesso) gravar(); return r; }
+function encomendarImportacoes(quantidades) { const r = sim.encomendarImportacoes(quantidades); if (r.sucesso) gravar(); return r; }
 function iniciarSelecaoHorta() {
   if (!controles) return;
   controles.limpar(); controles.bloqueado = true;
@@ -92,6 +93,13 @@ function preencherPrateleirasDev() {
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
   ui.mensagem(quantidade ? `${quantidade} produtos repostos. Todas as prateleiras estão cheias!` : 'Todas as prateleiras já estão cheias!');
 }
+function esvaziarPrateleirasDev() {
+  if (!import.meta.env.DEV) return;
+  const quantidade = sim.esvaziarPrateleirasDev();
+  gravar(); ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+  ui.mensagem(quantidade ? `${quantidade} produtos removidos. Clientes e repositor foram reiniciados.` : 'As prateleiras já estavam vazias. Clientes e repositor foram reiniciados.');
+}
 function aumentarReputacaoDev() {
   if (!import.meta.env.DEV) return;
   sim.aumentarReputacaoDev();
@@ -119,7 +127,7 @@ const ui = new Interface(sim, {
     if (resultado.sucesso) gravar();
     return resultado;
   },
-  pausar, comprar, alterarSaldo, preencherPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, aumentarReputacaoDev, iniciarSelecaoHorta,
+  pausar, comprar, encomendarImportacoes, alterarSaldo, preencherPrateleirasDev, esvaziarPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;
@@ -180,17 +188,19 @@ try {
         if (evento.tipo === 'dinheiroRoubado') { gravar(); ui.mensagem(`Roubaram ${evento.valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} do caixa!`); }
         if (evento.tipo === 'assaltoEncerrado') { gravar(); ui.mensagem('O assaltante fugiu. A reputação do mercadinho caiu para zero.'); }
         if (evento.tipo === 'assaltoConcluido') gravar();
+        if (evento.tipo === 'pacoteEntregue') gravar();
+        if (evento.tipo === 'entregaChegou') gravar();
+        if (evento.tipo === 'entregaConcluida') { gravar(); ui.mensagem(evento.texto); }
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
         if (evento.tipo === 'nivel') {
           ui.subiuDeNivel(evento.nivel);
           const novidades = MELHORIAS.filter(m => m.ativa !== false && m.nivelMinimo === evento.nivel).map(m => m.titulo);
-          ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${novidades.length ? ` No escritório: ${novidades.join(' e ')}.` : ''}`);
+          ui.mensagem(`Nível ${evento.nivel}! Bônus de R$ ${CONFIG.bonusNivel}.${novidades.length ? ` No celular: ${novidades.join(' e ')}.` : ''}`);
         }
         if (evento.tipo === 'melhoria') ui.mensagem(evento.texto);
         if (evento.tipo === 'hortaMelhorada') { cena.animarMelhoriaHorta(evento.id); ui.mensagem(evento.texto); }
         if (['expansao', 'ovoPronto', 'leitePronto', 'paoPronto'].includes(evento.tipo)) ui.mensagem(evento.texto);
-        if (evento.tipo === 'escritorio') ui.abrir('escritorio');
         if (evento.tipo === 'lixeira') ui.abrir('lixeira');
       }
       if (agora >= proximaUI) { ui.atualizar(); proximaUI = agora + 100; }
@@ -214,7 +224,7 @@ try {
         if (!entrada || typeof entrada.id !== 'string' || Object.keys(entrada).length !== 1) throw new Error('Informe apenas o identificador da melhoria.');
         const resultado = comprar(entrada.id);
         if (resultado.selecionarProduto) { if (ui.tipoPainel) ui.fechar(); ui.iniciarSelecaoHorta(); iniciarSelecaoHorta(); }
-        ui.atualizar(); if (ui.tipoPainel === 'melhorias') ui.renderizarPainel(); return resultado;
+        ui.atualizar(); if (['melhorias', 'importacoes'].includes(ui.tipoPainel)) ui.renderizarPainel(); return resultado;
       } }
     ]) {
       try { Promise.resolve(document.modelContext.registerTool(ferramenta, opcoes)).catch(() => {}); } catch { /* O jogo funciona sem essa API opcional. */ }

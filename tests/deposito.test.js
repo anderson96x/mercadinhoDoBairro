@@ -42,7 +42,7 @@ test('porta externa fica voltada ao estacionamento; paredes fora da passagem e m
   for (const x of [-15.5, -3.1]) {
     assert.equal(segmentoLivre({ x: x - 0.6, z: -10 }, { x: x + 0.6, z: -10 }, caixas, 0.32), false);
   }
-  for (const p of [...P.estantes, ...P.pallets]) {
+  for (const p of P.estantes) {
     assert.equal(segmentoLivre({ x: p.x, z: p.z - p.d }, { x: p.x, z: p.z + p.d }, caixas, 0.32), false, p.nome);
   }
   for (const produto of Object.values(sim.produtos)) {
@@ -104,10 +104,18 @@ test('construção acompanha a expansão, com estantes, embalagens e piso compat
   assert.ok(passagem);
   const limitePassagem = new THREE.Box3().setFromObject(passagem);
   assert.ok(limitePassagem.min.y >= 0.23 + P.passagem.h - 1e-6, 'nenhuma folha ou rodapé bloqueia o vão');
-  for (const p of [...P.estantes, ...P.pallets]) assert.ok(deposito.getObjectByName(p.nome));
+  assert.equal(P.estantes.length, 4);
+  for (const p of P.estantes) {
+    const estante = deposito.getObjectByName(p.nome);
+    assert.ok(estante);
+    assert.equal(estante.children.filter(o => o.name === 'caixa-papelao').length, 4);
+  }
+  assert.equal(deposito.getObjectByName(P.estantes[0].nome).userData.classe, 'enlatados');
+  assert.equal(deposito.getObjectByName('pallet-deposito-1'), undefined);
+  assert.equal(deposito.getObjectByName('pallet-deposito-2'), undefined);
   let embalagens = 0;
   deposito.traverse(objeto => { if (objeto.name === 'caixa-papelao') embalagens++; });
-  assert.ok(embalagens > 20);
+  assert.equal(embalagens, 16);
   assert.equal(deposito.getObjectByName('piso-deposito').userData.fundo, 4);
   bairro.atualizarExpansao(false);
   assert.equal(visivel(), false);

@@ -1,9 +1,15 @@
 import { PRODUTOS, ALA_PADARIA } from './configuracao.js';
+import { CLASSES_PRODUTOS } from './classes-produtos.js';
 
 // O alcance acompanha o móvel real, por qualquer lado, sem exigir uma marca no piso.
 export function geometriaEstacao(id, tipo, produtos = PRODUTOS) {
   if (id === 'pao') return ALA_PADARIA.entrada;
   const p = produtos[id];
+  if (p.origem === 'importado' && tipo === 'coleta') return p.horta;
+  if (p.origem === 'importado' && tipo === 'reposicao') {
+    const lado = CLASSES_PRODUTOS[p.classe].lado;
+    return { ...p.prateleira, x: p.prateleira.x + lado * p.prateleira.w / 4, w: p.prateleira.w / 2 };
+  }
   return tipo === 'reposicao' ? p.prateleira : {
     ...p.horta, ...(p.galinheiro ?? p.canteiro ?? p.curral ?? { w: 2.5, d: 3.6 })
   };

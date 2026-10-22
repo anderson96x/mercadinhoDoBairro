@@ -96,7 +96,7 @@ Estas pendências não impedem a elaboração deste plano. Devem ser resolvidas 
 | `src/jogo/trafego.js`, `coleta-banco.js`, `assalto-visual.js` | Ajustar percursos de veículos e personagens que dependem da rua, entrada e caixa. Verificar também os estados em `banco.js` e `assalto.js`. |
 | `src/interface/interface.js`, `src/interface/producao.js`, `src/main.js` | Revisar instruções espaciais, mensagens, etiquetas e integrações de depuração afetadas. |
 | `scripts/check-store-layout.mjs` | Atualizar os cenários, alvos e critérios de interação/circulação. |
-| `scripts/render-floor-plan.mjs` | Gerar plantas a partir da nova definição, substituindo os limites e desenhos fixos do salão em L. |
+| `scripts/render-floor-plan.mjs` | Atualizar o gerador conforme a nova definição, substituindo os limites e desenhos fixos do salão em L; gerar plantas somente quando solicitado explicitamente pelo usuário. |
 | `tests/` e `docs/` | Atualizar contratos espaciais, testar regressões de comportamento e documentar os resultados reais. |
 
 ## 5. Passo a passo de execução
@@ -105,7 +105,7 @@ Estas pendências não impedem a elaboração deste plano. Devem ser resolvidas 
 
 - [ ] Incluir no versionamento o SVG de referência já disponível em `docs/mercadinhoDoBairro.drawio.svg`, preservando seu conteúdo original.
 - [ ] Registrar as decisões da seção 3 e distinguir medidas confirmadas de ajustes necessários para jogabilidade.
-- [ ] Capturar o jogo atual e guardar exemplos de saves antigos nos marcos N1, N5, N8, N9, N11 e N15; incluir estoques, cargas e receitas em andamento.
+- [ ] Guardar exemplos de saves antigos nos marcos N1, N5, N8, N9, N11 e N15; incluir estoques, cargas e receitas em andamento.
 - [ ] Executar a suíte e o build existentes para registrar o estado inicial. Resultados históricos em documentos não substituem essa execução.
 
 **Saída:** referência estável, decisões espaciais e dados para comparar comportamento e migração.
@@ -261,7 +261,7 @@ npm run build
 
 ### Passo 14 — Regenerar documentação e encerrar a implementação
 
-- [ ] Atualizar `render-floor-plan.mjs` e gerar a planta geral e as etapas a partir da geometria implementada:
+- [ ] Atualizar `render-floor-plan.mjs` conforme a geometria implementada. Gerar a planta geral e as etapas somente quando solicitado explicitamente pelo usuário:
 
 ```powershell
 node scripts/render-floor-plan.mjs
@@ -269,10 +269,10 @@ node scripts/render-floor-plan.mjs
 
 - [ ] Publicar no repositório a documentação do novo layout; identificar claramente a V2 como histórica ou substituí-la com referências consistentes.
 - [ ] Atualizar `DESBLOQUEIOS-POR-NIVEL.md`, `COMO-ALTERAR.md`, `README.md` e as imagens de etapas/crescimento, removendo promessas de ampliações que deixaram de existir.
-- [ ] Substituir capturas antigas por evidências dos marcos novos e registrar comandos/resultados em `VERIFICACAO.md`.
+- [ ] Registrar comandos e resultados dos marcos novos em `VERIFICACAO.md`, em texto.
 - [ ] Revisar o diff final: coordenadas antigas só devem permanecer em migração, referência histórica ou elementos que comprovadamente ainda as utilizem.
 
-**Aceite:** código, plantas geradas, instruções e capturas descrevem o mesmo layout.
+**Aceite:** código, plantas técnicas e instruções descrevem o mesmo layout.
 
 ## 6. Ordem recomendada e conclusão
 

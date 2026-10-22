@@ -33,12 +33,8 @@ O expositor interno pode ficar próximo à futura oficina externa de geleias por
 
 ## Evidências
 
-![Vista geral N4](previews/nova-planta-n4-geral.png)
-
-As capturas atualizadas usam uma partida isolada de nível 4, com caixa, milho e ovos comprados e estoque preparado: quatro tomates, quatro milhos e 12 ovos para mostrar os três níveis da estante. Nenhum salvamento pessoal foi usado. A coleta, reposição e venda reais continuam cobertas pelo teste N4.
-
-![Estante de ovos junto à parede](previews/estante-ovos.png)
+A coleta, reposição e venda reais continuam cobertas pelo teste N4.
 
 A estante mantém a área de interação de 2,2 × 1,4 u e comporta quatro ovos por nível, divididos entre dois caixotes. As animações de reposição usam a altura e o recuo do nível correspondente, e a etiqueta fica acima do móvel. Um teste de raios verifica que a estrutura não bloqueia o centro de nenhum dos 12 ovos na direção da câmera do jogo. A alteração é visual; não exige nova migração espacial.
 
-[Resultados das verificações](VERIFICACAO.md). Regenerar as plantas N1, N3 e N4 com `node scripts/render-floor-plan.mjs`.
+[Resultados das verificações](VERIFICACAO.md). Gerar plantas técnicas com `node scripts/render-floor-plan.mjs` somente quando solicitado explicitamente pelo usuário.

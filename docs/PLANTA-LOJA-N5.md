@@ -31,10 +31,6 @@ Para manter os níveis posteriores utilizáveis, a reserva legada de morangos pa
 
 ## Evidências
 
-![Vista geral N5](previews/nova-planta-n5-geral.png)
+O teste N5 percorre produção, coleta, reposição, venda por R$ 20 e devolução de cesta com as regras reais.
 
-![Leite ao lado dos ovos](previews/leite-e-ovos-n5.png)
-
-As capturas usam uma partida isolada N5 com caixa, milho, ovos e leite comprados. Estoques preparados para inspeção: quatro tomates, quatro milhos, 12 ovos e 12 garrafas; fontes com oito unidades. Nenhum salvamento pessoal foi usado. O teste N5 percorre produção, coleta, reposição, venda por R$ 20 e devolução de cesta com as regras reais.
-
-[Resultados das verificações](VERIFICACAO.md). Regenerar N1, N3, N4 e N5 com `node scripts/render-floor-plan.mjs`.
+[Resultados das verificações](VERIFICACAO.md). Gerar plantas técnicas com `node scripts/render-floor-plan.mjs` somente quando solicitado explicitamente pelo usuário.

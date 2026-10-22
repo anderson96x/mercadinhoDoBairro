@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import { PLANTA_DEPOSITO as P, paredesDeposito } from './planta.js';
+import { CLASSES_PRODUTOS } from './classes-produtos.js';
 
 export function construirDeposito(pai, { caixa, vincular }) {
   const grupo = new THREE.Group(); grupo.name = 'deposito'; pai.add(grupo);
+  const pacotes = [];
   const bloco = (pai, nome, w, h, d, cor, x, y, z, papel) => {
     const mesh = caixa(pai, w, h, d, cor, x, y, z); mesh.name = nome;
     if (papel) vincular(mesh, papel);
@@ -56,11 +58,21 @@ export function construirDeposito(pai, { caixa, vincular }) {
       0xf1eada, w * 0.27, -h * 0.08, d / 2 + 0.01);
     bloco(pacote, 'codigo-caixa', w * 0.16, 0.035, 0.018,
       0x77736a, w * 0.27, -h * 0.08, d / 2 + 0.02);
+    return pacote;
   }
 
   for (const [indice, p] of P.estantes.entries()) {
     const estante = new THREE.Group(); estante.name = p.nome;
     estante.position.set(p.x, 0.23, p.z); grupo.add(estante);
+    const classe = Object.entries(CLASSES_PRODUTOS).find(([, c]) => c.estante === indice);
+    estante.userData.classe = classe?.[0] || null;
+    bloco(estante, 'placa-classe', p.w - 0.12, 0.24, 0.08,
+      classe?.[1].cor || 0x7e9caa, 0, 2.3, p.d / 2);
+    // O símbolo da lata identifica a estante mesmo quando está vazia.
+    if (classe?.[0] === 'enlatados') {
+      const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.19, 10), new THREE.MeshStandardMaterial({ color: 0xf1eada }));
+      lata.name = 'simbolo-enlatados'; lata.position.set(0, 2.3, p.d / 2 + 0.1); estante.add(lata);
+    }
     for (const x of [-p.w / 2 + 0.06, p.w / 2 - 0.06]) {
       for (const z of [-p.d / 2 + 0.04, p.d / 2 - 0.04]) {
         bloco(estante, 'montante-azul', 0.09, p.h, 0.09, 0x317c9d, x, p.h / 2, z);
@@ -71,39 +83,19 @@ export function construirDeposito(pai, { caixa, vincular }) {
         diagonal.rotation.x = inclinacao * 0.72;
       }
     }
-    for (const [nivel, y] of [0.16, 0.96, 1.76].entries()) {
-      for (let i = 0; i < 3; i++) {
-        const x = (i - 1) * p.w / 3;
-        bloco(estante, 'prateleira-metalica', p.w / 3, 0.07, p.d, 0xb9c6c7, x, y, 0);
-        bloco(estante, 'borda-prateleira', p.w / 3, 0.1, 0.06, 0x7a9eae, x, y - 0.025, p.d / 2);
+    for (const [nivel, y] of [0.56, 1.56].entries()) {
+      for (let i = 0; i < 2; i++) {
+        const x = (i - 0.5) * p.w / 2;
+        bloco(estante, 'prateleira-metalica', p.w / 2, 0.07, p.d, 0xb9c6c7, x, y, 0);
+        bloco(estante, 'borda-prateleira', p.w / 2, 0.1, 0.06, 0x7a9eae, x, y - 0.025, p.d / 2);
         const h = 0.43 + (indice + nivel + i) % 3 * 0.08;
-        pacote(estante, (i - 1) * 0.94, y + 0.035, 0, 0.79, h, 0.78, indice + nivel + i);
+        const caixaEstoque = pacote(estante, (i - 0.5) * 0.94, y + 0.035, 0, 0.79, h, 0.78, indice + nivel + i);
+        caixaEstoque.visible = false;
+        pacotes.push(caixaEstoque);
       }
     }
   }
 
-  for (const [indice, p] of P.pallets.entries()) {
-    const pallet = new THREE.Group(); pallet.name = p.nome;
-    pallet.position.set(p.x, 0.23, p.z); grupo.add(pallet);
-    for (const x of [-0.66, 0, 0.66]) {
-      bloco(pallet, 'apoio-pallet', 0.17, 0.16, p.d, 0x9b7347, x, 0.08, 0);
-    }
-    for (let i = 0; i < 5; i++) {
-      bloco(pallet, 'tabua-pallet', p.w, 0.07, 0.22, 0xc69c67, 0, 0.195, (i - 2) * 0.28);
-    }
-    for (let nivel = 0; nivel < 2; nivel++) {
-      for (const x of [-0.43, 0.43]) {
-        pacote(pallet, x, 0.23 + nivel * 0.52, nivel ? -0.12 : 0.1,
-          0.77, 0.5, 0.98, indice + nivel);
-      }
-    }
-    // Marcações de carga no concreto, sem bloquear a passagem central.
-    for (const x of [-p.w / 2 - 0.14, p.w / 2 + 0.14]) {
-      const marca = bloco(pallet, 'faixa-pallet', 0.055, 0.012, p.d + 0.4,
-        0xe0ac51, x, 0.005, 0);
-      marca.userData.fundo = 5;
-    }
-  }
   let abertura = 1;
   const posicionarPortao = () => {
     for (const [indice, lamina] of laminas.entries()) {
@@ -117,6 +109,10 @@ export function construirDeposito(pai, { caixa, vincular }) {
   return {
     grupo,
     get abertura() { return abertura; },
+    atualizarPacotes(estoque = []) {
+      const ocupados = new Set(estoque.map(p => p.slot));
+      pacotes.forEach((pacote, i) => { pacote.visible = ocupados.has(i); });
+    },
     atualizar(aberta, dt = 0) {
       const alvo = aberta ? 1 : 0;
       abertura = THREE.MathUtils.clamp(abertura + Math.sign(alvo - abertura) * dt * 0.85, 0, 1);

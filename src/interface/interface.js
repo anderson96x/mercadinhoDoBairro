@@ -2,10 +2,12 @@ import { icone } from './icones.js';
 import pacote from '../../package.json' with { type: 'json' };
 import { PALETAS } from '../jogo/personalizacao.js';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
+import { TEMPO_ESPERA_ENTREGA, vagasDeposito } from '../jogo/entregas.js';
 import { BANCO, statusColeta } from '../jogo/banco.js';
 import { statusAssalto } from '../jogo/assalto.js';
 import { atualizarPainelClientes } from './clientes.js';
 import { atualizarPainelProducao } from './producao.js';
+import { CLASSES_PRODUTOS } from '../jogo/classes-produtos.js';
 const versaoJogo = pacote.version;
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
@@ -16,7 +18,7 @@ const ABAS_MELHORIAS = [
 
 export class Interface {
   constructor(sim, acoes) {
-    this.sim = sim; this.acoes = acoes; this.ultimoInventario = ''; this.ultimaAtualizacao = ''; this.abaMelhorias = 'mercado';
+    this.sim = sim; this.acoes = acoes; this.ultimoInventario = ''; this.ultimaAtualizacao = ''; this.abaMelhorias = 'mercado'; this.quantidadesImportacao = {};
     document.getElementById('app').innerHTML = `
       <main class="jogo" aria-label="Mercadinho do Bairro">
         <div id="mundo"></div><div id="etiquetas" aria-hidden="true"><div id="dica-mundo" hidden></div></div>
@@ -24,6 +26,7 @@ export class Interface {
           <div class="marca"><div class="marca-topo"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div></div><div class="progresso-nivel"><progress id="nivel-progresso" value="0" max="25" aria-label="Progresso para o próximo nível"></progress><span id="nivel-contagem">0 / 25</span><span class="nivel" id="nivel" role="status" aria-live="polite">NÍVEL 1</span></div></div>
           <div class="saldo" aria-label="Resumo do mercado"><div class="saldo-linha"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div></div><div class="reputacao-topo media" id="reputacao-painel" aria-label="Satisfação média, 60 de 100"><span class="satisfacao-rosto" id="satisfacao-rosto">${icone('neutro')}</span><progress id="reputacao-progresso" value="60" max="100" aria-label="Satisfação do mercadinho"></progress><small id="reputacao-meta">Média · 60 / 100</small></div></div>
           <nav class="ferramentas" aria-label="Opções do jogo">
+            <button class="botao-icone" id="celular" title="Abrir opções" aria-label="Abrir opções">${icone('celular')}</button>
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
             <button class="botao-icone" id="ajuda" title="Como jogar" aria-label="Como jogar">${icone('ajuda')}</button>
             <button class="botao-icone" id="fullscreen" title="Jogar em tela cheia" aria-label="Jogar em tela cheia">${icone('tela')}</button>
@@ -44,6 +47,15 @@ export class Interface {
             </div>
           </div>
         </aside>
+        <aside id="aviso-entrega" class="aviso-banco aviso-entrega" role="status" aria-live="polite" aria-atomic="true" hidden>
+          <span class="aviso-banco-icone" aria-hidden="true">${icone('enlatado')}</span>
+          <div class="aviso-banco-conteudo"><strong>Caminhão a caminho</strong><p id="aviso-entrega-texto"></p>
+            <div class="aviso-banco-prazo">
+              <div class="aviso-banco-prazo-legenda"><span>Tempo para chegar</span><b id="aviso-entrega-segundos"></b></div>
+              <div id="aviso-entrega-progresso" class="aviso-banco-progresso" role="progressbar" aria-label="Tempo restante para o caminhão chegar" aria-valuemin="0" aria-valuemax="60"><span id="aviso-entrega-barra"></span></div>
+            </div>
+          </div>
+        </aside>
         <aside class="objetivo" id="objetivo" aria-label="Objetivo atual">
           <div class="objetivo-topo"><span>${icone('alvo')} PRÓXIMO PASSO</span><span id="passo">01 / 04</span></div>
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
@@ -61,7 +73,7 @@ export class Interface {
           <div class="inventario" id="inventario" hidden><div class="inventario-conteudo"><div class="inventario-titulo"><b id="nivel-inventario">Inventário</b><span id="capacidade">${this.sim.estado.jogador.inventario.length} / ${this.sim.capacidade}</span></div><div id="itens"></div></div></div>
         </footer>
         <div id="joystick" aria-hidden="true"><span></span></div>
-        <div id="mensagens" hidden aria-live="polite" aria-atomic="true"></div>
+        <div id="mensagens" aria-live="polite" aria-atomic="true"></div>
         <div id="efeitos" aria-hidden="true"></div><div id="cursor-melhoria" aria-hidden="true" hidden>${icone('folha')}</div>
         <div id="pausa-foco" class="pausa-foco" role="status" aria-live="polite" hidden>
           <div class="pausa-foco-cartao">
@@ -79,6 +91,7 @@ export class Interface {
     const dinheiroCaixa = document.createElement('div'); dinheiroCaixa.id = 'dinheiro-caixa'; dinheiroCaixa.className = 'dinheiro-caixa';
     this.el('saldo').closest('.saldo').append(dinheiroCaixa);
     this.el('som').onclick = () => { this.acoes.som(); this.atualizarSom(); };
+    this.el('celular').onclick = () => this.abrir('opcoes');
     this.el('ajuda').onclick = () => this.abrir('ajuda');
     this.atualizarTelaCheia();
     this.el('fullscreen').onclick = async () => {
@@ -115,6 +128,7 @@ export class Interface {
   atualizar() {
     const s = this.sim, e = s.estado, m = s.missao();
     this.atualizarBanco();
+    this.atualizarEntrega();
     atualizarPainelProducao(this.el('painel-producao'), e);
     const identidade = JSON.stringify(e.personalizacao);
     if (identidade !== this.ultimaIdentidade) {
@@ -185,7 +199,6 @@ export class Interface {
       prateleiraTrigo: { ponto: PRODUTOS.trigo.reposicao, nome: 'PRATELEIRA DE TRIGO' },
       padaria: { ponto: PRODUTOS.pao.reposicao, nome: 'PADARIA' },
       caixa: { ponto: CONFIG.cadeiraCaixa, nome: 'CAIXA' },
-      escritorio: { ponto: CONFIG.cadeiraEscritorio, nome: 'ESCRITÓRIO' }
     };
     for (const [id, p] of Object.entries(PRODUTOS)) {
       destinos[`coleta-${id}`] = { ponto: p.coleta, nome: p.nome.toLocaleUpperCase('pt-BR') };
@@ -241,18 +254,32 @@ export class Interface {
       ? assalto.roubado ? `${reais(assalto.valor)} foram roubados do caixa. Reputação: ${this.sim.reputacao} / 100.` : 'Os clientes estão assustados. O caixa corre perigo!'
       : banco.coleta
       ? `Coleta de ${reais(banco.coleta.valor)}. Seu saldo disponível permanece o mesmo.`
-      : `${reais(banco.noCaixa)} no caixa. Vá ao escritório e deposite no banco. Sem depósito, o mercadinho pode ser assaltado.`;
+      : `${reais(banco.noCaixa)} no caixa. Abra o celular e deposite no banco. Sem depósito, o mercadinho pode ser assaltado.`;
+  }
+  atualizarEntrega() {
+    const caminhao = this.sim.entregas?.caminhao;
+    const aguardando = caminhao?.fase === 'aguardando' && caminhao.tempoEspera < TEMPO_ESPERA_ENTREGA;
+    const aviso = this.el('aviso-entrega');
+    aviso.hidden = !aguardando;
+    if (!aguardando) return;
+    const restante = Math.max(0, TEMPO_ESPERA_ENTREGA - caminhao.tempoEspera);
+    const segundos = Math.ceil(restante);
+    const pacotes = this.sim.estado.deposito.pedidos[0]?.pacotes.length || 0;
+    this.el('aviso-entrega-texto').textContent = `${pacotes} ${pacotes === 1 ? 'pacote está chegando' : 'pacotes estão chegando'}.`;
+    this.el('aviso-entrega-segundos').textContent = `${segundos}s`;
+    this.el('aviso-entrega-barra').style.width = `${restante / TEMPO_ESPERA_ENTREGA * 100}%`;
+    this.el('aviso-entrega-progresso').setAttribute('aria-valuenow', String(segundos));
   }
   renderizarPainel() {
     const tipo = this.tipoPainel;
-    const titulos = { lixeira: 'Descartar produtos', escritorio: 'Gerenciamento do mercado', melhorias: 'Um mercadinho maior', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
+    const titulos = { lixeira: 'Descartar produtos', opcoes: 'Opções do mercado', melhorias: 'Um mercadinho maior', importacoes: 'Importar produtos', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
     let conteudo = '';
     if (tipo === 'lixeira') {
       const inventario = this.sim.estado.jogador.inventario;
       conteudo = `<p class="painel-subtitulo">Escolha o que jogar fora. Produtos descartados não rendem dinheiro e não podem ser recuperados.</p>${Object.entries(PRODUTOS).filter(([id]) => inventario.includes(id)).map(([id, p]) => `<button class="botao-secundario" data-descartar="${id}">${icone(id)} Descartar 1 ${p.nome.toLocaleLowerCase('pt-BR')} · ${inventario.filter(item => item === id).length} no inventário</button>`).join('')}<button class="botao-principal" data-descartar="tudo" ${inventario.length ? '' : 'disabled'}>Esvaziar inventário (${inventario.length})</button><button class="botao-secundario" data-fechar>Voltar à loja</button>`;
-    } else if (tipo === 'escritorio') {
+    } else if (tipo === 'opcoes') {
       const aberta = this.sim.estado.lojaAberta;
-      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho sem sair do escritório.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
+      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho pelo celular, de onde estiver.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-importacoes">${icone('enlatado')} Importar produtos</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
       const banco = this.sim.estado.banco;
       conteudo += `<section class="deposito-banco"><h3>Depósito bancário</h3>
         <dl><div><dt>Dinheiro no caixa</dt><dd>${reais(banco.noCaixa)}</dd></div><div><dt>Total depositado</dt><dd>${reais(banco.depositado)}</dd></div></dl>
@@ -265,14 +292,40 @@ export class Interface {
       const melhorias = MELHORIAS.filter(m => m.categoria === abaAtiva.id && m.ativa !== false).sort((a, b) => a.nivelMinimo - b.nivelMinimo);
       const abas = `<div class="abas-melhorias" role="tablist" aria-label="Tipo de melhoria">${abasDisponiveis.map(aba => `<button class="aba-melhoria ${aba.id === abaAtiva.id ? 'ativa' : ''}" id="aba-${aba.id}" role="tab" aria-selected="${aba.id === abaAtiva.id}" aria-controls="lista-melhorias" tabindex="${aba.id === abaAtiva.id ? 0 : -1}" data-aba-melhoria="${aba.id}">${aba.titulo}</button>`).join('')}</div>`;
       conteudo = `<p class="painel-subtitulo">Cada venda abre novas possibilidades.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div>${abas}<div class="lista-melhorias" id="lista-melhorias" role="tabpanel" aria-labelledby="aba-${abaAtiva.id}">${melhorias.map(m => {
-        const nivel = this.sim.estado.melhorias[m.id], completa = nivel >= m.max, custo = this.sim.custoMelhoria(m.id);
+        const nivel = this.sim.estado.melhorias[m.id], completa = !m.recorrente && nivel >= m.max, custo = this.sim.custoMelhoria(m.id);
         const disponibilidade = this.sim.disponibilidadeMelhoria(m.id), pode = disponibilidade.disponivel && this.sim.estado.dinheiro >= custo;
         const nivelExibido = m.id === 'mochila' ? nivel + 1 : nivel;
         const maxExibido = m.id === 'mochila' ? m.max + 1 : m.max;
-        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? disponibilidade.requisitoProduto ? 'Ovos' : disponibilidade.requisitoMelhoria ? 'Requer melhoria' : `Nível ${disponibilidade.nivelMinimo}` : reais(custo);
+        const rotulo = completa ? icone('certo') + ' Pronto' : m.ativa === false ? 'Em breve' : !disponibilidade.disponivel ? disponibilidade.requisitoProduto ? 'Ovos' : disponibilidade.requisitoMelhoria ? 'Requer melhoria' : disponibilidade.nivelMinimo ? `Nível ${disponibilidade.nivelMinimo}` : 'Sem espaço' : reais(custo);
         const aria = completa ? `${m.titulo} concluída` : !disponibilidade.disponivel ? disponibilidade.motivo : `Comprar ${m.titulo} por ${reais(custo)}`;
-        return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.produto ? `<strong class="preco-venda-melhoria">Preço de venda: ${reais(PRODUTOS[m.produto].preco)}</strong>` : ''}<span class="nivel-melhoria">${m.max > 1 ? `Nível ${nivelExibido} de ${maxExibido} · ` : ''}Disponível no nível ${m.nivelMinimo || 1}</span>${!completa && disponibilidade.requisitoMelhoria ? `<p class="requisito-melhoria">${disponibilidade.motivo}</p>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${aria}">${rotulo}</button></div>`;
-      }).join('')}</div><button class="botao-secundario" id="voltar-escritorio">Voltar ao gerenciamento</button>`;
+        return `<div class="melhoria ${completa ? 'concluida' : ''}"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p>${m.produto ? `<strong class="preco-venda-melhoria">Preço de venda: ${reais(PRODUTOS[m.produto].preco)}</strong>` : ''}<span class="nivel-melhoria">${m.max > 1 && !m.recorrente ? `Nível ${nivelExibido} de ${maxExibido} · ` : ''}Disponível no nível ${m.nivelMinimo || 1}</span>${!completa && disponibilidade.requisitoMelhoria ? `<p class="requisito-melhoria">${disponibilidade.motivo}</p>` : ''}</div><button class="comprar" data-melhoria="${m.id}" ${completa || !pode ? 'disabled' : ''} aria-label="${aria}">${rotulo}</button></div>`;
+      }).join('')}</div><button class="botao-secundario" id="voltar-opcoes">Voltar às opções</button>`;
+    } else if (tipo === 'importacoes') {
+      const importacoes = MELHORIAS.filter(m => m.categoria === 'importados' && m.ativa !== false).sort((a, b) => a.nivelMinimo - b.nivelMinimo);
+      let saldoRestante = this.sim.estado.dinheiro;
+      const espacoRestante = Object.fromEntries(Object.keys(CLASSES_PRODUTOS).map(classe => [classe, vagasDeposito(this.sim.estado.deposito, classe)]));
+      for (const m of importacoes) {
+        const produto = PRODUTOS[m.produto];
+        const disponibilidade = this.sim.disponibilidadeMelhoria(m.id), custo = this.sim.custoMelhoria(m.id);
+        const maxEspaco = espacoRestante[produto.classe] || 0;
+        const pedida = Math.max(0, this.quantidadesImportacao[m.id] || 0);
+        const quantidade = disponibilidade.disponivel ? Math.min(pedida, maxEspaco, Math.floor(saldoRestante / custo)) : 0;
+        this.quantidadesImportacao[m.id] = quantidade;
+        saldoRestante -= quantidade * custo;
+        espacoRestante[produto.classe] -= quantidade;
+      }
+      const totalPedido = importacoes.reduce((total, m) => total + this.quantidadesImportacao[m.id] * this.sim.custoMelhoria(m.id), 0);
+      const totalCaixas = importacoes.reduce((total, m) => total + this.quantidadesImportacao[m.id], 0);
+      const entregaEmAndamento = !!(this.sim.estado.deposito.pedidos.length || this.sim.entregas?.caminhao);
+      const motivoEspera = entregaEmAndamento ? 'Aguarde o caminhão concluir a entrega e ir embora antes de fazer outro pedido.' : '';
+      conteudo = `<p class="painel-subtitulo">Cada classe tem uma estante no depósito, com espaço para até 4 pacotes. Cada pacote contém 9 produtos.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${importacoes.map(m => {
+        const produto = PRODUTOS[m.produto];
+        const custo = this.sim.custoMelhoria(m.id), disponibilidade = this.sim.disponibilidadeMelhoria(m.id);
+        const caixasPorEspaco = espacoRestante[produto.classe] + this.quantidadesImportacao[m.id];
+        const quantidade = this.quantidadesImportacao[m.id];
+        const maxCaixas = disponibilidade.disponivel ? Math.min(caixasPorEspaco, quantidade + Math.floor((this.sim.estado.dinheiro - totalPedido) / custo)) : 0;
+        return `<div class="melhoria melhoria-importacao"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p><strong class="preco-venda-melhoria">Preço de venda: ${reais(produto.preco)}</strong>${!disponibilidade.disponivel && !entregaEmAndamento ? `<p class="requisito-melhoria">${disponibilidade.motivo}</p>` : ''}</div><div class="controles-importacao"><div class="contador-importacao" aria-label="Quantidade de caixas de ${m.titulo}"><button data-importacao="${m.id}" data-importacao-quantidade="-1" ${quantidade <= 0 ? 'disabled' : ''} aria-label="Diminuir quantidade de ${m.titulo}">−</button><strong>${quantidade}</strong><button data-importacao="${m.id}" data-importacao-quantidade="1" ${quantidade >= maxCaixas ? 'disabled' : ''} aria-label="Aumentar quantidade de ${m.titulo}">+</button></div></div></div>`;
+      }).join('')}</div><div class="rodape-importacao">${motivoEspera ? `<p class="requisito-importacao">${motivoEspera}</p>` : ''}<span><b>${totalCaixas}</b> ${totalCaixas === 1 ? 'caixa' : 'caixas'} no pedido · entrega por caminhão</span><button class="botao-principal" id="finalizar-importacao" ${totalCaixas ? '' : 'disabled'}>Finalizar pedido · ${reais(totalPedido)}</button></div><button class="botao-secundario" id="voltar-opcoes">Voltar às opções</button>`;
     } else if (tipo === 'personalizacao') {
       titulos.personalizacao = 'Sua loja, do seu jeito';
       conteudo = `<p class="painel-subtitulo">Dê personalidade ao seu cantinho do bairro.</p>
@@ -281,19 +334,19 @@ export class Interface {
           <label for="nome-loja">Nome do mercadinho</label><input id="nome-loja" name="nome" maxlength="32" required autocomplete="off">
           <label for="slogan-loja">Slogan</label><input id="slogan-loja" name="slogan" maxlength="60" required autocomplete="off">
           <fieldset><legend>Paleta de cores</legend><div class="paletas-loja">${PALETAS.map(p => `<label class="paleta-loja"><input type="radio" name="paleta" value="${p.id}" ${p.id === this.sim.estado.personalizacao.paleta ? 'checked' : ''}><span class="paleta-cores" aria-hidden="true">${[p.principal,p.destaque,p.parede,p.piso].map(cor => `<i style="background:${cor}"></i>`).join('')}</span><span>${p.nome}</span></label>`).join('')}</div></fieldset>
-          <button type="submit" class="botao-principal">Salvar personalização</button><button type="button" class="botao-secundario" id="voltar-personalizacao">Voltar ao gerenciamento</button>
+          <button type="submit" class="botao-principal">Salvar personalização</button><button type="button" class="botao-secundario" id="voltar-personalizacao">Voltar às opções</button>
         </form>`;
     } else if (tipo === 'ajuda') {
       conteudo = `<p class="painel-subtitulo">Colha, abasteça, venda. E veja a loja crescer.</p>
         <p class="nota">Versão ${versaoJogo}</p>
         <div class="guia-controles">${icone('toque')}<div><h3>Arraste para andar</h3><p>Toque e segure em qualquer parte do cenário. Arraste na direção desejada. Solte para parar.</p><p>No computador, também vale usar <b>W A S D</b> ou as <b>setas</b>.</p><p>Para mover o mapa, arraste com o <b>botão direito</b> ou <b>Shift</b>; no celular, use <b>dois dedos</b>. <b>Shift + setas</b> também move a câmera. Para aproximar ou afastar, use a <b>roda do mouse</b> ou a <b>pinça com dois dedos</b>.</p></div></div>
-          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 4, construa o galinheiro. As galinhas produzem ovos automaticamente.</p></div></li><li><span>5</span><div><b>Abra a ala do leite</b><p>No nível 5, construa o curral por R$ 800. Recolha as garrafas de vidro e abasteça a prateleira de leite.</p></div></li><li><span>6</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>7</span><div><b>Gerencie no escritório</b><p>Sente-se diante do computador para melhorar e personalizar o mercadinho.</p></div></li></ol>
+          <ol class="guia-passos"><li><span>1</span><div><b>Colha na horta</b><p>Fique perto dos tomates ou do milho.</p></div></li><li><span>2</span><div><b>Abasteça a loja</b><p>Leve os produtos à prateleira correspondente.</p></div></li><li><span>3</span><div><b>Atenda no caixa</b><p>Sente-se na cadeira do caixa para receber o pagamento. Cada 25 clientes atendidos aumenta o nível.</p></div></li><li><span>4</span><div><b>Abra a ala dos ovos</b><p>No nível 4, construa o galinheiro. As galinhas produzem ovos automaticamente.</p></div></li><li><span>5</span><div><b>Abra a ala do leite</b><p>No nível 5, construa o curral por R$ 800. Recolha as garrafas de vidro e abasteça a prateleira de leite.</p></div></li><li><span>6</span><div><b>Cuide da satisfação</b><p>Pedido completo vale 10 pontos; parcial, 5; vazio, 0.</p></div></li><li><span>7</span><div><b>Use o celular</b><p>Abra o botão de celular no topo para melhorar e personalizar o mercadinho.</p></div></li></ol>
         <p class="nota">No nível 7, abra a ala do trigo por R$ 400. Colha na plantação entre o galinheiro e o curral e abasteça a nova prateleira. Cada trigo vale R$ 5.</p>
         <p class="nota">No nível 9, abra a padaria por R$ 1.400. A loja se amplia à direita. Entregue trigo na caixa ao fundo da padaria; o balcão fica de frente para o hortifruti. Dois padeiros fazem farinha e assam três pães por trigo. Cada pão vale R$ 10.</p>
         <p class="nota">Do nível 10 ao 15: melhore sua cesta, abra a ala artesanal ao fundo da loja e construa a estufa, o apiário, a queijaria e a cozinha de geleias. No nível 14, irrigação e reposição ágil ajudam a cuidar da loja maior.</p>
         <p class="nota">Nas oficinas, aproxime-se com os ingredientes para entregá-los. Uma garrafa de leite rende 2 queijos; 2 morangos e 1 mel rendem 3 geleias. Recolha os produtos prontos e abasteça as bancas. O repositor também coleta a produção pronta. Os novos produtos só entram nos pedidos depois do primeiro abastecimento.</p>
-        <p class="nota">No nível 16, construa o estacionamento pelo escritório por R$ 10.000. As seis vagas começam vazias. Parte dos clientes chega nos carros da rua, estaciona, faz compras e volta ao próprio veículo. Passantes e compradores a pé continuam circulando pela calçada.</p>
-        <p class="nota">No nível 17, evolua Prateleiras de importados até o nível 2 em Melhorias → Mercado, por R$ 1.000 por nível. Elas ficam vazias por enquanto; a importação será adicionada em uma etapa futura.</p>
+        <p class="nota">No nível 16, construa o estacionamento pelo celular por R$ 10.000. As seis vagas começam vazias. Parte dos clientes chega nos carros da rua, estaciona, faz compras e volta ao próprio veículo. Passantes e compradores a pé continuam circulando pela calçada.</p>
+        <p class="nota">No nível 17, instale as Prateleiras de importados. No nível 18, a expansão inclui um pátio de carga à esquerda, com acesso exclusivo para caminhões. No nível 19, peça caixas de 9 enlatados por R$ 270 pelo celular. O depósito tem quatro estantes, uma por classe, com quatro pacotes de nove unidades cada. Caixas a caminho reservam vagas da própria classe. Retire os produtos para abastecer a gôndola, ou conte com o repositor. Cada lata vale R$ 30. No nível 20, importe caixas de 9 cereais por R$ 405 e venda cada unidade por R$ 45, no lado oposto da mesma gôndola.</p>
         <p class="nota">No nível 18, compre Expansão em Melhorias → Mercado por R$ 10.000, após a padaria. Um novo anexo é construído atrás da loja e da cozinha, mantendo as divisórias e os móveis existentes. A fazenda recua; use a porta de produção e a nova saída dos fundos.</p>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'dev') {
@@ -308,8 +361,8 @@ export class Interface {
         </section>
         <section class="dev-cartao" aria-label="Estoque das prateleiras">
           <div class="dev-cartao-topo"><span class="dev-rotulo">Estoque</span><strong>Prateleiras</strong></div>
-          <p>Completa todos os produtos liberados e reinicia o repositor.</p>
-          <div class="dev-acoes"><button id="dev-preencher-prateleiras">Encher todas as prateleiras</button></div>
+          <p>Encher reinicia o repositor. Esvaziar também reinicia clientes, cestas, carros e repositor.</p>
+          <div class="dev-acoes dev-acoes-duplas"><button id="dev-esvaziar-prateleiras">Esvaziar todas</button><button id="dev-preencher-prateleiras">Encher todas</button></div>
         </section>
         <section class="dev-cartao" aria-label="Tempo até o assalto">
           <div class="dev-cartao-topo"><span class="dev-rotulo">Prazo para depositar</span><strong>${this.sim.tempoEsperaAssalto}<small> s</small></strong></div>
@@ -345,7 +398,7 @@ export class Interface {
     } else {
       conteudo = `<p class="painel-subtitulo">O dinheiro, as melhorias e o progresso deste mercadinho serão apagados neste navegador.</p><button class="botao-principal perigo" id="confirmar-reinicio">${icone('reiniciar')} Apagar e começar de novo</button><button class="botao-secundario" id="cancelar-reinicio">Voltar para minha loja</button>`;
     }
-    this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : tipo === 'dev' ? 'dev' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
+    this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : tipo === 'importacoes' ? 'enlatado' : tipo === 'dev' ? 'dev' : tipo === 'opcoes' ? 'celular' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
     this.el('painel').querySelectorAll('[data-fechar]').forEach(b => b.onclick = () => this.fechar());
     this.el('painel').querySelectorAll('[data-descartar]').forEach(b => b.onclick = () => {
       const resultado = this.acoes.descartar(b.dataset.descartar === 'tudo' ? null : b.dataset.descartar);
@@ -370,7 +423,19 @@ export class Interface {
       } else this.mensagem(resultado.motivo);
       this.atualizar();
     });
-    if (tipo === 'escritorio') {
+    this.el('painel').querySelectorAll('[data-importacao-quantidade]').forEach(b => b.onclick = () => {
+      this.quantidadesImportacao[b.dataset.importacao] += Number(b.dataset.importacaoQuantidade);
+      this.renderizarPainel();
+    });
+    if (tipo === 'importacoes') this.el('finalizar-importacao').onclick = () => {
+      const resultado = this.acoes.encomendarImportacoes(this.quantidadesImportacao);
+      this.quantidadesImportacao = {};
+      this.atualizar();
+      if (resultado.sucesso) this.fechar();
+      else this.renderizarPainel();
+      if (!resultado.sucesso) this.mensagem(resultado.motivo);
+    };
+    if (tipo === 'opcoes') {
       this.el('depositar-banco').onclick = () => {
         const resultado = this.acoes.depositarBanco();
         if (resultado.sucesso) { this.fechar(); this.mensagem('Carro-forte chamado! Um agente vai recolher o dinheiro no caixa.'); }
@@ -378,6 +443,7 @@ export class Interface {
         this.atualizar();
       };
       this.el('abrir-melhorias').onclick = () => this.abrir('melhorias');
+      this.el('abrir-importacoes').onclick = () => this.abrir('importacoes');
       this.el('abrir-personalizacao').onclick = () => this.abrir('personalizacao');
       this.el('alternar-loja').onclick = () => {
         const aberta = this.acoes.alternarLoja();
@@ -385,7 +451,7 @@ export class Interface {
         this.mensagem(aberta ? 'Mercado aberto!' : 'Mercado fechado para novos clientes.');
       };
     }
-    if (tipo === 'melhorias') this.el('voltar-escritorio').onclick = () => this.abrir('escritorio');
+    if (tipo === 'melhorias' || tipo === 'importacoes') this.el('voltar-opcoes').onclick = () => this.abrir('opcoes');
     if (tipo === 'reiniciar') {
       this.el('cancelar-reinicio').onclick = () => this.fechar();
       this.el('confirmar-reinicio').onclick = () => this.acoes.reiniciar();
@@ -398,6 +464,7 @@ export class Interface {
       this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-1000);
       this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(1000);
       this.el('dev-preencher-prateleiras').onclick = () => this.acoes.preencherPrateleirasDev();
+      this.el('dev-esvaziar-prateleiras').onclick = () => this.acoes.esvaziarPrateleirasDev();
       this.el('dev-nivel').onclick = () => this.acoes.aumentarNivelDev();
       this.el('dev-reputacao').onclick = () => this.acoes.aumentarReputacaoDev();
       this.el('dev-reset').onclick = () => this.abrir('reiniciar');
@@ -422,7 +489,7 @@ export class Interface {
         const salvo = this.acoes.personalizar(Object.fromEntries(new FormData(form)));
         if (salvo) this.mensagem('Seu mercadinho ganhou uma nova identidade!');
       };
-      this.el('voltar-personalizacao').onclick = () => this.abrir('escritorio');
+      this.el('voltar-personalizacao').onclick = () => this.abrir('opcoes');
     }
   }
   mensagem(texto) {

@@ -26,6 +26,26 @@ test('ferramenta DEV completa todas as prateleiras liberadas', () => {
   assert.equal(sim.preencherPrateleirasDev(), 0);
 });
 
+test('ferramenta DEV esvazia as prateleiras e reinicia clientes e repositor', () => {
+  const sim = new Simulacao();
+  sim.estado.produtos.tomate.prateleira = 7;
+  sim.estado.produtos.milho.prateleira = 3;
+  sim.estado.produtos.tomate.apresentado = true;
+  sim.clientes.push({ id: 1, cestaReservada: true, temCesta: true });
+  sim.estacionamento.carros.push({ clienteId: 1 });
+  Object.assign(sim.ajudante, { x: 8, z: -4, produto: 'milho', destino: 'prateleira', inventario: ['milho'], andando: true });
+  sim.tempo = 12;
+
+  assert.equal(sim.esvaziarPrateleirasDev(), 10);
+  assert.ok(Object.values(sim.estado.produtos).every(estoque => estoque.prateleira === 0));
+  assert.equal(sim.estado.produtos.tomate.apresentado, true);
+  assert.deepEqual(sim.clientes, []);
+  assert.deepEqual(sim.estacionamento.carros, []);
+  assert.deepEqual(sim.ajudante, estadoInicial().funcionarios.ajudante);
+  assert.equal(sim.proximoCliente, 14);
+  assert.equal(sim.esvaziarPrateleirasDev(), 0);
+});
+
 test('primeiros objetivos seguem as ações reais e continuam após recarregar', () => {
   const sim = new Simulacao();
   assert.equal(sim.missao().titulo, 'Colha seus primeiros tomates');
@@ -70,13 +90,13 @@ test('o nível aumenta a cada 25 clientes atendidos', () => {
   assert.equal(sim.nivel, 1, 'satisfação não deve mais alterar o nível');
 });
 
-test('ao chegar ao nível 2, o próximo passo apresenta as melhorias do escritório', () => {
+test('ao chegar ao nível 2, o próximo passo apresenta as melhorias do celular', () => {
   const sim = new Simulacao();
   sim.estado.melhorias.mochila = 1;
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel;
   const missao = sim.missao();
   assert.equal(missao.titulo, 'Seu mercadinho pode crescer');
-  assert.match(missao.texto, /escritório/);
+  assert.match(missao.texto, /celular/);
   assert.match(missao.texto, /contratar um caixa/);
   assert.equal(sim.capacidade, 4);
 });
@@ -103,7 +123,7 @@ test('ao chegar ao nível 5, o próximo passo apresenta o curral', () => {
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
   assert.equal(sim.missao().titulo, 'Construa o curral');
   assert.match(sim.missao().texto, /R\$ 800/);
-  assert.equal(sim.missao().destino, 'escritorio');
+  assert.equal(sim.missao().destino, 'celular');
 });
 
 test('checkout do vigésimo quinto cliente emite o evento de novo nível uma única vez', () => {
@@ -188,21 +208,6 @@ test('salvamento antigo calcula o nível pelos clientes atendidos', () => {
   const sim = new Simulacao(antigo);
   assert.equal(sim.estado.estatisticas.satisfacao, 205);
   assert.equal(sim.nivel, 9);
-});
-
-test('jogador senta no escritorio e aciona o computador uma vez por visita', () => {
-  const sim = new Simulacao();
-  aproximar(sim, CONFIG.cadeiraEscritorio);
-  sim.atualizar(0.05);
-  assert.equal(sim.estado.jogador.sentado, true);
-  assert.equal(sim.estado.jogador.sentadoEscritorio, true);
-  assert.equal(sim.estado.jogador.sentadoCaixa, false);
-  assert.equal(sim.estado.jogador.angulo, CONFIG.anguloEscritorio);
-  assert.equal(sim.consumirEventos().filter(e => e.tipo === 'escritorio').length, 1);
-  sim.atualizar(0.05);
-  assert.equal(sim.consumirEventos().filter(e => e.tipo === 'escritorio').length, 0);
-  sim.atualizar(0.05, { x: 1, y: 0 });
-  assert.equal(sim.estado.jogador.sentadoEscritorio, false);
 });
 
 test('mercado fechado mantém clientes internos e manda os externos embora', () => {
@@ -517,7 +522,7 @@ test('repositor aparece no nível 6, custa R$ 900 e pode ser contratado sem ovos
   sim.estado.dinheiro = 899;
   assert.equal(sim.missao().titulo, 'Contrate o Repositor');
   assert.match(sim.missao().texto, /R\$ 900/);
-  assert.equal(sim.missao().destino, 'escritorio');
+  assert.equal(sim.missao().destino, 'celular');
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, false);
   sim.estado.dinheiro = 900;
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);

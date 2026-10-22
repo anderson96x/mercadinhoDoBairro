@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { readFileSync } from 'node:fs';
-import { CONFIG, PRODUTOS, ESCRITORIO } from '../src/jogo/configuracao.js';
+import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { PLANTA_INICIAL, PRODUTOS_HORTIFRUTI, volumesHortifruti } from '../src/jogo/planta.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
@@ -72,7 +72,7 @@ test('banca cresce por compra, preserva tomates e não cria seção de produto b
   const volumes = volumesHortifruti(sim.estado.produtos);
   assert.equal(volumes.length, 1);
   assert.equal(volumes[0].d, 8.8);
-  assert.ok(volumes[0].z - volumes[0].d / 2 > ESCRITORIO.limites.maxZ);
+  assert.ok(Math.abs(volumes[0].z - (PLANTA_INICIAL.salao.z - 1)) < 1e-9, 'banca completa deslocada um metro além do centro da parede lateral');
   assert.equal(sim.estado.produtos.tomate.prateleira, 5);
   assert.equal(sim.obstaculos().filter(o => o.movel === 'hortifruti').length, 1);
   const visual = { cena: new THREE.Scene(), sim: new Simulacao(), produtos: {}, alvosHorta: [], criarLabel() {} };

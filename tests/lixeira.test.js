@@ -43,11 +43,9 @@ test('descarta uma unidade escolhida ou toda a carga sem gerar dinheiro ou progr
   assert.deepEqual(sim.estado.produtos, produtos);
 });
 
-test('não permite descarte distante ou através da parede do escritório', () => {
+test('não permite descarte distante da lixeira', () => {
   const sim = juntoDaLixeira();
   Object.assign(sim.estado.jogador, CONFIG.inicio);
-  assert.equal(sim.descartarInventario().sucesso, false);
-  Object.assign(sim.estado.jogador, { x: 0.6, z: CONFIG.lixeira.z });
   assert.equal(sim.descartarInventario().sucesso, false);
   assert.equal(sim.estado.jogador.inventario.length, 3);
 });

@@ -2,13 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { RUA } from '../src/jogo/bairro.js';
-import { criarCarro, MODELOS_CARROS, Trafego } from '../src/jogo/trafego.js';
+import { criarCarro, dimensoesCarro, MODELOS_CARROS, Trafego } from '../src/jogo/trafego.js';
 
 test('os vinte modelos têm tipos e cores variados e cabem nas faixas', () => {
   assert.equal(MODELOS_CARROS.length, 20);
   assert.equal(new Set(MODELOS_CARROS.map(modelo => modelo.nome)).size, 20);
   assert.ok(new Set(MODELOS_CARROS.map(modelo => modelo.tipo)).size >= 5);
   assert.ok(new Set(MODELOS_CARROS.map(modelo => modelo.cor)).size >= 15);
+  const dimensoesSedaPreto = dimensoesCarro(MODELOS_CARROS.find(modelo => modelo.nome === 'Sedã preto'));
+  for (const modelo of MODELOS_CARROS.filter(item => item.tipo === 'hatch')) {
+    assert.deepEqual(dimensoesCarro(modelo), dimensoesSedaPreto,
+      `${modelo.nome} deve ter o mesmo porte do sedã preto`);
+  }
   for (const modelo of MODELOS_CARROS) {
     const carro = criarCarro(modelo);
     carro.updateMatrixWorld(true);

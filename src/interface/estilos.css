@@ -38,6 +38,7 @@ dialog::backdrop{background:color-mix(in srgb,var(--paleta-principal) 48%,transp
 .guia-controles>.icone{color:var(--paleta-principal)}
 .guia-passos li>span{color:color-mix(in srgb,var(--paleta-destaque) 62%,#5b4930);background:color-mix(in srgb,var(--paleta-destaque) 30%,var(--paleta-parede))}
 
+.estoque-importacao{display:block;margin-top:8px;font-size:11px;color:#596b50}.controles-importacao{display:grid;gap:7px;justify-items:stretch}.contador-importacao{display:grid;grid-template-columns:30px 32px 30px;align-items:center;justify-content:center;border:1px solid #dce2cf;border-radius:9px;overflow:hidden;background:#f8f9ef}.contador-importacao button{height:30px;border:0;background:#edf0df;color:#43684f;font-weight:800}.contador-importacao button:disabled{color:#b3baa8}.contador-importacao strong{text-align:center;font-size:12px}.rodape-importacao{margin-top:12px;padding:14px;border-radius:13px;background:#f3f0dc}.rodape-importacao>span{display:block;text-align:center;font-size:12px;color:#68735e}.requisito-importacao{text-align:center;font-size:12px;line-height:1.5;color:#a46c2d;margin:0 0 10px}.rodape-importacao .botao-principal{margin-top:9px}.rodape-importacao .botao-principal:disabled{background:#dfe4d5;color:#98a08f}
 .abas-melhorias{background:color-mix(in srgb,var(--paleta-principal) 8%,var(--paleta-piso))}
 .aba-melhoria{color:color-mix(in srgb,var(--paleta-principal) 40%,#777)}
 .aba-melhoria:hover{color:var(--paleta-principal)}
@@ -112,3 +113,5 @@ kbd{color:var(--paleta-principal);border-color:color-mix(in srgb,var(--paleta-pr
 @keyframes pausa-foco-pulso{50%{box-shadow:0 0 0 13px color-mix(in srgb,var(--paleta-principal) 8%,transparent);transform:scale(1.04)}}
 @media(prefers-reduced-motion:reduce){.pausa-foco,.pausa-foco-cartao,.pausa-foco-icone{animation:none}}
 @media(max-width:700px){.controles-dica{width:calc(100% - 28px);justify-content:center}.controles-dica>span:last-child{white-space:normal;text-align:center}}
+
+.ferramentas{align-items:center}

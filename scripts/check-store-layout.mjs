@@ -9,7 +9,7 @@ export function abrirLoja(nivel = 15) {
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 40000;
   for (const id of ['caixa', 'milho', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
-    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'prateleirasImportados', 'expansao']) {
+    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'prateleirasImportados', 'expansao', 'importarProdutos']) {
     if (MELHORIAS.find(m => m.id === id).nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }
   sim.proximoCliente = Infinity;
@@ -17,11 +17,12 @@ export function abrirLoja(nivel = 15) {
   return sim;
 }
 
-for (const nivel of [1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15, 17, 18]) {
+for (const nivel of [1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15, 17, 18, 19]) {
   const sim = abrirLoja(nivel);
   for (const [id, produto] of Object.entries(sim.produtos)) {
     if (!sim.estado.produtos[id].liberado) continue;
-    for (const ponto of [produto.coleta, produto.reposicao, ...produto.pontosCompra]) {
+    const pontos = produto.origem === 'importado' ? produto.pontosCompra : [produto.coleta, produto.reposicao, ...produto.pontosCompra];
+    for (const ponto of pontos) {
       const ator = { ...CONFIG.inicio };
       let chegou = false;
       for (let tick = 0; tick < 3000 && !chegou; tick++) {
@@ -41,7 +42,7 @@ for (const nivel of [1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15, 17, 18]) {
   console.log(`N${nivel}: purchase, collection, stocking and checkout routes pass.`);
 }
 
-const pads = Object.entries(PRODUTOS).flatMap(([id,p]) =>
+const pads = Object.entries(PRODUTOS).filter(([, p]) => p.origem !== 'importado').flatMap(([id,p]) =>
   (id === 'pao' ? ['reposicao'] : ['coleta','reposicao']).map(tipo => ({ id, tipo, ...geometriaEstacao(id, tipo) })));
 for (let i=0;i<pads.length;i++) for (let j=i+1;j<pads.length;j++) {
   if (pads[i].tipo === 'reposicao' && pads[j].tipo === 'reposicao' && pads[i].movel

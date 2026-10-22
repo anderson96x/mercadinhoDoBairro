@@ -7,10 +7,10 @@ export const MODELOS_CARROS = Object.freeze([
   { nome: 'Sedã azul', tipo: 'seda', cor: 0x336caa, escala: 1.06, detalhe: 'escuro' },
   { nome: 'Sedã prata', tipo: 'seda', cor: 0xbac4c8, escala: 0.96, detalhe: 'cromado' },
   { nome: 'Sedã preto', tipo: 'seda', cor: 0x242a33, escala: 1.12, detalhe: 'escuro' },
-  { nome: 'Hatch amarelo', tipo: 'hatch', cor: 0xf4bc37, escala: 0.94, detalhe: 'escuro' },
-  { nome: 'Hatch verde', tipo: 'hatch', cor: 0x4d9a63, escala: 1, detalhe: 'branco' },
-  { nome: 'Hatch branco', tipo: 'hatch', cor: 0xf0e9d9, escala: 1.05, detalhe: 'escuro' },
-  { nome: 'Hatch laranja', tipo: 'hatch', cor: 0xe47d42, escala: 0.98, detalhe: 'cromado' },
+  { nome: 'Hatch amarelo', tipo: 'hatch', cor: 0xf4bc37, escala: 1.12, detalhe: 'escuro' },
+  { nome: 'Hatch verde', tipo: 'hatch', cor: 0x4d9a63, escala: 1.12, detalhe: 'branco' },
+  { nome: 'Hatch branco', tipo: 'hatch', cor: 0xf0e9d9, escala: 1.12, detalhe: 'escuro' },
+  { nome: 'Hatch laranja', tipo: 'hatch', cor: 0xe47d42, escala: 1.12, detalhe: 'cromado' },
   { nome: 'SUV azul escuro', tipo: 'suv', cor: 0x315476, escala: 1, detalhe: 'rack' },
   { nome: 'SUV bege', tipo: 'suv', cor: 0xc9a878, escala: 1.08, detalhe: 'cromado' },
   { nome: 'SUV vinho', tipo: 'suv', cor: 0x853d52, escala: 0.96, detalhe: 'rack' },
@@ -27,7 +27,7 @@ export const MODELOS_CARROS = Object.freeze([
 
 const FORMATOS = {
   seda: { comprimento: 2.48, largura: 1.08, corpo: 0.43, teto: 1.51, baseTras: -0.83, topoTras: -0.48, topoFrente: 0.47, baseFrente: 0.86 },
-  hatch: { comprimento: 2.16, largura: 1.04, corpo: 0.43, teto: 1.48, baseTras: -0.91, topoTras: -0.72, topoFrente: 0.33, baseFrente: 0.7 },
+  hatch: { comprimento: 2.48, largura: 1.08, corpo: 0.43, teto: 1.48, baseTras: -1.07, topoTras: -0.88, topoFrente: 0.49, baseFrente: 0.86 },
   suv: { comprimento: 2.62, largura: 1.18, corpo: 0.53, teto: 1.76, baseTras: -1.08, topoTras: -0.89, topoFrente: 0.62, baseFrente: 0.94 },
   picape: { comprimento: 2.78, largura: 1.16, corpo: 0.52, teto: 1.68, baseTras: -0.12, topoTras: 0.06, topoFrente: 0.73, baseFrente: 1.05 },
   minivan: { comprimento: 2.73, largura: 1.18, corpo: 0.52, teto: 1.72, baseTras: -1.17, topoTras: -0.98, topoFrente: 0.76, baseFrente: 1.05 },
@@ -229,6 +229,7 @@ export function criarCarro(modelo, animavel = false) {
 export class Trafego {
   constructor(cena, aleatorio = Math.random) {
     this.cena = cena;
+    this.minX = RUA.minX;
     this.aleatorio = aleatorio;
     this.carros = [];
     this.faixasReservadas = new Set();
@@ -247,18 +248,25 @@ export class Trafego {
     return MODELOS_CARROS[this.sacola.pop()];
   }
 
+  atualizarExpansao(expandida) {
+    const minX = expandida ? RUA.minX - 12 : RUA.minX;
+    if (minX === this.minX) return;
+    for (const carro of this.carros) carro.minX += minX - this.minX;
+    this.minX = minX;
+  }
+
   criarNaFaixa(indice) {
     if (this.faixasReservadas.has(indice)) return false;
     if (this.carros.length >= 3) return false;
     const faixa = RUA.faixas[indice];
-    const borda = faixa.direcao > 0 ? RUA.minX : RUA.maxX;
+    const borda = faixa.direcao > 0 ? this.minX : RUA.maxX;
     if (this.carros.some(c => c.faixa === indice && Math.abs(c.grupo.position.x - borda) < 6)) return false;
     const modelo = this.proximoModelo();
     const grupo = criarCarro(modelo, true);
     grupo.rotation.y = faixa.direcao > 0 ? 0 : Math.PI;
     // Inclui para-choques, escala e orientação: nenhuma parte sai do asfalto.
     const tamanho = new THREE.Box3().setFromObject(grupo);
-    const minX = RUA.minX - tamanho.min.x + 0.06;
+    const minX = this.minX - tamanho.min.x + 0.06;
     const maxX = RUA.maxX - tamanho.max.x - 0.06;
     grupo.position.set(faixa.direcao > 0 ? minX : maxX, 0.04, faixa.z);
     this.cena.add(grupo);

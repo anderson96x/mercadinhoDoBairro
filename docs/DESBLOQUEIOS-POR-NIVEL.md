@@ -33,20 +33,36 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
 | 17 | Prateleiras de importados (2 níveis) | R$ 1.000 por nível | — |
 | 18 | Expansão dos fundos | R$ 10.000 | — |
+| 19 | Importar produtos: caixa com 9 enlatados | R$ 270 por caixa | R$ 30 por lata |
+| 20 | Importar cereais: caixa com 9 unidades | R$ 405 por caixa | R$ 45 por unidade |
+
+## Importação de produtos no nível 19
+
+No nível 19, abra o celular e selecione **Importar produtos**, imediatamente abaixo de **Melhorias**. O catálogo começa com **Enlatados**, por **R$ 270 por caixa de 9 unidades**. É necessário ter ao menos uma prateleira de importados e a expansão com depósito e pátio de carga. O estacionamento de clientes é independente.
+
+Cada pedido confirmado gera **uma entrega de caminhão baú branco**. O caminhão surge à esquerda da rua, avança além do **acesso exclusivo**, para e entra de ré pela única faixa do pátio. A vaga mede **2,6 × 6,4 u**, com a cabine voltada para a rua e o baú para os fundos. As seis vagas e o acesso de clientes continuam funcionando durante a descarga; carros de clientes não usam o pátio privativo. O entregador desce da cabine, contorna a lateral até o baú, leva uma caixa por viagem até as estantes e retorna ao veículo. Terminada a descarga, o caminhão sai de frente pela mesma faixa e o próximo pedido pode chegar. As duas faixas da rua aguardam a manobra e são liberadas durante a descarga. Se o mercado estiver fechado, a chegada aguarda a abertura. Pausar congela a entrega.
+
+O depósito tem **quatro estantes, uma por classe, com quatro pacotes de nove unidades cada** (16 posições físicas). As duas gôndolas têm duas classes cada, totalizando quatro classes. **Enlatados** está disponível no nível 19 e **Cereais** no nível 20. Cereais usa a terceira estante do depósito e a face oposta aos enlatados na primeira gôndola, com capacidade de 36 unidades. As embalagens têm as mesmas quatro cores das latas. Higiene fica prevista na segunda gôndola, sem produtos à venda; a quarta estante permanece reservada. Cada caixa ocupa uma posição até ficar vazia. Caixas já guardadas e caixas de pedidos pendentes contam no limite da própria classe; vagas de outra classe não podem ser usadas e não é possível pagar por mais mercadoria do que cabe. As estantes começam vazias e exibem somente os pacotes realmente entregues.
+
+Retire os enlatados junto à primeira estante, identificada como Enlatados e leve-os à primeira gôndola, ou deixe o repositor fazer o transporte. Cada lata vale **R$ 30**, e a gôndola comporta **36 unidades**. O estoque não aparece na loja no momento da compra. O catálogo mostra unidades na gôndola e no depósito, ocupação e limite de quatro pacotes por classe e caixas a caminho. Monte o pedido com **−** e **+**, e confirme tudo de uma vez em **Finalizar pedido**; a cobrança ocorre somente se o pedido inteiro for válido.
+
+Estoque, caixas parcialmente abertas e pedidos pagos são salvos. Recarregar durante a descarga retoma a viagem com as caixas restantes, sem nova cobrança ou duplicação. Saves sem depósito preservam os enlatados que já estavam na gôndola e recebem o depósito vazio. Saves com mais de quatro caixas da mesma classe mantêm o excedente em uma reserva de migração: caixas já entregues entram automaticamente na estante conforme surge uma vaga, e pedidos pagos aguardam espaço durante a descarga. O catálogo informa a reserva; novas compras ficam bloqueadas até haver capacidade, sem perda de unidades, inclusive caixas parcialmente abertas.
 
 ## Expansão no nível 18
 
-No nível 18, abra **Escritório → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra.
+No nível 18, abra **Celular → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra.
 
-O salão original de **24 × 16 u**, seus expositores, a padaria e o escritório mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
+O salão original de **24 × 16 u**, seus expositores e a padaria mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
 
 A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de produção original. A abertura junto à cozinha fica fechada. As bancadas da queijaria e da cozinha de geleias recuam até encostar nessa parede; os pontos de entrega e coleta acompanham as bancadas. A mureta que ficava atrás delas é removida. A lateral direita permanece em uma única peça contínua. O piso novo ocupa apenas os espaços adicionais, preservando o piso já construído da cozinha.
 
-A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Três estantes metálicas guardam caixas de papelão e dois pallets completam a carga no piso de concreto. A entrada e os corredores são caminháveis; paredes, estantes e pallets têm colisão. O depósito é cenográfico nesta etapa, sem alterar estoques ou receitas, e também aparece nas partidas que já compraram a expansão. Não exige comprar o estacionamento.
+A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Quatro estantes metálicas comportam quatro caixas de papelão por classe, com duas caixas em cada um dos dois níveis, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. No N18, as estantes ficam vazias; no N19, recebem as importações entregues pelo caminhão.
+
+A expansão também acrescenta **12 u à esquerda do mapa**, ampliando o terreno para **52 × 46 u**. Nessa lateral fica o **pátio exclusivo de carga**, com asfalto, vaga demarcada em amarelo, setas de entrada/saída, placa com pictograma de caminhão e guias separando-o das vagas públicas. A rua e a calçada acompanham a nova largura, com um acesso próprio recortado para os caminhões. Um caminho pavimentado liga o pátio ao portão do depósito. Câmera, navegação e salvamento aceitam a nova área. Saves com a expansão comprada recebem tudo ao carregar, sem nova cobrança; o estacionamento de clientes não é necessário para receber entregas.
 
 Quando o estacionamento também está comprado, o asfalto aumenta até encostar na fachada inteira do depósito e na parede esquerda da loja, eliminando a faixa de grama entre eles. O meio-fio posterior é removido, deixando o acesso ao portão contínuo; as seis vagas e a entrada pela rua mantêm suas posições.
 
-Uma **passagem interna de 1,8 u de largura, sem porta**, conecta a lateral direita do depósito ao anexo dos fundos da loja. Ela fica entre a fileira de estantes e os pallets e permite circulação nos dois sentidos. A abertura acompanha a compra da expansão e aparece também nos saves existentes.
+Uma **passagem interna de 1,8 u de largura, sem porta**, conecta a lateral direita do depósito ao anexo dos fundos da loja. Ela fica diante da fileira de estantes e permite circulação nos dois sentidos. A abertura acompanha a compra da expansão e aparece também nos saves existentes.
 
 O portão externo acompanha o funcionamento do mercado: suas lâminas descem suavemente até a soleira quando a loja fecha e se recolhem na caixa superior quando ela abre. O movimento congela durante a pausa. Fechado, o portão bloqueia o acesso pelo estacionamento; a passagem interna continua livre.
 
@@ -54,15 +70,15 @@ Toda a fazenda — tomate, milho, trigo, galinheiro, curral, estufa e apiário �
 
 ## Prateleiras de importados no nível 17
 
-No nível 17, abra **Escritório → Melhorias → Mercado** e compre a melhoria **Prateleiras de importados**. Ela tem dois níveis; cada nível custa **R$ 1.000** e instala uma prateleira, sem depender do estacionamento.
+No nível 17, abra **Celular → Melhorias → Mercado** e compre a melhoria **Prateleiras de importados**. Ela tem dois níveis; cada nível custa **R$ 1.000** e instala uma prateleira, sem depender do estacionamento.
 
 São duas gôndolas metálicas idênticas de 5,775 unidades, quatro níveis e dois lados, paralelas ao hortifruti no centro do salão e alinhadas pela frente com o balcão da padaria, conforme a [planta N17](PLANTA-LOJA-N17.svg). Os corredores dão acesso aos expositores posteriores e preservam a fila de dez clientes. Cada móvel e sua colisão aparecem somente após a respectiva compra.
 
-**Por enquanto, as prateleiras ficam vazias.** A importação de produtos será implementada em uma etapa futura; o nível 18 libera a expansão dos fundos. Esta compra não cria estoque, receitas ou demanda de clientes. O nível comprado é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
+As prateleiras permanecem vazias até o nível 19, quando a opção **Importar produtos** libera a compra recorrente de caixas de enlatados. O nível comprado das gôndolas é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
 
 ## Estacionamento no nível 16
 
-Ao alcançar o nível 16, sente-se no escritório e abra **Melhorias → Mercado → Estacionamento**. A construção custa **R$ 10.000**, pode ser comprada uma única vez e ocupa o terreno à esquerda da loja, entre o salão e a borda lateral do terreno, com acesso pela rua.
+Ao alcançar o nível 16, abra **Celular → Melhorias → Mercado → Estacionamento**. A construção custa **R$ 10.000**, pode ser comprada uma única vez e ocupa o terreno à esquerda da loja, entre o salão e a borda lateral do terreno, com acesso pela rua.
 
 O estacionamento tem seis vagas demarcadas que começam vazias, setas de circulação, passagem pela calçada, canteiro central com arbustos, iluminação e placa de estacionamento. Parte dos compradores usa os carros que j? circulam na rua, preservando modelo, cor e tamanho. Cada motorista reserva uma vaga, estaciona com uma curva suave, abre a porta e caminha até a loja. Após comprar, volta ao mesmo carro, embarca, sai de ré e segue pela rua. A vaga só fica livre quando o carro vai embora; novas chegadas esperam quando o estacionamento está cheio. Rodas, direção, portas, piscas e luzes de freio e ré são animados. Os carros cedem passagem aos pedestres e coordenam o uso da rua com o trânsito e os veículos do banco.
 

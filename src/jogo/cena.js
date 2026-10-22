@@ -8,6 +8,8 @@ import { ColetaBancoVisual } from './coleta-banco.js';
 import { AssaltoVisual } from './assalto-visual.js';
 import { BANCO } from './banco.js';
 import * as THREE from 'three';
+import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from './classes-produtos.js';
+import { pacotesDaClasse } from './entregas.js';
 import { produtosDaLoja, CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
@@ -19,6 +21,7 @@ import { criarSol } from './iluminacao.js';
 import { criarPlacaProduto } from './placas-produtos.js';
 import { construirEstacionamento } from './estacionamento.js';
 import { construirPrateleirasImportados } from './prateleiras-importados.js';
+import { EntregasVisual } from './entregas-visual.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { criarIrrigador, animarIrrigador } from './irrigador.js';
 
@@ -31,7 +34,7 @@ const leiteVitrine = new THREE.MeshBasicMaterial({ color: 0xfafcf3 });
 const vidroMel = new THREE.MeshStandardMaterial({ color: 0xffe3a0, transparent: true, opacity: 0.24, roughness: 0.22, depthWrite: false });
 const verdeLeiteVitrine = new THREE.MeshBasicMaterial({ color: 0x087e64 });
 function estacaoDesbloqueada(id, estado) {
-  const estagioNecessario = PRODUTOS[id]?.nivelMinimo >= 11 ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
+  const estagioNecessario = PRODUTOS[id]?.origem === 'importado' ? 0 : PRODUTOS[id]?.nivelMinimo >= 11 ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
   return !!estado.produtos[id]?.liberado && estado.estagioLoja >= estagioNecessario;
 }
 function material(cor) {
@@ -191,7 +194,7 @@ function criarSecaoHortifruti(pai, p) {
   return grupo;
 }
 
-export function criarProduto(id, escala = 1) {
+export function criarProduto(id, escala = 1, variante = 0) {
   const grupo = new THREE.Group();
   if (id === 'tomate') {
     esfera(grupo, 0.16, 0xff3f32, 0, 0, 0, 1, 0.86, 1);
@@ -244,6 +247,41 @@ export function criarProduto(id, escala = 1) {
       const corte = caixa(grupo, 0.025, 0.012, 0.22, 0xf5d89b, x, 0.135, 0);
       corte.rotation.z = 0.3;
     }
+  } else if (id === 'cereal') {
+    const cores = [0xd94b3d, 0xf0a51f, 0x69ad3c, 0x2777c8];
+    const cor = cores[Math.floor(variante / 3) % cores.length];
+    const clara = new THREE.Color(cor).lerp(new THREE.Color(0xffffff), 0.22).getHex();
+    caixa(grupo, 0.36, 0.66, 0.105, cor, 0, 0, 0).name = 'caixa-cereal';
+    caixa(grupo, 0.345, 0.012, 0.10, clara, 0, 0.336, 0).name = 'topo-caixa-cereal';
+    caixa(grupo, 0.018, 0.64, 0.108, clara, -0.189, 0, 0).name = 'lateral-caixa-cereal';
+    const selo = esfera(grupo, 0.105, 0x5b3528, 0.025, 0.065, 0.059, 0.9, 1.28, 0.06);
+    selo.name = 'selo-caixa-cereal';
+    caixa(grupo, 0.26, 0.04, 0.01, 0xf8f5df, 0.025, -0.25, 0.059).name = 'faixa-caixa-cereal';
+    const escura = new THREE.Color(cor).multiplyScalar(0.72).getHex();
+    // Vincos da tampa e borda impressa acompanham o formato do cartonado.
+    caixa(grupo, 0.31, 0.004, 0.008, escura, 0, 0.344, 0);
+    caixa(grupo, 0.009, 0.60, 0.004, escura, 0.163, 0, 0.055);
+    caixa(grupo, 0.21, 0.026, 0.005, 0xf8f5df, 0.015, 0.255, 0.057);
+    caixa(grupo, 0.13, 0.009, 0.005, clara, 0.015, 0.22, 0.057);
+    // Pequena espiga dourada dentro do selo, sem cobrir o oval escuro.
+    caixa(grupo, 0.007, 0.105, 0.005, 0xe5bc68, 0.025, 0.065, 0.067);
+    for (const y of [0.035, 0.065, 0.095]) for (const lado of [-1, 1]) {
+      const grao = esfera(grupo, 0.014, 0xe5bc68, 0.025 + lado * 0.014, y, 0.069, 0.65, 1, 0.2);
+      grao.rotation.z = lado * 0.55;
+    }
+    // Painel de informações e código de barras na lateral estreita.
+    caixa(grupo, 0.004, 0.19, 0.065, 0xf8f5df, -0.2, -0.12, 0);
+    for (let i = 0; i < 4; i++)
+      caixa(grupo, 0.005, 0.005, 0.045, escura, -0.203, -0.055 - i * 0.025, 0);
+    for (let i = 0; i < 6; i++)
+      caixa(grupo, 0.005, 0.035, i % 2 ? 0.003 : 0.005, 0x454638, -0.203, -0.18, -0.024 + i * 0.009);
+  } else if (id === 'enlatado') {
+    const cores = [0xd94b3d, 0xf0a51f, 0x69ad3c, 0x2777c8];
+    const cor = cores[Math.floor(variante / 3) % cores.length];
+    cilindro(grupo, 0.15, 0.15, 0.34, cor, 0, 0, 0, 16);
+    cilindro(grupo, 0.152, 0.152, 0.025, 0xd9ddda, 0, 0.18, 0, 16);
+    cilindro(grupo, 0.152, 0.152, 0.025, 0xaeb6b3, 0, -0.18, 0, 16);
+    caixa(grupo, 0.255, 0.13, 0.012, variante % 2 ? 0xfff0bd : 0xf8f5df, 0, 0, 0.147);
   } else {
     esfera(grupo, 0.14, 0xffd22e, 0, 0, 0, 0.7, 1.5, 0.7);
     const folha = esfera(grupo, 0.12, 0x38a447, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;
@@ -628,7 +666,7 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
   const g = new THREE.Group();
   const corpo = new THREE.Group(); g.add(corpo);
   const corpulento = visual?.porte === 'corpulento';
-  const funcionario = funcao === 'caixa' || funcao === 'ajudante' || funcao === 'padaria';
+  const funcionario = ['caixa', 'ajudante', 'padaria', 'entrega'].includes(funcao);
   const uniformizado = jogador || funcionario;
   const sombra = new THREE.Mesh(new THREE.CircleGeometry(0.38, 20), new THREE.MeshBasicMaterial({ color: 0x204c31, transparent: true, opacity: 0.13, depthWrite: false }));
   sombra.rotation.x = -Math.PI / 2; sombra.position.y = 0.014; sombra.scale.setScalar(corpulento ? 1.5 : 1); g.add(sombra);
@@ -698,6 +736,14 @@ export function personagem(cor, pele = 0xf2c49c, jogador = false, coresCesta = [
   return g;
 }
 
+export function criarEntregador() {
+  const aparencia = { ...APARENCIAS_CLIENTES.find(p => p.genero === 'homem' && p.porte === 'regular' && !p.idoso),
+    roupa: 'camisa', corRoupa: 0x28705c, corCalca: 0x263d49, corSapato: 0x20282b, acessorio: 'bolso' };
+  const modelo = personagem(aparencia.corRoupa, aparencia.pele, false, [], aparencia, 'entrega');
+  modelo.userData.aparencia = aparencia;
+  return modelo;
+}
+
 export class Cena {
   constructor(container, simulacao) {
     this.sim = simulacao; this.container = container;
@@ -733,6 +779,8 @@ export class Cena {
         rodas: carro.grupo.userData.rodas[0].rotation.z, velocidade: carro.velocidade };
     };
     this.coletaBanco = new ColetaBancoVisual(this.cena);
+    this.entregasVisual = new EntregasVisual(this.cena, criarEntregador,
+      (modelo, ator, caminhao, dt, tempo) => this.animarEntregador(modelo, ator, caminhao, dt, tempo));
     this.assaltoVisual = new AssaltoVisual(this.cena);
     this.alertaCaixa = new THREE.Group();
     const fundoAlerta = new THREE.Mesh(new THREE.CircleGeometry(0.28, 20), new THREE.MeshBasicMaterial({ color: 0xc34f32, side: THREE.DoubleSide }));
@@ -765,6 +813,7 @@ export class Cena {
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (id === 'pao') this.construirPadaria();
+      else if (p.origem === 'importado') this.construirImportado(id, p);
       else this.construirEstacao(id, p);
     }
     this.caixeiro = personagem(0x428b88, 0x9b6848, false, [], null, 'caixa'); this.caixeiro.position.set(CONFIG.cadeiraCaixa.x, 0.23, CONFIG.cadeiraCaixa.z); this.caixeiro.rotation.y = CONFIG.anguloCaixa; this.cena.add(this.caixeiro);
@@ -954,6 +1003,25 @@ export class Cena {
     this.produtos[id] = { grupo, frutos, frutas, galinhas, refrigerador, estante, irrigador, banca };
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 1.6 }, id === 'ovos' ? 'GALINHEIRO' : id === 'leite' ? 'CURRAL' : p.plural.toLocaleUpperCase('pt-BR'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'ovos' ? 3.1 : id === 'leite' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
+  }
+  construirImportado(id, p) {
+    const lado = CLASSES_PRODUTOS[p.classe].lado;
+    const grupo = new THREE.Group(); grupo.name = `produto-importado-${id}`; this.cena.add(grupo);
+    const frutas = [];
+    // As 36 unidades ocupam quatro níveis de nove, começando pelo nível inferior.
+    // Cada nível representa uma das quatro variedades da classe.
+    for (let i = 0; i < p.capacidadePrateleira; i++) {
+      const nivel = Math.floor(i / 9), coluna = i % 9;
+      const produto = criarProduto(id, 0.82, nivel * 3);
+      const altura = id === 'cereal' ? 0.66 : 0.34;
+      produto.position.set(p.prateleira.x + lado * (id === 'cereal' ? 0.46 : 0.56),
+        0.25 + nivel * 0.63 + altura * 0.82 / 2 + 0.035, p.prateleira.z - 2.2 + coluna * 0.55);
+      produto.rotation.y = lado * Math.PI / 2;
+      grupo.add(produto); frutas.push(produto);
+    }
+    this.produtos[id] = { grupo, frutos: [], frutas, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
+    this.criarLabel(`loja-${id}`, { ...p.prateleira, x: p.prateleira.x + lado * 0.7, y: 2.8 }, p.plural.toLocaleUpperCase('pt-BR'), `0 / ${p.capacidadePrateleira}`, 'loja');
+    this.criarLabel(`horta-${id}`, { ...p.horta, y: 2.9 }, CLASSES_PRODUTOS[p.classe].nome.toLocaleUpperCase('pt-BR'), `0 / ${PACOTES_POR_CLASSE} pacotes`, id);
   }
   construirArtesanal(id, p) {
     const grupo = new THREE.Group(); grupo.name = `estacao-${id}`; this.cena.add(grupo);
@@ -1372,7 +1440,7 @@ export class Cena {
       .add(vertical.multiplyScalar(-dy * (this.camera.top - this.camera.bottom) / (this.h * this.camera.zoom)));
     deslocamento.addScaledVector(direcao, -deslocamento.y / direcao.y);
     const base = this.baseCamera();
-    const limites = CONFIG.limiteCamera;
+    const limites = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
     const x = THREE.MathUtils.clamp(base.x + this.deslocamentoCamera.x - deslocamento.x, limites.minX, limites.maxX);
     const z = THREE.MathUtils.clamp(base.z + this.deslocamentoCamera.z - deslocamento.z, limites.minZ, limites.maxZ);
     this.deslocamentoCamera.set(x - base.x, 0, z - base.z);
@@ -1459,7 +1527,7 @@ export class Cena {
     const delta = Math.atan2(Math.sin(alvo - modelo.rotation.y), Math.cos(alvo - modelo.rotation.y));
     modelo.rotation.y += delta * (1 - Math.exp(-12 * dt));
     const marcha = atualizarMarcha(d, ator, dt);
-    const dtPose = ator.sentadoEscritorio && dt === 0 ? 1 / 60 : dt;
+    const dtPose = dt;
     d.sentar = THREE.MathUtils.clamp(d.sentar + (ator.sentado ? 1 : -1) * dtPose * 3, 0, 1);
     const sentado = d.sentar * d.sentar * (3 - 2 * d.sentar);
     const intensidade = marcha.intensidade * (1 - sentado);
@@ -1554,21 +1622,36 @@ export class Cena {
     posicionarBraco(d.bracoE, maoE);
     posicionarBraco(d.bracoD, mao);
   }
-  animarComputador(modelo, tempo, ativo) {
-    const d = modelo.userData;
-    if (!ativo) return;
-    d.corpo.rotation.x = -0.06;
-    const teclaE = Math.max(0, Math.sin(tempo * 12)) * 0.055;
-    const teclaD = Math.max(0, Math.sin(tempo * 12 + Math.PI)) * 0.055;
-    posicionarBraco(d.bracoE, new THREE.Vector3(-0.25, 0.69 - teclaE, 0.76 + teclaE));
-    posicionarBraco(d.bracoD, new THREE.Vector3(0.25, 0.69 - teclaD, 0.76 + teclaD));
-  }
   animarSustoCaixa(modelo, tempo) {
     const tremor = Math.sin(tempo * 17) * 0.025;
     posicionarBraco(modelo.userData.bracoE, new THREE.Vector3(-0.52, 1.48 + tremor, 0.1));
     posicionarBraco(modelo.userData.bracoD, new THREE.Vector3(0.52, 1.48 - tremor, 0.1));
     modelo.userData.corpo.rotation.x = -0.08;
     modelo.userData.corpo.rotation.z = tremor;
+  }
+  animarEntregador(modelo, ator, caminhao, dt, tempo) {
+    this.animarPersonagem(modelo, { ...ator, temCesta: false }, dt, tempo);
+    const d = modelo.userData;
+    if ((caminhao.fase === 'desembarcar' && caminhao.tempo < 1.85)
+      || (caminhao.fase === 'embarcar' && caminhao.etapa >= 2)) {
+      const abertura = caminhao.aberturaCabine || 0;
+      posicionarBraco(d.bracoE, new THREE.Vector3(-0.28, 0.88, 0.58));
+      posicionarBraco(d.bracoD, new THREE.Vector3(0.42 + abertura * 0.12, 0.92, 0.72));
+      d.corpo.rotation.x = caminhao.fase === 'embarcar' ? abertura * 0.22 : -abertura * 0.12;
+      return;
+    }
+    if (caminhao.fase === 'abrirBau' || caminhao.fase === 'fecharBau') {
+      const movimento = caminhao.fase === 'abrirBau' ? caminhao.aberturaBau : 1 - caminhao.aberturaBau;
+      posicionarBraco(d.bracoE, new THREE.Vector3(-0.32, 0.82, 0.72));
+      posicionarBraco(d.bracoD, new THREE.Vector3(0.28 + movimento * 0.12, 1.12, 0.93));
+      return;
+    }
+    if (ator.carregando || caminhao.fase === 'retirar' || caminhao.fase === 'guardar') {
+      const t = Math.min(1, Math.max(0, (caminhao.tempo - 0.35) / 0.35));
+      const deslocamento = caminhao.fase === 'retirar' ? 0.58 * (1 - t) : 0;
+      posicionarBraco(d.bracoE, new THREE.Vector3(-0.34, 0.72 - deslocamento, 0.58));
+      posicionarBraco(d.bracoD, new THREE.Vector3(0.34, 0.72 - deslocamento, 0.58));
+    }
   }
   animarAtendimento(modelo, tempo, ativo, progresso = 0) {
     if (!ativo) return;
@@ -1618,22 +1701,35 @@ export class Cena {
     ajustarSacola(this.sacolaEmbalagem, cliente.quantidade, preenchimento / Math.max(1, cliente.quantidade));
     return { cliente, progresso, embalados };
   }
+  atualizarTrafego(dt) {
+    const sim = this.sim, e = sim.estado;
+    const coleta = e.banco.coleta;
+    const assalto = e.banco.assalto;
+    if (coleta || assalto || sim.estacionamento.reservaRua || sim.entregas.reservaRua) this.trafego.faixasReservadas.add(0);
+    else this.trafego.faixasReservadas.delete(0);
+    // A entrega vem pela esquerda e cruza a rua para alinhar a entrada de ré.
+    if (sim.entregas.reservaRua) this.trafego.faixasReservadas.add(1);
+    else this.trafego.faixasReservadas.delete(1);
+    this.trafego.atualizarExpansao(!!e.melhorias.expansao);
+    this.trafego.atualizar(dt);
+    sim.estacionamento.transitoLivre = !this.trafego.carros.some(c => c.faixa === 0);
+    sim.entregas.transitoLivre = this.trafego.carros.length === 0;
+    const manobraAtiva = sim.estacionamento.carros.some(c => (c.fase === 'aguardando' && c.recebido)
+      || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase)) || (sim.entregas.reservaRua && sim.entregas.caminhao.fase !== 'aguardando');
+    if (coleta?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
+    if (assalto?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
+  }
   atualizar(dt) {
     const PRODUTOS = produtosDaLoja(this.sim?.estado);
     const sim = this.sim, e = sim.estado;
     const coleta = e.banco.coleta;
     const assalto = e.banco.assalto;
-    if (coleta || assalto || sim.estacionamento.reservaRua) this.trafego.faixasReservadas.add(0);
-    else this.trafego.faixasReservadas.delete(0);
-    this.trafego.atualizar(dt);
-    sim.estacionamento.transitoLivre = !this.trafego.carros.some(c => c.faixa === 0);
-    const manobraAtiva = sim.estacionamento.carros.some(c => (c.fase === 'aguardando' && c.recebido)
-      || ['chegando', 're', 'engatando', 'partindo'].includes(c.fase));
-    if (coleta?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) coleta.tempo = 0;
-    if (assalto?.tempo < 0 && dt > 0 && !manobraAtiva && !this.trafego.carros.some(c => c.faixa === 0)) assalto.tempo = 0;
+    this.atualizarTrafego(dt);
     this.coletaBanco.atualizar(coleta);
     this.assaltoVisual.atualizar(assalto);
-    const dtVisual = dt || (e.jogador.sentadoEscritorio ? 1 / 60 : 0);
+    this.entregasVisual.atualizar(sim.entregas, dt);
+    this.bairro.atualizarPacotesDeposito(e.deposito.pacotes);
+    const dtVisual = dt;
     this.tempoVisual += dtVisual;
     const tempo = this.tempoVisual;
     for (let i = this.efeitosCrescimento.length - 1; i >= 0; i--) {
@@ -1662,7 +1758,8 @@ export class Cena {
         if (id === 'pao') continue;
         const anterior = this.produtos[id].grupo;
         this.cena.remove(anterior); liberarGeometrias(anterior);
-        this.construirEstacao(id, p);
+        if (p.origem === 'importado') this.construirImportado(id, p);
+        else this.construirEstacao(id, p);
       }
       this.redimensionar();
     }
@@ -1670,12 +1767,10 @@ export class Cena {
     this.bairro.aplicar(e.personalizacao);
     this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo, !!e.melhorias.expansao);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);
-    this.bairro.animarPorta(sim.aberturaPortaEscritorio);
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
     this.bairro.animarDeposito(e.lojaAberta, dt);
-    this.bairro.animarComputador(!!e.jogador.sentadoEscritorio, tempo);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
-    const base = this.baseCamera(), limites = CONFIG.limiteCamera;
+    const base = this.baseCamera(), limites = e.melhorias.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
     const alvo = new THREE.Vector3(
       THREE.MathUtils.clamp(base.x + this.deslocamentoCamera.x, limites.minX, limites.maxX), 0,
       THREE.MathUtils.clamp(base.z + this.deslocamentoCamera.z, limites.minZ, limites.maxZ)
@@ -1697,7 +1792,6 @@ export class Cena {
     const atendendoNoCaixa = sim.progressoCaixa > 0;
     const progressoCaixa = sim.progressoCaixa / CONFIG.tempoCaixa;
     this.animarAtendimento(this.jogador, tempo, atendendoNoCaixa && !e.melhorias.caixa && e.jogador.sentado, progressoCaixa);
-    this.animarComputador(this.jogador, tempo, !!e.jogador.sentadoEscritorio);
     if (sim.assaltoNaLoja && !e.melhorias.caixa && e.jogador.sentadoCaixa) this.animarSustoCaixa(this.jogador, tempo);
     const unidadePorPixel = (this.camera.top - this.camera.bottom) / (this.camera.zoom * this.h);
     this.marcadorJogador.quaternion.copy(this.camera.quaternion);
@@ -1850,7 +1944,7 @@ export class Cena {
         continue;
       }
       const construcao = (id === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (id === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (id === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
-      const temConstrucao = ['ovos', 'leite', 'trigo'].includes(id) || PRODUTOS[id].nivelMinimo >= 11;
+      const temConstrucao = ['ovos', 'leite', 'trigo'].includes(id) || (PRODUTOS[id].nivelMinimo >= 11 && PRODUTOS[id].origem !== 'importado');
       objetos.grupo.visible = estacaoDesbloqueada(id, e) && (!temConstrucao || construcao > 0);
       if (temConstrucao) objetos.grupo.scale.y = Math.max(0.001, construcao);
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
@@ -1907,6 +2001,7 @@ export class Cena {
         // Os detalhes de fabricação ficam no painel fixo de produção.
         detalhe.textContent = '';
       }
+      else if (tipo === 'horta' && PRODUTOS[produto]?.origem === 'importado') detalhe.textContent = `${pacotesDaClasse(e.deposito, PRODUTOS[produto].classe)} / ${PACOTES_POR_CLASSE} pacotes · ${e.produtos[produto].horta} unidades`;
       else if (tipo === 'horta') detalhe.textContent = `${e.produtos[produto].horta} para colher`;
       else if (tipo === 'loja') detalhe.textContent = `${e.produtos[produto].prateleira} / ${PRODUTOS[produto].capacidadePrateleira}`;
     }

@@ -8,7 +8,7 @@ export const PLANTA_INICIAL = {
   portaProducao: { x: 3.6, z: -9.3, w: 3, d: 0.12 },
   cercaFundos: { minX: -10.3, maxX: 3.6, z: -25 },
   // Painel N1: tomate na faixa posterior esquerda, acima da parede do fundo.
-  // Referência visual: canteiro compacto, com oito plantas, atrás do escritório.
+  // Referência visual: canteiro compacto, com oito plantas, atrás da loja.
   fazendaTomate: {
     horta: { x: -9.2, z: -12.7 }, canteiro: { w: 3.6, d: 2.5 },
     coleta: { x: -9.2, z: -10.9 }
@@ -194,7 +194,30 @@ export function selecionarExpositorPosterior(ator, produtos, catalogo = { ovos: 
   })?.[0];
 }
 
-// N18: anexo atrás da loja, preservando o salão, suas paredes e a cozinha.
+// Uma única faixa de carga: entrada de ré e saída de frente para a rua.
+const EIXO_CARGA = PLANTA_INICIAL.terreno.x - PLANTA_INICIAL.terreno.w / 2 - 2;
+const BORDA_ESQUERDA_DEPOSITO = -15.5;
+const FUNDO_ESTACIONAMENTOS = -9.3;
+export const PLANTA_CARGA = {
+  piso: { x: EIXO_CARGA, z: -1.45, w: 4, d: 15.7 },
+  acesso: { x: EIXO_CARGA, z: 7.83, w: 4, d: 2.86 },
+  travessia: { x: EIXO_CARGA, z: 8.25, w: 4, d: 0.85 },
+  ligacao: { x: -12.4, z: -8.48, w: 7.2, d: 1.7 },
+  vaga: { x: EIXO_CARGA, z: -3.7, w: 2.6, d: 7.2 },
+  retirada: { x: EIXO_CARGA, z: -7.2 },
+  cabine: { x: EIXO_CARGA + 1.45, z: -1.95 },
+  contornoCabine: { x: EIXO_CARGA + 1.45, z: -7.2 },
+  placa: { x: EIXO_CARGA + 2.35, z: 5.4 },
+  guias: [
+    { x: EIXO_CARGA - 1.9, z: -1.45, w: 0.2, d: 15.7 },
+    { x: (EIXO_CARGA - 2 + BORDA_ESQUERDA_DEPOSITO) / 2, z: FUNDO_ESTACIONAMENTOS + 0.1,
+      w: BORDA_ESQUERDA_DEPOSITO - (EIXO_CARGA - 2), d: 0.2 },
+    { x: EIXO_CARGA + 1.9, z: 0.1, w: 0.2, d: 12.6 }
+  ]
+};
+export const obstaculosCarga = () => [...PLANTA_CARGA.guias, { ...PLANTA_CARGA.placa, w: 0.12, d: 0.12 }];
+
+// N18: amplia os fundos e a lateral esquerda sem deslocar a loja existente.
 export const PLANTA_EXPANSAO = {
   profundidade: 6,
   salao: { x: 8.9, z: -4.3, w: 24, d: 22 },
@@ -203,15 +226,16 @@ export const PLANTA_EXPANSAO = {
     // A cozinha já tem piso: acrescenta somente a faixa atrás dela.
     { x: 16.6, z: -14.8, w: 8.6, d: 1 }
   ],
-  terreno: { ...PLANTA_INICIAL.terreno, z: -8.5, d: 46 },
-  limites: { minX: -15.7, maxX: 22.5, minZ: -30.5, maxZ: 9 },
+  terreno: { x: -2, z: -8.5, w: 52, d: 46 },
+  limites: { minX: -27.7, maxX: 22.5, minZ: -30.5, maxZ: 9 },
+  limiteCamera: { minX: -28, maxX: 24, minZ: -31.5, maxZ: 14.5 },
   portaProducao: { ...PLANTA_INICIAL.portaProducao, z: -15.3 },
   bancadas: Object.fromEntries([['queijo', PLANTA_QUEIJO], ['geleia', PLANTA_GELEIA]].map(([id, p]) => [id, {
     x: p.horta.x,
     // Face posterior da bancada encostada na face interna da nova parede.
     z: -15.3 + 0.28 / 2 + p.curral.d / 2
   }])),
-  camera: { x: 5, z: -4.3, alturaDesktop: 41 },
+  camera: { x: 0, z: -4.3, alturaDesktop: 46 },
   portas: [
     { ...PLANTA_INICIAL.portaProducao, z: -15.3 }
   ]
@@ -248,11 +272,8 @@ export const PLANTA_DEPOSITO = {
   piso: { x: -9.3, z: -12.3, w: 12.4, d: 6 },
   porta: { x: -9.3, z: -9.3, w: 2.8, d: 0.28 },
   passagem: { x: -3.1, z: -12.6, w: 0.28, d: 1.8, h: 2.3 },
-  estantes: [-13.3, -9.3, -5.3].map((x, i) => ({
-    nome: `estante-deposito-${i + 1}`, x, z: -14.35, w: 3.1, d: 1.1, h: 2.5
-  })),
-  pallets: [-13.2, -5.4].map((x, i) => ({
-    nome: `pallet-deposito-${i + 1}`, x, z: -11, w: 1.8, d: 1.4, h: 1.4
+  estantes: [-13.65, -10.75, -7.85, -4.95].map((x, i) => ({
+    nome: `estante-deposito-${i + 1}`, x, z: -14.35, w: 2.1, d: 1.1, h: 2.5
   }))
 };
 
@@ -272,13 +293,13 @@ export function paredesDeposito() {
 export function pisoEstacionamento(expandida = false) {
   const piso = PLANTA_ESTACIONAMENTO.piso;
   if (!expandida) return piso;
-  const minX = piso.x - piso.w / 2, maxX = PLANTA_INICIAL.limites.minX;
+  const minX = PLANTA_CARGA.piso.x + PLANTA_CARGA.piso.w / 2, maxX = PLANTA_INICIAL.limites.minX;
   const minZ = PLANTA_DEPOSITO.porta.z, maxZ = piso.z + piso.d / 2;
   return { x: (minX + maxX) / 2, z: (minZ + maxZ) / 2, w: maxX - minX, d: maxZ - minZ };
 }
 
 export function obstaculosDeposito() {
-  return [...paredesDeposito(), ...PLANTA_DEPOSITO.estantes, ...PLANTA_DEPOSITO.pallets];
+  return [...paredesDeposito(), ...PLANTA_DEPOSITO.estantes];
 }
 
 export function volumePortaoDeposito() {
@@ -313,7 +334,7 @@ export const FOLHAS_PORTA_PRODUCAO = [-1, 1].map(lado => ({
 export function compartimentoHortifruti(id) {
   const indice = PRODUTOS_HORTIFRUTI.indexOf(id);
   if (indice < 0) return null;
-  const z = 2.7 - indice * 2.2;
+  const z = 1 - indice * 2.2;
   return {
     prateleira: { x: -2.1, z, w: 1.4, d: 2.2, movel: 'hortifruti' },
     reposicao: { x: -0.8, z },

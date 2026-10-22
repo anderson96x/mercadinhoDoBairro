@@ -1,6 +1,132 @@
 # Histórico de alterações
 
-## Versão atual: 0.52.0 — 2026-10-21
+## Versão atual: 0.58.0 — 2026-10-22
+
+- Adiciona Cereais no nível 20: caixas de nove unidades por R$ 405, venda por R$ 45 e quatro vagas exclusivas na terceira estante do depósito. Reutiliza pedidos, entrega, coleta e reposição dos importados.
+- Exibe caixas altas e retangulares em vermelho, amarelo, verde e azul na face oposta aos enlatados da primeira gôndola. As embalagens têm oval escuro com espiga dourada, marca frontal, faixa branca, vincos e painel lateral. A arte frontal dos importados aponta para o corredor.
+- Preenche as gôndolas de baixo para cima, com nove unidades por nível e quatro variedades nos quatro níveis, acompanhando o estoque real. Separa o alcance de reposição de cada face e reserva Higiene na segunda gôndola.
+- Identifica entregas de cereais com baú verde, logo nas duas laterais e uniforme verde do entregador. Pedidos mistos mantêm a identidade da primeira classe até o fim da viagem.
+- Corrige o bloqueio da chegada do caminhão quando um cliente aguarda sair e outra reserva ainda não recebeu um carro do tráfego.
+- Preserva saves existentes e documenta o desbloqueio. Validação acumulada: 289 testes e build aprovados, rotas e layout verificados, além de verificações de navegador em desktop/celular e WebGL/Canvas sem salvar imagens.
+
+## 0.57.6 — 2026-10-22
+
+- Remove do catálogo o resumo de pacotes no depósito e pedidos a caminho. Após finalizar uma importação, fecha o painel e usa o card de dicas para informar que o caminhão está a caminho.
+- Faz o caminhão aguardar 60 segundos antes de entrar no mapa e mostra um card persistente com contagem regressiva, barra de progresso e quantidade de pacotes. O aviso se posiciona acima do alerta bancário quando ambos aparecem juntos e desaparece sem uma mensagem adicional quando o veículo chega.
+- Bloqueia novos pedidos enquanto houver uma entrega pendente ou o caminhão ainda estiver no mapa. O motivo aparece centralizado no rodapé do catálogo, acima do resumo e do botão “Finalizar pedido”.
+- Validação: 285 testes automatizados e build de produção aprovados. Saves e progressão permanecem compatíveis; nenhuma captura foi gerada.
+
+## 0.57.5 — 2026-10-22
+
+- Simplifica o catálogo de importações: a regra geral informa uma única vez que cada classe tem uma estante para quatro pacotes de nove produtos, e o card de cada classe mostra apenas uma descrição dos itens e o preço de venda.
+- Validação: testes automatizados e build de produção aprovados. Saves e progressão permanecem compatíveis; nenhuma captura foi gerada.
+
+## 0.57.4 — 2026-10-22
+
+- Amplia os quatro hatchbacks para o mesmo comprimento e largura do sedã preto, preservando a carroceria hatch tanto no trânsito quanto no estacionamento de clientes.
+- Remodela o caminhão de importações com cabine construída em peças, interior visível, bancos, painel, volante, retrovisores, seis rodas e luzes funcionais de direção, freio e ré.
+- Identifica a carga de enlatados pela cor da estante do depósito, aplicada ao baú e ao uniforme do entregador, e usa nas duas laterais um logotipo com lata vertical, aros metálicos e rótulo de tomate.
+- Corrige a porta da cabine para o lado do percurso do entregador, com banco e volante alinhados ao motorista. A porta abre por completo antes de ele sair, permanece aberta durante a passagem e fecha antes de ele seguir ao baú; o processo inverso ocorre ao embarcar.
+- Amplia os testes para cobrir o porte dos hatchbacks, interior e sinalização do caminhão, identidade da categoria, orientação da porta e sequência de desembarque. Os 284 testes e o build de produção foram aprovados; saves e progressão permanecem compatíveis. Nenhuma captura foi gerada.
+
+## 0.57.3 — 2026-10-21
+
+- Mantém todo o caminhão sobre o asfalto desde o primeiro quadro até desaparecer, usando as bordas reais da rua expandida como pontos de entrada e saída.
+- Faz o entregador caminhar até o baú, abrir as portas, descarregar, fechar as portas e só então retornar à cabine; o caminhão continua esperando o fechamento completo antes de partir.
+- Corrige os braços do entregador ao posicionar mãos, cotovelos e ombros pelo sistema articulado do NPC ao carregar caixas e operar as portas.
+- Corrige a espera infinita na saída com tráfego contínuo: a entrega reserva as duas faixas antes de aguardar os carros existentes saírem, preservando a prioridade de manobras de clientes e serviços bancários já em espera. Libera a rua ao terminar.
+- Substitui o bloco sólido do baú por laterais, teto, parede frontal e piso, deixando uma abertura real atrás das portas. As folhas agora giram para fora, tornando a abertura e o fechamento visíveis.
+- Seleciona explicitamente um NPC masculino adulto de porte regular para o entregador, com uniforme próprio.
+- Amplia as verificações para usar a coordenação real do tráfego, confirmar que o caminhão deixa o mapa e conferir a abertura física do baú. Capturas de diagnóstico são opcionais e dependem de autorização do usuário.
+- Validação: 283 testes e build de produção aprovados; navegador conferido em desktop/celular e WebGL/Canvas, com captura autorizada para inspecionar as portas e o entregador. Saves e pedidos preservados.
+
+## 0.57.1 — 2026-10-21
+
+- Corrige o encerramento das entregas: após descarregar, o trabalhador retorna à cabine, o baú fecha completamente e o caminhão inicia a saída, sem ficar preso no pátio.
+- Anima as duas portas traseiras do baú, abrindo antes de retirar a primeira caixa e fechando antes de o veículo partir.
+- Reutiliza um modelo de cliente como entregador, com uniforme próprio, caminhada completa, balanço corporal e movimentos de pegar, carregar e elevar as caixas nas estantes.
+- Validação: 281 testes, build de produção e rotas até N19 aprovados. Verificação visual automatizada não executada porque o acesso externo ao Edge não foi autorizado; nenhuma imagem ou planta SVG foi gerada.
+
+## 0.57.0 — 2026-10-21
+
+- Organiza importações por classe de produto: cada classe tem uma estante exclusiva com quatro pacotes de nove unidades. Caixas guardadas e pedidos a caminho compartilham o limite; pedidos mistos são validados integralmente antes da cobrança.
+- Substitui as três estantes do depósito por quatro estantes menores, com dois níveis de duas caixas cada. Enlatados usa a primeira estante, identificada por cor, símbolo e etiqueta, com coleta e entrega no mesmo local. As duas gôndolas reservam duas classes cada; Higiene fica prevista, sem novos produtos disponíveis.
+- O catálogo informa classe, estante, ocupação e caixas a caminho, limitando os controles de quantidade ao espaço da classe. Atualiza ajuda, orientação e documentação.
+- Preserva saves antigos, inclusive caixas parciais e pedidos pagos acima do novo limite: o excedente entregue fica em reserva e ocupa vagas liberadas; entregas antigas aguardam espaço sem perder mercadoria nem cobrar novamente.
+- Validação: 279 testes, build de produção e rotas até N19 aprovados. Verificação de navegador ampliada para os limites por classe, mas não concluída nesta alteração: a conexão com o Edge falhou no sandbox e a execução externa não foi autorizada. Nenhuma imagem ou planta SVG foi gerada.
+
+## 0.56.2 — 2026-10-21
+
+- Define que as prévias são fornecidas manualmente pelo usuário e que plantas SVG só são geradas mediante solicitação explícita.
+- Remove as 109 imagens de prévia e suas referências na documentação.
+- Mantém as verificações de entregas no navegador sem capturar ou salvar imagens.
+- Validação: 275 testes e build de produção aprovados; verificações de entregas em desktop/celular e WebGL/Canvas concluídas sem salvar imagens. Nenhuma referência aos arquivos removidos permanece na documentação.
+
+## 0.56.1 — 2026-10-21
+
+- Reduz o pátio e seu acesso de duas faixas para uma faixa de 4 u, com uma única vaga longitudinal de 2,6 × 7,2 u. O piso encosta no estacionamento de clientes, termina alinhado à fachada do depósito e mantém somente as guias entre as áreas.
+- Move a vaga em direção à rua e usa três linhas, com a entrada aberta para comportar caminhões maiores no futuro.
+- O caminhão surge à esquerda da rua, avança além do acesso, para para engatar a ré e recua pela curva até a vaga. A cabine fica voltada para a rua e a saída usa a mesma faixa, de frente.
+- Ajusta o caminho do entregador ao baú voltado para os fundos, inclui os retrovisores na largura de colisão e coordena as duas faixas da rua durante a manobra. Preserva saves, pedidos e caixas existentes.
+- Adiciona uma faixa de pedestres no acesso do caminhão. Após a expansão, pedestres nascem e saem na nova extremidade esquerda da calçada e usam a travessia, inclusive após restaurar um save durante assaltos.
+- Atualiza a planta N18 e a documentação da manobra, descarga e travessia em desktop e celular, com WebGL e Canvas.
+- Validação: 275 testes, build de produção e rotas até N19 aprovados. Pedestres e caminhão completam suas rotas durante chegada e partida sem travar.
+
+## 0.56.0 — 2026-10-21
+
+- Inclui na compra da expansão do N18 mais 12 u à esquerda do mapa, ampliando o terreno para 52 × 46 u e acompanhando rua, calçada, tráfego, câmera e limites de navegação/salvamento.
+- Constrói um pátio exclusivo para caminhões, com acesso próprio pela rua, circuito de entrada/saída, vaga de carga demarcada, setas, placa com pictograma e guias de separação. Um caminho pavimentado liga o pátio ao depósito.
+- Transfere todas as entregas para o circuito privativo. O caminhão não usa as seis vagas nem aguarda o estacionamento esvaziar; clientes continuam estacionando durante a descarga. Somente o trecho compartilhado da rua coordena manobras e serviços do banco.
+- Remove a exigência de comprar o estacionamento de clientes para importar produtos. Gôndola e expansão com depósito/pátio continuam necessárias, e o limite de 27 pacotes permanece.
+- Saves com expansão comprada recebem o terreno e o acesso exclusivos automaticamente, preservando pedidos, caixas, compras, dinheiro e estoques. Atualiza planta N18 e documentação de verificação.
+- Validação: 269 testes passaram, incluindo pátio, entregas, importação, câmera e estacionamento; build e rotas até N19 aprovados. Desktop e celular emulado de 390 px conferidos no Edge com WebGL e Canvas.
+
+## 0.55.0 — 2026-10-21
+
+- Substitui a importação instantânea por entregas físicas: cada pedido chama um caminhão baú branco de três eixos, que entra pela rua, estaciona junto ao depósito e retorna após a descarga.
+- O entregador sai da cabine, retira uma caixa por vez do baú e caminha até as estantes. As 27 posições começam vazias e exibem somente caixas já guardadas. Caixas parcialmente abertas ocupam posição até o último produto ser retirado.
+- Pedidos exigem gôndola, expansão e estacionamento. O catálogo cobra o pedido completo de uma vez e reserva posições para caixas pendentes; estoque entregue mais encomendas nunca ultrapassa 27 pacotes de 9 enlatados.
+- Jogador e repositor coletam enlatados no depósito e abastecem a primeira gôndola, que mantém 36 unidades. O catálogo informa ocupação, unidades disponíveis e caixas a caminho; ajuda e objetivos acompanham o novo fluxo.
+- Coordena chegada e saída com os carros dos clientes, pedestres, trânsito e serviços do banco. A reserva aguarda os carros existentes saírem e temporariamente encaminha novos compradores a pé. Pausa congela a entrega.
+- Preserva enlatados e progresso dos saves anteriores. Caixas entregues, caixas parcialmente abertas e pedidos pagos são salvos; viagens interrompidas retomam com as caixas restantes, sem duplicação nem nova cobrança.
+- Validação: 264 testes passaram (incluindo 14 de entrega/importação), build e rotas até N19. Conferência no Edge em desktop e celular emulado de 390 px, com WebGL e Canvas.
+
+## 0.54.3 — 2026-10-21
+
+- Remove os dois pallets com caixas do piso do depósito e suas colisões, liberando o espaço diante das estantes.
+- Atualiza a planta e a documentação do depósito para refletir a área livre.
+- Validação: teste focado do depósito, verificação de layout, suíte completa e build de produção passaram.
+
+## 0.54.2 — 2026-10-21
+
+- Adiciona às ferramentas DEV um botão para esvaziar todas as prateleiras e reiniciar clientes, cestas, carros e repositor.
+- Preserva os produtos liberados e apresentados para permitir novos testes de reposição e compra sem alterar a progressão.
+- Validação: teste focado da simulação e build de produção passaram.
+
+## 0.54.1 — 2026-10-21
+
+- Mostra os enlatados na prateleira superior em quatro grupos de três latas. Cada cor representa uma das quatro caixas compradas.
+- Repete três latas azuis em cada prateleira inferior quando há estoque, preenchendo visualmente a gôndola sem alterar a capacidade real de 36 unidades ou a economia.
+- Validação: 4 testes focados de importação e build de produção passaram.
+
+## 0.54.0 — 2026-10-21
+
+- Libera no nível 19 o botão **Importar produtos** no menu do celular, imediatamente abaixo de **Melhorias**, abrindo um catálogo próprio após a instalação de ao menos uma prateleira de importados.
+- Cada caixa custa R$ 270 e acrescenta 9 enlatados diretamente à primeira gôndola; cada unidade é vendida por R$ 30 e o expositor comporta até 36 unidades.
+- O catálogo mostra o estoque restante e quantas caixas cabem no saldo e na gôndola. Cada produto tem seu próprio contador, enquanto um único botão no rodapé finaliza o pedido combinado, preparando a tela para novas importações.
+- Inclui modelo próprio de lata, pedidos de clientes, persistência do estoque e bloqueio de novas caixas quando não há espaço para nove unidades.
+- Validação: 252 testes, build de produção e rotas de compra até o nível 19 passaram.
+
+## 0.53.0 — 2026-10-21
+
+- Remove completamente o escritório, incluindo paredes, porta, piso, mesa, computador, cadeira, estante, colisões, animações e interação de sentar.
+- Adiciona ao lado do painel superior um botão em formato de celular que abre as opções do mercado de qualquer lugar, incluindo melhorias, personalização, abertura da loja e depósito bancário.
+- Uniformiza o botão do celular com o tamanho e o estilo dos demais botões de ícone do cabeçalho, como o botão de ajuda.
+- Reposiciona a banca completa de hortifruti na parede lateral, mantendo seções, interações e colisões alinhadas.
+- Atualiza objetivos, ajuda, documentação, plantas e testes para orientar o gerenciamento pelo celular. Saves existentes continuam compatíveis.
+- Validação: 249 testes, build e verificação de layout passaram.
+
+## 0.52.0 — 2026-10-21
 
 - Inclui na compra da expansão do nível 18 um depósito atrás do estacionamento, com três estantes metálicas carregadas de caixas e dois pallets sobre piso de concreto.
 - Amplia o asfalto até a fachada inteira do depósito e a lateral da loja, ligando os dois espaços sem alterar as seis vagas, a entrada pela rua ou os trajetos dos carros. Antes da compra da expansão, o estacionamento mantém o formato original.
@@ -8,7 +134,7 @@
 - Instala uma única porta de enrolar voltada para o estacionamento. Suas 18 lâminas descem até a soleira ao fechar a loja, recolhem para a caixa superior ao abrir e congelam durante a pausa.
 - Bloqueia o acesso externo quando o portão está fechado e mantém livre a passagem interna. Paredes, estantes, pallets e pacotes possuem colisões próprias, com corredores navegáveis.
 - Mantém custo, requisitos, estoques e receitas; partidas com a expansão já comprada recebem todo o conjunto ao carregar, sem novos campos salvos. Atualiza a planta N18 e os desbloqueios.
-- Validação: 254 testes, build e rotas até N18 passaram, incluindo compra, persistência, colisões, travessia interna e acesso pelo estacionamento. Desktop e celular foram conferidos no Edge com WebGL e Canvas; capturas em `docs/previews/deposito-n18-*.png`, `docs/previews/estacionamento-deposito-*.png`, `docs/previews/passagem-deposito-*.png` e `docs/previews/portao-deposito-fechado-*.png`.
+- Validação: 254 testes, build e rotas até N18 passaram, incluindo compra, persistência, colisões, travessia interna e acesso pelo estacionamento. Desktop e celular foram conferidos no Edge com WebGL e Canvas.
 
 ## 0.51.0 — 2026-10-21
 
@@ -18,7 +144,7 @@
 - Encosta as duas bancadas da cozinha na face interna da nova parede dos fundos, acompanha suas posições com os pontos de entrega de ingredientes e coleta e remove a mureta atrás delas, incluindo sua colisão.
 - Preserva expositores, receitas, estoques, ingredientes, progresso e saves anteriores; partidas sem a compra mantêm sua planta.
 - Atualiza os desbloqueios, a planta N18 e a orientação sobre importados, que permanecem para uma etapa futura.
-- Validação: 246 testes, build e rotas até N18 passaram, incluindo compra, preservação da planta, posicionamento das bancadas, colisões, entrega/coleta, reposição e acesso à fazenda. Compra pelo painel e recarga conferidas no Edge; desktop e celular verificados com WebGL e Canvas, sem exceções JavaScript. Capturas em `docs/previews/expansao-n18-*.png` e `docs/previews/paredes-cozinha-n18-desktop.png`.
+- Validação: 246 testes, build e rotas até N18 passaram, incluindo compra, preservação da planta, posicionamento das bancadas, colisões, entrega/coleta, reposição e acesso à fazenda. Compra pelo painel e recarga conferidas no Edge; desktop e celular verificados com WebGL e Canvas, sem exceções JavaScript.
 
 ## 0.50.4 — 2026-10-21
 
@@ -31,7 +157,7 @@
 - Remodela os irrigadores com base fixa, mangueira, coluna metálica e cabeçote giratório de latão com dois bicos.
 - Substitui as gotas fixas por jatos de gotas em arco e respingos na terra. A água acompanha a direção do lançamento, respeita os limites de cada canteiro e congela com a pausa.
 - Preserva o efeito da melhoria no crescimento e os salvamentos existentes.
-- Validação: 237 testes e build passaram; quatro hortas conferidas em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/irrigador-*.png`.
+- Validação: 237 testes e build passaram; quatro hortas conferidas em desktop e celular com WebGL e Canvas.
 
 ## 0.50.2 — 2026-10-19
 
@@ -57,12 +183,12 @@
 
 - Restaura o ritmo dos trajetos e os gestos originais dos padeiros durante o trabalho, mantendo a espera dentro da padaria.
 - Exibe as exclamações somente quando o trigo da padaria e a vitrine de pães estão vazios ao mesmo tempo. Preserva saves e regras de produção.
-- Validação: 235 testes e build passaram; trabalho e alertas conferidos em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/padeiros-original-*.png`.
+- Validação: 235 testes e build passaram; trabalho e alertas conferidos em desktop e celular com WebGL e Canvas.
 
 ## 0.49.2 — 2026-10-19
 
 - Move os pontos de espera dos dois padeiros para dentro da padaria, atrás da vitrine e voltados às prateleiras centrais. Preserva os alertas de trigo e o movimento das cabeças em repouso.
-- Validação: 234 testes e build passaram; posições conferidas em desktop e celular com WebGL e Canvas. Capturas em `docs/previews/padeiros-interior-*.png`.
+- Validação: 234 testes e build passaram; posições conferidas em desktop e celular com WebGL e Canvas.
 
 ## 0.49.1 — 2026-10-19
 
@@ -70,7 +196,7 @@
 - Exibe uma exclamação sobre cada padeiro quando o trigo acaba; a farinha restante ainda pode terminar de assar.
 - Diferencia gestos de moagem, uso do forno, transporte e exposição de pães; corrige etapas paradas interpretadas como caminhada e anima máquinas somente quando há produção possível.
 - Usa uma grade mais fina na passagem de serviço dos padeiros para voltar à vitrine e retomar o trabalho sem atravessar balcões. Mantém saves e regras de produção existentes.
-- Validação: 234 testes, rotas até o nível 17 e build passaram; estados sem trigo, em trabalho e com vitrine cheia conferidos no Edge em desktop e celular, com WebGL e Canvas. Capturas em `docs/previews/padeiros-*.png`.
+- Validação: 234 testes, rotas até o nível 17 e build passaram; estados sem trigo, em trabalho e com vitrine cheia conferidos no Edge em desktop e celular, com WebGL e Canvas.
 
 ## 0.49.0 — 2026-10-19
 
@@ -83,7 +209,7 @@
 - Libera uma melhoria de dois níveis no nível 17; cada compra de R$ 1.000 instala uma prateleira metálica de dois lados pelo escritório, na aba Mercado.
 - Instala dois móveis vazios idênticos de 5,775 unidades nos corredores centrais, alinhados pela frente com o balcão da padaria e terminando juntos antes dos expositores do fundo. Mantém colisão por compra, espaço para a fila e acesso aos produtos existentes. A importação fica planejada para o nível 18, sem novos produtos nesta etapa.
 - Preserva saves antigos e o progresso parcial do formato provisório com duas opções; acrescenta testes de compra, saldo, limite, salvamento, instalação e circulação, além da planta N17.
-- Validação: 230 testes, rotas até o nível 17 e build passaram. Compras e visual conferidos no Edge em desktop e celular, com WebGL e Canvas, sem exceções JavaScript; capturas em `docs/previews/prateleiras-importados-n17-*.png`.
+- Validação: 230 testes, rotas até o nível 17 e build passaram. Compras e visual conferidos no Edge em desktop e celular, com WebGL e Canvas, sem exceções JavaScript.
 
 ## 0.47.0 — 2026-10-16
 
@@ -91,7 +217,7 @@
 - Reúne queijaria e cozinha de geleias nessa sala, mantendo compras, receitas e estoques existentes.
 - Remove a parede curta esquerda e aproxima as duas máquinas da parede baixa do fundo, ampliando a circulação na frente.
 - Compartilha a planta entre visual e colisões; atualiza a migração de posições e verifica acesso com qualquer uma das oficinas comprada primeiro.
-- Validação: 222 testes, rotas de todos os níveis e build passaram; prévia no Edge/WebGL sem erros JavaScript em `docs/previews/sala-oficinas.png`.
+- Validação: 222 testes, rotas de todos os níveis e build passaram; verificação no Edge/WebGL sem erros JavaScript.
 
 ## 0.46.3 — 2026-10-16
 

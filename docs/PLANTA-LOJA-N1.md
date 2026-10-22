@@ -42,4 +42,4 @@ As seções contíguas formam um único volume sólido. Cada produto mantém seu
 
 Para manter os níveis posteriores utilizáveis nesta entrega, a primeira extensão lateral foi ajustada à nova borda direita e as paredes posteriores foram alinhadas à profundidade de 16 u. O ponto de coleta da geleia passou para a lateral acessível da oficina. O trigo foi afastado para `(-8,8; -17,6)`, com coleta em `(-8,8; -15,25)`, para manter a separação do canteiro de tomates mais largo. A ampliação somente no N9 e a remoção do anexo artesanal **ainda não foram implementadas**; pertencem às próximas etapas.
 
-Regenerar esta planta com `node scripts/render-floor-plan.mjs`. Os SVGs V2 e as capturas anteriores ficam como referências históricas. Evidências atuais em [VERIFICACAO.md](VERIFICACAO.md).
+Gerar plantas técnicas com `node scripts/render-floor-plan.mjs` somente quando solicitado explicitamente pelo usuário. Os SVGs V2 ficam como referências históricas. Evidências atuais em [VERIFICACAO.md](VERIFICACAO.md).

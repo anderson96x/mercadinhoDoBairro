@@ -3,17 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
-import { PAREDES_ESCRITORIO, POSICAO_PORTA_ESCRITORIO, ANGULOS_PORTAS_ENTRADA, posicaoPortaEscritorio, angulosPortasEntrada } from '../src/jogo/bairro.js';
-
-test('paredes do escritorio ficam a meia altura', () => {
-  assert.ok(PAREDES_ESCRITORIO.every(parede => parede.h === 1.45));
-});
-
-test('porta do escritorio desliza para dentro da parede lateral', () => {
-  assert.equal(posicaoPortaEscritorio(0), POSICAO_PORTA_ESCRITORIO.fechada);
-  assert.equal(posicaoPortaEscritorio(1), POSICAO_PORTA_ESCRITORIO.aberta);
-  assert.ok(posicaoPortaEscritorio(0.5) < POSICAO_PORTA_ESCRITORIO.fechada);
-});
+import { ANGULOS_PORTAS_ENTRADA, angulosPortasEntrada } from '../src/jogo/bairro.js';
 
 test('portas da entrada giram entre os ângulos aberta e fechada', () => {
   assert.deepEqual(angulosPortasEntrada(0), ANGULOS_PORTAS_ENTRADA.fechadas);

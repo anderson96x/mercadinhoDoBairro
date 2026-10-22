@@ -10,7 +10,7 @@ Mercadinho do Bairro is a Portuguese browser game built with JavaScript ES modul
 - `tests/`: automated behavior and regression tests.
 - `public/`: static assets. Most game models are generated in code.
 - `scripts/`: layout checks, floor-plan generation, and progression analysis.
-- `docs/`: gameplay specifications, floor plans, verification notes, and screenshots in `previews/`.
+- `docs/`: gameplay specifications, floor plans, and verification notes.
 
 ## Build, Test, and Development Commands
 
@@ -23,7 +23,7 @@ Use Node.js 22.12+ as recommended by the README.
 - `npm test`: run all `tests/*.test.js` files.
 - `node --test tests/banco.test.js`: run one focused suite.
 - `node scripts/check-store-layout.mjs`: validate store spacing and navigation routes.
-- `node scripts/render-floor-plan.mjs`: regenerate floor-plan SVGs after geometry changes.
+- `node scripts/render-floor-plan.mjs`: generate floor-plan SVGs only when explicitly requested by the user.
 
 ## Coding Style & Naming Conventions
 
@@ -32,6 +32,8 @@ Follow existing JavaScript style: two-space indentation, single quotes, semicolo
 ## Testing Guidelines
 
 Tests use `node:test` and `node:assert/strict`, with descriptive Portuguese test names in `<feature>.test.js`. No coverage threshold is configured. Add regression cases for changed gameplay, purchase validation, navigation, and save migration as applicable. Run `npm test` and `npm run build` for code changes; also check routes after geometry edits. Verify visual changes on desktop and mobile layouts, including WebGL and Canvas fallback when affected.
+
+The user supplies previews manually. Do not create, capture, regenerate, or save previews or screenshots during development, including PNG or SVG previews. Do not require preview images in documentation or PRs. Run browser checks without saving images, and record validation results as text. Generate technical floor-plan SVGs only when explicitly requested by the user.
 
 ## Architecture & Save Compatibility
 
@@ -51,4 +53,4 @@ When bumping the version, keep `package.json`, both app-version entries in `pack
 
 ## Commit & Pull Request Guidelines
 
-History uses prefixes such as `feat:`, `fix:`, `chore:`, `docs:`, and `style:` with short English summaries. Keep commits focused. PRs should explain behavior changes, link relevant issues, report validation results, and include desktop/mobile screenshots for visual changes. Mention save compatibility or progression impacts.
+History uses prefixes such as `feat:`, `fix:`, `chore:`, `docs:`, and `style:` with short English summaries. Keep commits focused. PRs should explain behavior changes, link relevant issues, and report validation results. Mention save compatibility or progression impacts.
