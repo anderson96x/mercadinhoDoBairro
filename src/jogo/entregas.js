@@ -1,28 +1,59 @@
 import { PLANTA_DEPOSITO, PLANTA_CARGA } from './planta.js';
+import { PRODUTOS } from './configuracao.js';
+import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes-produtos.js';
 
-export const CAPACIDADE_DEPOSITO = 27;
-export const UNIDADES_PACOTE = 9;
+export { UNIDADES_PACOTE } from './classes-produtos.js';
+export const CAPACIDADE_DEPOSITO = PLANTA_DEPOSITO.estantes.length * PACOTES_POR_CLASSE;
 export const ENTREGA = { comprimento: 5.2, largura: 2.12, velocidade: 2.6, velocidadeRe: 1.5,
   estacionamento: { x: PLANTA_CARGA.vaga.x, z: PLANTA_CARGA.vaga.z }, retirada: PLANTA_CARGA.retirada };
-export const estadoDeposito = () => ({ pacotes: [], pedidos: [], proximoId: 1 });
-export const pacotesPendentes = deposito => deposito.pedidos.reduce((total, pedido) => total + pedido.pacotes.length, 0);
-export const vagasDeposito = deposito => CAPACIDADE_DEPOSITO - deposito.pacotes.length - pacotesPendentes(deposito);
+export const estadoDeposito = () => ({ pacotes: [], excedentes: [], pedidos: [], proximoId: 1 });
+export const classeProduto = produto => PRODUTOS[produto]?.classe;
+export const pacotesDaClasse = (deposito, classe) => deposito.pacotes.filter(p => classeProduto(p.produto) === classe).length;
+export const pacotesPendentes = (deposito, classe) => deposito.pedidos.reduce((total, pedido) => total + pedido.pacotes.filter(p => !classe || classeProduto(p) === classe).length, 0);
+export const excedentesDaClasse = (deposito, classe) => (deposito.excedentes || []).filter(p => classeProduto(p.produto) === classe).length;
+export function vagasDeposito(deposito, classe) {
+  if (!classe) return Object.keys(CLASSES_PRODUTOS).reduce((total, id) => total + vagasDeposito(deposito, id), 0);
+  if (!CLASSES_PRODUTOS[classe]) return 0;
+  return Math.max(0, PACOTES_POR_CLASSE - pacotesDaClasse(deposito, classe) - pacotesPendentes(deposito, classe) - excedentesDaClasse(deposito, classe));
+}
+export function slotLivre(deposito, produto) {
+  const classe = CLASSES_PRODUTOS[classeProduto(produto)];
+  if (!classe) return undefined;
+  return Array.from({ length: PACOTES_POR_CLASSE }, (_, i) => classe.estante * PACOTES_POR_CLASSE + i)
+    .find(slot => !deposito.pacotes.some(p => p.slot === slot));
+}
+export function acomodarExcedentes(deposito) {
+  deposito.excedentes = (deposito.excedentes || []).filter(p => {
+    const slot = slotLivre(deposito, p.produto);
+    if (slot === undefined) return true;
+    deposito.pacotes.push({ ...p, slot });
+    return false;
+  });
+}
 export function posicaoPacote(slot) {
-  const estante = PLANTA_DEPOSITO.estantes[Math.floor(slot / 9)];
-  return { x: estante.x + (slot % 3 - 1) * 0.94, y: 0.23 + [0.195, 0.995, 1.795][Math.floor(slot % 9 / 3)], z: estante.z };
+  const estante = PLANTA_DEPOSITO.estantes[Math.floor(slot / PACOTES_POR_CLASSE)];
+  return { x: estante.x + (slot % 2 - 0.5) * 0.94, y: 0.23 + [0.595, 1.595][Math.floor(slot % PACOTES_POR_CLASSE / 2)], z: estante.z };
 }
 export function validarDeposito(dados, produtos) {
   const base = estadoDeposito();
-  const valido = id => produtos[id]?.liberado && id === 'enlatado';
-  for (const p of Array.isArray(dados?.pacotes) ? dados.pacotes.slice(0, 27) : []) {
-    if (!p || !valido(p.produto) || !Number.isInteger(p.unidades) || p.unidades < 1 || p.unidades > 9) continue;
-    const slot = Number.isInteger(p.slot) && p.slot >= 0 && p.slot < 27 && !base.pacotes.some(item => item.slot === p.slot)
-      ? p.slot : Array.from({ length: 27 }, (_, i) => i).find(i => !base.pacotes.some(item => item.slot === i));
-    base.pacotes.push({ produto: p.produto, unidades: p.unidades, slot });
+  const valido = id => produtos[id]?.liberado && PRODUTOS[id]?.origem === 'importado' && !!CLASSES_PRODUTOS[classeProduto(id)];
+  // O formato antigo permitia 27 caixas. Preserve o excedente pago, sem ocupar outra classe.
+  const limiteSalvo = Math.max(27, CAPACIDADE_DEPOSITO);
+  const lista = valor => Array.isArray(valor) ? valor.slice(0, limiteSalvo) : [];
+  let restantes = limiteSalvo;
+  for (const p of [...lista(dados?.pacotes), ...lista(dados?.excedentes)]) {
+    if (!restantes || !p || !valido(p.produto) || !Number.isInteger(p.unidades) || p.unidades < 1 || p.unidades > UNIDADES_PACOTE) continue;
+    const inicio = CLASSES_PRODUTOS[classeProduto(p.produto)].estante * PACOTES_POR_CLASSE;
+    const slot = Number.isInteger(p.slot) && p.slot >= inicio && p.slot < inicio + PACOTES_POR_CLASSE && !base.pacotes.some(item => item.slot === p.slot)
+      ? p.slot : slotLivre(base, p.produto);
+    if (slot === undefined) base.excedentes.push({ produto: p.produto, unidades: p.unidades });
+    else base.pacotes.push({ produto: p.produto, unidades: p.unidades, slot });
+    restantes--;
   }
-  for (const pedido of Array.isArray(dados?.pedidos) ? dados.pedidos.slice(0, 27) : []) {
-    const pacotes = (Array.isArray(pedido?.pacotes) ? pedido.pacotes : []).filter(valido).slice(0, vagasDeposito(base));
+  for (const pedido of lista(dados?.pedidos)) {
+    const pacotes = lista(pedido?.pacotes).filter(valido).slice(0, restantes);
     if (pacotes.length) base.pedidos.push({ id: base.proximoId++, pacotes });
+    restantes -= pacotes.length;
   }
   return base;
 }
@@ -123,11 +154,13 @@ export class Entregas {
     if (c.fase === 'retirar') {
       c.tempo += dt;
       if (c.tempo < 0.7) return;
-      c.slot = Array.from({ length: 27 }, (_, i) => i).find(i => !deposito.pacotes.some(p => p.slot === i));
+      c.slot = slotLivre(deposito, pedido.pacotes[0]);
+      // Pedidos de saves antigos podem exceder o limite novo: aguardam uma vaga da classe.
+      if (c.slot === undefined) return;
       ator.carregando = true; c.fase = 'levar'; c.etapa = 0;
     }
     if (c.fase === 'levar' || c.fase === 'voltar') {
-      const estante = PLANTA_DEPOSITO.estantes[Math.floor(c.slot / 9)];
+      const estante = PLANTA_DEPOSITO.estantes[Math.floor(c.slot / PACOTES_POR_CLASSE)];
       const pontos = [
         PLANTA_CARGA.contornoCabine, { x: PLANTA_CARGA.contornoCabine.x, z: -8.45 }, { x: PLANTA_DEPOSITO.porta.x, z: -8.45 },
         { x: PLANTA_DEPOSITO.porta.x, z: -10.3 }, { x: estante.x, z: -12.9 }
@@ -155,7 +188,7 @@ export class Entregas {
       if (c.tempo < 1.2) return;
       deposito.pedidos.shift();
       c.entregador = null; c.fase = 'partindo'; c.distancia = 0; c.re = false;
-      sim.emitir('entregaConcluida', { texto: 'Entrega concluída! Retire enlatados no depósito para abastecer a gôndola.' });
+      sim.emitir('entregaConcluida', { texto: 'Entrega concluída! Retire os produtos na estante da classe para abastecer a gôndola.' });
     }
   }
 }

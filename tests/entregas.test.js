@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
-import { CONFIG } from '../src/jogo/configuracao.js';
-import { ROTAS_ENTREGA, ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes } from '../src/jogo/entregas.js';
+import { CONFIG, PRODUTOS, MELHORIAS } from '../src/jogo/configuracao.js';
+import { ROTAS_ENTREGA, ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
 import { criarCaminhaoEntrega, EntregasVisual } from '../src/jogo/entregas-visual.js';
 import { OBSTACULOS_ESTACIONAMENTO, paredesDeposito, PLANTA_ESTACIONAMENTO, PLANTA_DEPOSITO, PLANTA_CARGA, PLANTA_EXPANSAO, obstaculosCarga } from '../src/jogo/planta.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
@@ -22,13 +22,15 @@ function entregar(sim, ate = () => !sim.estado.deposito.pedidos.length && !sim.e
 
 test('pedido combinado cobra uma vez, reserva caixas e rejeita excesso sem compra parcial', () => {
   const sim = loja(), saldo = sim.estado.dinheiro;
-  assert.equal(sim.encomendarImportacoes({ importarProdutos: 27 }).sucesso, true);
-  assert.equal(sim.estado.dinheiro, saldo - 27 * 270);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 5 }).sucesso, false);
+  assert.equal(sim.estado.dinheiro, saldo);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 4 }).sucesso, true);
+  assert.equal(sim.estado.dinheiro, saldo - 4 * 270);
   assert.equal(sim.estado.deposito.pedidos.length, 1);
-  assert.equal(pacotesPendentes(sim.estado.deposito), 27);
-  assert.equal(vagasDeposito(sim.estado.deposito), 0);
+  assert.equal(pacotesPendentes(sim.estado.deposito), 4);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
   const antes = structuredClone(sim.estado);
-  for (const quantidade of [1, 28, -1, 1.5, NaN, Infinity]) assert.equal(sim.encomendarImportacoes({ importarProdutos: quantidade }).sucesso, false);
+  for (const quantidade of [1, 5, -1, 1.5, NaN, Infinity]) assert.equal(sim.encomendarImportacoes({ importarProdutos: quantidade }).sucesso, false);
   assert.equal(sim.encomendarImportacoes({ inexistente: 1 }).sucesso, false);
   assert.deepEqual(sim.estado, antes);
 });
@@ -36,31 +38,33 @@ test('pedido combinado cobra uma vez, reserva caixas e rejeita excesso sem compr
 test('caminhão estaciona e entregador guarda exatamente as caixas pedidas; cada pedido tem sua viagem', () => {
   const sim = loja();
   sim.encomendarImportacoes({ importarProdutos: 3 });
-  sim.encomendarImportacoes({ importarProdutos: 2 });
+  sim.encomendarImportacoes({ importarProdutos: 1 });
   entregar(sim);
-  assert.equal(sim.estado.deposito.pacotes.length, 5);
-  assert.equal(sim.estado.produtos.enlatado.horta, 45);
+  assert.equal(sim.estado.deposito.pacotes.length, 4);
+  assert.equal(sim.estado.produtos.enlatado.horta, 36);
   assert.equal(sim.estado.produtos.enlatado.prateleira, 0);
-  assert.equal(new Set(sim.estado.deposito.pacotes.map(p => p.slot)).size, 5);
+  assert.equal(new Set(sim.estado.deposito.pacotes.map(p => p.slot)).size, 4);
   const eventos = sim.consumirEventos();
   assert.equal(eventos.filter(e => e.tipo === 'entregaChegou').length, 2);
   assert.equal(eventos.filter(e => e.tipo === 'entregaConcluida').length, 2);
 });
 
-test('27 caixas ocupam as três estantes e só liberam posição quando esvaziadas', () => {
-  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 27 });
+test('quatro caixas ocupam somente a estante da classe e só liberam posição quando esvaziadas', () => {
+  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 4 });
   entregar(sim);
-  assert.equal(sim.estado.produtos.enlatado.horta, 243);
-  assert.equal(sim.estado.deposito.pacotes.length, 27);
-  assert.equal(vagasDeposito(sim.estado.deposito), 0);
+  assert.equal(sim.estado.produtos.enlatado.horta, 36);
+  assert.equal(sim.estado.deposito.pacotes.length, 4);
+  assert.deepEqual(sim.estado.deposito.pacotes.map(p => p.slot), [0, 1, 2, 3]);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'higiene'), 4, 'outra classe vazia não aumenta a capacidade de enlatados');
+  assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
   for (let i = 0; i < 8; i++) sim.retirarProdutoDeposito('enlatado');
-  assert.equal(vagasDeposito(sim.estado.deposito), 0);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
   sim.retirarProdutoDeposito('enlatado');
-  assert.equal(vagasDeposito(sim.estado.deposito), 1);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 1);
   assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
   entregar(sim);
-  assert.equal(sim.estado.deposito.pacotes.length, 27);
-  assert.equal(new Set(sim.estado.deposito.pacotes.map(p => p.slot)).size, 27);
+  assert.equal(sim.estado.deposito.pacotes.length, 4);
+  assert.equal(new Set(sim.estado.deposito.pacotes.map(p => p.slot)).size, 4);
 });
 
 test('recarregar antes e durante descarga preserva o saldo e não duplica caixas entregues ou nas mãos', () => {
@@ -99,6 +103,9 @@ test('pausa congela a entrega; loja fechada e tráfego adiam chegada, mas vagas 
 
 test('jogador e repositor retiram produtos do depósito e abastecem a gôndola por caminhos livres', () => {
   const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 2 }); entregar(sim);
+  Object.assign(sim.estado.jogador, { x: PLANTA_DEPOSITO.estantes[1].x, z: -12.9 });
+  sim.tempo = 9; sim.interagir();
+  assert.deepEqual(sim.estado.jogador.inventario, [], 'estante de outra classe não fornece enlatados');
   Object.assign(sim.estado.jogador, sim.produtos.enlatado.coleta);
   sim.tempo = 10; sim.interagir();
   assert.deepEqual(sim.estado.jogador.inventario, ['enlatado']);
@@ -223,7 +230,7 @@ test('saída aguarda manobra de clientes ou banco sem reservar a rua e impedir o
   entregar(sim);
 });
 
-test('save adulterado não cria mais de 27 posições nem caixas negativas, inválidas ou infinitas', () => {
+test('save adulterado mantém no máximo quatro caixas na estante e limita o legado sem valores inválidos', () => {
   const sim = loja(); sim.estado.melhorias.importarProdutos = 1;
   sim.estado.produtos.enlatado.liberado = true;
   sim.estado.deposito = {
@@ -232,7 +239,90 @@ test('save adulterado não cria mais de 27 posições nem caixas negativas, inv�
     pedidos: [{ pacotes: Array(100).fill('enlatado') }]
   };
   const salvo = new Simulacao(structuredClone(sim.estado));
-  assert.ok(salvo.estado.deposito.pacotes.length + pacotesPendentes(salvo.estado.deposito) <= 27);
+  assert.equal(salvo.estado.deposito.pacotes.length, 4);
+  assert.ok(salvo.estado.deposito.pacotes.length + salvo.estado.deposito.excedentes.length + pacotesPendentes(salvo.estado.deposito) <= 27);
   assert.equal(new Set(salvo.estado.deposito.pacotes.map(p => p.slot)).size, salvo.estado.deposito.pacotes.length);
-  assert.equal(salvo.estado.produtos.enlatado.horta, salvo.estado.deposito.pacotes.length * 9);
+  assert.equal(salvo.estado.produtos.enlatado.horta, (salvo.estado.deposito.pacotes.length + salvo.estado.deposito.excedentes.length) * 9);
+});
+
+test('caixas guardadas e pedidos separados disputam as mesmas quatro vagas da classe', () => {
+  const sim = loja();
+  sim.encomendarImportacoes({ importarProdutos: 2 }); entregar(sim);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
+  const antes = structuredClone(sim.estado);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 2 }).sucesso, false);
+  assert.deepEqual(sim.estado, antes);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
+});
+
+test('produtos da mesma classe compartilham vagas; outra classe entrega na própria estante', t => {
+  // Produtos de teste exercitam a extensão do catálogo sem lançar conteúdo futuro.
+  for (const [id, classe] of [['conservaTeste', 'enlatados'], ['saboneteTeste', 'higiene']]) {
+    PRODUTOS[id] = { ...PRODUTOS.enlatado, classe };
+    MELHORIAS.push({ ...MELHORIAS.find(m => m.id === 'importarProdutos'), id, produto: id });
+    t.after(() => { delete PRODUTOS[id]; MELHORIAS.splice(MELHORIAS.findIndex(m => m.id === id), 1); });
+  }
+  const sim = loja();
+  const antes = structuredClone(sim.estado);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 3, conservaTeste: 2, saboneteTeste: 1 }).sucesso, false);
+  assert.deepEqual(sim.estado, antes, 'pedido misto inválido não cobra nem libera produtos');
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 2, conservaTeste: 2, saboneteTeste: 4 }).sucesso, true);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'higiene'), 0);
+  entregar(sim);
+  const higiene = sim.estado.deposito.pacotes.filter(p => p.produto === 'saboneteTeste');
+  assert.deepEqual(higiene.map(p => p.slot), [4, 5, 6, 7]);
+  for (const pacote of higiene) {
+    const ponto = posicaoPacote(pacote.slot), estante = PLANTA_DEPOSITO.estantes[1];
+    assert.ok(Math.abs(ponto.x - estante.x) < estante.w / 2);
+    assert.equal(ponto.z, estante.z);
+  }
+});
+
+test('save antigo preserva caixas parciais, excedentes e pedidos pagos ao consumir e recarregar', () => {
+  const original = loja();
+  original.estado.produtos.enlatado.liberado = true;
+  original.estado.melhorias.importarProdutos = 27;
+  original.estado.deposito = {
+    pacotes: Array.from({ length: 20 }, (_, slot) => ({ produto: 'enlatado', unidades: slot === 0 ? 3 : 9, slot })),
+    pedidos: [{ id: 1, pacotes: Array(7).fill('enlatado') }], proximoId: 2
+  };
+  let sim = new Simulacao(structuredClone(original.estado));
+  assert.equal(sim.estado.deposito.pacotes.length, 4);
+  assert.equal(sim.estado.deposito.excedentes.length, 16);
+  assert.equal(sim.estado.produtos.enlatado.horta, 174);
+  assert.equal(pacotesPendentes(sim.estado.deposito), 7);
+  const saldo = sim.estado.dinheiro;
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, false);
+  let retiradas = 0;
+  for (let i = 0; i < 30000; i++) {
+    if (sim.retirarProdutoDeposito('enlatado')) retiradas++;
+    sim.entregas.atualizar(sim, 0.05);
+    if (i === 10) sim = new Simulacao(structuredClone(sim.estado));
+    assert.ok(sim.estado.deposito.pacotes.length <= 4);
+    assert.ok(sim.estado.deposito.pacotes.every(p => p.slot >= 0 && p.slot < 4));
+    if (!sim.estado.produtos.enlatado.horta && !sim.estado.deposito.pedidos.length && !sim.entregas.caminhao) break;
+  }
+  assert.equal(retiradas, 237);
+  assert.equal(sim.estado.dinheiro, saldo);
+  assert.equal(sim.estado.deposito.pedidos.length, 0);
+  assert.equal(sim.estado.deposito.excedentes.length, 0);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 4);
+});
+
+test('pedido antigo aguarda vaga na classe sem ultrapassar quatro caixas nem perder a carga', () => {
+  const original = loja();
+  original.estado.produtos.enlatado.liberado = true;
+  original.estado.melhorias.importarProdutos = 5;
+  original.estado.deposito.pedidos = [{ id: 1, pacotes: Array(5).fill('enlatado') }];
+  const sim = new Simulacao(structuredClone(original.estado));
+  entregar(sim, () => sim.estado.deposito.pacotes.length === 4 && sim.entregas.caminhao?.fase === 'retirar');
+  for (let i = 0; i < 100; i++) sim.entregas.atualizar(sim, 0.05);
+  assert.equal(sim.estado.deposito.pacotes.length, 4);
+  assert.equal(pacotesPendentes(sim.estado.deposito), 1);
+  for (let i = 0; i < 9; i++) sim.retirarProdutoDeposito('enlatado');
+  entregar(sim);
+  assert.equal(sim.estado.deposito.pacotes.length, 4);
+  assert.equal(sim.estado.produtos.enlatado.horta, 36);
 });

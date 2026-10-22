@@ -272,8 +272,8 @@ export const PLANTA_DEPOSITO = {
   piso: { x: -9.3, z: -12.3, w: 12.4, d: 6 },
   porta: { x: -9.3, z: -9.3, w: 2.8, d: 0.28 },
   passagem: { x: -3.1, z: -12.6, w: 0.28, d: 1.8, h: 2.3 },
-  estantes: [-13.3, -9.3, -5.3].map((x, i) => ({
-    nome: `estante-deposito-${i + 1}`, x, z: -14.35, w: 3.1, d: 1.1, h: 2.5
+  estantes: [-13.65, -10.75, -7.85, -4.95].map((x, i) => ({
+    nome: `estante-deposito-${i + 1}`, x, z: -14.35, w: 2.1, d: 1.1, h: 2.5
   }))
 };
 

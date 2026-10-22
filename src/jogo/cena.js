@@ -8,6 +8,8 @@ import { ColetaBancoVisual } from './coleta-banco.js';
 import { AssaltoVisual } from './assalto-visual.js';
 import { BANCO } from './banco.js';
 import * as THREE from 'three';
+import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from './classes-produtos.js';
+import { pacotesDaClasse } from './entregas.js';
 import { produtosDaLoja, CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { RenderizadorCompativel } from './renderizador-compativel.js';
 import { PALETAS } from './personalizacao.js';
@@ -986,7 +988,7 @@ export class Cena {
     }
     this.produtos[id] = { grupo, frutos: [], frutas, decoracoes, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
     this.criarLabel(`loja-${id}`, { ...p.prateleira, x: p.prateleira.x - 0.7, y: 2.8 }, 'ENLATADOS', '0 / 36', 'loja');
-    this.criarLabel(`horta-${id}`, { ...p.horta, y: 2.9 }, 'DEPÓSITO', '0 / 27 pacotes', id);
+    this.criarLabel(`horta-${id}`, { ...p.horta, y: 2.9 }, CLASSES_PRODUTOS[p.classe].nome.toLocaleUpperCase('pt-BR'), `0 / ${PACOTES_POR_CLASSE} pacotes`, id);
   }
   construirArtesanal(id, p) {
     const grupo = new THREE.Group(); grupo.name = `estacao-${id}`; this.cena.add(grupo);
@@ -1937,7 +1939,7 @@ export class Cena {
         // Os detalhes de fabricação ficam no painel fixo de produção.
         detalhe.textContent = '';
       }
-      else if (tipo === 'horta' && PRODUTOS[produto]?.origem === 'importado') detalhe.textContent = `${e.deposito.pacotes.length} / 27 pacotes · ${e.produtos[produto].horta} unidades`;
+      else if (tipo === 'horta' && PRODUTOS[produto]?.origem === 'importado') detalhe.textContent = `${pacotesDaClasse(e.deposito, PRODUTOS[produto].classe)} / ${PACOTES_POR_CLASSE} pacotes · ${e.produtos[produto].horta} unidades`;
       else if (tipo === 'horta') detalhe.textContent = `${e.produtos[produto].horta} para colher`;
       else if (tipo === 'loja') detalhe.textContent = `${e.produtos[produto].prateleira} / ${PRODUTOS[produto].capacidadePrateleira}`;
     }

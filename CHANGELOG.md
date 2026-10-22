@@ -1,6 +1,14 @@
 # Histórico de alterações
 
-## Versão atual: 0.56.2 — 2026-10-21
+## Versão atual: 0.57.0 — 2026-10-21
+
+- Organiza importações por classe de produto: cada classe tem uma estante exclusiva com quatro pacotes de nove unidades. Caixas guardadas e pedidos a caminho compartilham o limite; pedidos mistos são validados integralmente antes da cobrança.
+- Substitui as três estantes do depósito por quatro estantes menores, com dois níveis de duas caixas cada. Enlatados usa a primeira estante, identificada por cor, símbolo e etiqueta, com coleta e entrega no mesmo local. As duas gôndolas reservam duas classes cada; Higiene fica prevista, sem novos produtos disponíveis.
+- O catálogo informa classe, estante, ocupação e caixas a caminho, limitando os controles de quantidade ao espaço da classe. Atualiza ajuda, orientação e documentação.
+- Preserva saves antigos, inclusive caixas parciais e pedidos pagos acima do novo limite: o excedente entregue fica em reserva e ocupa vagas liberadas; entregas antigas aguardam espaço sem perder mercadoria nem cobrar novamente.
+- Validação: 279 testes, build de produção e rotas até N19 aprovados. Verificação de navegador ampliada para os limites por classe, mas não concluída nesta alteração: a conexão com o Edge falhou no sandbox e a execução externa não foi autorizada. Nenhuma imagem ou planta SVG foi gerada.
+
+## 0.56.2 — 2026-10-21
 
 - Define que as prévias são fornecidas manualmente pelo usuário e que plantas SVG só são geradas mediante solicitação explícita.
 - Remove as 109 imagens de prévia e suas referências na documentação.

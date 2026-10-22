@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { PLANTA_DEPOSITO as P, paredesDeposito } from './planta.js';
+import { CLASSES_PRODUTOS } from './classes-produtos.js';
 
 export function construirDeposito(pai, { caixa, vincular }) {
   const grupo = new THREE.Group(); grupo.name = 'deposito'; pai.add(grupo);
@@ -63,6 +64,15 @@ export function construirDeposito(pai, { caixa, vincular }) {
   for (const [indice, p] of P.estantes.entries()) {
     const estante = new THREE.Group(); estante.name = p.nome;
     estante.position.set(p.x, 0.23, p.z); grupo.add(estante);
+    const classe = Object.entries(CLASSES_PRODUTOS).find(([, c]) => c.estante === indice);
+    estante.userData.classe = classe?.[0] || null;
+    bloco(estante, 'placa-classe', p.w - 0.12, 0.24, 0.08,
+      classe?.[1].cor || 0x7e9caa, 0, 2.3, p.d / 2);
+    // O símbolo da lata identifica a estante mesmo quando está vazia.
+    if (classe?.[0] === 'enlatados') {
+      const lata = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.19, 10), new THREE.MeshStandardMaterial({ color: 0xf1eada }));
+      lata.name = 'simbolo-enlatados'; lata.position.set(0, 2.3, p.d / 2 + 0.1); estante.add(lata);
+    }
     for (const x of [-p.w / 2 + 0.06, p.w / 2 - 0.06]) {
       for (const z of [-p.d / 2 + 0.04, p.d / 2 - 0.04]) {
         bloco(estante, 'montante-azul', 0.09, p.h, 0.09, 0x317c9d, x, p.h / 2, z);
@@ -73,13 +83,13 @@ export function construirDeposito(pai, { caixa, vincular }) {
         diagonal.rotation.x = inclinacao * 0.72;
       }
     }
-    for (const [nivel, y] of [0.16, 0.96, 1.76].entries()) {
-      for (let i = 0; i < 3; i++) {
-        const x = (i - 1) * p.w / 3;
-        bloco(estante, 'prateleira-metalica', p.w / 3, 0.07, p.d, 0xb9c6c7, x, y, 0);
-        bloco(estante, 'borda-prateleira', p.w / 3, 0.1, 0.06, 0x7a9eae, x, y - 0.025, p.d / 2);
+    for (const [nivel, y] of [0.56, 1.56].entries()) {
+      for (let i = 0; i < 2; i++) {
+        const x = (i - 0.5) * p.w / 2;
+        bloco(estante, 'prateleira-metalica', p.w / 2, 0.07, p.d, 0xb9c6c7, x, y, 0);
+        bloco(estante, 'borda-prateleira', p.w / 2, 0.1, 0.06, 0x7a9eae, x, y - 0.025, p.d / 2);
         const h = 0.43 + (indice + nivel + i) % 3 * 0.08;
-        const caixaEstoque = pacote(estante, (i - 1) * 0.94, y + 0.035, 0, 0.79, h, 0.78, indice + nivel + i);
+        const caixaEstoque = pacote(estante, (i - 0.5) * 0.94, y + 0.035, 0, 0.79, h, 0.78, indice + nivel + i);
         caixaEstoque.visible = false;
         pacotes.push(caixaEstoque);
       }

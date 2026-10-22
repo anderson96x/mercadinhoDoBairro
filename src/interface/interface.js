@@ -6,7 +6,8 @@ import { BANCO, statusColeta } from '../jogo/banco.js';
 import { statusAssalto } from '../jogo/assalto.js';
 import { atualizarPainelClientes } from './clientes.js';
 import { atualizarPainelProducao } from './producao.js';
-import { vagasDeposito, pacotesPendentes } from '../jogo/entregas.js';
+import { vagasDeposito, pacotesPendentes, pacotesDaClasse, excedentesDaClasse } from '../jogo/entregas.js';
+import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from '../jogo/classes-produtos.js';
 const versaoJogo = pacote.version;
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
@@ -278,27 +279,28 @@ export class Interface {
     } else if (tipo === 'importacoes') {
       const importacoes = MELHORIAS.filter(m => m.categoria === 'importados' && m.ativa !== false).sort((a, b) => a.nivelMinimo - b.nivelMinimo);
       let saldoRestante = this.sim.estado.dinheiro;
-      let espacoRestante = vagasDeposito(this.sim.estado.deposito);
+      const espacoRestante = Object.fromEntries(Object.keys(CLASSES_PRODUTOS).map(classe => [classe, vagasDeposito(this.sim.estado.deposito, classe)]));
       for (const m of importacoes) {
-        const produto = PRODUTOS[m.produto], estoque = this.sim.estado.produtos[m.produto];
+        const produto = PRODUTOS[m.produto];
         const disponibilidade = this.sim.disponibilidadeMelhoria(m.id), custo = this.sim.custoMelhoria(m.id);
-        const maxEspaco = espacoRestante;
+        const maxEspaco = espacoRestante[produto.classe] || 0;
         const pedida = Math.max(0, this.quantidadesImportacao[m.id] || 0);
         const quantidade = disponibilidade.disponivel ? Math.min(pedida, maxEspaco, Math.floor(saldoRestante / custo)) : 0;
         this.quantidadesImportacao[m.id] = quantidade;
         saldoRestante -= quantidade * custo;
-        espacoRestante -= quantidade;
+        espacoRestante[produto.classe] -= quantidade;
       }
       const totalPedido = importacoes.reduce((total, m) => total + this.quantidadesImportacao[m.id] * this.sim.custoMelhoria(m.id), 0);
       const totalCaixas = importacoes.reduce((total, m) => total + this.quantidadesImportacao[m.id], 0);
-      conteudo = `<p class="painel-subtitulo">Escolha os produtos que deseja trazer para o mercadinho.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${importacoes.map(m => {
+      conteudo = `<p class="painel-subtitulo">Cada classe tem sua própria estante: até 4 pacotes de 9 unidades. Caixas a caminho também reservam espaço.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${importacoes.map(m => {
         const produto = PRODUTOS[m.produto], estoque = this.sim.estado.produtos[m.produto];
         const custo = this.sim.custoMelhoria(m.id), disponibilidade = this.sim.disponibilidadeMelhoria(m.id);
-        const caixasPorEspaco = vagasDeposito(this.sim.estado.deposito) - totalCaixas + this.quantidadesImportacao[m.id];
+        const classe = CLASSES_PRODUTOS[produto.classe];
+        const caixasPorEspaco = espacoRestante[produto.classe] + this.quantidadesImportacao[m.id];
         const quantidade = this.quantidadesImportacao[m.id];
         const maxCaixas = disponibilidade.disponivel ? Math.min(caixasPorEspaco, quantidade + Math.floor((this.sim.estado.dinheiro - totalPedido) / custo)) : 0;
-        return `<div class="melhoria melhoria-importacao"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p><strong class="preco-venda-melhoria">Preço de venda: ${reais(produto.preco)}</strong><span class="estoque-importacao">Na gôndola: <b>${estoque.prateleira}</b> de ${produto.capacidadePrateleira} · No depósito: <b>${estoque.horta}</b> unidades · Pode pedir <b>${maxCaixas}</b> ${maxCaixas === 1 ? 'caixa' : 'caixas'}</span><span class="nivel-melhoria">Disponível no nível ${m.nivelMinimo}</span>${!disponibilidade.disponivel ? `<p class="requisito-melhoria">${disponibilidade.motivo}</p>` : ''}</div><div class="controles-importacao"><div class="contador-importacao" aria-label="Quantidade de caixas de ${m.titulo}"><button data-importacao="${m.id}" data-importacao-quantidade="-1" ${quantidade <= 0 ? 'disabled' : ''} aria-label="Diminuir quantidade de ${m.titulo}">−</button><strong>${quantidade}</strong><button data-importacao="${m.id}" data-importacao-quantidade="1" ${quantidade >= maxCaixas ? 'disabled' : ''} aria-label="Aumentar quantidade de ${m.titulo}">+</button></div></div></div>`;
-      }).join('')}</div><div class="rodape-importacao"><span>Depósito: <b>${this.sim.estado.deposito.pacotes.length} / 27</b> pacotes · <b>${pacotesPendentes(this.sim.estado.deposito)}</b> a caminho</span><span><b>${totalCaixas}</b> ${totalCaixas === 1 ? 'caixa' : 'caixas'} no pedido · entrega por caminhão</span><button class="botao-principal" id="finalizar-importacao" ${totalCaixas ? '' : 'disabled'}>Finalizar pedido · ${reais(totalPedido)}</button></div><button class="botao-secundario" id="voltar-opcoes">Voltar às opções</button>`;
+        return `<div class="melhoria melhoria-importacao"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>Classe ${classe.nome} · Estante ${classe.estante + 1}</p><p>${m.descricao}</p><strong class="preco-venda-melhoria">Preço de venda: ${reais(produto.preco)}</strong><span class="estoque-importacao">Classe ${classe.nome}: <b>${pacotesDaClasse(this.sim.estado.deposito, produto.classe)} / ${PACOTES_POR_CLASSE}</b> pacotes guardados · <b>${pacotesPendentes(this.sim.estado.deposito, produto.classe)}</b> a caminho${excedentesDaClasse(this.sim.estado.deposito, produto.classe) ? ` · ${excedentesDaClasse(this.sim.estado.deposito, produto.classe)} caixas do save anterior aguardam vaga` : ''}<br>Na gôndola: <b>${estoque.prateleira}</b> de ${produto.capacidadePrateleira} · No depósito: <b>${estoque.horta}</b> unidades · Pode pedir <b>${maxCaixas}</b> ${maxCaixas === 1 ? 'caixa' : 'caixas'}</span><span class="nivel-melhoria">Disponível no nível ${m.nivelMinimo}</span>${!disponibilidade.disponivel ? `<p class="requisito-melhoria">${disponibilidade.motivo}</p>` : ''}</div><div class="controles-importacao"><div class="contador-importacao" aria-label="Quantidade de caixas de ${m.titulo}"><button data-importacao="${m.id}" data-importacao-quantidade="-1" ${quantidade <= 0 ? 'disabled' : ''} aria-label="Diminuir quantidade de ${m.titulo}">−</button><strong>${quantidade}</strong><button data-importacao="${m.id}" data-importacao-quantidade="1" ${quantidade >= maxCaixas ? 'disabled' : ''} aria-label="Aumentar quantidade de ${m.titulo}">+</button></div></div></div>`;
+      }).join('')}</div><div class="rodape-importacao"><span>Depósito: <b>4 pacotes por classe</b> · <b>${pacotesPendentes(this.sim.estado.deposito)}</b> a caminho</span><span><b>${totalCaixas}</b> ${totalCaixas === 1 ? 'caixa' : 'caixas'} no pedido · entrega por caminhão</span><button class="botao-principal" id="finalizar-importacao" ${totalCaixas ? '' : 'disabled'}>Finalizar pedido · ${reais(totalPedido)}</button></div><button class="botao-secundario" id="voltar-opcoes">Voltar às opções</button>`;
     } else if (tipo === 'personalizacao') {
       titulos.personalizacao = 'Sua loja, do seu jeito';
       conteudo = `<p class="painel-subtitulo">Dê personalidade ao seu cantinho do bairro.</p>
@@ -319,7 +321,7 @@ export class Interface {
         <p class="nota">Do nível 10 ao 15: melhore sua cesta, abra a ala artesanal ao fundo da loja e construa a estufa, o apiário, a queijaria e a cozinha de geleias. No nível 14, irrigação e reposição ágil ajudam a cuidar da loja maior.</p>
         <p class="nota">Nas oficinas, aproxime-se com os ingredientes para entregá-los. Uma garrafa de leite rende 2 queijos; 2 morangos e 1 mel rendem 3 geleias. Recolha os produtos prontos e abasteça as bancas. O repositor também coleta a produção pronta. Os novos produtos só entram nos pedidos depois do primeiro abastecimento.</p>
         <p class="nota">No nível 16, construa o estacionamento pelo celular por R$ 10.000. As seis vagas começam vazias. Parte dos clientes chega nos carros da rua, estaciona, faz compras e volta ao próprio veículo. Passantes e compradores a pé continuam circulando pela calçada.</p>
-        <p class="nota">No nível 17, instale as Prateleiras de importados. No nível 18, a expansão inclui um pátio de carga à esquerda, com acesso exclusivo para caminhões. No nível 19, peça caixas de 9 enlatados por R$ 270 pelo celular. O entregador guarda as caixas nas 27 posições do depósito. Retire os produtos para abastecer a gôndola, ou conte com o repositor. Cada lata vale R$ 30.</p>
+        <p class="nota">No nível 17, instale as Prateleiras de importados. No nível 18, a expansão inclui um pátio de carga à esquerda, com acesso exclusivo para caminhões. No nível 19, peça caixas de 9 enlatados por R$ 270 pelo celular. O depósito tem quatro estantes, uma por classe, com quatro pacotes de nove unidades cada. Caixas a caminho reservam vagas da própria classe. Retire os produtos para abastecer a gôndola, ou conte com o repositor. Cada lata vale R$ 30.</p>
         <p class="nota">No nível 18, compre Expansão em Melhorias → Mercado por R$ 10.000, após a padaria. Um novo anexo é construído atrás da loja e da cozinha, mantendo as divisórias e os móveis existentes. A fazenda recua; use a porta de produção e a nova saída dos fundos.</p>
         <p class="nota">As ações acontecem automaticamente quando você se aproxima. Seu progresso é salvo neste navegador.</p><button class="botao-principal" data-fechar>Vamos jogar ${icone('seta')}</button>`;
     } else if (tipo === 'dev') {

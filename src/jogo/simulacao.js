@@ -8,7 +8,8 @@ import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
 import { EstacionamentoClientes, pontoPortaCarro, volumeCarro, SAIDA_PEDESTRES } from './estacionamento-clientes.js';
-import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, UNIDADES_PACOTE, volumeCaminhao } from './entregas.js';
+import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, classeProduto, acomodarExcedentes, UNIDADES_PACOTE, volumeCaminhao } from './entregas.js';
+import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from './classes-produtos.js';
 import { PLANTA_CARGA, obstaculosCarga } from './planta.js';
 
 // A fila vira para o fundo após sete lugares, cabendo no salão anterior ao N9.
@@ -119,7 +120,7 @@ export function validarEstado(dados) {
   }
   base.deposito = validarDeposito(dados.deposito, base.produtos);
   for (const [id, p] of Object.entries(PRODUTOS)) {
-    if (p.origem === 'importado') base.produtos[id].horta = base.deposito.pacotes.filter(p => p.produto === id).reduce((total, p) => total + p.unidades, 0);
+    if (p.origem === 'importado') base.produtos[id].horta = [...base.deposito.pacotes, ...base.deposito.excedentes].filter(p => p.produto === id).reduce((total, p) => total + p.unidades, 0);
   }
   for (const [id, receita] of Object.entries(OFICINAS)) {
     if (!base.produtos[id].liberado) continue;
@@ -424,7 +425,7 @@ export class Simulacao {
     }
     if (m.tipo === 'importacao') {
       if (!this.estado.melhorias.expansao) return { disponivel: false, motivo: 'Compre Expansão para receber entregas no pátio exclusivo.', requisitoMelhoria: 'expansao' };
-      if (vagasDeposito(this.estado.deposito) < 1) return { disponivel: false, motivo: 'O depósito não tem espaço: são 27 pacotes, incluindo entregas pendentes.' };
+      if (vagasDeposito(this.estado.deposito, classeProduto(m.produto)) < 1) return { disponivel: false, motivo: `A classe ${CLASSES_PRODUTOS[classeProduto(m.produto)]?.nome || ''} está cheia: limite de ${PACOTES_POR_CLASSE} pacotes, incluindo pedidos a caminho.` };
     }
     return { disponivel: true };
   }
@@ -522,7 +523,7 @@ export class Simulacao {
         const disponivel = this.estado.produtos.enlatado.horta > 0 || this.estado.jogador.inventario.includes('enlatado');
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: disponivel ? 'Abasteça os enlatados' : 'Aguarde a entrega',
-          texto: disponivel ? 'Retire enlatados nas estantes do depósito e leve-os à primeira gôndola. O repositor também pode ajudar.' : 'O caminhão usa o acesso exclusivo à esquerda. Mantenha o mercado aberto para receber as caixas no depósito.',
+          texto: disponivel ? 'Retire enlatados na estante Enlatados do depósito e leve-os à primeira gôndola. O repositor também pode ajudar.' : 'O caminhão usa o acesso exclusivo à esquerda. Mantenha o mercado aberto para receber as caixas no depósito.',
           destino: disponivel ? this.estado.jogador.inventario.includes('enlatado') ? 'prateleira-enlatado' : 'coleta-enlatado' : 'celular', exibir: true };
       }
       if (this.nivel >= 17 && this.estado.melhorias.prateleirasImportados < PRATELEIRAS_IMPORTADOS.length) {
@@ -609,7 +610,7 @@ export class Simulacao {
     const pacotes = [], itens = [];
     for (const [id, quantidade] of Object.entries(quantidades)) {
       const m = MELHORIAS.find(m => m.id === id && m.tipo === 'importacao');
-      if (!m || !Number.isInteger(quantidade) || quantidade < 0 || quantidade > 27) return { sucesso: false, motivo: 'Quantidade de caixas inválida.' };
+      if (!m || !Number.isInteger(quantidade) || quantidade < 0 || quantidade > PACOTES_POR_CLASSE) return { sucesso: false, motivo: 'Quantidade de caixas inválida.' };
       if (!quantidade) continue;
       const disponibilidade = this.disponibilidadeMelhoria(id);
       if (!disponibilidade.disponivel) return { sucesso: false, motivo: disponibilidade.motivo };
@@ -617,7 +618,10 @@ export class Simulacao {
       custo += this.custoMelhoria(id) * quantidade; itens.push({ id, quantidade, produto: m.produto });
     }
     if (!pacotes.length) return { sucesso: false, motivo: 'Selecione ao menos uma caixa.' };
-    if (pacotes.length > vagasDeposito(this.estado.deposito)) return { sucesso: false, motivo: 'O depósito não tem espaço para todas essas caixas (limite de 27 pacotes).' };
+    for (const classe of new Set(pacotes.map(classeProduto))) {
+      if (pacotes.filter(p => classeProduto(p) === classe).length > vagasDeposito(this.estado.deposito, classe))
+        return { sucesso: false, motivo: `Sem espaço para esse pedido na classe ${CLASSES_PRODUTOS[classe].nome}: limite de ${PACOTES_POR_CLASSE} pacotes, incluindo pedidos a caminho.` };
+    }
     if (custo > this.estado.dinheiro) return { sucesso: false, motivo: 'Você ainda não tem dinheiro suficiente.' };
     this.estado.dinheiro -= custo;
     for (const item of itens) { this.estado.melhorias[item.id] += item.quantidade; this.estado.produtos[item.produto].liberado = true; }
@@ -631,6 +635,7 @@ export class Simulacao {
     if (!pacote) return false;
     pacote.unidades--; this.estado.produtos[id].horta--;
     if (!pacote.unidades) this.estado.deposito.pacotes.splice(this.estado.deposito.pacotes.indexOf(pacote), 1);
+    acomodarExcedentes(this.estado.deposito);
     return true;
   }
   obstaculos() {

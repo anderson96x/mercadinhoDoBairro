@@ -55,13 +55,27 @@ try {
       || travessia.z !== 8.4 || travessia.fase !== 'passando' || travessia.listras < 6) throw new Error(JSON.stringify(travessia));
     await estabilizar();
     await avaliar('window.verificacao.catalogo()');
+    const cheio = await avaliar(`({mais:document.querySelector('[data-importacao-quantidade="1"]').disabled, finalizar:document.getElementById('finalizar-importacao').disabled, texto:document.querySelector('.estoque-importacao').textContent})`);
+    if (!cheio.mais || !cheio.finalizar || !cheio.texto.includes('4 / 4')) throw new Error(`Classe cheia: ${JSON.stringify(cheio)}`);
+    const estantes = await avaliar(`(() => {
+      const deposito = verificacao.cena.cena.getObjectByName('deposito');
+      return deposito.children.filter(o => o.name.startsWith('estante-deposito-')).map(o => ({classe:o.userData.classe,caixas:o.children.filter(c => c.name === 'caixa-papelao' && c.visible).length}));
+    })()`);
+    if (estantes.length !== 4 || estantes[0].classe !== 'enlatados' || estantes[0].caixas !== 4 || estantes.slice(1).some(e => e.caixas)) throw new Error(`Estantes: ${JSON.stringify(estantes)}`);
+    // Consumir três caixas abre exatamente três vagas; uma caixa parcial ainda ocupa posição.
+    await avaliar(`for(let i=0;i<26;i++)verificacao.sim.retirarProdutoDeposito('enlatado'); verificacao.catalogo()`);
+    const parcial = await avaliar(`document.querySelector('.estoque-importacao').textContent`);
+    if (!parcial.includes('2 / 4')) throw new Error(`Caixa parcial: ${parcial}`);
+    await avaliar(`verificacao.sim.retirarProdutoDeposito('enlatado'); verificacao.catalogo()`);
     await avaliar(`for(let i=0;i<3;i++)document.querySelector('[data-importacao-quantidade="1"]').click()`);
     await estabilizar();
     const largura = await avaliar('({documento:document.documentElement.scrollWidth,janela:innerWidth})');
     if (mobile && (largura.documento !== 390 || largura.janela !== 390)) throw new Error(`Layout móvel excede 390 px: ${JSON.stringify(largura)}`);
     const pedido = await avaliar('document.getElementById("finalizar-importacao").click(); ({pedidos:verificacao.sim.estado.deposito.pedidos.length,caixas:verificacao.sim.estado.deposito.pedidos[0]?.pacotes.length})');
     if (pedido.pedidos !== 1 || pedido.caixas !== 3) throw new Error(`Pedido pela interface: ${JSON.stringify(pedido)}`);
-    console.log(JSON.stringify({ modo: sufixo, ...fase, ...entrega, travessia, largura }));
+    await avaliar('window.verificacao.catalogo()');
+    if (!await avaliar(`document.querySelector('[data-importacao-quantidade="1"]').disabled`)) throw new Error('Pedidos a caminho não reservaram vagas.');
+    console.log(JSON.stringify({ modo: sufixo, ...fase, ...entrega, estantes, travessia, largura, limitePorClasse: true }));
   }
   if (erros.length) throw new Error(JSON.stringify(erros));
 } finally {
