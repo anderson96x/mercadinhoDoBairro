@@ -2,12 +2,12 @@ import { icone } from './icones.js';
 import pacote from '../../package.json' with { type: 'json' };
 import { PALETAS } from '../jogo/personalizacao.js';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../jogo/configuracao.js';
+import { TEMPO_ESPERA_ENTREGA, vagasDeposito } from '../jogo/entregas.js';
 import { BANCO, statusColeta } from '../jogo/banco.js';
 import { statusAssalto } from '../jogo/assalto.js';
 import { atualizarPainelClientes } from './clientes.js';
 import { atualizarPainelProducao } from './producao.js';
-import { vagasDeposito, pacotesPendentes, pacotesDaClasse, excedentesDaClasse } from '../jogo/entregas.js';
-import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from '../jogo/classes-produtos.js';
+import { CLASSES_PRODUTOS } from '../jogo/classes-produtos.js';
 const versaoJogo = pacote.version;
 const reais = v => `R$ ${v.toLocaleString('pt-BR')}`;
 const ABAS_MELHORIAS = [
@@ -47,6 +47,15 @@ export class Interface {
             </div>
           </div>
         </aside>
+        <aside id="aviso-entrega" class="aviso-banco aviso-entrega" role="status" aria-live="polite" aria-atomic="true" hidden>
+          <span class="aviso-banco-icone" aria-hidden="true">${icone('enlatado')}</span>
+          <div class="aviso-banco-conteudo"><strong>Caminhão a caminho</strong><p id="aviso-entrega-texto"></p>
+            <div class="aviso-banco-prazo">
+              <div class="aviso-banco-prazo-legenda"><span>Tempo para chegar</span><b id="aviso-entrega-segundos"></b></div>
+              <div id="aviso-entrega-progresso" class="aviso-banco-progresso" role="progressbar" aria-label="Tempo restante para o caminhão chegar" aria-valuemin="0" aria-valuemax="60"><span id="aviso-entrega-barra"></span></div>
+            </div>
+          </div>
+        </aside>
         <aside class="objetivo" id="objetivo" aria-label="Objetivo atual">
           <div class="objetivo-topo"><span>${icone('alvo')} PRÓXIMO PASSO</span><span id="passo">01 / 04</span></div>
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
@@ -64,7 +73,7 @@ export class Interface {
           <div class="inventario" id="inventario" hidden><div class="inventario-conteudo"><div class="inventario-titulo"><b id="nivel-inventario">Inventário</b><span id="capacidade">${this.sim.estado.jogador.inventario.length} / ${this.sim.capacidade}</span></div><div id="itens"></div></div></div>
         </footer>
         <div id="joystick" aria-hidden="true"><span></span></div>
-        <div id="mensagens" hidden aria-live="polite" aria-atomic="true"></div>
+        <div id="mensagens" aria-live="polite" aria-atomic="true"></div>
         <div id="efeitos" aria-hidden="true"></div><div id="cursor-melhoria" aria-hidden="true" hidden>${icone('folha')}</div>
         <div id="pausa-foco" class="pausa-foco" role="status" aria-live="polite" hidden>
           <div class="pausa-foco-cartao">
@@ -119,6 +128,7 @@ export class Interface {
   atualizar() {
     const s = this.sim, e = s.estado, m = s.missao();
     this.atualizarBanco();
+    this.atualizarEntrega();
     atualizarPainelProducao(this.el('painel-producao'), e);
     const identidade = JSON.stringify(e.personalizacao);
     if (identidade !== this.ultimaIdentidade) {
@@ -246,6 +256,20 @@ export class Interface {
       ? `Coleta de ${reais(banco.coleta.valor)}. Seu saldo disponível permanece o mesmo.`
       : `${reais(banco.noCaixa)} no caixa. Abra o celular e deposite no banco. Sem depósito, o mercadinho pode ser assaltado.`;
   }
+  atualizarEntrega() {
+    const caminhao = this.sim.entregas?.caminhao;
+    const aguardando = caminhao?.fase === 'aguardando' && caminhao.tempoEspera < TEMPO_ESPERA_ENTREGA;
+    const aviso = this.el('aviso-entrega');
+    aviso.hidden = !aguardando;
+    if (!aguardando) return;
+    const restante = Math.max(0, TEMPO_ESPERA_ENTREGA - caminhao.tempoEspera);
+    const segundos = Math.ceil(restante);
+    const pacotes = this.sim.estado.deposito.pedidos[0]?.pacotes.length || 0;
+    this.el('aviso-entrega-texto').textContent = `${pacotes} ${pacotes === 1 ? 'pacote está chegando' : 'pacotes estão chegando'}.`;
+    this.el('aviso-entrega-segundos').textContent = `${segundos}s`;
+    this.el('aviso-entrega-barra').style.width = `${restante / TEMPO_ESPERA_ENTREGA * 100}%`;
+    this.el('aviso-entrega-progresso').setAttribute('aria-valuenow', String(segundos));
+  }
   renderizarPainel() {
     const tipo = this.tipoPainel;
     const titulos = { lixeira: 'Descartar produtos', opcoes: 'Opções do mercado', melhorias: 'Um mercadinho maior', importacoes: 'Importar produtos', ajuda: 'Vamos cuidar da loja?', reiniciar: 'Começar do zero?', dev: 'Ferramentas de teste' };
@@ -292,15 +316,16 @@ export class Interface {
       }
       const totalPedido = importacoes.reduce((total, m) => total + this.quantidadesImportacao[m.id] * this.sim.custoMelhoria(m.id), 0);
       const totalCaixas = importacoes.reduce((total, m) => total + this.quantidadesImportacao[m.id], 0);
-      conteudo = `<p class="painel-subtitulo">Cada classe tem sua própria estante: até 4 pacotes de 9 unidades. Caixas a caminho também reservam espaço.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${importacoes.map(m => {
-        const produto = PRODUTOS[m.produto], estoque = this.sim.estado.produtos[m.produto];
+      const entregaEmAndamento = !!(this.sim.estado.deposito.pedidos.length || this.sim.entregas?.caminhao);
+      const motivoEspera = entregaEmAndamento ? 'Aguarde o caminhão concluir a entrega e ir embora antes de fazer outro pedido.' : '';
+      conteudo = `<p class="painel-subtitulo">Cada classe tem uma estante no depósito, com espaço para até 4 pacotes. Cada pacote contém 9 produtos.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${importacoes.map(m => {
+        const produto = PRODUTOS[m.produto];
         const custo = this.sim.custoMelhoria(m.id), disponibilidade = this.sim.disponibilidadeMelhoria(m.id);
-        const classe = CLASSES_PRODUTOS[produto.classe];
         const caixasPorEspaco = espacoRestante[produto.classe] + this.quantidadesImportacao[m.id];
         const quantidade = this.quantidadesImportacao[m.id];
         const maxCaixas = disponibilidade.disponivel ? Math.min(caixasPorEspaco, quantidade + Math.floor((this.sim.estado.dinheiro - totalPedido) / custo)) : 0;
-        return `<div class="melhoria melhoria-importacao"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>Classe ${classe.nome} · Estante ${classe.estante + 1}</p><p>${m.descricao}</p><strong class="preco-venda-melhoria">Preço de venda: ${reais(produto.preco)}</strong><span class="estoque-importacao">Classe ${classe.nome}: <b>${pacotesDaClasse(this.sim.estado.deposito, produto.classe)} / ${PACOTES_POR_CLASSE}</b> pacotes guardados · <b>${pacotesPendentes(this.sim.estado.deposito, produto.classe)}</b> a caminho${excedentesDaClasse(this.sim.estado.deposito, produto.classe) ? ` · ${excedentesDaClasse(this.sim.estado.deposito, produto.classe)} caixas do save anterior aguardam vaga` : ''}<br>Na gôndola: <b>${estoque.prateleira}</b> de ${produto.capacidadePrateleira} · No depósito: <b>${estoque.horta}</b> unidades · Pode pedir <b>${maxCaixas}</b> ${maxCaixas === 1 ? 'caixa' : 'caixas'}</span><span class="nivel-melhoria">Disponível no nível ${m.nivelMinimo}</span>${!disponibilidade.disponivel ? `<p class="requisito-melhoria">${disponibilidade.motivo}</p>` : ''}</div><div class="controles-importacao"><div class="contador-importacao" aria-label="Quantidade de caixas de ${m.titulo}"><button data-importacao="${m.id}" data-importacao-quantidade="-1" ${quantidade <= 0 ? 'disabled' : ''} aria-label="Diminuir quantidade de ${m.titulo}">−</button><strong>${quantidade}</strong><button data-importacao="${m.id}" data-importacao-quantidade="1" ${quantidade >= maxCaixas ? 'disabled' : ''} aria-label="Aumentar quantidade de ${m.titulo}">+</button></div></div></div>`;
-      }).join('')}</div><div class="rodape-importacao"><span>Depósito: <b>4 pacotes por classe</b> · <b>${pacotesPendentes(this.sim.estado.deposito)}</b> a caminho</span><span><b>${totalCaixas}</b> ${totalCaixas === 1 ? 'caixa' : 'caixas'} no pedido · entrega por caminhão</span><button class="botao-principal" id="finalizar-importacao" ${totalCaixas ? '' : 'disabled'}>Finalizar pedido · ${reais(totalPedido)}</button></div><button class="botao-secundario" id="voltar-opcoes">Voltar às opções</button>`;
+        return `<div class="melhoria melhoria-importacao"><span class="melhoria-icone ${m.id}">${icone(m.icone)}</span><div><h3>${m.titulo}</h3><p>${m.descricao}</p><strong class="preco-venda-melhoria">Preço de venda: ${reais(produto.preco)}</strong>${!disponibilidade.disponivel && !entregaEmAndamento ? `<p class="requisito-melhoria">${disponibilidade.motivo}</p>` : ''}</div><div class="controles-importacao"><div class="contador-importacao" aria-label="Quantidade de caixas de ${m.titulo}"><button data-importacao="${m.id}" data-importacao-quantidade="-1" ${quantidade <= 0 ? 'disabled' : ''} aria-label="Diminuir quantidade de ${m.titulo}">−</button><strong>${quantidade}</strong><button data-importacao="${m.id}" data-importacao-quantidade="1" ${quantidade >= maxCaixas ? 'disabled' : ''} aria-label="Aumentar quantidade de ${m.titulo}">+</button></div></div></div>`;
+      }).join('')}</div><div class="rodape-importacao">${motivoEspera ? `<p class="requisito-importacao">${motivoEspera}</p>` : ''}<span><b>${totalCaixas}</b> ${totalCaixas === 1 ? 'caixa' : 'caixas'} no pedido · entrega por caminhão</span><button class="botao-principal" id="finalizar-importacao" ${totalCaixas ? '' : 'disabled'}>Finalizar pedido · ${reais(totalPedido)}</button></div><button class="botao-secundario" id="voltar-opcoes">Voltar às opções</button>`;
     } else if (tipo === 'personalizacao') {
       titulos.personalizacao = 'Sua loja, do seu jeito';
       conteudo = `<p class="painel-subtitulo">Dê personalidade ao seu cantinho do bairro.</p>
@@ -406,8 +431,9 @@ export class Interface {
       const resultado = this.acoes.encomendarImportacoes(this.quantidadesImportacao);
       this.quantidadesImportacao = {};
       this.atualizar();
-      this.renderizarPainel();
-      this.mensagem(resultado.sucesso ? `Pedido confirmado · ${resultado.caixas} ${resultado.caixas === 1 ? 'caixa será entregue' : 'caixas serão entregues'} no depósito.` : resultado.motivo);
+      if (resultado.sucesso) this.fechar();
+      else this.renderizarPainel();
+      if (!resultado.sucesso) this.mensagem(resultado.motivo);
     };
     if (tipo === 'opcoes') {
       this.el('depositar-banco').onclick = () => {

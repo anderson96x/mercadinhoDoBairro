@@ -4,6 +4,7 @@ import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes
 
 export { UNIDADES_PACOTE } from './classes-produtos.js';
 export const CAPACIDADE_DEPOSITO = PLANTA_DEPOSITO.estantes.length * PACOTES_POR_CLASSE;
+export const TEMPO_ESPERA_ENTREGA = 60;
 export const ENTREGA = { comprimento: 5.2, largura: 2.12, velocidade: 2.6, velocidadeRe: 1.5,
   estacionamento: { x: PLANTA_CARGA.vaga.x, z: PLANTA_CARGA.vaga.z }, retirada: PLANTA_CARGA.retirada };
 export const estadoDeposito = () => ({ pacotes: [], excedentes: [], pedidos: [], proximoId: 1 });
@@ -121,14 +122,17 @@ export class Entregas {
     if (!dt) return;
     const deposito = sim.estado.deposito;
     if (!this.caminhao && deposito.pedidos.length && sim.estado.melhorias.expansao && sim.estado.lojaAberta && !sim.estado.banco.coleta && !sim.estado.banco.assalto) {
-      this.caminhao = { fase: 'aguardando', distancia: 0, rodas: 0, tempo: 0, aberturaBau: 0, aberturaCabine: 0,
+      this.caminhao = { fase: 'aguardando', distancia: 0, rodas: 0, tempo: 0, tempoEspera: 0, aberturaBau: 0, aberturaCabine: 0,
         ...amostrarEntrega(ROTAS_ENTREGA.chegando, 0), entregador: null };
     }
     const c = this.caminhao;
     if (!c) return;
     if (c.fase === 'aguardando') {
+      c.tempoEspera = Math.min(TEMPO_ESPERA_ENTREGA, c.tempoEspera + dt);
+      if (c.tempoEspera < TEMPO_ESPERA_ENTREGA) return;
       if (!sim.estado.lojaAberta || sim.estacionamento.reservaRua || !this.transitoLivre || sim.estado.banco.coleta || sim.estado.banco.assalto) return;
       c.fase = 'chegando';
+      return;
     }
     if (c.fase === 'chegando' || c.fase === 'partindo') {
       const rota = ROTAS_ENTREGA[c.fase];

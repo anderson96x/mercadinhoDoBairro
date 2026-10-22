@@ -189,7 +189,8 @@ try {
         if (evento.tipo === 'assaltoEncerrado') { gravar(); ui.mensagem('O assaltante fugiu. A reputação do mercadinho caiu para zero.'); }
         if (evento.tipo === 'assaltoConcluido') gravar();
         if (evento.tipo === 'pacoteEntregue') gravar();
-        if (['entregaChegou', 'entregaConcluida'].includes(evento.tipo)) { gravar(); ui.mensagem(evento.texto); }
+        if (evento.tipo === 'entregaChegou') gravar();
+        if (evento.tipo === 'entregaConcluida') { gravar(); ui.mensagem(evento.texto); }
         sons.tocar(evento.tipo);
         if (evento.tipo === 'venda') ui.venda(evento.valor, cena.projetar(evento.ponto));
         if (evento.tipo === 'nivel') {

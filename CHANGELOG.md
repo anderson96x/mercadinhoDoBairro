@@ -1,6 +1,18 @@
 # Histórico de alterações
 
-## Versão atual: 0.57.4 — 2026-10-22
+## Versão atual: 0.57.6 — 2026-10-22
+
+- Remove do catálogo o resumo de pacotes no depósito e pedidos a caminho. Após finalizar uma importação, fecha o painel e usa o card de dicas para informar que o caminhão está a caminho.
+- Faz o caminhão aguardar 60 segundos antes de entrar no mapa e mostra um card persistente com contagem regressiva, barra de progresso e quantidade de pacotes. O aviso se posiciona acima do alerta bancário quando ambos aparecem juntos e desaparece sem uma mensagem adicional quando o veículo chega.
+- Bloqueia novos pedidos enquanto houver uma entrega pendente ou o caminhão ainda estiver no mapa. O motivo aparece centralizado no rodapé do catálogo, acima do resumo e do botão “Finalizar pedido”.
+- Validação: 285 testes automatizados e build de produção aprovados. Saves e progressão permanecem compatíveis; nenhuma captura foi gerada.
+
+## 0.57.5 — 2026-10-22
+
+- Simplifica o catálogo de importações: a regra geral informa uma única vez que cada classe tem uma estante para quatro pacotes de nove produtos, e o card de cada classe mostra apenas uma descrição dos itens e o preço de venda.
+- Validação: testes automatizados e build de produção aprovados. Saves e progressão permanecem compatíveis; nenhuma captura foi gerada.
+
+## 0.57.4 — 2026-10-22
 
 - Amplia os quatro hatchbacks para o mesmo comprimento e largura do sedã preto, preservando a carroceria hatch tanto no trânsito quanto no estacionamento de clientes.
 - Remodela o caminhão de importações com cabine construída em peças, interior visível, bancos, painel, volante, retrovisores, seis rodas e luzes funcionais de direção, freio e ré.

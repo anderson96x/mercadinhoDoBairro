@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS, MELHORIAS } from '../src/jogo/configuracao.js';
-import { ROTAS_ENTREGA, ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
+import { ROTAS_ENTREGA, ENTREGA, TEMPO_ESPERA_ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
 import { criarCaminhaoEntrega, EntregasVisual, ANGULO_PORTAS_BAU, ANGULO_PORTA_CABINE } from '../src/jogo/entregas-visual.js';
 import { Cena, criarEntregador } from '../src/jogo/cena.js';
 import { Trafego } from '../src/jogo/trafego.js';
@@ -39,8 +39,10 @@ test('pedido combinado cobra uma vez, reserva caixas e rejeita excesso sem compr
 
 test('caminhão estaciona e entregador guarda exatamente as caixas pedidas; cada pedido tem sua viagem', () => {
   const sim = loja();
-  sim.encomendarImportacoes({ importarProdutos: 3 });
-  sim.encomendarImportacoes({ importarProdutos: 1 });
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 3 }).sucesso, true);
+  assert.match(sim.encomendarImportacoes({ importarProdutos: 1 }).motivo, /Aguarde o caminhão/);
+  entregar(sim);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
   entregar(sim);
   assert.equal(sim.estado.deposito.pacotes.length, 4);
   assert.equal(sim.estado.produtos.enlatado.horta, 36);
@@ -49,6 +51,16 @@ test('caminhão estaciona e entregador guarda exatamente as caixas pedidas; cada
   const eventos = sim.consumirEventos();
   assert.equal(eventos.filter(e => e.tipo === 'entregaChegou').length, 2);
   assert.equal(eventos.filter(e => e.tipo === 'entregaConcluida').length, 2);
+});
+
+test('novo pedido fica bloqueado até o caminhão concluir a entrega e sair do mapa', () => {
+  const sim = loja();
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
+  assert.match(sim.disponibilidadeMelhoria('importarProdutos').motivo, /ir embora/);
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, false);
+  entregar(sim);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
 });
 
 test('quatro caixas ocupam somente a estante da classe e só liberam posição quando esvaziadas', () => {
@@ -90,14 +102,17 @@ test('pausa congela a entrega; loja fechada e tráfego adiam chegada, mas vagas 
   sim.estado.lojaAberta = true;
   sim.entregas.transitoLivre = false; sim.entregas.atualizar(sim, 0.05);
   assert.equal(sim.entregas.caminhao.fase, 'aguardando');
-  sim.entregas.transitoLivre = true; sim.entregas.atualizar(sim, 0.05);
+  sim.entregas.transitoLivre = true; sim.entregas.atualizar(sim, TEMPO_ESPERA_ENTREGA - 0.1);
+  assert.equal(sim.entregas.caminhao.fase, 'aguardando', 'leva um minuto para chegar');
+  sim.entregas.atualizar(sim, 0.1);
+  assert.equal(sim.entregas.caminhao.fase, 'chegando');
   sim.pausado = true;
   const antes = structuredClone(sim.entregas.caminhao);
   sim.atualizar(0.05); assert.deepEqual(sim.entregas.caminhao, antes);
   sim.entregas.atualizar(sim, 0); assert.deepEqual(sim.entregas.caminhao, antes);
   const ocupado = loja(); ocupado.encomendarImportacoes({ importarProdutos: 1 });
   ocupado.estacionamento.carros.push({ fase: 'estacionado', modelo: 0, x: -13.95, z: -3.7, angulo: 0 });
-  ocupado.entregas.atualizar(ocupado, 0.05);
+  ocupado.entregas.atualizar(ocupado, TEMPO_ESPERA_ENTREGA);
   assert.equal(ocupado.entregas.caminhao.fase, 'chegando');
   entregar(ocupado);
   assert.equal(ocupado.estado.deposito.pacotes.length, 1);
@@ -372,6 +387,8 @@ test('caixas guardadas e pedidos separados disputam as mesmas quatro vagas da cl
   const antes = structuredClone(sim.estado);
   assert.equal(sim.encomendarImportacoes({ importarProdutos: 2 }).sucesso, false);
   assert.deepEqual(sim.estado, antes);
+  entregar(sim);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 2 }).sucesso, false);
   assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
   assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
 });

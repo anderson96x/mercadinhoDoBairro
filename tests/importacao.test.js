@@ -45,8 +45,11 @@ test('cada caixa encomenda 9 enlatados vendidos por R$ 30, sem estoque instantâ
   assert.equal(sim.estado.produtos.enlatado.apresentado, false);
   assert.equal(PRODUTOS.enlatado.preco, 30);
 
-  sim.comprarMelhoria('importarProdutos');
-  assert.equal(sim.estado.deposito.pedidos.length, 2);
+  const segundoPedido = sim.comprarMelhoria('importarProdutos');
+  assert.equal(segundoPedido.sucesso, false);
+  assert.match(segundoPedido.motivo, /Aguarde o caminhão/);
+  assert.equal(sim.estado.deposito.pedidos.length, 1);
+  assert.equal(sim.estado.dinheiro, saldo - 270);
 });
 
 test('saves antigos preservam enlatados na gôndola e recebem depósito vazio', () => {

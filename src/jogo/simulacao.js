@@ -425,6 +425,7 @@ export class Simulacao {
     }
     if (m.tipo === 'importacao') {
       if (!this.estado.melhorias.expansao) return { disponivel: false, motivo: 'Compre Expansão para receber entregas no pátio exclusivo.', requisitoMelhoria: 'expansao' };
+      if (this.estado.deposito.pedidos.length || this.entregas?.caminhao) return { disponivel: false, motivo: 'Aguarde o caminhão concluir a entrega e ir embora antes de fazer outro pedido.' };
       if (vagasDeposito(this.estado.deposito, classeProduto(m.produto)) < 1) return { disponivel: false, motivo: `A classe ${CLASSES_PRODUTOS[classeProduto(m.produto)]?.nome || ''} está cheia: limite de ${PACOTES_POR_CLASSE} pacotes, incluindo pedidos a caminho.` };
     }
     return { disponivel: true };
@@ -627,7 +628,7 @@ export class Simulacao {
     for (const item of itens) { this.estado.melhorias[item.id] += item.quantidade; this.estado.produtos[item.produto].liberado = true; }
     const pedido = { id: this.estado.deposito.proximoId++, pacotes };
     this.estado.deposito.pedidos.push(pedido);
-    this.emitir('melhoria', { id: 'importarProdutos', texto: `Pedido confirmado! ${pacotes.length} ${pacotes.length === 1 ? 'caixa a caminho' : 'caixas a caminho'} do depósito.` });
+    this.emitir('melhoria', { id: 'importarProdutos', texto: 'O caminhão está a caminho!' });
     return { sucesso: true, pedidoId: pedido.id, caixas: pacotes.length, quantidade: pacotes.length * UNIDADES_PACOTE, dinheiro: this.estado.dinheiro };
   }
   retirarProdutoDeposito(id) {
