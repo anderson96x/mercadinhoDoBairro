@@ -38,6 +38,16 @@ export function criarCaminhaoEntrega() {
     tomate.scale.z = 0.23; tomate.position.set(0, -0.02, 0.09); logo.add(tomate);
     const folha = bloco(logo, 0.14, 0.05, 0.025, 0x32634a, 0.04, 0.12, 0.1);
     folha.rotation.z = 0.45;
+    const cereal = new THREE.Group(); cereal.name = 'logo-cereais-caminhao';
+    cereal.position.copy(logo.position); cereal.rotation.copy(logo.rotation);
+    cereal.visible = false; grupo.add(cereal);
+    bloco(cereal, 1.25, 1.35, 0.025, branco, 0, 0, 0);
+    bloco(cereal, 0.66, 0.93, 0.035, escuro, 0, 0, 0.025);
+    bloco(cereal, 0.58, 0.85, 0.04, CLASSES_PRODUTOS.cereais.cor, 0, 0, 0.045).name = 'embalagem-cereal-logo';
+    bloco(cereal, 0.46, 0.08, 0.025, branco, 0, -0.31, 0.075);
+    bloco(cereal, 0.48, 0.035, 0.025, branco, 0, 0.35, 0.075);
+    const grao = new THREE.Mesh(new THREE.SphereGeometry(0.19, 12, 8), new THREE.MeshStandardMaterial({ color: 0x76472e }));
+    grao.scale.set(1, 0.75, 0.15); grao.position.set(0, 0.04, 0.09); cereal.add(grao);
   }
   bloco(grupo, 0.075, 2.08, 1.65, corCategoria, 1.0625, 1.85, 0).name = 'frente-bau';
   bloco(grupo, 3.5, 0.075, 1.65, corCategoria, -0.65, 2.8525, 0).name = 'teto-bau';
@@ -107,6 +117,10 @@ export class EntregasVisual {
   constructor(cena, criarEntregador = () => criarAgente(0xd6a174), animarEntregador = null) {
     this.grupo = new THREE.Group(); this.grupo.name = 'entrega-importacoes'; cena.add(this.grupo);
     this.caminhao = criarCaminhaoEntrega(); this.grupo.add(this.caminhao);
+    this.pintura = new THREE.MeshStandardMaterial({ color: CLASSES_PRODUTOS.enlatados.cor, roughness: 0.8 });
+    this.caminhao.traverse(objeto => {
+      if (['lateral-bau', 'frente-bau', 'teto-bau'].includes(objeto.name)) objeto.material = this.pintura;
+    });
     this.entregador = criarEntregador(); this.entregador.name = 'entregador-importacoes';
     const uniforme = this.entregador.userData.uniforme;
     if (uniforme) for (const malha of [...uniforme.camisa, ...uniforme.chapeu]) {
@@ -126,6 +140,19 @@ export class EntregasVisual {
     const c = entregas.caminhao;
     this.grupo.visible = !!c && c.fase !== 'aguardando';
     if (!c) return;
+    // Pedidos mistos usam a primeira classe durante toda a viagem, inclusive a saída.
+    const classe = CLASSES_PRODUTOS[c.classe] ? c.classe : 'enlatados';
+    if (this.classe !== classe) {
+      this.classe = classe;
+      const cor = CLASSES_PRODUTOS[classe].cor;
+      this.pintura.color.setHex(cor); this.caminhao.userData.corCategoria = cor;
+      this.caminhao.traverse(objeto => {
+        if (objeto.name === 'logo-cereais-caminhao') objeto.visible = classe === 'cereais';
+        if (objeto.name === 'logo-enlatados-caminhao') objeto.visible = classe !== 'cereais';
+      });
+      const uniforme = this.entregador.userData.uniforme;
+      if (uniforme) for (const malha of [...uniforme.camisa, ...uniforme.chapeu]) malha.material.color.setHex(cor);
+    }
     this.tempo += dt;
     this.caminhao.position.set(c.x, 0.03, c.z); this.caminhao.rotation.y = c.angulo;
     this.caminhao.userData.rodas.forEach(roda => { roda.rotation.z = c.rodas; });

@@ -102,7 +102,11 @@ export class EstacionamentoClientes {
           cliente.x = carro.x; cliente.z = carro.z;
         }
         if (!this.transitoLivre || (servico && !(carro.recebido && fase === 'aguardando' && servico.tempo < 0))) continue;
-        if (fase === 'esperandoSaida' && this.manobrando) continue;
+        // Uma reserva ainda sem carro não ocupa a rua. Deixe a saída liberar
+        // a entrega, que suspende o tráfego necessário para atender essa reserva.
+        if (fase === 'esperandoSaida' && this.carros.some(outro =>
+          !['estacionado', 'esperandoSaida'].includes(outro.fase)
+          && !(outro.fase === 'aguardando' && this.receberDoTrafego && !outro.recebido))) continue;
         carro.fase = fase === 'aguardando' ? 'chegando' : 're';
         if (fase === 'esperandoSaida') { carro.distancia = 0; carro.velocidade = 0; }
       } else if (['chegando', 're', 'partindo'].includes(fase)) {

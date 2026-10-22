@@ -34,6 +34,7 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 17 | Prateleiras de importados (2 níveis) | R$ 1.000 por nível | — |
 | 18 | Expansão dos fundos | R$ 10.000 | — |
 | 19 | Importar produtos: caixa com 9 enlatados | R$ 270 por caixa | R$ 30 por lata |
+| 20 | Importar cereais: caixa com 9 unidades | R$ 405 por caixa | R$ 45 por unidade |
 
 ## Importação de produtos no nível 19
 
@@ -41,7 +42,7 @@ No nível 19, abra o celular e selecione **Importar produtos**, imediatamente ab
 
 Cada pedido confirmado gera **uma entrega de caminhão baú branco**. O caminhão surge à esquerda da rua, avança além do **acesso exclusivo**, para e entra de ré pela única faixa do pátio. A vaga mede **2,6 × 6,4 u**, com a cabine voltada para a rua e o baú para os fundos. As seis vagas e o acesso de clientes continuam funcionando durante a descarga; carros de clientes não usam o pátio privativo. O entregador desce da cabine, contorna a lateral até o baú, leva uma caixa por viagem até as estantes e retorna ao veículo. Terminada a descarga, o caminhão sai de frente pela mesma faixa e o próximo pedido pode chegar. As duas faixas da rua aguardam a manobra e são liberadas durante a descarga. Se o mercado estiver fechado, a chegada aguarda a abertura. Pausar congela a entrega.
 
-O depósito tem **quatro estantes, uma por classe, com quatro pacotes de nove unidades cada** (16 posições físicas). As duas gôndolas têm duas classes cada, totalizando quatro classes. Apenas **Enlatados** está disponível agora; Higiene fica prevista, sem produtos à venda, e as demais classes serão definidas no futuro. Cada caixa ocupa uma posição até ficar vazia. Caixas já guardadas e caixas de pedidos pendentes contam no limite da própria classe; vagas de outra classe não podem ser usadas e não é possível pagar por mais mercadoria do que cabe. As estantes começam vazias e exibem somente os pacotes realmente entregues.
+O depósito tem **quatro estantes, uma por classe, com quatro pacotes de nove unidades cada** (16 posições físicas). As duas gôndolas têm duas classes cada, totalizando quatro classes. **Enlatados** está disponível no nível 19 e **Cereais** no nível 20. Cereais usa a terceira estante do depósito e a face oposta aos enlatados na primeira gôndola, com capacidade de 36 unidades. As embalagens têm as mesmas quatro cores das latas. Higiene fica prevista na segunda gôndola, sem produtos à venda; a quarta estante permanece reservada. Cada caixa ocupa uma posição até ficar vazia. Caixas já guardadas e caixas de pedidos pendentes contam no limite da própria classe; vagas de outra classe não podem ser usadas e não é possível pagar por mais mercadoria do que cabe. As estantes começam vazias e exibem somente os pacotes realmente entregues.
 
 Retire os enlatados junto à primeira estante, identificada como Enlatados e leve-os à primeira gôndola, ou deixe o repositor fazer o transporte. Cada lata vale **R$ 30**, e a gôndola comporta **36 unidades**. O estoque não aparece na loja no momento da compra. O catálogo mostra unidades na gôndola e no depósito, ocupação e limite de quatro pacotes por classe e caixas a caminho. Monte o pedido com **−** e **+**, e confirme tudo de uma vez em **Finalizar pedido**; a cobrança ocorre somente se o pedido inteiro for válido.
 

@@ -854,7 +854,9 @@ export class Simulacao {
         if (tipo === 'reposicao' && objeto.movel === 'parede-frios' && expositorPosterior !== id) continue;
         const outros = obstaculos.filter(o => doceCompartilhado && o.movel === objeto.movel ? false : compartilhado && o.movel === objeto.movel
           ? !(jogador.z >= o.z - o.d / 2 - 1e-8 && jogador.z <= o.z + o.d / 2 + 1e-8)
-          : o.x !== objeto.x || o.z !== objeto.z || o.w !== objeto.w || o.d !== objeto.d);
+          : p.origem === 'importado' && tipo === 'reposicao'
+            ? o.x !== p.prateleira.x || o.z !== p.prateleira.z || o.w !== p.prateleira.w || o.d !== p.prateleira.d
+            : o.x !== objeto.x || o.z !== objeto.z || o.w !== objeto.w || o.d !== objeto.d);
         if (segmentoLivre(jogador, pontoMaisProximo(jogador, objeto), outros)) candidatos.push({ id, tipo, distancia: d });
       }
     }

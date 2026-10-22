@@ -122,7 +122,7 @@ export class Entregas {
     if (!dt) return;
     const deposito = sim.estado.deposito;
     if (!this.caminhao && deposito.pedidos.length && sim.estado.melhorias.expansao && sim.estado.lojaAberta && !sim.estado.banco.coleta && !sim.estado.banco.assalto) {
-      this.caminhao = { fase: 'aguardando', distancia: 0, rodas: 0, tempo: 0, tempoEspera: 0, aberturaBau: 0, aberturaCabine: 0,
+      this.caminhao = { classe: classeProduto(deposito.pedidos[0].pacotes[0]), fase: 'aguardando', distancia: 0, rodas: 0, tempo: 0, tempoEspera: 0, aberturaBau: 0, aberturaCabine: 0,
         ...amostrarEntrega(ROTAS_ENTREGA.chegando, 0), entregador: null };
     }
     const c = this.caminhao;

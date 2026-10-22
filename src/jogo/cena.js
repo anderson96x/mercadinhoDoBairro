@@ -247,6 +247,34 @@ export function criarProduto(id, escala = 1, variante = 0) {
       const corte = caixa(grupo, 0.025, 0.012, 0.22, 0xf5d89b, x, 0.135, 0);
       corte.rotation.z = 0.3;
     }
+  } else if (id === 'cereal') {
+    const cores = [0xd94b3d, 0xf0a51f, 0x69ad3c, 0x2777c8];
+    const cor = cores[Math.floor(variante / 3) % cores.length];
+    const clara = new THREE.Color(cor).lerp(new THREE.Color(0xffffff), 0.22).getHex();
+    caixa(grupo, 0.36, 0.66, 0.105, cor, 0, 0, 0).name = 'caixa-cereal';
+    caixa(grupo, 0.345, 0.012, 0.10, clara, 0, 0.336, 0).name = 'topo-caixa-cereal';
+    caixa(grupo, 0.018, 0.64, 0.108, clara, -0.189, 0, 0).name = 'lateral-caixa-cereal';
+    const selo = esfera(grupo, 0.105, 0x5b3528, 0.025, 0.065, 0.059, 0.9, 1.28, 0.06);
+    selo.name = 'selo-caixa-cereal';
+    caixa(grupo, 0.26, 0.04, 0.01, 0xf8f5df, 0.025, -0.25, 0.059).name = 'faixa-caixa-cereal';
+    const escura = new THREE.Color(cor).multiplyScalar(0.72).getHex();
+    // Vincos da tampa e borda impressa acompanham o formato do cartonado.
+    caixa(grupo, 0.31, 0.004, 0.008, escura, 0, 0.344, 0);
+    caixa(grupo, 0.009, 0.60, 0.004, escura, 0.163, 0, 0.055);
+    caixa(grupo, 0.21, 0.026, 0.005, 0xf8f5df, 0.015, 0.255, 0.057);
+    caixa(grupo, 0.13, 0.009, 0.005, clara, 0.015, 0.22, 0.057);
+    // Pequena espiga dourada dentro do selo, sem cobrir o oval escuro.
+    caixa(grupo, 0.007, 0.105, 0.005, 0xe5bc68, 0.025, 0.065, 0.067);
+    for (const y of [0.035, 0.065, 0.095]) for (const lado of [-1, 1]) {
+      const grao = esfera(grupo, 0.014, 0xe5bc68, 0.025 + lado * 0.014, y, 0.069, 0.65, 1, 0.2);
+      grao.rotation.z = lado * 0.55;
+    }
+    // Painel de informações e código de barras na lateral estreita.
+    caixa(grupo, 0.004, 0.19, 0.065, 0xf8f5df, -0.2, -0.12, 0);
+    for (let i = 0; i < 4; i++)
+      caixa(grupo, 0.005, 0.005, 0.045, escura, -0.203, -0.055 - i * 0.025, 0);
+    for (let i = 0; i < 6; i++)
+      caixa(grupo, 0.005, 0.035, i % 2 ? 0.003 : 0.005, 0x454638, -0.203, -0.18, -0.024 + i * 0.009);
   } else if (id === 'enlatado') {
     const cores = [0xd94b3d, 0xf0a51f, 0x69ad3c, 0x2777c8];
     const cor = cores[Math.floor(variante / 3) % cores.length];
@@ -977,26 +1005,22 @@ export class Cena {
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'ovos' ? 3.1 : id === 'leite' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   construirImportado(id, p) {
+    const lado = CLASSES_PRODUTOS[p.classe].lado;
     const grupo = new THREE.Group(); grupo.name = `produto-importado-${id}`; this.cena.add(grupo);
-    const frutas = [], decoracoes = [];
-    // Cada caixa de nove unidades aparece como três latas da mesma cor.
-    // Quatro caixas formam doze latas, todas na prateleira superior.
-    for (let i = 0; i < 12; i++) {
-      const produto = criarProduto(id, 0.9, i);
-      produto.position.set(p.prateleira.x - 0.56, 2.52, p.prateleira.z - 2.31 + i * 0.42);
-      produto.rotation.y = Math.PI / 2;
+    const frutas = [];
+    // As 36 unidades ocupam quatro níveis de nove, começando pelo nível inferior.
+    // Cada nível representa uma das quatro variedades da classe.
+    for (let i = 0; i < p.capacidadePrateleira; i++) {
+      const nivel = Math.floor(i / 9), coluna = i % 9;
+      const produto = criarProduto(id, 0.82, nivel * 3);
+      const altura = id === 'cereal' ? 0.66 : 0.34;
+      produto.position.set(p.prateleira.x + lado * (id === 'cereal' ? 0.46 : 0.56),
+        0.25 + nivel * 0.63 + altura * 0.82 / 2 + 0.035, p.prateleira.z - 2.2 + coluna * 0.55);
+      produto.rotation.y = lado * Math.PI / 2;
       grupo.add(produto); frutas.push(produto);
     }
-    // Repete o conjunto azul abaixo do topo para que os níveis inferiores
-    // pareçam abastecidos, sem acrescentar unidades ao estoque real.
-    for (let nivel = 0; nivel < 3; nivel++) for (let coluna = 0; coluna < 3; coluna++) {
-      const produto = criarProduto(id, 0.9, 9 + coluna);
-      produto.position.set(p.prateleira.x - 0.56, 0.65 + nivel * 0.63, p.prateleira.z + 1.47 + coluna * 0.42);
-      produto.rotation.y = Math.PI / 2;
-      grupo.add(produto); decoracoes.push(produto);
-    }
-    this.produtos[id] = { grupo, frutos: [], frutas, decoracoes, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
-    this.criarLabel(`loja-${id}`, { ...p.prateleira, x: p.prateleira.x - 0.7, y: 2.8 }, 'ENLATADOS', '0 / 36', 'loja');
+    this.produtos[id] = { grupo, frutos: [], frutas, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
+    this.criarLabel(`loja-${id}`, { ...p.prateleira, x: p.prateleira.x + lado * 0.7, y: 2.8 }, p.plural.toLocaleUpperCase('pt-BR'), `0 / ${p.capacidadePrateleira}`, 'loja');
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 2.9 }, CLASSES_PRODUTOS[p.classe].nome.toLocaleUpperCase('pt-BR'), `0 / ${PACOTES_POR_CLASSE} pacotes`, id);
   }
   construirArtesanal(id, p) {
@@ -1937,8 +1961,7 @@ export class Cena {
       }
       const emTransito = [this.jogador, this.ajudante].map(m => m.userData.reposicao)
         .filter(r => r?.id === id && r.decorrido / r.duracao < 0.85);
-      objetos.frutas.forEach((f, i) => { f.visible = (PRODUTOS[id].origem === 'importado' ? i < Math.ceil(estado.prateleira / 3) : i < estado.prateleira) && !emTransito.some(r => r.lugar === i); });
-      objetos.decoracoes?.forEach(item => { item.visible = estado.prateleira > 0; });
+      objetos.frutas.forEach((f, i) => { f.visible = i < estado.prateleira && !emTransito.some(r => r.lugar === i); });
     }
     if (this.cuidadorVaca?.visible && this.produtos.leite.grupo.visible) {
       animarVaca(this.vaca, tempo);

@@ -290,6 +290,31 @@ test('entregador usa o modelo de NPC fornecido com uniforme próprio', () => {
   assert.equal(npc.userData.barriga, null);
 });
 
+test('viagem de cereais mantém logo e cor no caminhão e no uniforme, sem afetar enlatados', () => {
+  const sim = loja(); sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
+  sim.encomendarImportacoes({ importarCereais: 1, importarProdutos: 1 });
+  sim.entregas.atualizar(sim, 0.05);
+  assert.equal(sim.entregas.caminhao.classe, 'cereais');
+  const cena = new THREE.Scene();
+  const visual = new EntregasVisual(cena, criarEntregador);
+  const outro = new EntregasVisual(cena, criarEntregador);
+  visual.atualizar(sim.entregas, 0.05);
+  for (const classe of ['cereais', 'enlatados', 'cereais']) {
+    sim.entregas.caminhao.classe = classe;
+    visual.atualizar(sim.entregas, 0.05);
+    const cor = classe === 'cereais' ? 0x69ad3c : 0xc98143;
+    assert.equal(visual.caminhao.getObjectByName('lateral-bau').material.color.getHex(), cor);
+    assert.equal(visual.caminhao.getObjectByName('logo-cereais-caminhao').visible, classe === 'cereais');
+    assert.equal(visual.caminhao.getObjectByName('logo-enlatados-caminhao').visible, classe === 'enlatados');
+    for (const malha of [...visual.entregador.userData.uniforme.camisa, ...visual.entregador.userData.uniforme.chapeu]) assert.equal(malha.material.color.getHex(), cor);
+    assert.equal(outro.caminhao.getObjectByName('lateral-bau').material.color.getHex(), 0xc98143);
+  }
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
+  assert.equal(sim.entregas.caminhao.classe, 'cereais');
+  visual.atualizar(sim.entregas, 0.05);
+  assert.equal(visual.caminhao.getObjectByName('logo-cereais-caminhao').visible, true);
+});
+
 test('portas deixam uma abertura real no baú e giram para fora durante a descarga', () => {
   const visual = new EntregasVisual(new THREE.Scene());
   const caminhao = visual.caminhao;
@@ -346,6 +371,27 @@ test('acesso dedicado recebe entrega mesmo sem comprar estacionamento de cliente
   assert.equal(sim.encomendarImportacoes({ importarProdutos: 1 }).sucesso, true);
   entregar(sim);
   assert.equal(sim.estado.deposito.pacotes.length, 1);
+});
+
+test('entrega chega quando um cliente quer sair e outro ainda aguarda carro do tráfego', () => {
+  const sim = loja();
+  sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
+  sim.encomendarImportacoes({ importarCereais: 1 });
+  sim.clientes = [{ id: 901, noCarro: true }, { id: 902, noCarro: true }];
+  sim.estacionamento.carros = [
+    { clienteId: 901, vaga: 0, modelo: 0, fase: 'esperandoSaida', x: -13.95, z: -3.7, angulo: 0, velocidade: 0, rodas: 0 },
+    { clienteId: 902, vaga: 1, modelo: 0, fase: 'aguardando', x: 20, z: 10.7, angulo: 0, velocidade: 0, rodas: 0 }
+  ];
+  sim.estacionamento.receberDoTrafego = () => null;
+  const cena = { sim, trafego: new Trafego(new THREE.Scene(), () => 0.5) };
+  let chegou = false;
+  for (let i = 0; i < 6000 && !chegou; i++) {
+    sim.entregas.atualizar(sim, 0.05);
+    sim.estacionamento.atualizar(sim, 0.05);
+    Cena.prototype.atualizarTrafego.call(cena, 0.05);
+    chegou = sim.entregas.caminhao?.fase === 'chegando';
+  }
+  assert.ok(chegou, 'carro sem veículo recebido não pode impedir a saída e a chegada do caminhão');
 });
 
 test('saída aguarda manobra de clientes ou banco sem reservar a rua e impedir o serviço de terminar', () => {

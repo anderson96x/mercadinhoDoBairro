@@ -1,6 +1,15 @@
 # Histórico de alterações
 
-## Versão atual: 0.57.6 — 2026-10-22
+## Versão atual: 0.58.0 — 2026-10-22
+
+- Adiciona Cereais no nível 20: caixas de nove unidades por R$ 405, venda por R$ 45 e quatro vagas exclusivas na terceira estante do depósito. Reutiliza pedidos, entrega, coleta e reposição dos importados.
+- Exibe caixas altas e retangulares em vermelho, amarelo, verde e azul na face oposta aos enlatados da primeira gôndola. As embalagens têm oval escuro com espiga dourada, marca frontal, faixa branca, vincos e painel lateral. A arte frontal dos importados aponta para o corredor.
+- Preenche as gôndolas de baixo para cima, com nove unidades por nível e quatro variedades nos quatro níveis, acompanhando o estoque real. Separa o alcance de reposição de cada face e reserva Higiene na segunda gôndola.
+- Identifica entregas de cereais com baú verde, logo nas duas laterais e uniforme verde do entregador. Pedidos mistos mantêm a identidade da primeira classe até o fim da viagem.
+- Corrige o bloqueio da chegada do caminhão quando um cliente aguarda sair e outra reserva ainda não recebeu um carro do tráfego.
+- Preserva saves existentes e documenta o desbloqueio. Validação acumulada: 289 testes e build aprovados, rotas e layout verificados, além de verificações de navegador em desktop/celular e WebGL/Canvas sem salvar imagens.
+
+## 0.57.6 — 2026-10-22
 
 - Remove do catálogo o resumo de pacotes no depósito e pedidos a caminho. Após finalizar uma importação, fecha o painel e usa o card de dicas para informar que o caminhão está a caminho.
 - Faz o caminhão aguardar 60 segundos antes de entrar no mapa e mostra um card persistente com contagem regressiva, barra de progresso e quantidade de pacotes. O aviso se posiciona acima do alerta bancário quando ambos aparecem juntos e desaparece sem uma mensagem adicional quando o veículo chega.
