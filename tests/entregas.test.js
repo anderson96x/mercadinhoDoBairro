@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS, MELHORIAS } from '../src/jogo/configuracao.js';
 import { ROTAS_ENTREGA, ENTREGA, TEMPO_ESPERA_ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
-import { criarCaminhaoEntrega, EntregasVisual, ANGULO_PORTAS_BAU, ANGULO_PORTA_CABINE } from '../src/jogo/entregas-visual.js';
+import { criarCaminhaoEntrega, EntregasVisual, COR_ENTREGA_GERAL, ANGULO_PORTAS_BAU, ANGULO_PORTA_CABINE } from '../src/jogo/entregas-visual.js';
 import { Cena, criarEntregador } from '../src/jogo/cena.js';
 import { Trafego } from '../src/jogo/trafego.js';
 import { OBSTACULOS_ESTACIONAMENTO, paredesDeposito, PLANTA_ESTACIONAMENTO, PLANTA_DEPOSITO, PLANTA_CARGA, PLANTA_EXPANSAO, obstaculosCarga } from '../src/jogo/planta.js';
@@ -118,6 +118,18 @@ test('pausa congela a entrega; loja fechada e tráfego adiam chegada, mas vagas 
   assert.equal(ocupado.estado.deposito.pacotes.length, 1);
 });
 
+test('ferramenta DEV permite desativar e reativar o temporizador das entregas', () => {
+  const imediata = loja(); imediata.encomendarImportacoes({ importarProdutos: 1 });
+  assert.equal(imediata.definirTemporizadorEntregaAtivo(false), false);
+  imediata.entregas.atualizar(imediata, 0.05);
+  assert.equal(imediata.entregas.caminhao.fase, 'chegando');
+
+  const normal = loja(); normal.encomendarImportacoes({ importarProdutos: 1 });
+  assert.equal(normal.definirTemporizadorEntregaAtivo(true), true);
+  normal.entregas.atualizar(normal, 0.05);
+  assert.equal(normal.entregas.caminhao.fase, 'aguardando');
+});
+
 test('jogador e repositor retiram produtos do depósito e abastecem a gôndola por caminhos livres', () => {
   const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 2 }); entregar(sim);
   Object.assign(sim.estado.jogador, { x: PLANTA_DEPOSITO.estantes[1].x, z: -12.9 });
@@ -208,7 +220,8 @@ test('modelo de caminhão tem seis rodas e portas de baú; entregador carrega um
   assert.ok(caminhao.userData.portaCabine);
   assert.equal(caminhao.userData.piscas.length, 4);
   assert.ok(caminhao.getObjectByName('interior-cabine-entrega'));
-  assert.equal(caminhao.getObjectByName('logo-enlatados-caminhao').parent, caminhao);
+  assert.equal(caminhao.getObjectByName('logo-enlatados-caminhao'), undefined);
+  assert.equal(caminhao.getObjectByName('logo-cereais-caminhao'), undefined);
   const visual = new EntregasVisual(new THREE.Scene());
   const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
   entregar(sim, () => sim.entregas.caminhao?.fase === 'levar');
@@ -290,29 +303,23 @@ test('entregador usa o modelo de NPC fornecido com uniforme próprio', () => {
   assert.equal(npc.userData.barriga, null);
 });
 
-test('viagem de cereais mantém logo e cor no caminhão e no uniforme, sem afetar enlatados', () => {
+test('caminhão e entregador mantêm identidade geral dourada sem logos', () => {
   const sim = loja(); sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
   sim.encomendarImportacoes({ importarCereais: 1, importarProdutos: 1 });
   sim.entregas.atualizar(sim, 0.05);
   assert.equal(sim.entregas.caminhao.classe, 'cereais');
-  const cena = new THREE.Scene();
-  const visual = new EntregasVisual(cena, criarEntregador);
-  const outro = new EntregasVisual(cena, criarEntregador);
+  const visual = new EntregasVisual(new THREE.Scene(), criarEntregador);
   visual.atualizar(sim.entregas, 0.05);
   for (const classe of ['cereais', 'enlatados', 'cereais']) {
     sim.entregas.caminhao.classe = classe;
     visual.atualizar(sim.entregas, 0.05);
-    const cor = classe === 'cereais' ? 0x69ad3c : 0xc98143;
-    assert.equal(visual.caminhao.getObjectByName('lateral-bau').material.color.getHex(), cor);
-    assert.equal(visual.caminhao.getObjectByName('logo-cereais-caminhao').visible, classe === 'cereais');
-    assert.equal(visual.caminhao.getObjectByName('logo-enlatados-caminhao').visible, classe === 'enlatados');
-    for (const malha of [...visual.entregador.userData.uniforme.camisa, ...visual.entregador.userData.uniforme.chapeu]) assert.equal(malha.material.color.getHex(), cor);
-    assert.equal(outro.caminhao.getObjectByName('lateral-bau').material.color.getHex(), 0xc98143);
+    for (const nome of ['lateral-bau', 'frente-bau', 'teto-bau']) assert.equal(visual.caminhao.getObjectByName(nome).material.color.getHex(), COR_ENTREGA_GERAL);
+    for (const malha of [...visual.entregador.userData.uniforme.camisa, ...visual.entregador.userData.uniforme.chapeu]) assert.equal(malha.material.color.getHex(), COR_ENTREGA_GERAL);
   }
   entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
   assert.equal(sim.entregas.caminhao.classe, 'cereais');
   visual.atualizar(sim.entregas, 0.05);
-  assert.equal(visual.caminhao.getObjectByName('logo-cereais-caminhao').visible, true);
+  assert.equal(visual.caminhao.getObjectByName('logo-cereais-caminhao'), undefined);
 });
 
 test('portas deixam uma abertura real no baú e giram para fora durante a descarga', () => {

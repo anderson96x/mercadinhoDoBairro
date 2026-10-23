@@ -258,7 +258,7 @@ export class Interface {
   }
   atualizarEntrega() {
     const caminhao = this.sim.entregas?.caminhao;
-    const aguardando = caminhao?.fase === 'aguardando' && caminhao.tempoEspera < TEMPO_ESPERA_ENTREGA;
+    const aguardando = this.sim.temporizadorEntregaAtivo && caminhao?.fase === 'aguardando' && caminhao.tempoEspera < TEMPO_ESPERA_ENTREGA;
     const aviso = this.el('aviso-entrega');
     aviso.hidden = !aguardando;
     if (!aguardando) return;
@@ -377,6 +377,11 @@ export class Interface {
           <p>Desativar cancela o assalto atual e impede novos assaltos. A escolha fica salva neste navegador.</p>
           <div class="dev-acoes"><button id="dev-assaltos" aria-pressed="${!this.sim.assaltosAtivos}">${this.sim.assaltosAtivos ? 'Desativar assaltos' : 'Ativar assaltos'}</button></div>
         </section>
+        <section class="dev-cartao" aria-label="Temporizador de entrega">
+          <div class="dev-cartao-topo"><span class="dev-rotulo">Temporizador de entrega</span><strong>${this.sim.temporizadorEntregaAtivo ? 'Ativado' : 'Desativado'}</strong></div>
+          <p>Desativar remove a espera de 60 segundos antes da chegada do caminhão. A escolha fica salva neste navegador.</p>
+          <div class="dev-acoes"><button id="dev-temporizador-entrega" aria-pressed="${!this.sim.temporizadorEntregaAtivo}">${this.sim.temporizadorEntregaAtivo ? 'Desativar temporizador' : 'Ativar temporizador'}</button></div>
+        </section>
         <div class="dev-progresso">
           <section class="dev-cartao" aria-label="Nível">
             <div class="dev-cartao-topo"><span class="dev-rotulo">Nível</span><strong>${this.sim.nivel}</strong></div>
@@ -458,6 +463,7 @@ export class Interface {
     }
     if (tipo === 'dev') {
       this.el('dev-assaltos').onclick = () => this.acoes.alternarAssaltosDev();
+      this.el('dev-temporizador-entrega').onclick = () => this.acoes.alternarTemporizadorEntregaDev();
       this.el('painel-conteudo').querySelectorAll('[data-tempo-assalto]').forEach(botao => {
         botao.onclick = () => this.acoes.definirTempoAssalto(Number(botao.dataset.tempoAssalto));
       });

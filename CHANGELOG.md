@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.58.0 — 2026-10-22
+## Versão atual: 0.58.2 — 2026-10-23
+
+- Adiciona às ferramentas DEV uma opção persistente para ativar ou desativar a espera de 60 segundos antes das entregas.
+- Validação: 290 testes automatizados e build de produção aprovados. Saves, pedidos e progressão permanecem compatíveis; nenhuma captura foi gerada.
+
+## 0.58.1 — 2026-10-23
+
+- Unifica o visual das importações: qualquer produto usa o mesmo caminhão, com baú dourado (`#d1ad5a`) sem logos, e o entregador veste uniforme da mesma cor.
+- Validação: 289 testes automatizados e build de produção aprovados. Saves, pedidos e progressão permanecem compatíveis; nenhuma captura foi gerada.
+
+## 0.58.0 — 2026-10-22
 
 - Adiciona Cereais no nível 20: caixas de nove unidades por R$ 405, venda por R$ 45 e quatro vagas exclusivas na terceira estante do depósito. Reutiliza pedidos, entrega, coleta e reposição dos importados.
 - Exibe caixas altas e retangulares em vermelho, amarelo, verde e azul na face oposta aos enlatados da primeira gôndola. As embalagens têm oval escuro com espiga dourada, marca frontal, faixa branca, vincos e painel lateral. A arte frontal dos importados aponta para o corredor.

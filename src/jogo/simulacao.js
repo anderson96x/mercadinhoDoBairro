@@ -195,6 +195,7 @@ export class Simulacao {
     this.pausado = false;
     this.tempoEsperaAssalto = ASSALTO.espera;
     this.assaltosAtivos = true;
+    this.temporizadorEntregaAtivo = true;
     this.aleatorio = Math.random;
     this.ajudante = this.estado.funcionarios.ajudante;
     this.liberarPosicao(this.estado.jogador);
@@ -290,6 +291,10 @@ export class Simulacao {
     if (![5, 60].includes(segundos)) return false;
     this.tempoEsperaAssalto = segundos;
     return true;
+  }
+  definirTemporizadorEntregaAtivo(ativo) {
+    this.temporizadorEntregaAtivo = ativo !== false;
+    return this.temporizadorEntregaAtivo;
   }
   preencherPrateleirasDev() {
     let quantidade = 0;

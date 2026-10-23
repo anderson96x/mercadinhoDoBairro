@@ -24,9 +24,11 @@ import { CONFIG, MELHORIAS } from './jogo/configuracao.js';
 const sim = new Simulacao(carregar());
 const chavePrazoAssaltoDev = 'mercadinho-do-bairro-dev-prazo-assalto';
 const chaveAssaltosDev = 'mercadinho-do-bairro-dev-assaltos-ativos';
+const chaveTemporizadorEntregaDev = 'mercadinho-do-bairro-dev-temporizador-entrega';
 if (import.meta.env.DEV) {
   try { sim.definirAssaltosAtivos(localStorage.getItem(chaveAssaltosDev) !== 'false'); } catch { /* armazenamento opcional */ }
   try { sim.definirTempoEsperaAssalto(Number(localStorage.getItem(chavePrazoAssaltoDev))); } catch { /* armazenamento opcional */ }
+  try { sim.definirTemporizadorEntregaAtivo(localStorage.getItem(chaveTemporizadorEntregaDev) !== 'false'); } catch { /* armazenamento opcional */ }
 }
 const sons = new Sons();
 let controles, cena;
@@ -86,6 +88,13 @@ function alternarAssaltosDev() {
   gravar(); ui.atualizar();
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
 }
+function alternarTemporizadorEntregaDev() {
+  if (!import.meta.env.DEV) return;
+  sim.definirTemporizadorEntregaAtivo(!sim.temporizadorEntregaAtivo);
+  try { localStorage.setItem(chaveTemporizadorEntregaDev, String(sim.temporizadorEntregaAtivo)); } catch { /* armazenamento opcional */ }
+  ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+}
 function preencherPrateleirasDev() {
   if (!import.meta.env.DEV) return;
   const quantidade = sim.preencherPrateleirasDev();
@@ -127,7 +136,7 @@ const ui = new Interface(sim, {
     if (resultado.sucesso) gravar();
     return resultado;
   },
-  pausar, comprar, encomendarImportacoes, alterarSaldo, preencherPrateleirasDev, esvaziarPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, aumentarReputacaoDev, iniciarSelecaoHorta,
+  pausar, comprar, encomendarImportacoes, alterarSaldo, preencherPrateleirasDev, esvaziarPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, alternarTemporizadorEntregaDev, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;

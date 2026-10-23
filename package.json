@@ -1,6 +1,6 @@
 {
   "name": "mercadinho-do-bairro",
-  "version": "0.58.0",
+  "version": "0.58.2",
   "private": true,
   "type": "module",
   "description": "Jogo de mercadinho em português, para computador e celular.",

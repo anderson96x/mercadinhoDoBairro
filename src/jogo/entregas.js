@@ -128,8 +128,9 @@ export class Entregas {
     const c = this.caminhao;
     if (!c) return;
     if (c.fase === 'aguardando') {
-      c.tempoEspera = Math.min(TEMPO_ESPERA_ENTREGA, c.tempoEspera + dt);
-      if (c.tempoEspera < TEMPO_ESPERA_ENTREGA) return;
+      const tempoEspera = sim.temporizadorEntregaAtivo === false ? 0 : TEMPO_ESPERA_ENTREGA;
+      c.tempoEspera = Math.min(tempoEspera, c.tempoEspera + dt);
+      if (c.tempoEspera < tempoEspera) return;
       if (!sim.estado.lojaAberta || sim.estacionamento.reservaRua || !this.transitoLivre || sim.estado.banco.coleta || sim.estado.banco.assalto) return;
       c.fase = 'chegando';
       return;
