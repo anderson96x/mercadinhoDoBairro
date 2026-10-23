@@ -1598,7 +1598,7 @@ export class Cena {
     }
     const semCarga = !coleta && !reposicao && inventario.length === 0 && (
       (d.jogador && !d.usandoCaixaMadeira) || d.funcao === 'caixa' || (ator.temCesta === false && !ator.levaSacolas)
-      || d.funcao === 'ajudante'
+      || d.funcao === 'ajudante' || d.funcao === 'entrega'
     );
     if (semCarga) {
       const oscilacaoBraco = Math.cos(marcha.fase - 0.18) * intensidade * 0.19;
@@ -1632,12 +1632,11 @@ export class Cena {
   animarEntregador(modelo, ator, caminhao, dt, tempo) {
     this.animarPersonagem(modelo, { ...ator, temCesta: false }, dt, tempo);
     const d = modelo.userData;
-    if ((caminhao.fase === 'desembarcar' && caminhao.tempo < 1.85)
-      || (caminhao.fase === 'embarcar' && caminhao.etapa >= 2)) {
+    if (caminhao.fase === 'embarcar' && caminhao.etapa >= 2) {
       const abertura = caminhao.aberturaCabine || 0;
       posicionarBraco(d.bracoE, new THREE.Vector3(-0.28, 0.88, 0.58));
       posicionarBraco(d.bracoD, new THREE.Vector3(0.42 + abertura * 0.12, 0.92, 0.72));
-      d.corpo.rotation.x = caminhao.fase === 'embarcar' ? abertura * 0.22 : -abertura * 0.12;
+      d.corpo.rotation.x = abertura * 0.22;
       return;
     }
     if (caminhao.fase === 'abrirBau' || caminhao.fase === 'fecharBau') {

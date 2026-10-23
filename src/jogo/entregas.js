@@ -1,5 +1,6 @@
 import { PLANTA_DEPOSITO, PLANTA_CARGA } from './planta.js';
 import { PRODUTOS } from './configuracao.js';
+import { segmentoLivre } from './navegacao.js';
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes-produtos.js';
 
 export { UNIDADES_PACOTE } from './classes-produtos.js';
@@ -109,6 +110,9 @@ export function volumeCaminhao(caminhao) {
   const c = Math.abs(Math.cos(caminhao.angulo)), s = Math.abs(Math.sin(caminhao.angulo));
   return { x: caminhao.x, z: caminhao.z, w: c * ENTREGA.comprimento + s * ENTREGA.largura, d: s * ENTREGA.comprimento + c * ENTREGA.largura };
 }
+export function obstaculoCaminhao(caminhao) {
+  return { x: caminhao.x, z: caminhao.z, w: ENTREGA.comprimento, d: ENTREGA.largura, angulo: caminhao.angulo };
+}
 function pontoLocalCaminhao(caminhao, x, z) {
   return { x: caminhao.x + x * Math.cos(caminhao.angulo) + z * Math.sin(caminhao.angulo),
     z: caminhao.z - x * Math.sin(caminhao.angulo) + z * Math.cos(caminhao.angulo) };
@@ -145,13 +149,13 @@ export class Entregas {
       }
       if (c.fase === 'partindo') c.partidaLiberada = true;
       const distancia = Math.min(rota.comprimento, c.distancia + dt * (c.re ? ENTREGA.velocidadeRe : ENTREGA.velocidade));
-      const proximo = amostrarEntrega(rota, distancia), volume = volumeCaminhao(proximo);
+      const proximo = amostrarEntrega(rota, distancia), obstaculo = obstaculoCaminhao(proximo);
       if (proximo.re !== c.re) {
         c.tempo += dt;
         if (c.tempo < 0.7) return;
       }
       const pedestres = [sim.estado.jogador, ...(sim.ajudanteContratado ? [sim.ajudante] : []), ...sim.clientes.filter(p => !p.noCarro)];
-      if (pedestres.some(p => Math.abs(p.x - volume.x) < volume.w / 2 + 0.32 && Math.abs(p.z - volume.z) < volume.d / 2 + 0.32)) return;
+      if (pedestres.some(p => !segmentoLivre(p, p, [obstaculo], 0.32))) return;
       const giro = Math.atan2(Math.sin(proximo.angulo - c.angulo), Math.cos(proximo.angulo - c.angulo));
       c.direcaoCurva = giro > 0.002 ? 'esquerda' : giro < -0.002 ? 'direita' : null;
       c.freando = distancia >= rota.comprimento || proximo.re !== c.re;

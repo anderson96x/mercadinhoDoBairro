@@ -8,7 +8,7 @@ import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
 import { EstacionamentoClientes, pontoPortaCarro, volumeCarro, SAIDA_PEDESTRES } from './estacionamento-clientes.js';
-import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, classeProduto, acomodarExcedentes, UNIDADES_PACOTE, volumeCaminhao } from './entregas.js';
+import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, classeProduto, acomodarExcedentes, UNIDADES_PACOTE, obstaculoCaminhao } from './entregas.js';
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from './classes-produtos.js';
 import { PLANTA_CARGA, obstaculosCarga } from './planta.js';
 
@@ -668,7 +668,7 @@ export class Simulacao {
     caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
       ...this.estacionamento.carros.filter(c => c.fase !== 'aguardando').map(volumeCarro));
-    if (this.entregas?.caminhao && this.entregas.caminhao.fase !== 'aguardando') caixas.push(volumeCaminhao(this.entregas.caminhao));
+    if (this.entregas?.caminhao && this.entregas.caminhao.fase !== 'aguardando') caixas.push(obstaculoCaminhao(this.entregas.caminhao));
     return caixas;
   }
   get limitesClientes() {
@@ -683,7 +683,7 @@ export class Simulacao {
   liberarPosicao(ator) {
     const limites = this.clientes.includes(ator) ? this.limitesClientes : this.limitesMundo, obstaculos = this.obstaculos();
     const livre = p => p.x >= limites.minX && p.x <= limites.maxX && p.z >= limites.minZ && p.z <= limites.maxZ &&
-      !obstaculos.some(o => Math.abs(p.x - o.x) < o.w / 2 + 0.32 && Math.abs(p.z - o.z) < o.d / 2 + 0.32);
+      segmentoLivre(p, p, obstaculos, 0.32);
     if (livre(ator)) return;
     for (let raio = 0.4; raio <= 4; raio += 0.4) {
       for (let i = 0; i < 16; i++) {
@@ -722,6 +722,12 @@ export class Simulacao {
   }
   caminharCalcada(ator, ponto, dt) {
     if (this.estado.melhorias.expansao && ator.z >= CONFIG.portaEntrada.z && ponto.z >= CONFIG.portaEntrada.z) {
+      if (this.entregas?.caminhao?.fase === 'partindo') {
+        // Permite contornar o baú pelo acesso, sem desviar por dentro da loja
+        // nem trocar de destino a cada passo ao se afastar da faixa.
+        const limites = { ...this.limitesClientes, minZ: PLANTA_CARGA.acesso.z - PLANTA_CARGA.acesso.d / 2 + 0.32 };
+        return this.caminharCliente(ator, ponto, dt, 2.4, limites);
+      }
       const faixa = PLANTA_CARGA.travessia, sentido = Math.sign(ponto.x - ator.x);
       const inicio = faixa.x - sentido * (faixa.w / 2 + 0.5), fim = faixa.x + sentido * (faixa.w / 2 + 0.5);
       if (sentido * (ponto.x - fim) >= 0 && sentido * (fim - ator.x) > 0.025) {
@@ -733,7 +739,7 @@ export class Simulacao {
     }
     return this.caminharCliente(ator, ponto, dt);
   }
-  caminharCliente(ator, ponto, dt, velocidade = 2.4) {
+  caminharCliente(ator, ponto, dt, velocidade = 2.4, limites = this.limitesClientes) {
     ator.andando = false;
     if (distancia(ator, ponto) < 0.025) { ator.x = ponto.x; ator.z = ponto.z; return true; }
     if (!dt) return false;
@@ -770,7 +776,7 @@ export class Simulacao {
     if (!livreRota(ator, ponto)) {
       let rota = this.caminhosClientes.get(ator);
       if (!rota || distancia(rota.destino, ponto) > 0.1 || this.tempo >= rota.recalcular) {
-        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livreRota, this.limitesClientes), recalcular: this.tempo + 0.6 };
+        rota = { destino: { ...ponto }, pontos: buscarCaminho(ator, ponto, livreRota, limites), recalcular: this.tempo + 0.6 };
         this.caminhosClientes.set(ator, rota);
       }
       while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) {

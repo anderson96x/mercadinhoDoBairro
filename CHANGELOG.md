@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.58.2 — 2026-10-23
+## Versão atual: 0.58.3 — 2026-10-23
+
+- Corrige os braços do entregador desde a saída da cabine para usar a pose livre durante a caminhada, sem prolongar o gesto de segurar a porta nem simular uma cesta invisível.
+- Corrige o bloqueio na curva de saída usando colisões alinhadas à rotação do caminhão. Clientes dos dois lados podem contornar o baú pelo acesso quando houver espaço, sem atravessar o veículo ou desviar por dentro da loja.
+- Validação: 294 testes automatizados, build de produção e verificação das rotas da loja aprovados. Saves, pedidos e progressão permanecem compatíveis; nenhuma captura foi gerada.
+
+## 0.58.2 — 2026-10-23
 
 - Adiciona às ferramentas DEV uma opção persistente para ativar ou desativar a espera de 60 segundos antes das entregas.
 - Validação: 290 testes automatizados e build de produção aprovados. Saves, pedidos e progressão permanecem compatíveis; nenhuma captura foi gerada.

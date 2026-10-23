@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS, MELHORIAS } from '../src/jogo/configuracao.js';
-import { ROTAS_ENTREGA, ENTREGA, TEMPO_ESPERA_ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
+import { ROTAS_ENTREGA, ENTREGA, TEMPO_ESPERA_ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, obstaculoCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
 import { criarCaminhaoEntrega, EntregasVisual, COR_ENTREGA_GERAL, ANGULO_PORTAS_BAU, ANGULO_PORTA_CABINE } from '../src/jogo/entregas-visual.js';
 import { Cena, criarEntregador } from '../src/jogo/cena.js';
 import { Trafego } from '../src/jogo/trafego.js';
@@ -303,6 +303,16 @@ test('entregador usa o modelo de NPC fornecido com uniforme próprio', () => {
   assert.equal(npc.userData.barriga, null);
 });
 
+test('entregador sai da cabine com os braços livres durante a chegada', () => {
+  const modelo = criarEntregador();
+  const contexto = { sim: null, animarPersonagem: Cena.prototype.animarPersonagem };
+  Cena.prototype.animarEntregador.call(contexto, modelo,
+    { x: 0, z: 0, angulo: 0, andando: true, carregando: false },
+    { fase: 'desembarcar', tempo: 0.9, aberturaCabine: 1 }, 0.05, 1);
+  assert.ok(modelo.userData.bracoE.userData.mao.position.y < 0.6);
+  assert.ok(modelo.userData.bracoD.userData.mao.position.y < 0.6);
+});
+
 test('caminhão e entregador mantêm identidade geral dourada sem logos', () => {
   const sim = loja(); sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
   sim.encomendarImportacoes({ importarCereais: 1, importarProdutos: 1 });
@@ -371,6 +381,80 @@ test('caminhão termina a entrega com tráfego contínuo nas duas faixas e liber
   assert.equal(sim.entregas.reservaRua, false);
   assert.equal(cena.trafego.faixasReservadas.size, 0);
   assert.equal(sim.estado.deposito.pacotes.length, 1);
+});
+
+test('saída do caminhão permite concluir a travessia e recebe novos pedestres', () => {
+  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
+  sim.entregas.atualizar(sim, 0.05);
+  assert.equal(sim.entregas.reservaRua, true);
+
+  const faixa = PLANTA_CARGA.travessia;
+  const inicio = faixa.x - faixa.w / 2 - 0.5;
+  const destino = sim.extremosCalcada[1];
+  const cruzando = { id: 901, x: faixa.x, z: CONFIG.entrada.z, fase: 'saindo', andando: false };
+  const aguardando = { id: 902, x: inicio - 0.4, z: CONFIG.entrada.z, fase: 'saindo', andando: false };
+  sim.clientes = [cruzando, aguardando];
+  for (let i = 0; i < 1200 && sim.entregas.caminhao; i++) {
+    sim.tempo += 0.05;
+    sim.caminharCalcada(cruzando, destino, 0.05);
+    sim.caminharCalcada(aguardando, destino, 0.05);
+    sim.entregas.atualizar(sim, 0.05);
+  }
+  assert.equal(sim.entregas.caminhao, null, 'o pedestre na faixa não prende o caminhão');
+  assert.ok(cruzando.x > faixa.x + faixa.w / 2, 'quem já cruzava termina de sair da faixa');
+  for (let i = 0; i < 60; i++) sim.caminharCalcada(aguardando, destino, 0.05);
+  assert.ok(aguardando.x > inicio, 'a travessia volta a fluir depois da saída');
+});
+
+test('caminhão sai com clientes esperando nas duas bordas da travessia', () => {
+  const sim = loja(); sim.encomendarImportacoes({ importarProdutos: 1 });
+  entregar(sim, () => sim.entregas.caminhao?.fase === 'partindo');
+  // Posição em que a caixa alinhada aos eixos prendia o caminhão na curva.
+  Object.assign(sim.entregas.caminhao, amostrarEntrega(ROTAS_ENTREGA.partindo, 12.826666666666608),
+    { distancia: 12.826666666666608, reservaPartida: true, partidaLiberada: true });
+  const faixa = PLANTA_CARGA.travessia;
+  const esquerda = { id: 991, x: faixa.x - faixa.w / 2 - 0.5, z: CONFIG.entrada.z, fase: 'passando', ladoSaida: 1 };
+  const direita = { id: 992, x: faixa.x + faixa.w / 2 + 0.5, z: CONFIG.entrada.z, fase: 'passando', ladoSaida: 0 };
+  sim.clientes = [esquerda, direita];
+  const cena = { sim, trafego: new Trafego(new THREE.Scene(), () => 0.5) };
+  const cruzou = cliente => cliente.ladoSaida ? cliente.x > faixa.x + 3 : cliente.x < faixa.x - 3;
+  for (let i = 0; i < 2400; i++) {
+    if (i < 600 && i % 60 === 0) for (const lado of [0, 1]) {
+      sim.clientes.push({ id: 1000 + i + lado, x: faixa.x + (lado ? 5 : -5), z: CONFIG.entrada.z, fase: 'passando', ladoSaida: 1 - lado });
+    }
+    sim.tempo += 1 / 60;
+    Cena.prototype.atualizarTrafego.call(cena, 1 / 60);
+    sim.entregas.atualizar(sim, 1 / 60);
+    for (const cliente of sim.clientes) {
+      sim.caminharCalcada(cliente, sim.extremosCalcada[cliente.ladoSaida], 1 / 60);
+      if (sim.entregas.caminhao) assert.ok(segmentoLivre(cliente, cliente, [obstaculoCaminhao(sim.entregas.caminhao)], 0.32), 'pedestre permanece fora do caminhão');
+    }
+    if (i >= 600 && !sim.entregas.caminhao && sim.clientes.every(cruzou)) break;
+  }
+  assert.equal(sim.entregas.caminhao, null, JSON.stringify({ caminhao: sim.entregas.caminhao, clientes: sim.clientes }));
+  assert.ok(sim.clientes.every(cruzou), 'o fluxo contínuo dos dois lados termina de cruzar');
+});
+
+test('pedestres dos dois lados contornam por trás um caminhão parado na travessia', () => {
+  for (const sentido of [-1, 1]) {
+    const sim = loja(), faixa = PLANTA_CARGA.travessia;
+    sim.entregas.caminhao = { fase: 'partindo', x: faixa.x, z: 10, angulo: -Math.PI / 2, partidaLiberada: true };
+    const cliente = { x: faixa.x - sentido * 2.5, z: CONFIG.entrada.z, fase: 'passando' };
+    sim.clientes = [cliente];
+    const destino = { x: faixa.x + sentido * 3, z: CONFIG.entrada.z };
+    const obstaculo = obstaculoCaminhao(sim.entregas.caminhao);
+    let passouAtras = false;
+    for (let i = 0; i < 600 && Math.hypot(cliente.x - destino.x, cliente.z - destino.z) > 0.025; i++) {
+      const antes = { x: cliente.x, z: cliente.z };
+      sim.tempo += 1 / 60;
+      sim.caminharCalcada(cliente, destino, 1 / 60);
+      passouAtras ||= cliente.z < 10 - ENTREGA.comprimento / 2;
+      assert.ok(segmentoLivre(antes, cliente, [obstaculo], 0.32), 'desvio não atravessa o veículo');
+    }
+    assert.ok(passouAtras, 'usa espaço atrás do baú');
+    assert.ok(Math.hypot(cliente.x - destino.x, cliente.z - destino.z) < 0.025, JSON.stringify(cliente));
+  }
 });
 
 test('acesso dedicado recebe entrega mesmo sem comprar estacionamento de clientes', () => {
