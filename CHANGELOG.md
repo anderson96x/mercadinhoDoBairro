@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.58.6 — 2026-10-25
+## Versão atual: 0.58.7 — 2026-10-25
+
+- Move os enlatados para a face da primeira gôndola antes ocupada pelos cereais, com rótulos, compra e reposição voltados ao corredor correspondente.
+- Preserva estoque, pedidos, preços e saves existentes.
+- Validação: 299 testes, build de produção e rotas da loja aprovados; desktop/celular com WebGL e Canvas verificados sem salvar imagens.
+
+## 0.58.6 — 2026-10-25
 
 - Move os cereais para a segunda gôndola, na face voltada à padaria, com compra e reposição pelo corredor correspondente.
 - Exige a segunda prateleira para novas importações de cereais. Saves que já possuem cereais recebem o móvel sem custo, preservando saldo, estoque e pedidos.

@@ -70,6 +70,10 @@ test('saves antigos preservam enlatados na gôndola e recebem depósito vazio', 
 });
 
 test('gôndola é preenchida de baixo para cima, com nove produtos por nível', () => {
+  assert.equal(PRODUTOS.enlatado.prateleira.x, PRATELEIRAS_IMPORTADOS[0].x);
+  assert.deepEqual(PRODUTOS.enlatado.reposicao, { x: 6.15, z: -2.5 });
+  assert.deepEqual(PRODUTOS.enlatado.cliente, PRODUTOS.enlatado.reposicao);
+  assert.ok(PRODUTOS.enlatado.pontosCompra.every(p => p.x === 6.15));
   const visual = { cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
   Cena.prototype.construirImportado.call(visual, 'enlatado', PRODUTOS.enlatado);
   const latas = visual.produtos.enlatado.frutas;
@@ -87,7 +91,7 @@ test('gôndola é preenchida de baixo para cima, com nove produtos por nível', 
     assert.ok(rotulo.material.userData.svg.endsWith(`${lata.userData.variedade}.svg`));
     assert.equal(rotulo.geometry.type, 'PlaneGeometry');
     const frente = lata.localToWorld(rotulo.position.clone());
-    assert.ok(frente.x < lata.position.x, 'rótulo aponta para o corredor');
+    assert.ok(frente.x > lata.position.x, 'rótulo aponta para o antigo corredor dos cereais');
     const caixa = new THREE.Box3().setFromObject(lata);
     assert.ok(caixa.max.z - caixa.min.z < 0.55, 'embalagens cabem entre vizinhas');
   }
@@ -119,8 +123,9 @@ test('gôndola cheia mantém enlatados e cereais sobre as tábuas, sem esconder 
       assert.ok(limite.min.x > tabua.min.x && limite.max.x < tabua.max.x, `${id}: embalagem dentro da largura da tábua`);
       assert.ok(limite.min.z > tabua.min.z && limite.max.z < tabua.max.z, `${id}: embalagem dentro do comprimento da tábua`);
       if (nivel < 3) assert.ok(limite.max.y < tabuas[nivel + 1].min.y, `${id}: topo livre da tábua superior`);
-      const frente = id === 'enlatado' ? limite.min.x : limite.max.x;
-      const borda = id === 'enlatado' ? tabua.min.x : tabua.max.x;
+      const lado = CLASSES_PRODUTOS[PRODUTOS[id].classe].lado;
+      const frente = lado < 0 ? limite.min.x : limite.max.x;
+      const borda = lado < 0 ? tabua.min.x : tabua.max.x;
       assert.ok(Math.abs(Math.abs(frente - borda) - 0.06) < 0.001, 'frentes alinhadas com recuo uniforme');
     }
     const produtos = visual.produtos[id].frutas;
@@ -202,7 +207,7 @@ test('cereais têm quatro artes SVG na segunda gôndola, voltados à padaria', (
     const posicaoFrente = p.localToWorld(frente.position.clone());
     assert.ok(posicaoFrente.x > p.position.x, 'arte frontal aponta para o corredor, longe da divisória');
   }
-  assert.ok(latas.every(p => p.position.x < PRODUTOS.enlatado.prateleira.x));
+  assert.ok(latas.every(p => p.position.x > PRODUTOS.enlatado.prateleira.x));
 });
 
 test('save com cereais na primeira gôndola recebe a segunda e preserva saldo e estoque', () => {
