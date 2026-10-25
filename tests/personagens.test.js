@@ -20,9 +20,22 @@ test('jogador carrega importados em camadas sem embalagens atravessadas, mesmo a
     });
     for (const [i, a] of limites.entries()) {
       assert.ok(a.min.x >= -0.23 && a.max.x <= 0.23);
-      assert.ok(a.min.y >= 0.059 && a.max.y < 0.6);
+      assert.ok(a.min.y >= 0.059 && a.max.y < 0.66);
       for (const b of limites.slice(i + 1)) assert.equal(a.intersectsBox(b), false, 'volumes da carga separados');
     }
+  }
+});
+
+test('cereais carregados preservam profundidade visível e corpo sólido em todos os lados', () => {
+  const modelo = personagem(0xffffff, 0xf2c49c, true);
+  Cena.prototype.animarPersonagem(modelo, { x: 0, z: 0, andando: false }, 1, 0, Array(8).fill('cereal'));
+  const produtos = modelo.userData.carga.children;
+  for (const produto of produtos) {
+    const corpo = produto.getObjectByName('caixa-cereal');
+    const tamanho = new THREE.Box3().setFromObject(produto.clone()).getSize(new THREE.Vector3());
+    assert.equal(corpo.geometry.type, 'BoxGeometry');
+    assert.ok(tamanho.z >= 0.1, 'profundidade mantida mesmo na escala de transporte');
+    assert.ok(tamanho.z / tamanho.x >= 0.65, 'caixa tem lateral ampla, não apenas frente impressa');
   }
 });
 

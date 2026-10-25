@@ -1,6 +1,13 @@
 # Histórico de alterações
 
-## Versão atual: 0.58.4 — 2026-10-25
+## Versão atual: 0.58.5 — 2026-10-25
+
+- Atualiza os cereais com caixas 3D e quatro artes SVG originais: anéis de mel em amarelo, flocos de milho em azul, chocolate em verde e anéis de frutas em rosa. Inclui tigelas, leite e grãos ilustrados, além de verso, painéis laterais e vincos da tampa. Compartilha o carregamento dos rótulos com os enlatados.
+- Amplia a profundidade física das caixas de cereais e preserva uma escala maior no transporte, mantendo laterais e tampa visíveis nas mãos do jogador sem sobrepor as embalagens.
+- Preserva preços, importações, progressão e saves existentes.
+- Validação: 298 testes e build de produção aprovados, com regressão garantindo profundidade nas caixas carregadas. Gôndola cheia, onze SVGs de enlatados e cereais e carga de oito cereais verificados em desktop/celular com WebGL e Canvas por `node scripts/verificar-enlatados.mjs`, incluindo giros do jogador, sem salvar imagens.
+
+## 0.58.4 — 2026-10-25
 
 - Substitui as quatro cores de enlatados por milho em lata alta, atum em lata baixa e sardinhas em latas retangulares azul e vermelha ao tomate. Combina volumes 3D e aros metálicos com rótulos SVG originais e tampa ilustrada com anel de abertura.
 - Mantém nove unidades por variedade e compartilha materiais e texturas entre exemplares, com arte também no renderizador Canvas.

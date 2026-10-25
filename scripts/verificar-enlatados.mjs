@@ -83,11 +83,12 @@ try {
       if (![...materiais].every(m => m.map?.image?.naturalWidth > 0)) throw new Error('SVG não carregado');
       const jogador = personagem(0x478e65, 0xf2c49c, true);
       const ator = { x: PRODUTOS.enlatado.prateleira.x - 1.4, z: PRODUTOS.enlatado.prateleira.z, andando: false };
-      const inventario = ['enlatado', 'cereal', 'enlatado', 'cereal', 'enlatado', 'enlatado', 'cereal', 'enlatado'];
+      const inventario = Array(8).fill('cereal');
       Cena.prototype.animarPersonagem.call({}, jogador, ator, 1, 0, inventario);
       visual.cena.add(jogador);
       const volumes = jogador.userData.carga.children.map(p => new THREE.Box3().setFromObject(p.clone()));
       if (volumes.some((a, i) => volumes.slice(i + 1).some(b => a.intersectsBox(b)))) throw new Error('Carga sobreposta');
+      if (volumes.some(v => v.max.z - v.min.z < 0.1)) throw new Error('Caixa sem profundidade suficiente no transporte');
       const camera = new THREE.OrthographicCamera(-4, 4, 4, -4, 0.1, 50);
       const caixa = new THREE.Box3().setFromObject(visual.cena), centro = caixa.getCenter(new THREE.Vector3());
       camera.position.copy(centro).add(new THREE.Vector3(-7, 5, 7)); camera.lookAt(centro);
@@ -101,12 +102,14 @@ try {
       }
       const saida = { mobile: ${mobile}, canvas: ${canvas}, unidades: latas.length,
         variedades: [...new Set(latas.map(l => l.userData.variedade))], svgs: materiais.size,
+        variedadesCereais: [...new Set(visual.produtos.cereal.frutas.map(p => p.userData.variedade))],
         gondolaCheia: visual.produtos.cereal.frutas.length === 36, apoiados: true,
         cargaSemSobreposicao: volumes.length === 8,
+        profundidadeCarga: Math.min(...volumes.map(v => v.max.z - v.min.z)),
         largura: renderizador.domElement.width, altura: renderizador.domElement.height };
       renderizador.dispose?.(); return saida;
     })()`);
-    if (resultado.unidades !== 36 || resultado.variedades.length !== 4 || resultado.svgs !== 5) throw new Error(JSON.stringify(resultado));
+    if (resultado.unidades !== 36 || resultado.variedades.length !== 4 || resultado.variedadesCereais.length !== 4 || resultado.svgs !== 11) throw new Error(JSON.stringify(resultado));
     console.log(JSON.stringify(resultado));
   }
 } finally {

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { materialRotuloSvg } from './rotulos-produtos.js';
 
 const VARIEDADES = [
   { id: 'milho', cor: 0xf2bf39, altura: 0.4, raio: 0.15 },
@@ -7,20 +8,10 @@ const VARIEDADES = [
   { id: 'sardinha-vermelha', cor: 0xd95347, altura: 0.14 }
 ];
 const metal = new THREE.MeshStandardMaterial({ color: 0xd3dce0, metalness: 0.55, roughness: 0.42 });
-const materiais = new Map();
 const pinturas = VARIEDADES.map(tipo => new THREE.MeshStandardMaterial({ color: tipo.cor, roughness: 0.7 }));
 
 function arteSvg(nome, cor) {
-  if (!materiais.has(nome)) {
-    const mapa = typeof document !== 'undefined'
-      ? new THREE.TextureLoader().load(`${import.meta.env?.BASE_URL ?? '/'}produtos/enlatados/${nome}.svg`)
-      : null;
-    if (mapa) mapa.colorSpace = THREE.SRGBColorSpace;
-    const material = new THREE.MeshBasicMaterial({ map: mapa, color: mapa ? 0xffffff : cor, toneMapped: false });
-    material.userData.svg = `produtos/enlatados/${nome}.svg`;
-    materiais.set(nome, material);
-  }
-  return materiais.get(nome);
+  return materialRotuloSvg(`enlatados/${nome}`, cor);
 }
 
 function peca(grupo, geometria, material, y = 0) {

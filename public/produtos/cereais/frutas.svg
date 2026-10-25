@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="660" viewBox="0 0 360 660">
+  <path fill="#f44773" d="M0 0h360v660H0z"/>
+  <text x="180" y="140" text-anchor="middle" font-family="Georgia,serif" font-size="61" font-weight="bold" fill="#ffe354">CEREAIS</text>
+  <text x="180" y="184" text-anchor="middle" font-family="sans-serif" font-size="24" font-weight="bold" fill="#fff0c5">ANÉIS DE FRUTAS</text>
+  <path fill="#fffaf3" d="M0 420q28 101 56 4t60 13 61-3 64 16 66-1 53-18v229H0z"/>
+  <g fill="none" stroke-width="16"><ellipse cx="74" cy="288" rx="17" ry="14" stroke="#99d3a7"/><ellipse cx="268" cy="257" rx="18" ry="16" stroke="#67c9e0"/><ellipse cx="217" cy="366" rx="15" ry="13" stroke="#ffe15b"/><ellipse cx="99" cy="374" rx="17" ry="15" stroke="#f8a8d6"/><ellipse cx="50" cy="502" rx="17" ry="14" stroke="#68c4dd"/><ellipse cx="122" cy="516" rx="21" ry="18" stroke="#f597d1"/><ellipse cx="263" cy="496" rx="18" ry="16" stroke="#fa6081"/><ellipse cx="296" cy="561" rx="15" ry="14" stroke="#72c6db"/><ellipse cx="207" cy="557" rx="20" ry="17" stroke="#ffda3e"/><ellipse cx="58" cy="586" rx="21" ry="17" stroke="#ffe154"/><ellipse cx="134" cy="600" rx="15" ry="12" stroke="#7bc4a3"/></g>
+  <text x="180" y="645" text-anchor="middle" font-family="sans-serif" font-size="21" fill="#b34266">UMA MISTURA DE CORES</text>
+</svg>

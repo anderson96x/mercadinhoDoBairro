@@ -25,6 +25,7 @@ import { EntregasVisual } from './entregas-visual.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { criarIrrigador, animarIrrigador } from './irrigador.js';
 import { criarEnlatado } from './enlatados.js';
+import { criarCereal } from './cereais.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
@@ -97,7 +98,8 @@ function organizarImportadosCarregados(carga) {
     produto.position.set(0, 0, 0);
     produto.scale.setScalar(1);
     const limite = new THREE.Box3().setFromObject(produto), tamanho = limite.getSize(new THREE.Vector3());
-    const escala = Math.min(0.65, 0.2 / tamanho.x, 0.2 / tamanho.z, 0.24 / tamanho.y);
+    const alturaMaxima = produto.name.startsWith('cereal-') ? 0.28 : 0.24;
+    const escala = Math.min(0.65, 0.2 / tamanho.x, 0.2 / tamanho.z, alturaMaxima / tamanho.y);
     produto.scale.setScalar(escala);
     const camada = Math.floor(i / 4);
     camadas[camada] = Math.max(camadas[camada] ?? 0, tamanho.y * escala);
@@ -228,6 +230,9 @@ export function criarProduto(id, escala = 1, variante = 0) {
   if (id === 'enlatado') {
     const enlatado = criarEnlatado(variante); enlatado.scale.setScalar(escala); return enlatado;
   }
+  if (id === 'cereal') {
+    const cereal = criarCereal(variante); cereal.scale.setScalar(escala); return cereal;
+  }
   const grupo = new THREE.Group();
   if (id === 'tomate') {
     esfera(grupo, 0.16, 0xff3f32, 0, 0, 0, 1, 0.86, 1);
@@ -280,34 +285,6 @@ export function criarProduto(id, escala = 1, variante = 0) {
       const corte = caixa(grupo, 0.025, 0.012, 0.22, 0xf5d89b, x, 0.135, 0);
       corte.rotation.z = 0.3;
     }
-  } else if (id === 'cereal') {
-    const cores = [0xd94b3d, 0xf0a51f, 0x69ad3c, 0x2777c8];
-    const cor = cores[Math.floor(variante / 3) % cores.length];
-    const clara = new THREE.Color(cor).lerp(new THREE.Color(0xffffff), 0.22).getHex();
-    caixa(grupo, 0.36, 0.66, 0.105, cor, 0, 0, 0).name = 'caixa-cereal';
-    caixa(grupo, 0.345, 0.012, 0.10, clara, 0, 0.336, 0).name = 'topo-caixa-cereal';
-    caixa(grupo, 0.018, 0.64, 0.108, clara, -0.189, 0, 0).name = 'lateral-caixa-cereal';
-    const selo = esfera(grupo, 0.105, 0x5b3528, 0.025, 0.065, 0.059, 0.9, 1.28, 0.06);
-    selo.name = 'selo-caixa-cereal';
-    caixa(grupo, 0.26, 0.04, 0.01, 0xf8f5df, 0.025, -0.25, 0.059).name = 'faixa-caixa-cereal';
-    const escura = new THREE.Color(cor).multiplyScalar(0.72).getHex();
-    // Vincos da tampa e borda impressa acompanham o formato do cartonado.
-    caixa(grupo, 0.31, 0.004, 0.008, escura, 0, 0.344, 0);
-    caixa(grupo, 0.009, 0.60, 0.004, escura, 0.163, 0, 0.055);
-    caixa(grupo, 0.21, 0.026, 0.005, 0xf8f5df, 0.015, 0.255, 0.057);
-    caixa(grupo, 0.13, 0.009, 0.005, clara, 0.015, 0.22, 0.057);
-    // Pequena espiga dourada dentro do selo, sem cobrir o oval escuro.
-    caixa(grupo, 0.007, 0.105, 0.005, 0xe5bc68, 0.025, 0.065, 0.067);
-    for (const y of [0.035, 0.065, 0.095]) for (const lado of [-1, 1]) {
-      const grao = esfera(grupo, 0.014, 0xe5bc68, 0.025 + lado * 0.014, y, 0.069, 0.65, 1, 0.2);
-      grao.rotation.z = lado * 0.55;
-    }
-    // Painel de informações e código de barras na lateral estreita.
-    caixa(grupo, 0.004, 0.19, 0.065, 0xf8f5df, -0.2, -0.12, 0);
-    for (let i = 0; i < 4; i++)
-      caixa(grupo, 0.005, 0.005, 0.045, escura, -0.203, -0.055 - i * 0.025, 0);
-    for (let i = 0; i < 6; i++)
-      caixa(grupo, 0.005, 0.035, i % 2 ? 0.003 : 0.005, 0x454638, -0.203, -0.18, -0.024 + i * 0.009);
   } else {
     esfera(grupo, 0.14, 0xffd22e, 0, 0, 0, 0.7, 1.5, 0.7);
     const folha = esfera(grupo, 0.12, 0x38a447, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;

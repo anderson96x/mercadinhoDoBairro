@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="660" viewBox="0 0 360 660">
+  <path fill="#ffd43f" d="M0 0h360v660H0z"/>
+  <path fill="#fffaf0" d="M0 380q35 150 65 19t65 17 60-14 65 31 65-44 40 16v255H0z"/>
+  <text x="180" y="123" text-anchor="middle" font-family="Georgia,serif" font-size="60" font-weight="bold" fill="#ca5015">CEREAIS</text>
+  <text x="180" y="166" text-anchor="middle" font-family="sans-serif" font-size="23" font-weight="bold" fill="#a45e1a">ANÉIS DE MEL</text>
+  <path fill="#fffaf0" d="M120 449q-52-80 16-118t50-80q27-39 45 0t-37 72q-63 35-26 86z"/>
+  <ellipse cx="180" cy="570" rx="115" ry="16" fill="#ebe5db"/>
+  <path fill="#f3a329" d="M64 435h232q-7 124-116 124T64 435"/>
+  <ellipse cx="180" cy="435" rx="116" ry="42" fill="#ffc152"/>
+  <ellipse cx="180" cy="429" rx="103" ry="30" fill="#fffdf4"/>
+  <g fill="#f5b52e" stroke="#d99a21" stroke-width="4">
+    <ellipse cx="112" cy="300" rx="19" ry="14"/><ellipse cx="221" cy="218" rx="23" ry="19"/>
+    <ellipse cx="249" cy="332" rx="18" ry="13"/><ellipse cx="153" cy="377" rx="24" ry="17"/>
+    <ellipse cx="132" cy="423" rx="17" ry="10"/><ellipse cx="200" cy="437" rx="18" ry="11"/><ellipse cx="236" cy="420" rx="17" ry="9"/>
+  </g>
+  <g fill="#ffe697"><ellipse cx="112" cy="300" rx="8" ry="5"/><ellipse cx="221" cy="218" rx="10" ry="8"/><ellipse cx="249" cy="332" rx="7" ry="5"/><ellipse cx="153" cy="377" rx="10" ry="6"/><ellipse cx="132" cy="423" rx="7" ry="4"/><ellipse cx="200" cy="437" rx="8" ry="4"/><ellipse cx="236" cy="420" rx="7" ry="4"/></g>
+  <text x="180" y="620" text-anchor="middle" font-family="sans-serif" font-size="21" fill="#a36c28">CROCANTE E DOURADO</text>
+</svg>

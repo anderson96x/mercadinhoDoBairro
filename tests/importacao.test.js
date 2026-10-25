@@ -170,19 +170,24 @@ test('cereais exigem nível 20 e saldo, reservam sua classe e preservam saves an
   assert.equal(migrado.estado.produtos.cereal.prateleira, 0);
 });
 
-test('cereais têm embalagens em quatro cores na face oposta aos enlatados da gôndola', () => {
+test('cereais têm quatro artes SVG em caixas 3D na face oposta aos enlatados da gôndola', () => {
   const visual = { cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
   for (const id of ['cereal', 'enlatado']) Cena.prototype.construirImportado.call(visual, id, PRODUTOS[id]);
   const cereais = visual.produtos.cereal.frutas, latas = visual.produtos.enlatado.frutas;
   assert.equal(new Set(cereais.map(p => p.children[0].material.color.getHex())).size, 4);
+  assert.deepEqual([...new Set(cereais.map(p => p.userData.variedade))], ['mel', 'flocos', 'chocolate', 'frutas']);
+  for (const variedade of ['mel', 'flocos', 'chocolate', 'frutas']) {
+    assert.equal(cereais.filter(p => p.userData.variedade === variedade).length, 9);
+  }
   for (const p of cereais) {
     assert.equal(p.children[0].geometry.type, 'BoxGeometry');
     assert.ok(p.getObjectByName('topo-caixa-cereal'));
     assert.ok(p.getObjectByName('lateral-caixa-cereal'));
-    assert.ok(p.getObjectByName('selo-caixa-cereal'));
-    assert.ok(p.getObjectByName('faixa-caixa-cereal'));
+    assert.ok(p.getObjectByName('verso-caixa-cereal'));
     assert.ok(p.position.x > PRODUTOS.cereal.prateleira.x);
-    const frente = p.getObjectByName('selo-caixa-cereal');
+    const frente = p.getObjectByName('rotulo-cereal');
+    assert.equal(frente.geometry.type, 'PlaneGeometry');
+    assert.ok(frente.material.userData.svg.endsWith(`cereais/${p.userData.variedade}.svg`));
     const posicaoFrente = p.localToWorld(frente.position.clone());
     assert.ok(posicaoFrente.x > p.position.x, 'arte frontal aponta para o corredor, longe da divisória');
   }
