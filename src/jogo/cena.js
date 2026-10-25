@@ -20,10 +20,11 @@ import { icone } from '../interface/icones.js';
 import { criarSol } from './iluminacao.js';
 import { criarPlacaProduto } from './placas-produtos.js';
 import { construirEstacionamento } from './estacionamento.js';
-import { construirPrateleirasImportados } from './prateleiras-importados.js';
+import { construirPrateleirasImportados, alturaPrateleiraImportados } from './prateleiras-importados.js';
 import { EntregasVisual } from './entregas-visual.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { criarIrrigador, animarIrrigador } from './irrigador.js';
+import { criarEnlatado } from './enlatados.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
@@ -75,6 +76,35 @@ function posicaoProdutoPrateleira(id, p, i) {
   if (id === 'pao') return new THREE.Vector3(p.x + 0.07, 0.98 + Math.floor(i / 6) * 0.4, p.z - 1.15 + i % 6 * 0.46);
   if (p.movel === 'doces') return new THREE.Vector3(p.x - 0.78 + i % 4 * 0.52, 1.27, p.z - 0.43 + Math.floor(i / 4) * 0.43);
   return new THREE.Vector3(p.x - 0.78 + i % 4 * 0.52, 1.11, p.z - 0.43 + Math.floor(i / 4) * 0.43);
+}
+
+function criarImportadoNaPrateleira(id, p, indice) {
+  const nivel = Math.floor(indice / 9), coluna = indice % 9;
+  const produto = criarProduto(id, 0.82, nivel * 3);
+  produto.rotation.y = CLASSES_PRODUTOS[p.classe].lado * Math.PI / 2;
+  const limite = new THREE.Box3().setFromObject(produto);
+  const lado = CLASSES_PRODUTOS[p.classe].lado;
+  // Margens iguais nas pontas e frentes alinhadas, independentemente da embalagem.
+  const margem = 0.38, passo = (p.prateleira.d - margem * 2) / 8;
+  produto.position.set(p.prateleira.x + lado * (p.prateleira.w / 2 - 0.06) - (lado < 0 ? limite.min.x : limite.max.x),
+    alturaPrateleiraImportados(nivel) - limite.min.y, p.prateleira.z - p.prateleira.d / 2 + margem + coluna * passo);
+  return produto;
+}
+
+function organizarImportadosCarregados(carga) {
+  const camadas = [];
+  carga.children.forEach((produto, i) => {
+    produto.position.set(0, 0, 0);
+    produto.scale.setScalar(1);
+    const limite = new THREE.Box3().setFromObject(produto), tamanho = limite.getSize(new THREE.Vector3());
+    const escala = Math.min(0.65, 0.2 / tamanho.x, 0.2 / tamanho.z, 0.24 / tamanho.y);
+    produto.scale.setScalar(escala);
+    const camada = Math.floor(i / 4);
+    camadas[camada] = Math.max(camadas[camada] ?? 0, tamanho.y * escala);
+    produto.position.set((i % 2 - 0.5) * 0.23,
+      0.06 + camadas.slice(0, camada).reduce((total, h) => total + h + 0.025, 0) - limite.min.y * escala,
+      (Math.floor(i / 2) % 2 - 0.5) * 0.23 + 0.02);
+  });
 }
 
 function percorrerRoteiro(etapas, tempo) {
@@ -195,6 +225,9 @@ function criarSecaoHortifruti(pai, p) {
 }
 
 export function criarProduto(id, escala = 1, variante = 0) {
+  if (id === 'enlatado') {
+    const enlatado = criarEnlatado(variante); enlatado.scale.setScalar(escala); return enlatado;
+  }
   const grupo = new THREE.Group();
   if (id === 'tomate') {
     esfera(grupo, 0.16, 0xff3f32, 0, 0, 0, 1, 0.86, 1);
@@ -275,13 +308,6 @@ export function criarProduto(id, escala = 1, variante = 0) {
       caixa(grupo, 0.005, 0.005, 0.045, escura, -0.203, -0.055 - i * 0.025, 0);
     for (let i = 0; i < 6; i++)
       caixa(grupo, 0.005, 0.035, i % 2 ? 0.003 : 0.005, 0x454638, -0.203, -0.18, -0.024 + i * 0.009);
-  } else if (id === 'enlatado') {
-    const cores = [0xd94b3d, 0xf0a51f, 0x69ad3c, 0x2777c8];
-    const cor = cores[Math.floor(variante / 3) % cores.length];
-    cilindro(grupo, 0.15, 0.15, 0.34, cor, 0, 0, 0, 16);
-    cilindro(grupo, 0.152, 0.152, 0.025, 0xd9ddda, 0, 0.18, 0, 16);
-    cilindro(grupo, 0.152, 0.152, 0.025, 0xaeb6b3, 0, -0.18, 0, 16);
-    caixa(grupo, 0.255, 0.13, 0.012, variante % 2 ? 0xfff0bd : 0xf8f5df, 0, 0, 0.147);
   } else {
     esfera(grupo, 0.14, 0xffd22e, 0, 0, 0, 0.7, 1.5, 0.7);
     const folha = esfera(grupo, 0.12, 0x38a447, 0.07, -0.06, 0, 0.45, 1.6, 0.55); folha.rotation.z = -0.35;
@@ -1011,12 +1037,7 @@ export class Cena {
     // As 36 unidades ocupam quatro níveis de nove, começando pelo nível inferior.
     // Cada nível representa uma das quatro variedades da classe.
     for (let i = 0; i < p.capacidadePrateleira; i++) {
-      const nivel = Math.floor(i / 9), coluna = i % 9;
-      const produto = criarProduto(id, 0.82, nivel * 3);
-      const altura = id === 'cereal' ? 0.66 : 0.34;
-      produto.position.set(p.prateleira.x + lado * (id === 'cereal' ? 0.46 : 0.56),
-        0.25 + nivel * 0.63 + altura * 0.82 / 2 + 0.035, p.prateleira.z - 2.2 + coluna * 0.55);
-      produto.rotation.y = lado * Math.PI / 2;
+      const produto = criarImportadoNaPrateleira(id, p, i);
       grupo.add(produto); frutas.push(produto);
     }
     this.produtos[id] = { grupo, frutos: [], frutas, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
@@ -1489,9 +1510,15 @@ export class Cena {
       d.ultimaReposicao = evento;
       const inicio = d.carga.children[evento.indice]?.position.clone() ?? new THREE.Vector3(0, 0.13, 0);
       d.reposicao = { ...evento, inicio: inicio.add(d.cesta.position), decorrido: 0, duracao: Math.min(duracao, 0.36) };
+      const importado = PRODUTOS[evento.id].origem === 'importado';
+      if (importado) {
+        const destino = criarImportadoNaPrateleira(evento.id, PRODUTOS[evento.id], evento.lugar);
+        d.reposicao.destinoImportado = destino.position.clone();
+        liberarGeometrias(destino);
+      }
       d.coleta = null;
       liberarGeometrias(d.produtoNaMao);
-      d.produtoNaMao.add(criarProduto(evento.id, 0.75));
+      d.produtoNaMao.add(criarProduto(evento.id, 0.75, importado ? Math.floor(evento.lugar / 9) * 3 : 0));
     }
     if (d.inventario?.join(',') !== inventario.join(',')) {
       const anteriores = [...(d.inventario ?? [])];
@@ -1510,12 +1537,15 @@ export class Cena {
         d.produtoNaMao.add(criarProduto(id, 0.75));
       } else d.coleta = null;
       liberarGeometrias(d.carga);
+      const novaCarga = new THREE.Group();
       inventario.forEach((id, i) => {
         const fruta = criarProduto(id, 0.75);
         if (d.jogador) fruta.position.set(i % 2 ? 0.14 : -0.14, 0.16 + Math.floor(i / 2) * 0.18, 0.08);
         else fruta.position.set((i % 3 - 1) * 0.25, 0.13 + Math.floor(i / 9) * 0.18, (Math.floor(i / 3) % 3 - 1) * 0.17);
-        d.carga.add(fruta);
+        novaCarga.add(fruta);
       });
+      if (d.jogador && inventario.some(id => PRODUTOS[id]?.origem === 'importado')) organizarImportadosCarregados(novaCarga);
+      novaCarga.children.slice().forEach(produto => d.carga.add(produto));
       d.inventario = [...inventario];
     }
     const coleta = d.coleta;
@@ -1583,7 +1613,8 @@ export class Cena {
       const p = PRODUTOS[reposicao.id].prateleira, i = reposicao.lugar;
       // O destino usa exatamente a posição do produto desenhado na prateleira.
       d.corpo.updateWorldMatrix(true, false);
-      const destino = d.corpo.worldToLocal(posicaoProdutoPrateleira(reposicao.id, p, i));
+      const importado = PRODUTOS[reposicao.id].origem === 'importado';
+      const destino = d.corpo.worldToLocal(reposicao.destinoImportado?.clone() ?? posicaoProdutoPrateleira(reposicao.id, p, i));
       const suave = v => v * v * (3 - 2 * v);
       if (t < 0.22) mao.lerp(reposicao.inicio, suave(t / 0.22));
       else if (t < 0.85) {
@@ -1593,7 +1624,7 @@ export class Cena {
       } else mao.copy(destino).lerp(repouso, suave((t - 0.85) / 0.15));
       d.produtoNaMao.visible = t < 0.85;
       d.produtoNaMao.position.copy(t < 0.22 ? reposicao.inicio : mao);
-      d.produtoNaMao.children[0].scale.setScalar(0.75 + 0.95 * suave(Math.max(0, Math.min(1, (t - 0.22) / 0.63))));
+      d.produtoNaMao.children[0].scale.setScalar(0.75 + (importado ? 0.07 : 0.95) * suave(Math.max(0, Math.min(1, (t - 0.22) / 0.63))));
       if (t >= 1) d.reposicao = null;
     }
     const semCarga = !coleta && !reposicao && inventario.length === 0 && (

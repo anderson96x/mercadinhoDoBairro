@@ -1,6 +1,17 @@
 # Histórico de alterações
 
-## Versão atual: 0.58.3 — 2026-10-23
+## Versão atual: 0.58.4 — 2026-10-25
+
+- Substitui as quatro cores de enlatados por milho em lata alta, atum em lata baixa e sardinhas em latas retangulares azul e vermelha ao tomate. Combina volumes 3D e aros metálicos com rótulos SVG originais e tampa ilustrada com anel de abertura.
+- Mantém nove unidades por variedade e compartilha materiais e texturas entre exemplares, com arte também no renderizador Canvas.
+- Corrige produtos parcialmente escondidos nas tábuas da gôndola: compartilha as alturas entre o móvel e os produtos, considera o deslocamento vertical do móvel e apoia cada embalagem pela base real do modelo.
+- Distribui os importados com margens simétricas nas pontas da gôndola e alinha as frentes das diferentes embalagens com o mesmo recuo da borda, mantendo os produtos dentro da largura da prateleira.
+- Organiza importados carregados pelo jogador em camadas de quatro, ajustando a escala ao volume de cada embalagem para evitar interseções. A reposição usa o destino e a variedade reais da prateleira, sem ampliar excessivamente o produto durante o movimento.
+- Corrige o Canvas para ocultar o verso dos rótulos SVG ao girar as embalagens.
+- Preserva preços, importações, progressão e saves existentes.
+- Validação: 297 testes, build de produção e rotas da loja aprovados, com regressão comparando os 72 produtos de uma gôndola cheia às tábuas reais. Gôndola cheia, cinco SVGs e carga de oito importados verificados em desktop/celular com WebGL e Canvas por `node scripts/verificar-enlatados.mjs`, incluindo giros do jogador, sem salvar imagens.
+
+## 0.58.3 — 2026-10-23
 
 - Corrige os braços do entregador desde a saída da cabine para usar a pose livre durante a caminhada, sem prolongar o gesto de segurar a porta nem simular uma cesta invisível.
 - Corrige o bloqueio na curva de saída usando colisões alinhadas à rotação do caminhão. Clientes dos dois lados podem contornar o baú pelo acesso quando houver espaço, sem atravessar o veículo ou desviar por dentro da loja.

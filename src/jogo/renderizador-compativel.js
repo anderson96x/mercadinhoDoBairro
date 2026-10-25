@@ -45,6 +45,9 @@ export class RenderizadorCompativel {
       });
       if (pontos.every(p => p.x < -20) || pontos.every(p => p.x > this.w + 20) || pontos.every(p => p.y < -20) || pontos.every(p => p.y > this.h + 20)) return;
       if (material.map?.image && mesh.geometry.type === 'PlaneGeometry') {
+        const a = pontos[0], b = pontos[2], c = pontos[1];
+        const area = (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+        if (Math.abs(area) < 0.07 || (material.side !== THREE.DoubleSide && area >= 0)) return;
         formas.push({ pontos: [pontos[0], pontos[1], pontos[3], pontos[2]], textura: material.map.image, z: pontos.reduce((v,p) => v + p.z, 0) / pontos.length, camada: 100 });
         return;
       }

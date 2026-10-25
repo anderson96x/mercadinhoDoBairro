@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { Cena } from '../src/jogo/cena.js';
+import { construirPrateleirasImportados } from '../src/jogo/prateleiras-importados.js';
 
 function abrir(nivel = 19, dinheiro = 2000) {
   const sim = new Simulacao();
@@ -74,13 +75,54 @@ test('gôndola é preenchida de baixo para cima, com nove produtos por nível', 
   assert.equal(latas.length, 36);
   assert.equal(new Set(latas.map(lata => lata.position.y)).size, 4);
   for (let i = 1; i < latas.length; i++) assert.ok(latas[i].position.y >= latas[i - 1].position.y);
-  const cores = latas.map(lata => lata.children[0].material.color.getHex());
-  assert.equal(new Set(cores).size, 4);
-  for (const cor of new Set(cores)) {
-    assert.equal(cores.filter(item => item === cor).length, 9);
+  const variedades = latas.map(lata => lata.userData.variedade);
+  assert.deepEqual([...new Set(variedades)], ['milho', 'atum', 'sardinha-azul', 'sardinha-vermelha']);
+  for (const variedade of new Set(variedades)) {
+    assert.equal(variedades.filter(item => item === variedade).length, 9);
   }
+  for (const lata of latas) {
+    const rotulo = lata.getObjectByName('rotulo-enlatado');
+    assert.ok(rotulo.material.userData.svg.endsWith(`${lata.userData.variedade}.svg`));
+    assert.equal(rotulo.geometry.type, 'PlaneGeometry');
+    const frente = lata.localToWorld(rotulo.position.clone());
+    assert.ok(frente.x < lata.position.x, 'rótulo aponta para o corredor');
+    const caixa = new THREE.Box3().setFromObject(lata);
+    assert.ok(caixa.max.z - caixa.min.z < 0.55, 'embalagens cabem entre vizinhas');
+  }
+  assert.ok(latas[0].userData.altura > latas[9].userData.altura);
+  assert.ok(latas[9].userData.altura > latas[18].userData.altura);
+  assert.ok(latas[18].getObjectByName('tampa-svg-enlatado'));
+  assert.ok(latas[27].getObjectByName('tampa-svg-enlatado'));
   assert.ok(latas.slice(0, 9).every(lata => lata.position.y === latas[0].position.y));
   assert.ok(latas.slice(9, 18).every(lata => lata.position.y > latas[0].position.y));
+});
+
+test('gôndola cheia mantém enlatados e cereais sobre as tábuas, sem esconder produtos nas bordas', () => {
+  const caixa = (pai, w, h, d, cor, x, y, z) => {
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshBasicMaterial({ color: cor }));
+    mesh.position.set(x, y, z); pai.add(mesh); return mesh;
+  };
+  const movel = construirPrateleirasImportados(caixa);
+  movel.atualizar({ prateleirasImportados: 2 });
+  movel.grupo.updateMatrixWorld(true);
+  const tabuas = movel.grupo.children[0].children.filter(o => o.name === 'nivel-prateleira-importados')
+    .map(o => new THREE.Box3().setFromObject(o));
+  const visual = { cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
+  for (const id of ['enlatado', 'cereal']) {
+    Cena.prototype.construirImportado.call(visual, id, PRODUTOS[id]);
+    for (const [i, produto] of visual.produtos[id].frutas.entries()) {
+      const limite = new THREE.Box3().setFromObject(produto), nivel = Math.floor(i / 9), tabua = tabuas[nivel];
+      assert.ok(Math.abs(limite.min.y - tabua.max.y) < 0.001, `${id}: base sobre a tábua ${nivel}`);
+      assert.ok(limite.min.x > tabua.min.x && limite.max.x < tabua.max.x, `${id}: embalagem dentro da largura da tábua`);
+      assert.ok(limite.min.z > tabua.min.z && limite.max.z < tabua.max.z, `${id}: embalagem dentro do comprimento da tábua`);
+      if (nivel < 3) assert.ok(limite.max.y < tabuas[nivel + 1].min.y, `${id}: topo livre da tábua superior`);
+      const frente = id === 'enlatado' ? limite.min.x : limite.max.x;
+      const borda = id === 'enlatado' ? tabua.min.x : tabua.max.x;
+      assert.ok(Math.abs(Math.abs(frente - borda) - 0.06) < 0.001, 'frentes alinhadas com recuo uniforme');
+    }
+    const produtos = visual.produtos[id].frutas;
+    assert.ok(Math.abs(produtos[0].position.z + produtos[8].position.z - 2 * PRODUTOS[id].prateleira.z) < 0.001, 'margens simétricas nas pontas');
+  }
 });
 
 test('cereais exigem nível 20 e saldo, reservam sua classe e preservam saves antigos', () => {
@@ -128,11 +170,10 @@ test('cereais exigem nível 20 e saldo, reservam sua classe e preservam saves an
   assert.equal(migrado.estado.produtos.cereal.prateleira, 0);
 });
 
-test('cereais têm embalagens em quatro cores iguais às latas na face oposta da gôndola', () => {
+test('cereais têm embalagens em quatro cores na face oposta aos enlatados da gôndola', () => {
   const visual = { cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
   for (const id of ['cereal', 'enlatado']) Cena.prototype.construirImportado.call(visual, id, PRODUTOS[id]);
   const cereais = visual.produtos.cereal.frutas, latas = visual.produtos.enlatado.frutas;
-  assert.deepEqual(cereais.map(p => p.children[0].material.color.getHex()), latas.map(p => p.children[0].material.color.getHex()));
   assert.equal(new Set(cereais.map(p => p.children[0].material.color.getHex())).size, 4);
   for (const p of cereais) {
     assert.equal(p.children[0].geometry.type, 'BoxGeometry');

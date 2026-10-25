@@ -1,10 +1,12 @@
 ﻿# Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.58.3**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.58.4**.
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
 
 As bancas de hortifruti possuem placas para tomate, milho, trigo e morango, alinhadas à frente de cada seção e ampliadas pelo zoom da câmera.
+
+Os enlatados combinam embalagens 3D com rótulos SVG: milho em lata alta, atum em lata baixa e sardinhas em latas retangulares azul e vermelha ao tomate. A gôndola mantém nove unidades por variedade. Com o servidor de desenvolvimento ativo, `node scripts/verificar-enlatados.mjs` verifica os modelos e as texturas em desktop/celular, com WebGL e Canvas, sem salvar imagens.
 
 A versão segue o formato **MAJOR.MINOR.PATCH**: mudanças incompatíveis em versões estáveis incrementam MAJOR, novas funcionalidades compatíveis incrementam MINOR e correções compatíveis incrementam PATCH. Durante o desenvolvimento inicial, o jogo permanece na série `0.x`, com mudanças incompatíveis e reformulações amplas contabilizadas em MINOR. Todo conjunto de alterações deve incrementar a versão, incluindo testes, ajustes visuais e ferramentas; alterações exclusivamente de documentação não exigem incremento nem entrada de versão no changelog. As demais mudanças sem impacto em execução usam PATCH. A versão é definida em `package.json` e exibida nos menus Ajuda e DEV. Mantenha `package-lock.json`, este README e o [histórico de alterações](CHANGELOG.md) sincronizados conforme as regras de [AGENTS.md](AGENTS.md). Registros históricos anteriores à regra permanecem preservados.
 

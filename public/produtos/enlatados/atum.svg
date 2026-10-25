@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="140" viewBox="0 0 300 140">
+  <path fill="#e76e59" d="M0 0h300v140H0z"/>
+  <path fill="#378fa8" d="M0 18h300v18H0zM0 108h300v16H0z"/>
+  <ellipse cx="150" cy="72" rx="112" ry="32" fill="#fff4db"/>
+  <path fill="#28758c" d="M47 73q36-38 76 0-40 34-76 0m69 0 23-22v42z"/>
+  <circle cx="61" cy="69" r="3" fill="#fff4db"/>
+  <text x="193" y="83" text-anchor="middle" font-family="sans-serif" font-size="31" font-weight="bold" fill="#28758c">ATUM</text>
+</svg>
