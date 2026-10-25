@@ -133,8 +133,8 @@ export const PRODUTOS = {
     capacidadeHorta: PACOTES_POR_CLASSE * UNIDADES_PACOTE, capacidadePrateleira: 36,
     horta: { ...ESTANTE_CEREAIS }, coleta: { x: ESTANTE_CEREAIS.x, z: ESTANTE_CEREAIS.z + 1.45 },
     prateleira: { ...PRATELEIRAS_IMPORTADOS[CLASSES_PRODUTOS.cereais.gondola], movel: 'importados' },
-    reposicao: { x: 6.15, z: -2.5 }, cliente: { x: 6.15, z: -2.5 },
-    pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 6.15, z })), liberado: false
+    reposicao: { x: 11.75, z: -2.5 }, cliente: { x: 11.75, z: -2.5 },
+    pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 11.75, z })), liberado: false
   },
   enlatado: {
     nome: 'Enlatado', plural: 'Enlatados', cor: 0xd85b45, preco: 30, origem: 'importado', classe: 'enlatados', nivelMinimo: 19,

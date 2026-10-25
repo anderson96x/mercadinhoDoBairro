@@ -5,6 +5,8 @@ import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { Cena } from '../src/jogo/cena.js';
 import { construirPrateleirasImportados } from '../src/jogo/prateleiras-importados.js';
+import { CLASSES_PRODUTOS } from '../src/jogo/classes-produtos.js';
+import { PRATELEIRAS_IMPORTADOS } from '../src/jogo/planta.js';
 
 function abrir(nivel = 19, dinheiro = 2000) {
   const sim = new Simulacao();
@@ -105,10 +107,11 @@ test('gôndola cheia mantém enlatados e cereais sobre as tábuas, sem esconder 
   const movel = construirPrateleirasImportados(caixa);
   movel.atualizar({ prateleirasImportados: 2 });
   movel.grupo.updateMatrixWorld(true);
-  const tabuas = movel.grupo.children[0].children.filter(o => o.name === 'nivel-prateleira-importados')
-    .map(o => new THREE.Box3().setFromObject(o));
   const visual = { cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
   for (const id of ['enlatado', 'cereal']) {
+    const indice = CLASSES_PRODUTOS[PRODUTOS[id].classe].gondola;
+    const tabuas = movel.grupo.children[indice].children.filter(o => o.name === 'nivel-prateleira-importados')
+      .map(o => new THREE.Box3().setFromObject(o));
     Cena.prototype.construirImportado.call(visual, id, PRODUTOS[id]);
     for (const [i, produto] of visual.produtos[id].frutas.entries()) {
       const limite = new THREE.Box3().setFromObject(produto), nivel = Math.floor(i / 9), tabua = tabuas[nivel];
@@ -132,6 +135,8 @@ test('cereais exigem nível 20 e saldo, reservam sua classe e preservam saves an
   assert.match(sim.comprarMelhoria('importarCereais').motivo, /nível 20/);
   for (const id of ['alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria']) sim.estado.melhorias[id] = 1;
   sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
+  assert.match(sim.comprarMelhoria('importarCereais').motivo, /segunda Prateleira/);
+  sim.estado.melhorias.prateleirasImportados = 2;
   sim.estado.dinheiro = 404;
   assert.equal(sim.comprarMelhoria('importarCereais').sucesso, false);
   sim.estado.dinheiro = 5000;
@@ -170,7 +175,13 @@ test('cereais exigem nível 20 e saldo, reservam sua classe e preservam saves an
   assert.equal(migrado.estado.produtos.cereal.prateleira, 0);
 });
 
-test('cereais têm quatro artes SVG em caixas 3D na face oposta aos enlatados da gôndola', () => {
+test('cereais têm quatro artes SVG na segunda gôndola, voltados à padaria', () => {
+  assert.equal(PRODUTOS.cereal.prateleira.x, PRATELEIRAS_IMPORTADOS[1].x);
+  assert.ok(PRODUTOS.cereal.prateleira.x > PRODUTOS.enlatado.prateleira.x);
+  assert.ok(PRODUTOS.cereal.cliente.x > PRODUTOS.cereal.prateleira.x);
+  assert.ok(PRODUTOS.cereal.cliente.x < PRODUTOS.pao.cliente.x);
+  assert.deepEqual(PRODUTOS.cereal.reposicao, PRODUTOS.cereal.cliente);
+  assert.ok(PRODUTOS.cereal.pontosCompra.every(p => p.x === PRODUTOS.cereal.cliente.x));
   const visual = { cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
   for (const id of ['cereal', 'enlatado']) Cena.prototype.construirImportado.call(visual, id, PRODUTOS[id]);
   const cereais = visual.produtos.cereal.frutas, latas = visual.produtos.enlatado.frutas;
@@ -192,4 +203,17 @@ test('cereais têm quatro artes SVG em caixas 3D na face oposta aos enlatados da
     assert.ok(posicaoFrente.x > p.position.x, 'arte frontal aponta para o corredor, longe da divisória');
   }
   assert.ok(latas.every(p => p.position.x < PRODUTOS.enlatado.prateleira.x));
+});
+
+test('save com cereais na primeira gôndola recebe a segunda e preserva saldo e estoque', () => {
+  const sim = abrir(20, 4321);
+  for (const id of ['alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', 'expansao', 'prateleirasImportados', 'importarCereais']) sim.estado.melhorias[id] = 1;
+  Object.assign(sim.estado.produtos.cereal, { liberado: true, apresentado: true, prateleira: 27 });
+  sim.estado.deposito.pacotes = [{ produto: 'cereal', unidades: 5, slot: 8 }];
+  const restaurado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(restaurado.estado.melhorias.prateleirasImportados, 2);
+  assert.equal(restaurado.estado.dinheiro, 4321);
+  assert.equal(restaurado.estado.produtos.cereal.prateleira, 27);
+  assert.equal(restaurado.estado.produtos.cereal.horta, 5);
+  assert.equal(restaurado.estado.produtos.cereal.apresentado, true);
 });

@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.58.5 — 2026-10-25
+## Versão atual: 0.58.6 — 2026-10-25
+
+- Move os cereais para a segunda gôndola, na face voltada à padaria, com compra e reposição pelo corredor correspondente.
+- Exige a segunda prateleira para novas importações de cereais. Saves que já possuem cereais recebem o móvel sem custo, preservando saldo, estoque e pedidos.
+- Validação: 299 testes, build de produção e rotas da loja aprovados. Cereais e enlatados verificados nas respectivas gôndolas em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.58.5 — 2026-10-25
 
 - Atualiza os cereais com caixas 3D e quatro artes SVG originais: anéis de mel em amarelo, flocos de milho em azul, chocolate em verde e anéis de frutas em rosa. Inclui tigelas, leite e grãos ilustrados, além de verso, painéis laterais e vincos da tampa. Compartilha o carregamento dos rótulos com os enlatados.
 - Amplia a profundidade física das caixas de cereais e preserva uma escala maior no transporte, mantendo laterais e tampa visíveis nas mãos do jogador sem sobrepor as embalagens.

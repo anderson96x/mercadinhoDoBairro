@@ -55,6 +55,7 @@ try {
       const THREE = await import('/node_modules/three/build/three.module.js');
       const { Cena, personagem } = await import('/src/jogo/cena.js');
       const { PRODUTOS } = await import('/src/jogo/configuracao.js');
+      const { CLASSES_PRODUTOS } = await import('/src/jogo/classes-produtos.js');
       const { RenderizadorCompativel } = await import('/src/jogo/renderizador-compativel.js');
       const { construirPrateleirasImportados } = await import('/src/jogo/prateleiras-importados.js');
       const visual = { cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
@@ -62,13 +63,15 @@ try {
         const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshStandardMaterial({ color: cor }));
         mesh.position.set(x, y, z); pai.add(mesh); return mesh;
       });
-      movel.atualizar({ prateleirasImportados: 1 });
+      movel.atualizar({ prateleirasImportados: 2 });
       visual.cena.add(movel.grupo);
       for (const id of ['enlatado', 'cereal']) Cena.prototype.construirImportado.call(visual, id, PRODUTOS[id]);
       visual.cena.updateMatrixWorld(true);
-      const tabuas = movel.grupo.children[0].children.filter(o => o.name === 'nivel-prateleira-importados')
-        .map(o => new THREE.Box3().setFromObject(o));
+      const tabuasPorProduto = Object.fromEntries(['enlatado', 'cereal'].map(id => [id,
+        movel.grupo.children[CLASSES_PRODUTOS[PRODUTOS[id].classe].gondola].children
+          .filter(o => o.name === 'nivel-prateleira-importados').map(o => new THREE.Box3().setFromObject(o))]));
       for (const id of ['enlatado', 'cereal']) for (const [i, produto] of visual.produtos[id].frutas.entries()) {
+        const tabuas = tabuasPorProduto[id];
         const limite = new THREE.Box3().setFromObject(produto), nivel = Math.floor(i / 9);
         if (Math.abs(limite.min.y - tabuas[nivel].max.y) > 0.001
           || limite.min.x < tabuas[nivel].min.x || limite.max.x > tabuas[nivel].max.x

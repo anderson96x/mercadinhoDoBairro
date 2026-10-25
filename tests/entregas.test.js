@@ -315,6 +315,7 @@ test('entregador sai da cabine com os braços livres durante a chegada', () => {
 
 test('caminhão e entregador mantêm identidade geral dourada sem logos', () => {
   const sim = loja(); sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
+  assert.equal(sim.comprarMelhoria('prateleirasImportados').sucesso, true);
   sim.encomendarImportacoes({ importarCereais: 1, importarProdutos: 1 });
   sim.entregas.atualizar(sim, 0.05);
   assert.equal(sim.entregas.caminhao.classe, 'cereais');
@@ -467,6 +468,7 @@ test('acesso dedicado recebe entrega mesmo sem comprar estacionamento de cliente
 test('entrega chega quando um cliente quer sair e outro ainda aguarda carro do tráfego', () => {
   const sim = loja();
   sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
+  assert.equal(sim.comprarMelhoria('prateleirasImportados').sucesso, true);
   sim.encomendarImportacoes({ importarCereais: 1 });
   sim.clientes = [{ id: 901, noCarro: true }, { id: 902, noCarro: true }];
   sim.estacionamento.carros = [
@@ -538,6 +540,7 @@ test('produtos da mesma classe compartilham vagas; outra classe entrega na próp
     t.after(() => { delete PRODUTOS[id]; MELHORIAS.splice(MELHORIAS.findIndex(m => m.id === id), 1); });
   }
   const sim = loja();
+  assert.equal(sim.comprarMelhoria('prateleirasImportados').sucesso, true);
   const antes = structuredClone(sim.estado);
   assert.equal(sim.encomendarImportacoes({ importarProdutos: 3, conservaTeste: 2, saboneteTeste: 1 }).sucesso, false);
   assert.deepEqual(sim.estado, antes, 'pedido misto inválido não cobra nem libera produtos');

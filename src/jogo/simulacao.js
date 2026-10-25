@@ -119,6 +119,10 @@ export function validarEstado(dados) {
     };
   }
   base.deposito = validarDeposito(dados.deposito, base.produtos);
+  // Cereais já adquiridos passam à segunda gôndola sem cobrar novamente pelo móvel.
+  if (base.produtos.cereal.liberado) {
+    base.melhorias.prateleirasImportados = Math.max(base.melhorias.prateleirasImportados, CLASSES_PRODUTOS.cereais.gondola + 1);
+  }
   for (const [id, p] of Object.entries(PRODUTOS)) {
     if (p.origem === 'importado') base.produtos[id].horta = [...base.deposito.pacotes, ...base.deposito.excedentes].filter(p => p.produto === id).reduce((total, p) => total + p.unidades, 0);
   }
@@ -429,6 +433,8 @@ export class Simulacao {
       return { disponivel: false, motivo: 'Construa a ala dos ovos antes de abrir a padaria.', requisitoMelhoria: 'alaProducao' };
     }
     if (m.tipo === 'importacao') {
+      const gondolas = CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].gondola + 1;
+      if (this.estado.melhorias.prateleirasImportados < gondolas) return { disponivel: false, motivo: `Instale a segunda Prateleira de importados antes de importar ${CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].nome.toLocaleLowerCase('pt-BR')}.`, requisitoMelhoria: 'prateleirasImportados' };
       if (!this.estado.melhorias.expansao) return { disponivel: false, motivo: 'Compre Expansão para receber entregas no pátio exclusivo.', requisitoMelhoria: 'expansao' };
       if (this.estado.deposito.pedidos.length || this.entregas?.caminhao) return { disponivel: false, motivo: 'Aguarde o caminhão concluir a entrega e ir embora antes de fazer outro pedido.' };
       if (vagasDeposito(this.estado.deposito, classeProduto(m.produto)) < 1) return { disponivel: false, motivo: `A classe ${CLASSES_PRODUTOS[classeProduto(m.produto)]?.nome || ''} está cheia: limite de ${PACOTES_POR_CLASSE} pacotes, incluindo pedidos a caminho.` };
