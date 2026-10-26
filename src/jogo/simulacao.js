@@ -305,6 +305,17 @@ export class Simulacao {
   preencherPrateleirasDev() {
     let quantidade = 0;
     for (const [id, estoque] of Object.entries(this.estado.produtos)) {
+      const produto = this.produtos[id];
+      if (!estoque.liberado && produto.origem === 'importado') {
+        const importacao = MELHORIAS.find(m => m.tipo === 'importacao' && m.produto === id && m.ativa !== false);
+        const gondolas = CLASSES_PRODUTOS[produto.classe].gondola + 1;
+        if (importacao && this.nivel >= (importacao.nivelMinimo || 1) && this.estado.melhorias.expansao
+          && this.estado.melhorias.prateleirasImportados >= gondolas) {
+          // Registra a liberação para que o estoque DEV sobreviva à validação do save.
+          this.estado.melhorias[importacao.id] = Math.max(1, this.estado.melhorias[importacao.id]);
+          estoque.liberado = true;
+        }
+      }
       if (!estoque.liberado) continue;
       quantidade += Math.max(0, this.produtos[id].capacidadePrateleira - estoque.prateleira);
       estoque.prateleira = this.produtos[id].capacidadePrateleira;

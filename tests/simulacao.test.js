@@ -26,6 +26,43 @@ test('ferramenta DEV completa todas as prateleiras liberadas', () => {
   assert.equal(sim.preencherPrateleirasDev(), 0);
 });
 
+test('ferramenta DEV enche importados disponíveis sem pedido prévio e preserva o estoque ao recarregar', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 21 * CONFIG.clientesPorNivel;
+  sim.estado.melhorias.expansao = 1;
+  sim.estado.melhorias.prateleirasImportados = 2;
+  const dinheiro = sim.estado.dinheiro;
+  const deposito = structuredClone(sim.estado.deposito);
+  sim.preencherPrateleirasDev();
+  const restaurado = new Simulacao(sim.estado);
+  for (const [id, produto] of Object.entries(PRODUTOS).filter(([, p]) => p.origem === 'importado')) {
+    assert.equal(sim.estado.produtos[id].liberado, true, id);
+    assert.equal(sim.estado.produtos[id].apresentado, true, id);
+    assert.equal(sim.estado.produtos[id].prateleira, produto.capacidadePrateleira, id);
+    assert.equal(restaurado.estado.produtos[id].prateleira, produto.capacidadePrateleira, id);
+  }
+  assert.equal(sim.estado.dinheiro, dinheiro);
+  assert.deepEqual(sim.estado.deposito, deposito);
+  assert.equal(sim.preencherPrateleirasDev(), 0);
+});
+
+test('ferramenta DEV respeita nível, expansão e gôndola dos importados', () => {
+  for (const [nivel, expansao, gondolas, liberados] of [
+    [18, 1, 2, []], [22, 0, 2, []], [22, 1, 0, []],
+    [19, 1, 1, ['enlatado']], [22, 1, 1, ['enlatado', 'guloseima']]
+  ]) {
+    const sim = new Simulacao();
+    sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+    sim.estado.melhorias.expansao = expansao;
+    sim.estado.melhorias.prateleirasImportados = gondolas;
+    sim.preencherPrateleirasDev();
+    for (const [id, produto] of Object.entries(PRODUTOS).filter(([, p]) => p.origem === 'importado')) {
+      assert.equal(sim.estado.produtos[id].liberado, liberados.includes(id), `${nivel}: ${id}`);
+      assert.equal(sim.estado.produtos[id].prateleira, liberados.includes(id) ? produto.capacidadePrateleira : 0);
+    }
+  }
+});
+
 test('ferramenta DEV esvazia as prateleiras e reinicia clientes e repositor', () => {
   const sim = new Simulacao();
   sim.estado.produtos.tomate.prateleira = 7;

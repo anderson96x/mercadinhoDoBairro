@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.61.0 — 2026-10-26
+## Versão atual: 0.61.1 — 2026-10-26
+
+- A ação DEV de encher prateleiras também libera e abastece importados sem pedido prévio quando o nível, a expansão e a gôndola necessária estão disponíveis.
+- Preserva o estoque ao recarregar, sem cobrar dinheiro nem alterar caixas e pedidos do depósito. Produtos ainda bloqueados continuam vazios.
+- Validação: 318 testes e build de produção aprovados, com regressões para as quatro classes importadas, requisitos de desbloqueio e preservação do estoque ao recarregar.
+
+## 0.61.0 — 2026-10-26
 
 - Clientes que chegam de carro sempre pedem cinco unidades, a capacidade máxima da cesta, independentemente da reputação e da variedade disponível, inclusive em pedidos com pão.
 - Mantém o fluxo normal de falta de estoque: clientes esperam, reagem à compra incompleta e pagam somente o que encontraram. Pedestres continuam com pedidos variáveis por reputação.
