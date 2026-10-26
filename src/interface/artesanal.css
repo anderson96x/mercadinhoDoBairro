@@ -22,15 +22,14 @@
 }
 .painel-producao summary::-webkit-details-marker { display: none; }
 .painel-producao summary:focus-visible { outline: 3px solid #f1aa32; outline-offset: 3px; border-radius: 17px; }
-#producao-resumo { margin-left: auto; font: 600 11px 'DM Sans', sans-serif; color: #657c60; }
-.producao-seta { font-size: 19px; transform: rotate(180deg); }
+.producao-seta { margin-left: auto; font-size: 19px; transform: rotate(180deg); }
 .painel-producao details[open] .producao-seta { transform: none; }
 .lista-producao { display: grid; gap: 10px; padding: 0 12px; max-height: max(110px, calc(100dvh - 410px)); overflow-y: auto; overscroll-behavior: contain; }
 .producao-cartao { padding: 11px; border-radius: 12px; background: #fff; border: 1px solid #e7e8dd; }
 .producao-cartao-topo { display: flex; gap: 7px; align-items: center; margin-bottom: 11px; }
 .producao-cartao-topo > .icone { width: 22px; height: 22px; }
 .producao-cartao h3 { font-size: 13px; flex: 1; }
-.producao-cartao.pao h3 { color: #a65d2b; }
+.producao-cartao.pao h3, .producao-cartao.confeitaria h3 { color: #a65d2b; }
 .producao-cartao.geleia h3 { color: #9d3c65; }
 .producao-cartao.queijo h3 { color: #9e771d; }
 .producao-prontos { font-size: 10px; font-weight: 700; white-space: nowrap; border-radius: 6px; padding: 4px 5px; background: #edf3e5; color: #46683e; }
@@ -45,7 +44,6 @@
 .producao-cartao progress::-webkit-progress-bar { background: #e7ebdf; }
 .producao-cartao progress::-webkit-progress-value { background: #4f8961; border-radius: 6px; }
 .producao-cartao progress::-moz-progress-bar { background: #4f8961; }
-.producao-dica { padding: 10px 15px 13px; font-size: 10px; line-height: 1.4; color: #7b8473; }
 @media (max-width: 700px) {
   .painel-producao { left: 14px; bottom: max(205px, calc(env(safe-area-inset-bottom) + 190px)); width: min(280px, calc(100vw - 28px)); border-radius: 14px; }
   .painel-producao summary { padding: 10px 13px; font-size: 14px; }

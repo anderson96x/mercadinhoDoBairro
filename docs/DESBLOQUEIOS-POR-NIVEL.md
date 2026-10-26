@@ -8,7 +8,7 @@ No [nível 9](PLANTA-LOJA-N9.md), a padaria amplia o salão para 24 × 16 u à d
 
 ## Disponíveis
 
-A progressão de conteúdo ativa vai até o estacionamento no nível 16. Prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22 estão desativadas, inclusive no DEV. Os níveis continuam avançando, mas ainda não há novos desbloqueios a partir do 17. Esse conjunto será reorganizado depois do nível 20, sem níveis novos definidos por enquanto. A referência da implementação anterior está ao final deste documento.
+A progressão ativa inclui o estacionamento no nível 16 e a confeitaria no nível 17. Prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22 continuam desativadas, inclusive no DEV. Os níveis continuam avançando, mas ainda não há novos desbloqueios a partir do 18. O conjunto de importações será reorganizado depois do nível 20, sem níveis novos definidos por enquanto. A referência da implementação anterior está ao final deste documento.
 
 No [nível 4](PLANTA-LOJA-N4.md), a compra de ovos instala o galinheiro atrás da loja e uma estante alta de três níveis junto à parede posterior, à direita da porta de produção. O salão mantém 14 × 16 u. As galinhas produzem um ovo a cada 3,5 segundos, sem insumos; coleta e reposição continuam manuais ou pelo repositor contratado posteriormente.
 
@@ -33,6 +33,17 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 14 | Reposição ágil: repositor anda 30% mais rápido | R$ 500 | — |
 | 15 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote de geleia |
 | 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
+| 17 | Confeitaria da padaria: bolos, donuts e éclairs + confeiteiro | R$ 1.000 | R$ 15 por unidade |
+
+## Confeitaria no nível 17
+
+Em **Celular → Melhorias → Mercado**, compre **Confeitaria da padaria** por **R$ 1.000**, uma única vez. Exige padaria, apiário e ala dos ovos. A compra libera bolos, donuts e éclairs, todos vendidos a **R$ 15 por unidade**, e inclui um terceiro funcionário dedicado à confeitaria.
+
+Antes da compra, os três balcões secundários da padaria têm apenas tampos planos de trabalho; a vitrine de pães permanece funcionando. A compra instala as três vitrines curvas, inicialmente vazias. São seis lugares para bolos, doze para donuts e seis para éclairs. Os doces exibidos representam o estoque real e desaparecem conforme os clientes compram.
+
+Leve **mel e ovos ao balcão lateral da padaria**, na seção ao lado da entrega de trigo. Cada ingrediente tem capacidade de oito unidades; trigo continua na seção própria. O painel de produção mostra a receita e o progresso. **1 mel + 1 ovo → 1 bolo + 1 donut + 1 éclair**, com **6 segundos de preparo na batedeira industrial ao lado do moinho**, seguidos do percurso de entrega. O confeiteiro mistura os ingredientes, leva a bandeja até as três vitrines e coloca cada doce no expositor correspondente. O estoque aumenta durante cada entrega; o retorno à batedeira é feito com a bandeja vazia. Não é preciso recolher os doces nem pedir ao repositor para transportá-los.
+
+Sem os dois ingredientes, ou quando qualquer vitrine não tem espaço para sua unidade do lote, o preparo aguarda sem consumir insumos. Uma exclamação aparece sobre o confeiteiro quando há alguma vitrine vazia e falta mel ou ovos, exceto durante entregas. A pausa congela preparo, batedeira e percurso. Cada produto entra nos pedidos após sua primeira entrega. Clientes seguem as reações normais de falta de estoque. Compra, ingredientes, progresso, percurso pendente e estoque são salvos; partidas anteriores recebem a confeitaria ainda não comprada.
 
 ## Estacionamento no nível 16
 

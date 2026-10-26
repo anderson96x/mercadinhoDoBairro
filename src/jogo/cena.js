@@ -1,4 +1,7 @@
-import { construirBalcoesDecorados, criarVitrineCurva } from './padaria-decoracao.js';
+import { construirBatedeira } from './batedeira.js';
+import { construirBalcoesDecorados, criarVitrineCurva, criarBandejaRecebimento } from './padaria-decoracao.js';
+import { CONFEITARIA, podeProduzirConfeitaria, situacaoConfeiteiro, maquinaConfeitaria } from './confeitaria.js';
+import { criarDoceConfeitaria } from './doces-confeitaria.js';
 import { criarExpositorHortifruti } from './hortifruti.js';
 import { PLANTA_EXPANSAO, MODELO_PADARIA, pontoPadaria } from './planta.js';
 import { construirBairro } from './bairro.js';
@@ -38,7 +41,7 @@ const leiteVitrine = new THREE.MeshBasicMaterial({ color: 0xfafcf3 });
 const vidroMel = new THREE.MeshStandardMaterial({ color: 0xffe3a0, transparent: true, opacity: 0.24, roughness: 0.22, depthWrite: false });
 const verdeLeiteVitrine = new THREE.MeshBasicMaterial({ color: 0x087e64 });
 function estacaoDesbloqueada(id, estado) {
-  const estagioNecessario = PRODUTOS[id]?.origem === 'importado' ? 0 : PRODUTOS[id]?.nivelMinimo >= 11 ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
+  const estagioNecessario = PRODUTOS[id]?.origem === 'confeitaria' ? ALA_PADARIA.indice : PRODUTOS[id]?.origem === 'importado' ? 0 : PRODUTOS[id]?.nivelMinimo >= 11 ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
   return !!estado.produtos[id]?.liberado && estado.estagioLoja >= estagioNecessario;
 }
 function material(cor) {
@@ -229,6 +232,9 @@ function criarSecaoHortifruti(pai, p) {
 }
 
 export function criarProduto(id, escala = 1, variante = 0) {
+  if (CONFEITARIA.produtos[id]) {
+    const doce = criarDoceConfeitaria(id, variante); doce.scale.setScalar(escala); return doce;
+  }
   if (id === 'guloseima') {
     const guloseima = criarGuloseima(variante); guloseima.scale.setScalar(escala); return guloseima;
   }
@@ -824,6 +830,7 @@ export class Cena {
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (id === 'pao') this.construirPadaria();
+      else if (p.origem === 'confeitaria') continue;
       else if (p.origem === 'importado') this.construirImportado(id, p);
       else this.construirEstacao(id, p);
     }
@@ -1086,7 +1093,8 @@ export class Cena {
     const PRODUTOS = produtosDaLoja(this.sim?.estado);
     const p = MODELO_PADARIA.prateleira;
     const grupo = new THREE.Group(); grupo.name = 'padaria'; this.cena.add(grupo);
-    construirBalcoesDecorados(grupo, MODELO_PADARIA.fechamento, { caixa, esfera });
+    const vitrinesConfeitaria = construirBalcoesDecorados(grupo, MODELO_PADARIA.fechamento, { caixa, esfera });
+    Object.assign(this.produtos, vitrinesConfeitaria.userData.produtos);
     // Pães ficam nas três prateleiras internas da vitrine curva.
     const baseMadeira = caixa(grupo, 3.3, 0.52, 0.8, 0x936238, p.x, 0.49, p.z);
     baseMadeira.name = 'base-madeira-padaria';
@@ -1096,12 +1104,8 @@ export class Cena {
     vitrine.name = 'vitrine-paes'; vitrine.position.set(p.x, 0, p.z);
     vitrine.getObjectByName('tampo-vitrine').name = 'tampo-paes';
     // Entrega visível de trigo, separada da compra de pães.
-    const entregaTrigo = new THREE.Group(); entregaTrigo.name = 'entrega-trigo-padaria'; entregaTrigo.position.set(MODELO_PADARIA.entrada.x, 1.25, MODELO_PADARIA.entrada.z); grupo.add(entregaTrigo);
-    // Bandeja de recebimento sobre o balcão, acessível pelo lado externo.
-    caixa(entregaTrigo, 1.06, 0.07, 1.6, 0x684429, 0, 0, 0);
-    caixa(entregaTrigo, 0.94, 0.025, 1.48, 0xe2bc7d, 0, 0.05, 0);
-    for (const x of [-0.5, 0.5]) caixa(entregaTrigo, 0.06, 0.16, 1.6, 0x936238, x, 0.1, 0);
-    for (const z of [-0.77, 0.77]) caixa(entregaTrigo, 1.06, 0.16, 0.06, 0x936238, 0, 0.1, z);
+    const entregaTrigo = criarBandejaRecebimento(grupo, { caixa });
+    entregaTrigo.name = 'entrega-trigo-padaria'; entregaTrigo.position.set(MODELO_PADARIA.entrada.x, 1.25, MODELO_PADARIA.entrada.z);
     const placaTrigo = criarProduto('trigo', 0.45);
     placaTrigo.position.set(0, 0.15, -0.62); entregaTrigo.add(placaTrigo);
     const trigosRecebidos = Array.from({ length: ALA_PADARIA.capacidadeTrigo }, (_, i) => {
@@ -1109,7 +1113,6 @@ export class Cena {
       espiga.position.set(-0.36 + i % 4 * 0.24, 0.18, -0.22 + Math.floor(i / 4) * 0.22);
       entregaTrigo.add(espiga); return espiga;
     });
-    entregaTrigo.scale.set(0.5, 0.8, 0.5);
     // Um padeiro mói o trigo; o outro leva a massa ao forno.
     const moinho = new THREE.Group(); moinho.name = 'triturador-padaria'; moinho.position.set(MODELO_PADARIA.moinho.x, 0, MODELO_PADARIA.moinho.z); grupo.add(moinho);
     const corpoTriturador = caixa(moinho, 0.78, 0.66, 0.72, 0xadb7b9, 0, 0.58, 0);
@@ -1255,6 +1258,32 @@ export class Cena {
       ]
     ];
     const padeiros = [criarPadeiro(coletaTrigo.x, coletaTrigo.z, 0xc58e6c, 'trigo'), criarPadeiro(entregaMoinho.x, entregaMoinho.z, 0xe1b18b, 'forno')];
+    const confeiteiro = criarPadeiro(CONFEITARIA.maquina.x, -4.65, 0x9b6848, 'confeitaria');
+    confeiteiro.name = 'confeiteiro'; confeiteiro.visible = false;
+    confeiteiro.userData.alertaTrigo.visible = false;
+    confeiteiro.userData.alertaTrigo.name = 'alerta-confeitaria';
+    const batedeira = construirBatedeira();
+    batedeira.grupo.position.set(CONFEITARIA.maquina.x, 0, CONFEITARIA.maquina.z);
+    batedeira.grupo.visible = false; grupo.add(batedeira.grupo);
+    const bandejaDoces = confeiteiro.userData.cargaPadaria;
+    bandejaDoces.clear();
+    caixa(bandejaDoces, 0.7, 0.04, 0.4, 0x9b8c7d, 0, -0.06, 0);
+    const docesNaBandeja = [];
+    Object.keys(CONFEITARIA.produtos).forEach((id, i) => {
+      const doce = criarProduto(id, 0.6); doce.position.set((i - 1) * 0.22, -0.035, 0); bandejaDoces.add(doce);
+      docesNaBandeja.push(doce);
+    });
+    const entregaConfeitaria = criarBandejaRecebimento(grupo, { caixa });
+    entregaConfeitaria.name = 'entrega-confeitaria'; entregaConfeitaria.position.set(4.75, 1.25, -3.375);
+    entregaConfeitaria.visible = false;
+    const ingredientesConfeitaria = {};
+    for (const [indice, id] of ['mel', 'ovos'].entries()) {
+      ingredientesConfeitaria[id] = Array.from({ length: CONFEITARIA.capacidadeIngredientes }, (_, i) => {
+        const ingrediente = criarProduto(id, 0.4);
+        ingrediente.position.set(-0.3 + i % 4 * 0.2, 0.18, -0.48 + Math.floor(i / 4) * 0.28 + indice * 0.56);
+        entregaConfeitaria.add(ingrediente); ingrediente.visible = false; return ingrediente;
+      });
+    }
     const frutas = Array.from({ length: PRODUTOS.pao.capacidadePrateleira }, (_, i) => {
       const pao = criarProduto('pao', 1.15); pao.position.set(p.x - 1.15 + i % 6 * 0.46, 0.98 + Math.floor(i / 6) * 0.4, p.z - 0.07); grupo.add(pao); return pao;
     });
@@ -1268,10 +1297,62 @@ export class Cena {
     grupo.visible = !!this.sim.estado.melhorias.alaPadaria;
     const postosEspera = [6.4, 8.8].map(x => pontoPadaria({ x, z: -2.95 }));
     this.produtos.pao = { grupo, frutos: [], frutas, galinhas: [], padeiros, roteiros, postosEspera, moinho, forno, rotor,
+      vitrinesConfeitaria, confeiteiro, entregaConfeitaria, ingredientesConfeitaria, docesNaBandeja, batedeira,
       trigosRecebidos, farinha, brilhoForno, fumaca,
       ultimoTotal: this.sim.estado.producao.paesProduzidos, transitos: [] };
     this.criarLabel('loja-pao', { ...PRODUTOS.pao.prateleira, y: 1.85 }, 'PADARIA', '0 / 18', 'loja');
+    for (const id of Object.keys(CONFEITARIA.produtos)) {
+      this.criarLabel(`loja-${id}`, { ...PRODUTOS[id].prateleira, y: 2.2 }, PRODUTOS[id].plural.toLocaleUpperCase('pt-BR'), `0 / ${PRODUTOS[id].capacidadePrateleira}`, 'loja');
+    }
   }
+  animarConfeiteiro(objetos, dt) {
+    const estado = this.sim.estado;
+    const ativo = !!estado.melhorias.confeitaria;
+    objetos.vitrinesConfeitaria.visible = ativo;
+    objetos.confeiteiro.visible = ativo;
+    objetos.entregaConfeitaria.visible = ativo;
+    for (const [id, ingredientes] of Object.entries(objetos.ingredientesConfeitaria)) ingredientes.forEach((objeto, i) => { objeto.visible = ativo && i < estado.confeitaria[id]; });
+    objetos.batedeira.grupo.visible = ativo;
+    objetos.confeiteiro.userData.alertaTrigo.visible = false;
+    if (!ativo) return;
+    const produzindo = podeProduzirConfeitaria(estado);
+    const trabalhador = objetos.confeiteiro, d = trabalhador.userData;
+    const situacao = situacaoConfeiteiro(estado);
+    const vazio = Object.keys(CONFEITARIA.produtos).some(id => estado.produtos[id].prateleira === 0);
+    const faltaIngrediente = Object.entries(CONFEITARIA.ingredientes).some(([id, quantidade]) => estado.confeitaria[id] < quantidade);
+    d.alertaTrigo.visible = vazio && faltaIngrediente && estado.confeitaria.etapaEntrega < 0;
+    d.alertaTrigo.position.set(trabalhador.position.x, 2.3, trabalhador.position.z);
+    if (this.camera) d.alertaTrigo.quaternion.copy(this.camera.quaternion);
+    if (dt <= 0 && d.atorConfeitaria) return;
+    d.tempoConfeitaria = (d.tempoConfeitaria ?? 0) + dt;
+    const ator = d.atorConfeitaria = { x: situacao.x, z: situacao.z, andando: situacao.acao === 'andar', angulo: situacao.angulo };
+    const descansando = situacao.acao === 'esperar';
+    const alvo = descansando ? PRODUTOS.donut.prateleira : situacao.produto ? PRODUTOS[situacao.produto].prateleira : maquinaConfeitaria();
+    if (!ator.andando) ator.angulo = Math.atan2(alvo.x - ator.x, alvo.z - ator.z);
+    this.animarPersonagem(trabalhador, ator, dt, d.tempoConfeitaria, []);
+    const trabalhando = situacao.acao === 'misturar' || situacao.acao === 'entregar';
+    const movimento = trabalhando ? Math.sin(d.tempoConfeitaria * 10) * 0.13 : 0;
+    for (const [lado, braco] of [[-1, d.bracoE], [1, d.bracoD]]) {
+      posicionarBraco(braco, new THREE.Vector3(lado * 0.22, descansando ? 0.48 : trabalhando ? (situacao.acao === 'misturar' ? 1 : 0.82) + lado * movimento : 0.58, descansando ? 0.13 : trabalhando ? 0.5 : 0.4));
+    }
+    d.corpo.rotation.z = trabalhando ? movimento * 0.18 : 0;
+    d.cabecaPadaria.rotation.set(descansando ? Math.sin(d.tempoConfeitaria * 0.7) * 0.035 : 0,
+      descansando ? Math.sin(d.tempoConfeitaria * 0.55) * 0.22 : 0, 0);
+    if (descansando) {
+      d.marcha.intensidade = 0; d.marcha.velocidade = 0;
+      d.corpo.position.y = 0; d.corpo.rotation.set(0, 0, 0);
+      animarPernas(d, 0);
+    }
+    d.cargaPadaria.visible = estado.confeitaria.etapaEntrega >= 0;
+    objetos.docesNaBandeja.forEach(doce => { doce.visible = situacao.carga.includes(doce.name); });
+    if (produzindo) {
+      objetos.batedeira.rotor.rotation.y += dt * 10;
+      objetos.batedeira.massa.rotation.y += dt * 2;
+    }
+    objetos.batedeira.massa.visible = produzindo;
+    d.alertaTrigo.position.set(ator.x, 2.3, ator.z);
+  }
+
   animarPadeiros(objetos, producao, tempo, dt) {
     const PRODUTOS = produtosDaLoja(this.sim?.estado);
     const maquinas = [objetos.moinho.position, objetos.forno.position];
@@ -1823,6 +1904,7 @@ export class Cena {
     aplicarPaletaFuncionario(this.caixeiro, paletaAtual);
     aplicarPaletaFuncionario(this.ajudante, paletaAtual);
     this.produtos.pao?.padeiros.forEach(padeiro => aplicarPaletaFuncionario(padeiro, paletaAtual));
+    if (this.produtos.pao?.confeiteiro) aplicarPaletaFuncionario(this.produtos.pao.confeiteiro, paletaAtual);
     for (const c of sim.clientes) {
       if (!this.clientes.has(c.id)) {
         const visual = APARENCIAS_CLIENTES[c.aparencia] ?? APARENCIAS_CLIENTES[0];
@@ -1912,7 +1994,13 @@ export class Cena {
     }
     for (const [id, objetos] of Object.entries(this.produtos)) {
       const estado = e.produtos[id];
+      if (PRODUTOS[id].origem === 'confeitaria') {
+        objetos.grupo.visible = !!e.melhorias.confeitaria;
+        objetos.frutas.forEach((doce, i) => { doce.visible = i < estado.prateleira; });
+        continue;
+      }
       if (id === 'pao') {
+        this.animarConfeiteiro(objetos, dt);
         const ativa = !!e.melhorias.alaPadaria;
         const construcaoPadaria = e.estagioLoja > ALA_PADARIA.indice ? 1 : equipamentoAla;
         objetos.grupo.visible = ativa && construcaoPadaria > 0;

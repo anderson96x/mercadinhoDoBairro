@@ -1,4 +1,8 @@
 const caminhos = {
+  confeitaria: '<path d="M4 12h16v9H4zM4 16c2 3 4-3 6 0s4-3 6 0 2 1 4 0M7 12V8m5 4V8m5 4V8M7 5V3m5 2V3m5 2V3"/>',
+  bolo: '<path d="M4 12h16v9H4zM4 16c2 3 4-3 6 0s4-3 6 0 2 1 4 0M8 12V7m8 5V7M8 4V2m8 2V2"/>',
+  donut: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="m6 9 2-1m7-2 1 2m-8 9 1-2m7 0 2 1"/>',
+  eclair: '<rect x="2" y="7" width="20" height="10" rx="5"/><path d="M4 11h16M7 8l2 3m3-3 2 3m3-3 2 3"/>',
   importacao: '<path d="m3 9 9-4 9 4v10l-9 4-9-4V9Zm0 0 9 4 9-4M12 13v10M12 1v8m-3-3 3 3 3-3"/>',
   prateleira: '<path d="M4 3v18m16-18v18M4 5h16M4 10h16M4 15h16M4 20h16M8 7v3m5 2v3m3 2v3"/>',
   enlatado: '<path d="M7 5h10v14H7zM7 5c0-2 10-2 10 0M7 19c0 2 10 2 10 0M9 9h6v6H9z"/>',

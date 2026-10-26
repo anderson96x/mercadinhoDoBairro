@@ -84,6 +84,16 @@ O navegador do celular acompanha o personagem com a câmera; em telas largas, mo
 
 O painel de melhorias lê o catálogo. Não é preciso criar um novo botão manualmente.
 
+## Confeitaria da padaria (nível 17)
+
+`confeitaria.js` concentra custo, nível, receita, capacidades, posições e produção independente da cena. Uma compra `confeitaria` libera os três produtos; `estado.confeitaria` guarda mel, ovos, progresso, lotes, `etapaEntrega` e `tempoEntrega`. Seis segundos de preparo consomem um mel e um ovo e iniciam `ROTEIRO_CONFEITARIA`: levar os doces, entregar bolo, donut e éclair nos respectivos expositores e retornar à máquina. Cada estoque aumenta ao fim da sua etapa de entrega. O lote inteiro exige ingredientes e espaço; entregas já preparadas continuam mesmo sem mais insumos. Se o DEV encher a vitrine durante o trajeto, o doce pendente aguarda vaga, sem perda nem duplicação ao salvar.
+
+`padaria-decoracao.js` mantém os tampos desde o N9 e cria o grupo `vitrines-confeitaria`, visível somente após a compra. `doces-confeitaria.js` fornece os três modelos, reutilizados nas vitrines, na bandeja e nas compras. `Cena.animarConfeiteiro()` movimenta um terceiro trabalhador no corredor de serviço, com gestos de preparo e bandeja. Não inclua esse funcionário no vetor dos dois padeiros, que mantém o fluxo de pão.
+
+A entrega de mel e ovos ocupa a seção contígua ao trigo. `CONFEITARIA.limiteEntregaX` separa os lados no mundo para evitar que a interação entregue ao setor errado. Doces têm `origem: 'confeitaria'`, sem coleta nem reposição manual; os balcões existentes já fornecem as colisões. O cartão de produção aparece somente perto da bandeja de ingredientes; não há etiqueta flutuante de mel e ovos. Execute `node --test tests/confeitaria.test.js`, `node scripts/check-store-layout.mjs` e, com o servidor ativo, `node scripts/verificar-confeitaria.mjs`; este último verifica desktop/celular e WebGL/Canvas sem salvar imagens.
+
+`criarBandejaRecebimento()` fornece o mesmo modelo para trigo e confeitaria. As unidades de mel e ovos são filhas da bandeja e refletem o estado dos ingredientes. `situacaoConfeiteiro()` deriva posição, ação e doces restantes do estado da simulação; a cena não mantém um relógio independente para entregas. `batedeira.js` constrói a máquina industrial com cuba e batedor. `maquinaConfeitaria()` fornece sua colisão, somente após a compra. Preserve a passagem dos dois padeiros. O alerta reutiliza a exclamação da padaria quando alguma vitrine está vazia e falta ingrediente, sem aparecer durante entregas. `dt = 0` congela a pose e o batedor.
+
 ## Receitas e fase artesanal (níveis 10 a 15)
 
 `ALA_ARTESANAL` define piso, paredes e câmera do anexo ao fundo. A parede traseira da ala dos ovos vira uma passagem; simulação e geometria aplicam a mesma abertura. Produtos novos têm `nivelMinimo`, modelo próprio em `Cena.construirArtesanal()` e melhoria de `tipo: 'construcao'` com o campo `produto`.

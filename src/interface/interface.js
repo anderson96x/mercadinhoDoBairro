@@ -61,11 +61,10 @@ export class Interface {
           <h2 id="objetivo-titulo">Da horta para a loja</h2><p id="objetivo-texto"></p>
         </aside>
         <div id="atividade" role="status"></div>
-        <aside class="painel-producao" id="painel-producao" aria-label="Produção artesanal" hidden>
+        <aside class="painel-producao" id="painel-producao" aria-label="Produção do mercado" hidden>
           <details id="producao-detalhes">
-            <summary><span>Produção</span><span id="producao-resumo">0 prontos</span><span class="producao-seta" aria-hidden="true">⌃</span></summary>
+            <summary><span>Produção</span><span class="producao-seta" aria-hidden="true">⌃</span></summary>
             <div id="lista-producao" class="lista-producao"></div>
-            <p class="producao-dica">Entregue trigo à padaria ou ingredientes às oficinas para produzir.</p>
           </details>
         </aside>
         <div class="controles-dica"><span class="teclas"><kbd>W</kbd><span><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd></span></span><span><b>Seu ritmo. Seu mercadinho.</b><span>Arraste para andar · botão direito ou dois dedos para mover o mapa · roda ou pinça para zoom</span></span></div>

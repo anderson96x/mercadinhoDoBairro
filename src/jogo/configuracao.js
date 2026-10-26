@@ -1,5 +1,6 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
-import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
+import { CONFEITARIA } from './confeitaria.js';
+import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, pontoPadaria, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes-produtos.js';
 const ESTANTE_ENLATADOS = PLANTA_DEPOSITO.estantes[CLASSES_PRODUTOS.enlatados.estante];
 const ESTANTE_CEREAIS = PLANTA_DEPOSITO.estantes[CLASSES_PRODUTOS.cereais.estante];
@@ -125,6 +126,13 @@ export const PRODUTOS = {
     capacidadeHorta: 9, capacidadePrateleira: 12,
     ...PLANTA_GELEIA, liberado: false
   },
+  ...Object.fromEntries(Object.entries(CONFEITARIA.produtos).map(([id, p]) => [id, {
+    nome: p.nome, plural: p.plural, cor: p.cor, preco: 15, origem: 'confeitaria', nivelMinimo: CONFEITARIA.nivel,
+    capacidadeHorta: 0, capacidadePrateleira: p.capacidade, liberado: false,
+    horta: CONFEITARIA.entrada, coleta: CONFEITARIA.entrega, reposicao: CONFEITARIA.entrega,
+    prateleira: { ...volumePadaria(MODELO_PADARIA.fechamento[p.balcao]), movel: 'confeitaria' },
+    cliente: pontoPadaria(p.cliente), pontosCompra: [pontoPadaria(p.cliente)]
+  }])),
   pao: {
     nome: 'Pão', plural: 'Pães', cor: 0xc87833, preco: 10, origem: 'padaria',
     capacidadeHorta: 0, capacidadePrateleira: 18,
@@ -256,6 +264,7 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
+  { id: 'confeitaria', titulo: 'Confeitaria da padaria', descricao: 'Instale vitrines, uma batedeira e um confeiteiro. Entregue mel e ovos: 1 mel + 1 ovo rendem um bolo, um donut e um éclair, com preparo de 6 segundos e entrega nas vitrines. Venda por R$ 15 cada.', custo: CONFEITARIA.custo, icone: 'bolo', max: 1, tipo: 'confeitaria', categoria: 'mercado', nivelMinimo: CONFEITARIA.nivel, requisitoMelhoria: 'alaPadaria', requisitos: ['apiario', 'alaProducao'] },
   { id: 'importarProdutos', titulo: 'Enlatados', descricao: 'Enlatados variados, como feijão, milho, ervilha e sardinha.', custo: 270, icone: 'enlatado', max: 1000000000, tipo: 'importacao', produto: 'enlatado', categoria: 'importados', nivelMinimo: 19, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
   { id: 'importarCereais', titulo: 'Cereais', descricao: 'Caixas de cereais em quatro variedades.', custo: 405, icone: 'cereal', max: 1000000000, tipo: 'importacao', produto: 'cereal', categoria: 'importados', nivelMinimo: 20, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
   { id: 'importarMantimentos', titulo: 'Mantimentos', descricao: 'Macarrão, feijão, arroz e farinha em embalagens variadas.', custo: 315, icone: 'mantimento', max: 1000000000, tipo: 'importacao', produto: 'mantimento', categoria: 'importados', nivelMinimo: 21, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },

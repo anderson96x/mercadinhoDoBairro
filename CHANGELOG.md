@@ -1,6 +1,24 @@
 # Histórico de alterações
 
-## Versão atual: 0.62.0 — 2026-10-26
+## Versão atual: 0.63.1 — 2026-10-26
+
+- Padroniza o cartão da confeitaria com o visual do preparo de pão, mostrando ingredientes, receita resumida e estado do confeiteiro. O cartão aparece somente perto da bandeja de entrega de mel e ovos.
+- Mostra estoque / capacidade apenas no selo de cada cartão, como 11 / 18 para pães e 19 / 24 para doces. O cabeçalho “Produção” mantém somente o título e a seta de expandir.
+- Exibe barra de progresso e porcentagem somente durante produção ou entrega ativa. Em espera por ingredientes ou com vitrine cheia, mantém apenas o texto do estado.
+- Remove o balão flutuante “MEL + OVOS” e a dica de entrega de ingredientes do rodapé do painel, incluindo seu estilo sem uso.
+- Validação: 337 testes e build de produção aprovados. Cartões, contagens, progresso e exibição junto à bandeja verificados no Edge em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.63.0 — 2026-10-26
+
+- Adiciona Confeitaria da padaria no nível 17 por R$ 1.000, com bolos, donuts e éclairs vendidos a R$ 15 cada. Exige padaria, apiário e ala dos ovos e inclui um confeiteiro dedicado.
+- Mantém tampos planos nos balcões secundários antes da compra. Após a instalação, as três vitrines curvas mostram somente o estoque real dos doces, com modelos próprios.
+- Recebe mel e ovos em uma bandeja igual à do trigo, na seção ao lado dele, mostrando as quantidades entregues. Um mel e um ovo rendem um doce de cada, com seis segundos de preparo na batedeira industrial junto ao moinho, seguidos das entregas.
+- Anima o confeiteiro trabalhando na batedeira, com cuba metálica e batedor giratório, e abastecendo a vitrine correspondente a cada doce. Os produtos saem da bandeja quando entram no estoque; o funcionário retorna com a bandeja vazia mesmo sem mais ingredientes. A máquina tem colisão própria e preserva a passagem dos dois padeiros.
+- No descanso, o confeiteiro fica parado, com braços relaxados, voltado para os donuts e movimentando suavemente a cabeça. Mostra uma exclamação quando alguma vitrine está vazia e falta mel ou ovos, exceto durante entregas. A pausa congela a pose e a produção.
+- Salva compra, ingredientes, preparo, entregas pendentes e estoque sem duplicar produtos. Falta de insumos ou espaço interrompe o trabalho sem perdas. Partidas anteriores recebem a confeitaria bloqueada; importações e expansão continuam desativadas para reorganização futura.
+- Validação: 334 testes, build de produção e rotas aprovados. Compra, bandejas, vitrines, batedeira, entregas, recarga, exclamação, descanso e pausa verificados no Edge em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.62.0 — 2026-10-26
 
 - Desativa prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22. Remove as ofertas e orientações de compra, inclusive no DEV; o estacionamento no nível 16 permanece como último desbloqueio ativo.
 - Mantém modelos e sistemas no código para reorganização futura depois do nível 20, sem definir novos níveis de liberação. A progressão de níveis continua normalmente.

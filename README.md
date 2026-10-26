@@ -1,12 +1,14 @@
 ﻿# Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.62.0**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.63.1**.
 
-Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos e geleias, com dez produtos ao todo.
+Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos, geleias, bolos, donuts e éclairs, com treze produtos ao todo.
 
 As bancas de hortifruti possuem placas para tomate, milho, trigo e morango, alinhadas à frente de cada seção e ampliadas pelo zoom da câmera.
 
-O estacionamento no nível 16 é o último desbloqueio ativo. Prateleiras de importados, expansão e importações dos antigos níveis 17 a 22 estão desativadas para reorganização depois do nível 20. Os modelos e sistemas ficam guardados no código; os novos níveis de liberação ainda não foram definidos. Ao carregar partidas de desenvolvimento, as compras e estoques desse conteúdo são removidos.
+A confeitaria no nível 17 é o último desbloqueio ativo. Por R$ 1.000, instala três vitrines de bolos, donuts e éclairs, uma batedeira industrial ao lado do moinho e um confeiteiro animado. Entregue mel e ovos no balcão: 1 mel + 1 ovo rendem um doce de cada, com 6 segundos de preparo e entrega nas vitrines correspondentes, vendidos a R$ 15 por unidade. O funcionário avisa com uma exclamação quando há vitrine vazia e falta ingrediente. Antes da compra, os balcões secundários têm tampos planos, sem doces decorativos.
+
+Prateleiras de importados, expansão e importações dos antigos níveis 17 a 22 continuam desativadas para reorganização depois do nível 20. Os modelos e sistemas ficam guardados no código; os novos níveis de liberação ainda não foram definidos. Ao carregar partidas de desenvolvimento, as compras e estoques desse conteúdo são removidos.
 
 A versão segue o formato **MAJOR.MINOR.PATCH**: mudanças incompatíveis em versões estáveis incrementam MAJOR, novas funcionalidades compatíveis incrementam MINOR e correções compatíveis incrementam PATCH. Durante o desenvolvimento inicial, o jogo permanece na série `0.x`, com mudanças incompatíveis e reformulações amplas contabilizadas em MINOR. Todo conjunto de alterações deve incrementar a versão, incluindo testes, ajustes visuais e ferramentas; alterações exclusivamente de documentação não exigem incremento nem entrada de versão no changelog. As demais mudanças sem impacto em execução usam PATCH. A versão é definida em `package.json` e exibida nos menus Ajuda e DEV. Mantenha `package-lock.json`, este README e o [histórico de alterações](CHANGELOG.md) sincronizados conforme as regras de [AGENTS.md](AGENTS.md). Registros históricos anteriores à regra permanecem preservados.
 
@@ -97,6 +99,7 @@ Os níveis representam a evolução contínua da mesma loja. Atingir o nível li
 | 14 | Reposição ágil | R$ 500 | Repositor anda 30% mais rápido; exige o repositor. |
 | 15 | Cozinha de geleias | R$ 2.200 | Produz geleias; exige o apiário. |
 | 16 | Estacionamento | R$ 10.000 | Seis vagas no terreno à esquerda da loja, com acesso pela rua, iluminação e canteiro central. |
+| 17 | Confeitaria da padaria | R$ 1.000 | Bolos, donuts e éclairs a R$ 15 cada; mel e ovos viram doces nas vitrines, com um confeiteiro dedicado. |
 
 
 O estacionamento do nível 16 começa com seis vagas vazias. Clientes chegam de carro, estacionam, desembarcam e caminham até a loja; depois das compras, voltam ao próprio carro e saem de ré antes de seguir pela rua. Rodas, direção, portas, piscas e luzes acompanham as manobras.

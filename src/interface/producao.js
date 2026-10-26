@@ -1,6 +1,7 @@
 import { produtosDaLoja, ALA_PADARIA, CONFIG, OFICINAS, PRODUTOS } from '../jogo/configuracao.js';
 import { distanciaEstacao, geometriaEstacao } from '../jogo/estacoes.js';
 import { icone } from './icones.js';
+import { CONFEITARIA, podeProduzirConfeitaria, situacaoConfeiteiro } from '../jogo/confeitaria.js';
 
 function resumoPadaria(estado) {
   const producao = estado.producao;
@@ -12,7 +13,7 @@ function resumoPadaria(estado) {
   const progresso = assando ? producao.progressoForno / ALA_PADARIA.tempoForno
     : moendo ? producao.progressoMoagem / ALA_PADARIA.tempoMoagem : 0;
   return {
-    id: 'pao', nome: 'Padaria', prontos, prontosTexto: `${prontos} na vitrine`,
+    id: 'pao', nome: 'Padaria', prontos, capacidade: PRODUTOS.pao.capacidadePrateleira, prontosTexto: `${prontos} / ${PRODUTOS.pao.capacidadePrateleira}`,
     ingredientes: [
       { id: 'trigo', nome: 'Trigo', disponivel: producao.trigoPadaria, quantidade: ALA_PADARIA.capacidadeTrigo, faltando: !producao.trigoPadaria },
       { id: 'farinha', nome: 'Farinha', disponivel: producao.farinha, quantidade: 3, faltando: !producao.farinha && !producao.trigoPadaria }
@@ -36,26 +37,39 @@ export function resumoProducao(estado) {
         ? `Aguardando ${faltantes.map(item => PRODUTOS[item.id].nome.toLocaleLowerCase('pt-BR')).join(' e ')}`
         : 'Produzindo', produzindo: !cheio && !faltantes.length };
   });
-  return estado.melhorias.alaPadaria ? [resumoPadaria(estado), ...oficinas] : oficinas;
+  const confeitaria = [];
+  if (estado.melhorias.confeitaria) {
+    const producao = estado.confeitaria;
+    const ingredientes = Object.keys(CONFEITARIA.ingredientes).map(id => ({ id, disponivel: producao[id], quantidade: CONFEITARIA.capacidadeIngredientes, faltando: producao[id] < 1 }));
+    const prontos = Object.keys(CONFEITARIA.produtos).reduce((total, id) => total + estado.produtos[id].prateleira, 0);
+    const capacidade = Object.values(CONFEITARIA.produtos).reduce((total, produto) => total + produto.capacidade, 0);
+    const cheia = Object.entries(CONFEITARIA.produtos).some(([id, p]) => estado.produtos[id].prateleira >= p.capacidade);
+    const entregando = producao.etapaEntrega >= 0;
+    const situacao = situacaoConfeiteiro(estado);
+    confeitaria.push({ id: 'confeitaria', nome: 'Confeitaria', prontos, capacidade, prontosTexto: `${prontos} / ${capacidade}`, ingredientes,
+      receitaTexto: 'Por lote: 1 mel + 1 ovo → 1 bolo, 1 donut e 1 éclair · preparo 6s + entrega',
+      status: entregando ? situacao.carga.length ? 'Abastecendo as vitrines' : 'Voltando à batedeira'
+        : cheia ? 'Vitrine cheia' : ingredientes.some(i => i.faltando) ? 'Aguardando mel e ovos' : 'Misturando na batedeira',
+      progresso: entregando ? 100 : Math.floor(producao.progresso / CONFEITARIA.segundos * 100), produzindo: entregando || podeProduzirConfeitaria(estado) });
+  }
+  return estado.melhorias.alaPadaria ? [resumoPadaria(estado), ...confeitaria, ...oficinas] : oficinas;
 }
 
 export function atualizarPainelProducao(painel, estado) {
   const oficinas = resumoProducao(estado).filter(({ id }) =>
-    (id === 'pao' ? [ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, PRODUTOS.pao.prateleira]
+    (id === 'confeitaria' ? [CONFEITARIA.entrada]
+      : id === 'pao' ? [ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, PRODUTOS.pao.prateleira]
       : [geometriaEstacao(id, 'coleta', produtosDaLoja(estado))]).some(estacao => distanciaEstacao(estado.jogador, estacao) < CONFIG.raioInteracao));
   painel.hidden = !oficinas.length;
   if (!oficinas.length) return;
   const chave = JSON.stringify(oficinas);
   if (painel.dataset.estado === chave) return;
   painel.dataset.estado = chave;
-  const total = oficinas.reduce((soma, oficina) => soma + oficina.prontos, 0);
-  painel.querySelector('#producao-resumo').textContent = oficinas[0].id === 'pao'
-    ? `${total} ${total === 1 ? 'pão' : 'pães'}` : `${total} ${total === 1 ? 'pronto' : 'prontos'}`;
   painel.querySelector('#lista-producao').innerHTML = oficinas.map(o => `<article class="producao-cartao ${o.id}">
     <div class="producao-cartao-topo">${icone(o.id)}<h3>${o.nome}</h3><span class="producao-prontos">${o.prontosTexto ?? `${o.prontos} prontos`}</span></div>
     <div class="producao-ingredientes">${o.ingredientes.map(item => `<span class="${item.faltando ?? item.disponivel < item.quantidade ? 'faltando' : ''}">${icone(item.id)}<span>${item.nome ?? PRODUTOS[item.id].nome}</span><b>${item.disponivel} / ${item.quantidade}</b></span>`).join('')}</div>
     <p class="producao-receita">${o.receitaTexto ?? `Por lote: ${o.rendimento} ${PRODUTOS[o.id].plural.toLocaleLowerCase('pt-BR')} · ${o.segundos}s`}</p>
-    <div class="producao-status"><span>${o.status}</span><b>${o.progresso}%</b></div>
-    <progress max="100" value="${o.progresso}" aria-label="Progresso do lote: ${o.nome}" aria-valuetext="${o.progresso}%, ${o.status}"></progress>
+    <div class="producao-status"><span>${o.status}</span>${o.produzindo ? `<b>${o.progresso}%</b>` : ''}</div>
+    ${o.produzindo ? `<progress max="100" value="${o.progresso}" aria-label="Progresso do lote: ${o.nome}" aria-valuetext="${o.progresso}%, ${o.status}"></progress>` : ''}
   </article>`).join('');
 }

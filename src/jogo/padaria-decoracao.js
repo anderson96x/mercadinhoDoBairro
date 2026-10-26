@@ -1,4 +1,16 @@
+import { CONFEITARIA } from './confeitaria.js';
+import { criarDoceConfeitaria } from './doces-confeitaria.js';
 import * as THREE from 'three';
+
+export function criarBandejaRecebimento(pai, { caixa }) {
+  const bandeja = new THREE.Group(); pai.add(bandeja);
+  caixa(bandeja, 1.06, 0.07, 1.6, 0x684429, 0, 0, 0);
+  caixa(bandeja, 0.94, 0.025, 1.48, 0xe2bc7d, 0, 0.05, 0);
+  for (const x of [-0.5, 0.5]) caixa(bandeja, 0.06, 0.16, 1.6, 0x936238, x, 0.1, 0);
+  for (const z of [-0.77, 0.77]) caixa(bandeja, 1.06, 0.16, 0.06, 0x936238, 0, 0.1, z);
+  bandeja.scale.set(0.5, 0.8, 0.5);
+  return bandeja;
+}
 
 // Frente curva em +z, prateleiras internas e laterais de madeira.
 export function criarVitrineCurva(pai, { w, d, base, altura, niveis }, { caixa }) {
@@ -42,85 +54,48 @@ export function criarVitrineCurva(pai, { w, d, base, altura, niveis }, { caixa }
   return grupo;
 }
 
-// Somente cenário: estas peças não entram em estoque, receitas ou pedidos.
-export function construirBalcoesDecorados(grupo, balcoes, { caixa, esfera }) {
-  const subdividir = mesh => {
-    if (mesh.geometry?.type !== 'BoxGeometry') return;
-    const { width, height, depth } = mesh.geometry.parameters;
-    if (Math.max(width, depth) < 0.7) return;
-    // Faces menores mantêm os doces acima do tampo também no Canvas 2D.
-    mesh.geometry.dispose();
-    mesh.geometry = new THREE.BoxGeometry(width, height, depth, Math.ceil(width / 0.3), 1, Math.ceil(depth / 0.3));
-  };
-  const decoracao = new THREE.Group(); decoracao.name = 'decoracao-padaria';
-  decoracao.userData.decorativo = true; grupo.add(decoracao);
-  const massa = new THREE.MeshStandardMaterial({ color: 0xd99b4b, roughness: 0.88 });
-  const coberturas = [0x573023, 0xe79bac, 0xf7e5b6].map(color => new THREE.MeshStandardMaterial({ color, roughness: 0.65 }));
-  const anel = new THREE.TorusGeometry(0.105, 0.05, 6, 12);
-  const cobertura = new THREE.TorusGeometry(0.105, 0.043, 6, 12);
-  const meiaLua = new THREE.TorusGeometry(0.12, 0.065, 6, 10, Math.PI * 1.45);
-  const doce = (pai, tipo, indice, x, z) => {
-    const item = new THREE.Group(); item.position.set(x, 0.07, z); pai.add(item);
-    item.name = ['donut-decorativo', 'croissant-decorativo', 'caracol-decorativo'][tipo];
-    if (tipo === 0) {
-      const base = new THREE.Mesh(anel, massa); base.rotation.x = Math.PI / 2; item.add(base);
-      const glace = new THREE.Mesh(cobertura, coberturas[indice % 3]); glace.rotation.x = Math.PI / 2; glace.position.y = 0.035; item.add(glace);
-      for (let i = 0; i < 5; i++) {
-        const a = i * Math.PI * 2 / 5;
-        const granulado = caixa(item, 0.035, 0.012, 0.014, i % 2 ? 0xfff1b7 : 0xb64f69, Math.cos(a) * 0.105, 0.08, Math.sin(a) * 0.105);
-        granulado.rotation.y = a + 0.5;
-      }
-    } else if (tipo === 1) {
-      const croissant = new THREE.Mesh(meiaLua, massa); croissant.rotation.x = Math.PI / 2; item.add(croissant);
-      for (let i = 0; i < 3; i++) {
-        const a = 0.65 + i * 0.8;
-        const dobra = esfera(item, 0.06, 0xedbc75, Math.cos(a) * 0.12, 0.03, -Math.sin(a) * 0.12, 1, 0.7, 1.3);
-        dobra.rotation.y = a;
-      }
-    } else {
-      esfera(item, 0.145, 0xd99b4b, 0, 0, 0, 1, 0.5, 1);
-      const curva = new THREE.CatmullRomCurve3(Array.from({ length: 25 }, (_, i) => {
-        const a = i / 24 * Math.PI * 4, r = 0.01 + i / 24 * 0.11;
-        return new THREE.Vector3(Math.cos(a) * r, 0.065, Math.sin(a) * r);
-      }));
-      item.add(new THREE.Mesh(new THREE.TubeGeometry(curva, 24, 0.012, 4, false), coberturas[0]));
-    }
-  };
-  balcoes.forEach((p, indice) => {
-    const madeira = caixa(grupo, p.w, 0.9, p.d, 0x936238, p.x, 0.68, p.z);
-    madeira.name = 'fechamento-madeira-padaria';
-    caixa(grupo, p.w + 0.04, 0.1, p.d + 0.04, 0xf0e6d3, p.x, 1.18, p.z).name = 'tampo-balcao-padaria';
+// Os tampos existem desde o N9; somente as vitrines e os doces dependem da confeitaria.
+export function construirBalcoesDecorados(grupo, balcoes, { caixa }) {
+  const vitrines = new THREE.Group(); vitrines.name = 'vitrines-confeitaria';
+  vitrines.visible = false; grupo.add(vitrines);
+  const produtos = {};
+  balcoes.forEach(p => {
+    caixa(grupo, p.w, 0.9, p.d, 0x936238, p.x, 0.68, p.z).name = 'fechamento-madeira-padaria';
+    const tampo = caixa(grupo, p.w + 0.04, 0.1, p.d + 0.04, 0xf0e6d3, p.x, 1.18, p.z);
+    tampo.name = 'tampo-balcao-padaria';
+    tampo.geometry.dispose();
+    tampo.geometry = new THREE.BoxGeometry(p.w + 0.04, 0.1, p.d + 0.04, Math.ceil(p.w / 0.3), 1, Math.ceil(p.d / 0.3));
     caixa(grupo, p.w - 0.04, 0.08, p.d - 0.04, 0x684429, p.x, 0.27, p.z);
     const longitudinal = p.w >= p.d, comprimento = longitudinal ? p.w : p.d;
     const portas = Math.max(1, Math.floor(comprimento / 0.8));
     for (let i = 0; i < portas; i++) {
       const t = -comprimento / 2 + (i + 0.5) * comprimento / portas;
-      for (const lado of [-1, 1]) {
-        caixa(grupo, longitudinal ? comprimento / portas - 0.06 : 0.018, 0.69, longitudinal ? 0.018 : comprimento / portas - 0.06,
-          0xa87545, p.x + (longitudinal ? t : lado * (p.w / 2 + 0.01)), 0.72, p.z + (longitudinal ? lado * (p.d / 2 + 0.01) : t));
-      }
-    }
-    // Fundos e acesso ao trigo ficam livres de decoração.
-    if (p.decoracao === false) return;
-    const expositor = new THREE.Group(); expositor.name = 'expositor-doces';
-    expositor.position.set(p.x, 0, p.z);
-    if (!longitudinal) expositor.rotation.y = Math.PI / 2;
-    decoracao.add(expositor);
-    criarVitrineCurva(expositor, { w: comprimento - 0.08, d: (longitudinal ? p.d : p.w) - 0.04, base: 1.23, altura: 0.85, niveis: [1.27, 1.63] }, { caixa });
-    const bandejas = Math.max(1, Math.floor((comprimento - 0.4) / 1.05));
-    for (let nivel = 0; nivel < 2; nivel++) {
-    for (let i = 0; i < bandejas; i++) {
-      const t = (i - (bandejas - 1) / 2) * 1.05;
-      const bandeja = new THREE.Group(); bandeja.name = 'bandeja-doces-decorativos';
-      bandeja.position.set(t, 1.305 + nivel * 0.36, -0.025);
-      bandeja.scale.set(0.9, 0.9, 0.72);
-      expositor.add(bandeja);
-      caixa(bandeja, 0.88, 0.035, 0.39, 0x665247, 0, 0, 0);
-      caixa(bandeja, 0.83, 0.012, 0.35, 0xf6eedc, 0, 0.025, 0);
-      for (let j = 0; j < 3; j++) doce(bandeja, ((p.variedade ?? indice) + i + nivel) % 3, j + i, (j - 1) * 0.27, 0);
-    }
+      for (const lado of [-1, 1]) caixa(grupo, longitudinal ? comprimento / portas - 0.06 : 0.018, 0.69,
+        longitudinal ? 0.018 : comprimento / portas - 0.06, 0xa87545,
+        p.x + (longitudinal ? t : lado * (p.w / 2 + 0.01)), 0.72, p.z + (longitudinal ? lado * (p.d / 2 + 0.01) : t));
     }
   });
-  grupo.traverse(subdividir);
-  return decoracao;
+  for (const [id, produto] of Object.entries(CONFEITARIA.produtos)) {
+    const p = balcoes[produto.balcao];
+    const expositor = new THREE.Group(); expositor.name = 'expositor-' + id;
+    expositor.position.set(p.x, 0, p.z);
+    const longitudinal = p.w >= p.d, comprimento = longitudinal ? p.w : p.d;
+    if (!longitudinal) expositor.rotation.y = Math.PI / 2;
+    vitrines.add(expositor);
+    criarVitrineCurva(expositor, { w: comprimento - 0.08, d: (longitudinal ? p.d : p.w) - 0.04,
+      base: 1.23, altura: 0.85, niveis: [1.27, 1.63] }, { caixa });
+    const colunas = produto.capacidade / 2;
+    for (const y of [1.305, 1.665]) {
+      caixa(expositor, comprimento - 0.2, 0.035, 0.4, 0x665247, 0, y, -0.025);
+      caixa(expositor, comprimento - 0.25, 0.012, 0.35, 0xf6eedc, 0, y + 0.025, -0.025);
+    }
+    const frutas = Array.from({ length: produto.capacidade }, (_, i) => {
+      const doce = criarDoceConfeitaria(id, i);
+      doce.position.set((i % colunas - (colunas - 1) / 2) * ((comprimento - 0.35) / colunas), 1.35 + Math.floor(i / colunas) * 0.36, -0.025);
+      doce.visible = false; expositor.add(doce); return doce;
+    });
+    produtos[id] = { grupo: expositor, frutos: [], frutas, galinhas: [] };
+  }
+  vitrines.userData.produtos = produtos;
+  return vitrines;
 }

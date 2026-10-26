@@ -1,3 +1,4 @@
+import { CONFEITARIA, estadoConfeitaria, validarConfeitaria, produzirConfeitaria, maquinaConfeitaria } from './confeitaria.js';
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, folhasPortasExpansao, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
@@ -34,6 +35,7 @@ export function estadoInicial() {
     versao: CONFIG.versaoSalvamento, versaoLayout: CONFIG.versaoLayout, dinheiro: CONFIG.dinheiroInicial,
     banco: estadoBanco(),
     deposito: estadoDeposito(),
+    confeitaria: estadoConfeitaria(),
     lojaAberta: true,
     jogador: { ...CONFIG.inicio, inventario: [] },
     personalizacao: { ...PERSONALIZACAO_PADRAO },
@@ -82,6 +84,7 @@ export function validarEstado(dados) {
   for (const m of MELHORIAS.filter(m => m.nivelMinimo >= 10)) {
     if ([m.requisitoMelhoria, ...(m.requisitos || [])].filter(Boolean).some(id => !base.melhorias[id])) base.melhorias[m.id] = 0;
   }
+  base.confeitaria = validarConfeitaria(dados.confeitaria, base.melhorias.confeitaria);
   base.estagioLoja = base.melhorias[ALA_ARTESANAL.id] ? ALA_ARTESANAL.indice
     : base.melhorias[ALA_PADARIA.id] ? ALA_PADARIA.indice
     : base.melhorias[ALA_TRIGO.id] ? ALA_TRIGO.indice
@@ -103,7 +106,7 @@ export function validarEstado(dados) {
   }
   for (const [id, p] of Object.entries(PRODUTOS)) {
     const salvo = dados.produtos?.[id];
-    const liberado = Boolean(p.liberado || base.melhorias[id] > 0
+    const liberado = Boolean((p.origem === 'confeitaria' && base.melhorias.confeitaria) || p.liberado || base.melhorias[id] > 0
       || (base.melhorias[ALA_PRODUCAO.id] && ALA_PRODUCAO.produtos.includes(id))
       || (base.melhorias[ALA_LEITE.id] && ALA_LEITE.produtos.includes(id))
       || (base.melhorias[ALA_TRIGO.id] && ALA_TRIGO.produtos.includes(id))
@@ -502,6 +505,9 @@ export class Simulacao {
       this.estado.produtos[id].horta = this.produtos[id].capacidadeHorta;
     }
     if (m.tipo === 'construcao') this.estado.produtos[m.produto].liberado = true;
+    if (m.tipo === 'confeitaria') {
+      for (const produto of Object.keys(CONFEITARIA.produtos)) this.estado.produtos[produto].liberado = true;
+    }
     this.emitir('melhoria', { id, texto: id === ALA_PADARIA.id
       ? `Padaria: cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${this.produtos.pao.preco}.`
       : id === 'milho'
@@ -610,6 +616,10 @@ export class Simulacao {
         orientacaoNivel = proxima
           ? { titulo: proxima.titulo, texto: `${proxima.descricao} Compre pelo celular por R$ ${proxima.custo.toLocaleString('pt-BR')}.`, destino: 'celular' }
           : { titulo: 'O sabor do bairro', texto: 'Cuide das colheitas, prepare receitas e mantenha as bancas abastecidas. Seu mercadinho chegou à fase artesanal!', destino: 'caixa', exibir: false };
+        if (novoProduto && this.produtos[novoProduto[0]].origem === 'confeitaria') {
+          return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo, titulo: 'Prepare os primeiros doces',
+            texto: 'Entregue mel e ovos no balcão lateral da padaria, ao lado do trigo. O confeiteiro usa a batedeira por 6 segundos e entrega os doces nas vitrines: 1 mel + 1 ovo rendem 1 bolo, 1 donut e 1 éclair.', destino: 'celular', exibir: true };
+        }
         if (novoProduto) {
           const [id, produto] = novoProduto, receita = OFICINAS[id];
           const carregando = this.estado.jogador.inventario.includes(id);
@@ -680,9 +690,11 @@ export class Simulacao {
 
     for (const [id, p] of Object.entries(this.produtos)) {
       if (!this.estado.produtos[id].liberado) continue;
+      if (p.origem === 'confeitaria') continue;
       if (!['hortifruti', 'doces'].includes(p.prateleira.movel)) caixas.push(p.prateleira);
       if (id !== 'pao' && p.origem !== 'importado') caixas.push(geometriaEstacao(id, 'coleta', this.produtos));
     }
+    if (this.estado.melhorias.confeitaria) caixas.push(maquinaConfeitaria());
     caixas.push(...volumesHortifruti(this.estado.produtos), ...volumesDoces(this.estado.produtos));
     caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
@@ -865,13 +877,25 @@ export class Simulacao {
     if (jogador.sentado) return;
     const pertoLixeira = this.pertoDaLixeira();
     if (!pertoLixeira) this.lixeiraVisitada = false;
+    if (this.estado.melhorias.confeitaria && jogador.x < CONFEITARIA.limiteEntregaX
+      && distanciaEstacao(jogador, CONFEITARIA.entrada) < CONFIG.raioInteracao) {
+      const producao = this.estado.confeitaria;
+      const indice = jogador.inventario.findIndex(id => CONFEITARIA.ingredientes[id] && producao[id] < CONFEITARIA.capacidadeIngredientes);
+      this.atividade = indice >= 0 ? 'Entregando mel e ovos ao confeiteiro…' : 'Confeitaria · entregue mel e ovos no balcão';
+      if (indice >= 0 && this.tempo >= this.proximaInteracao) {
+        const [ingrediente] = jogador.inventario.splice(indice, 1);
+        producao[ingrediente]++;
+        this.proximaInteracao = this.tempo + CONFIG.intervaloInteracao;
+      }
+      return;
+    }
     const candidatos = [];
     const obstaculos = this.obstaculos();
     const doce = selecionarCompartimentoDoces(jogador, this.estado.produtos);
     const compartimento = selecionarCompartimentoHortifruti(jogador, this.estado.produtos);
     const expositorPosterior = selecionarExpositorPosterior(jogador, this.estado.produtos, this.produtos);
     for (const [id, p] of Object.entries(this.produtos)) {
-      if (!this.estado.produtos[id].liberado) continue;
+      if (!this.estado.produtos[id].liberado || p.origem === 'confeitaria') continue;
       for (const tipo of id === 'pao' ? ['reposicao'] : ['coleta', 'reposicao']) {
         const objeto = geometriaEstacao(id, tipo, this.produtos), d = distanciaEstacao(jogador, objeto);
         if (d >= CONFIG.raioInteracao) continue;
@@ -980,6 +1004,8 @@ export class Simulacao {
       // Não acumula tempo de produção sem ingredientes ou espaço para outro lote.
       oficina.progresso = Math.min(oficina.progresso, receita.segundos);
     }
+    const lotesConfeitaria = produzirConfeitaria(this.estado, dt);
+    if (lotesConfeitaria && this.estado.confeitaria.lotes === lotesConfeitaria) this.emitir('melhoria', { texto: 'Bolos, donuts e éclairs prontos nas vitrines! Cada unidade vale R$ 15.' });
     const p = this.estado.producao;
     if (this.estado.melhorias.alaProducao && this.estado.produtos.ovos.horta < this.produtos.ovos.capacidadeHorta) {
       p.progressoOvo += dt;
