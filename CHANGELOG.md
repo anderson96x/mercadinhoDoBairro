@@ -1,6 +1,13 @@
 # Histórico de alterações
 
-## Versão atual: 0.60.1 — 2026-10-26
+## Versão atual: 0.61.0 — 2026-10-26
+
+- Clientes que chegam de carro sempre pedem cinco unidades, a capacidade máxima da cesta, independentemente da reputação e da variedade disponível, inclusive em pedidos com pão.
+- Mantém o fluxo normal de falta de estoque: clientes esperam, reagem à compra incompleta e pagam somente o que encontraram. Pedestres continuam com pedidos variáveis por reputação.
+- Explica o benefício na melhoria Estacionamento e na documentação de desbloqueios. Preserva saves, preço e requisitos da construção.
+- Validação: 316 testes e build de produção aprovados, incluindo pedidos com pouca variedade e pão, diferentes reputações, compra e pagamento de cinco unidades, pedestres e reações normais a estoque vazio ou insuficiente.
+
+## 0.60.1 — 2026-10-26
 
 - Oculta “Importar produtos” nas opções quando nenhuma importação está disponível, respeitando nível, melhorias, espaço no depósito e entregas em andamento.
 - Substitui o ícone de enlatado por uma caixa com seta de entrada no menu e no cabeçalho de importações. Preserva saves e progressão.

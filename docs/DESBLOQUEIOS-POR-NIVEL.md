@@ -98,6 +98,8 @@ O estacionamento tem seis vagas demarcadas que começam vazias, setas de circula
 
 Ocupa o terreno até perto da borda esquerda. O acesso usa o mesmo asfalto do estacionamento e fica centralizado nas duas faixas de entrada e saída. A vegetação que ocupava essa área é substituída durante a construção; a calçada e o meio-fio são recortados no acesso e o poste é movido para fora dele. O acesso à horta e a circulação pela calçada permanecem livres. Os carros presentes e o canteiro têm colisão. Viagens de clientes são transitórias, como as demais visitas à loja; ao recarregar, novas visitas começam com o estacionamento vazio.
 
+Clientes que chegam de carro sempre pedem a capacidade máxima da cesta: **5 unidades**, independentemente da reputação da loja. O pedido pode repetir produtos e também fica completo quando inclui pão. Com estoque suficiente, compram as cinco unidades; se faltar mercadoria, seguem o tempo de espera e as reações normais do jogo, pagando somente o que encontraram. Pedestres mantêm seus pedidos variáveis por reputação.
+
 A compra exige apenas o nível e o saldo; não depende da cozinha de geleias nem libera produtos adicionais. É salva com as demais melhorias. Partidas antigas recebem o estacionamento ainda não comprado, preservando saldo e progresso.
 
 ## Como jogar a fase artesanal

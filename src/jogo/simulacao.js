@@ -1027,7 +1027,7 @@ export class Simulacao {
     const produtosDesejados = prioridade
       ? [prioridade, ...disponiveis.filter(id => id !== prioridade)]
       : Array.from({ length: Math.min(disponiveis.length, CONFIG.capacidadeCestaCliente) }, (_, i) => disponiveis[(inicioProdutos + i) % disponiveis.length]);
-    const totalDesejado = 1 + Math.floor(this.aleatorio() * this.limitePedidoCliente);
+    const totalDesejado = deCarro ? CONFIG.capacidadeCestaCliente : 1 + Math.floor(this.aleatorio() * this.limitePedidoCliente);
     const produtosPedidos = produtosDesejados.slice(0, totalDesejado);
     const indicePao = produtosPedidos.indexOf('pao');
     let compras;
@@ -1036,7 +1036,7 @@ export class Simulacao {
       const espacoRestante = CONFIG.capacidadeCestaCliente - quantidadePao;
       const outros = produtosPedidos.filter(id => id !== 'pao').slice(0, espacoRestante);
       compras = [
-        { produto: 'pao', desejado: quantidadePao, quantidade: 0 },
+        { produto: 'pao', desejado: deCarro ? CONFIG.capacidadeCestaCliente - outros.length : quantidadePao, quantidade: 0 },
         ...outros.map(produto => ({ produto, desejado: 1, quantidade: 0 }))
       ];
     } else {
