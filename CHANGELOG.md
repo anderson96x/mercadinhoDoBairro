@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.60.0 — 2026-10-26
+## Versão atual: 0.60.1 — 2026-10-26
+
+- Oculta “Importar produtos” nas opções quando nenhuma importação está disponível, respeitando nível, melhorias, espaço no depósito e entregas em andamento.
+- Substitui o ícone de enlatado por uma caixa com seta de entrada no menu e no cabeçalho de importações. Preserva saves e progressão.
+- Validação: 313 testes e build de produção aprovados. Menu verificado no Edge em desktop e celular: início, pré-requisitos, importação disponível, ícone, navegação e pedido pendente, sem salvar imagens.
+
+## 0.60.0 — 2026-10-26
 
 - Adiciona Biscoitos e doces no nível 22, com cookies de chocolate, amanteigados, balas de frutas e bombons. Combina quatro embalagens 3D de formatos e cores diferentes com oito rótulos SVG originais, para frente e verso.
 - Abastece a face da primeira gôndola voltada ao hortifruti com nove unidades de cada variedade. Usa a segunda estante do depósito, antes reservada para Higiene, sem mover os demais produtos ou móveis.

@@ -1,4 +1,5 @@
 const caminhos = {
+  importacao: '<path d="m3 9 9-4 9 4v10l-9 4-9-4V9Zm0 0 9 4 9-4M12 13v10M12 1v8m-3-3 3 3 3-3"/>',
   prateleira: '<path d="M4 3v18m16-18v18M4 5h16M4 10h16M4 15h16M4 20h16M8 7v3m5 2v3m3 2v3"/>',
   enlatado: '<path d="M7 5h10v14H7zM7 5c0-2 10-2 10 0M7 19c0 2 10 2 10 0M9 9h6v6H9z"/>',
   cereal: '<path d="M6 4h12v16H6zM6 7h12M8 17h8"/><ellipse cx="12" cy="12" rx="3" ry="2"/>',

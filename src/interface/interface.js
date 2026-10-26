@@ -279,7 +279,8 @@ export class Interface {
       conteudo = `<p class="painel-subtitulo">Escolha o que jogar fora. Produtos descartados não rendem dinheiro e não podem ser recuperados.</p>${Object.entries(PRODUTOS).filter(([id]) => inventario.includes(id)).map(([id, p]) => `<button class="botao-secundario" data-descartar="${id}">${icone(id)} Descartar 1 ${p.nome.toLocaleLowerCase('pt-BR')} · ${inventario.filter(item => item === id).length} no inventário</button>`).join('')}<button class="botao-principal" data-descartar="tudo" ${inventario.length ? '' : 'disabled'}>Esvaziar inventário (${inventario.length})</button><button class="botao-secundario" data-fechar>Voltar à loja</button>`;
     } else if (tipo === 'opcoes') {
       const aberta = this.sim.estado.lojaAberta;
-      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho pelo celular, de onde estiver.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button><button class="botao-secundario" id="abrir-importacoes">${icone('enlatado')} Importar produtos</button><button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
+      const temImportacoes = MELHORIAS.some(m => m.tipo === 'importacao' && this.sim.disponibilidadeMelhoria(m.id).disponivel);
+      conteudo = `<p class="painel-subtitulo">Gerencie o mercadinho pelo celular, de onde estiver.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><button class="botao-secundario" id="abrir-melhorias">${icone('melhorar')} Melhorias</button>${temImportacoes ? `<button class="botao-secundario" id="abrir-importacoes">${icone('importacao')} Importar produtos</button>` : ''}<button class="botao-secundario" id="abrir-personalizacao">${icone('loja')} Personalizar mercadinho</button><button class="botao-principal acao-loja ${aberta ? 'fechar' : 'abrir'}" id="alternar-loja">${icone(aberta ? 'fecharLoja' : 'abrirLoja')} ${aberta ? 'Fechar mercado' : 'Abrir mercado'}</button><p class="nota central">${aberta ? 'O mercado está aberto para novos clientes.' : 'O mercado está fechado. Clientes que já entraram continuam suas compras.'}</p>`;
       const banco = this.sim.estado.banco;
       conteudo += `<section class="deposito-banco"><h3>Depósito bancário</h3>
         <dl><div><dt>Dinheiro no caixa</dt><dd>${reais(banco.noCaixa)}</dd></div><div><dt>Total depositado</dt><dd>${reais(banco.depositado)}</dd></div></dl>
@@ -403,7 +404,7 @@ export class Interface {
     } else {
       conteudo = `<p class="painel-subtitulo">O dinheiro, as melhorias e o progresso deste mercadinho serão apagados neste navegador.</p><button class="botao-principal perigo" id="confirmar-reinicio">${icone('reiniciar')} Apagar e começar de novo</button><button class="botao-secundario" id="cancelar-reinicio">Voltar para minha loja</button>`;
     }
-    this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : tipo === 'importacoes' ? 'enlatado' : tipo === 'dev' ? 'dev' : tipo === 'opcoes' ? 'celular' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
+    this.el('painel-conteudo').innerHTML = `<div class="painel-cabecalho"><span class="painel-simbolo">${icone(tipo === 'melhorias' ? 'folha' : tipo === 'importacoes' ? 'importacao' : tipo === 'dev' ? 'dev' : tipo === 'opcoes' ? 'celular' : 'loja')}</span><button class="botao-icone" data-fechar aria-label="Fechar">${icone('fechar')}</button></div><h2 id="painel-titulo">${titulos[tipo]}</h2>${conteudo}`;
     this.el('painel').querySelectorAll('[data-fechar]').forEach(b => b.onclick = () => this.fechar());
     this.el('painel').querySelectorAll('[data-descartar]').forEach(b => b.onclick = () => {
       const resultado = this.acoes.descartar(b.dataset.descartar === 'tudo' ? null : b.dataset.descartar);
@@ -448,7 +449,8 @@ export class Interface {
         this.atualizar();
       };
       this.el('abrir-melhorias').onclick = () => this.abrir('melhorias');
-      this.el('abrir-importacoes').onclick = () => this.abrir('importacoes');
+      const abrirImportacoes = this.el('abrir-importacoes');
+      if (abrirImportacoes) abrirImportacoes.onclick = () => this.abrir('importacoes');
       this.el('abrir-personalizacao').onclick = () => this.abrir('personalizacao');
       this.el('alternar-loja').onclick = () => {
         const aberta = this.acoes.alternarLoja();
