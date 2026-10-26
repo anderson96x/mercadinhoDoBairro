@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="360" viewBox="0 0 600 360">
+<rect width="600" height="360" fill="#d9ad51"/><rect x="12" y="12" width="576" height="336" rx="18" fill="#f4d78b" stroke="#a46b32" stroke-width="3"/>
+<path d="M12 245Q300 195 588 245V330Q588 348 570 348H30Q12 348 12 330Z" fill="#a74b45"/>
+<g font-family="Georgia,serif" text-anchor="middle" fill="#793a31"><text x="300" y="52" font-size="24" font-style="italic">Delícias do Bairro</text><text x="300" y="109" font-size="49" font-weight="bold" letter-spacing="4">BOMBONS</text><text x="300" y="142" font-family="sans-serif" font-size="22" letter-spacing="6">SORTIDOS</text></g>
+<g fill="#75452e" stroke="#c58d52" stroke-width="5"><path d="M123 236l12 -59h68l14 59 -17 19h-61z"/><path d="M250 247l12 -62h73l15 62 -19 20h-62z"/><path d="M385 236l12 -59h68l14 59 -17 19h-61z"/></g>
+<g fill="none" stroke="#dda568" stroke-width="5"><path d="M140 198q28 -20 58 0m-58 15q28 -20 58 0M269 208q31 -21 62 0m-62 16q31 -21 62 0M402 198q28 -20 58 0m-58 15q28 -20 58 0"/></g>
+<g fill="#fff4d6" font-family="sans-serif" text-anchor="middle"><text x="300" y="300" font-size="20">Chocolate e recheios cremosos</text><text x="300" y="331" font-size="21">180 g</text></g></svg>

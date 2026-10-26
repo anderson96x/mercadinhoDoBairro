@@ -65,12 +65,12 @@ try {
       });
       movel.atualizar({ prateleirasImportados: 2 });
       visual.cena.add(movel.grupo);
-      for (const id of ['enlatado', 'cereal', 'mantimento']) Cena.prototype.construirImportado.call(visual, id, PRODUTOS[id]);
+      for (const id of ['enlatado', 'cereal', 'mantimento', 'guloseima']) Cena.prototype.construirImportado.call(visual, id, PRODUTOS[id]);
       visual.cena.updateMatrixWorld(true);
-      const tabuasPorProduto = Object.fromEntries(['enlatado', 'cereal', 'mantimento'].map(id => [id,
+      const tabuasPorProduto = Object.fromEntries(['enlatado', 'cereal', 'mantimento', 'guloseima'].map(id => [id,
         movel.grupo.children[CLASSES_PRODUTOS[PRODUTOS[id].classe].gondola].children
           .filter(o => o.name === 'nivel-prateleira-importados').map(o => new THREE.Box3().setFromObject(o))]));
-      for (const id of ['enlatado', 'cereal', 'mantimento']) for (const [i, produto] of visual.produtos[id].frutas.entries()) {
+      for (const id of ['enlatado', 'cereal', 'mantimento', 'guloseima']) for (const [i, produto] of visual.produtos[id].frutas.entries()) {
         const tabuas = tabuasPorProduto[id];
         const limite = new THREE.Box3().setFromObject(produto), nivel = Math.floor(i / 9);
         if (Math.abs(limite.min.y - tabuas[nivel].max.y) > 0.001
@@ -98,6 +98,11 @@ try {
       visual.cena.add(carregador);
       const pacotes = carregador.userData.carga.children.map(p => new THREE.Box3().setFromObject(p.clone()));
       if (pacotes.some((a, i) => pacotes.slice(i + 1).some(b => a.intersectsBox(b)))) throw new Error('Mantimentos sobrepostos');
+      const doces = personagem(0x478e65, 0xf2c49c, true);
+      Cena.prototype.animarPersonagem.call({}, doces, { x: 3.45, z: -1.8, andando: false }, 1, 0, Array(8).fill('guloseima'));
+      visual.cena.add(doces);
+      const cargaDoces = doces.userData.carga.children.map(p => new THREE.Box3().setFromObject(p.clone()));
+      if (cargaDoces.some((a, i) => cargaDoces.slice(i + 1).some(b => a.intersectsBox(b)))) throw new Error('Doces sobrepostos');
       const camera = new THREE.OrthographicCamera(-4, 4, 4, -4, 0.1, 50);
       const caixa = new THREE.Box3().setFromObject(visual.cena), centro = caixa.getCenter(new THREE.Vector3());
       camera.position.copy(centro).add(new THREE.Vector3(-7, 5, 7)); camera.lookAt(centro);
@@ -113,6 +118,7 @@ try {
       renderizador.render(visual.cena, camera);
       const saida = { mobile: ${mobile}, canvas: ${canvas}, unidades: latas.length,
         variedades: [...new Set(latas.map(l => l.userData.variedade))], svgs: new Set([...materiais].map(m => m.userData.svg)).size,
+        variedadesDoces: [...new Set(visual.produtos.guloseima.frutas.map(p => p.userData.variedade))],
         variedadesCereais: [...new Set(visual.produtos.cereal.frutas.map(p => p.userData.variedade))],
         variedadesMantimentos: [...new Set(visual.produtos.mantimento.frutas.map(p => p.userData.variedade))],
         versosColoridos: visual.produtos.mantimento.frutas.every(p => p.getObjectByName('verso-mantimento')?.material.userData.svg.includes('mantimentos/verso-')),
@@ -122,7 +128,7 @@ try {
         largura: renderizador.domElement.width, altura: renderizador.domElement.height };
       renderizador.dispose?.(); return saida;
     })()`);
-    if (resultado.unidades !== 36 || resultado.variedades.length !== 4 || resultado.variedadesCereais.length !== 4 || resultado.variedadesMantimentos.length !== 4 || resultado.svgs !== 19 || !resultado.versosColoridos) throw new Error(JSON.stringify(resultado));
+    if (resultado.unidades !== 36 || resultado.variedades.length !== 4 || resultado.variedadesCereais.length !== 4 || resultado.variedadesMantimentos.length !== 4 || resultado.variedadesDoces.length !== 4 || resultado.svgs !== 27 || !resultado.versosColoridos) throw new Error(JSON.stringify(resultado));
     console.log(JSON.stringify(resultado));
   }
 } finally {

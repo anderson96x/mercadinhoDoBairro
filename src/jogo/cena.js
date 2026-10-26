@@ -26,6 +26,7 @@ import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { criarIrrigador, animarIrrigador } from './irrigador.js';
 import { criarEnlatado } from './enlatados.js';
 import { criarCereal } from './cereais.js';
+import { criarGuloseima } from './guloseimas.js';
 import { criarMantimento } from './mantimentos.js';
 
 const ZOOM_MINIMO = 0.7;
@@ -228,6 +229,9 @@ function criarSecaoHortifruti(pai, p) {
 }
 
 export function criarProduto(id, escala = 1, variante = 0) {
+  if (id === 'guloseima') {
+    const guloseima = criarGuloseima(variante); guloseima.scale.setScalar(escala); return guloseima;
+  }
   if (id === 'mantimento') {
     const mantimento = criarMantimento(variante); mantimento.scale.setScalar(escala); return mantimento;
   }

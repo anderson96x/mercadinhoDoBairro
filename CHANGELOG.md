@@ -1,6 +1,15 @@
 # Histórico de alterações
 
-## Versão atual: 0.59.0 — 2026-10-26
+## Versão atual: 0.60.0 — 2026-10-26
+
+- Adiciona Biscoitos e doces no nível 22, com cookies de chocolate, amanteigados, balas de frutas e bombons. Combina quatro embalagens 3D de formatos e cores diferentes com oito rótulos SVG originais, para frente e verso.
+- Abastece a face da primeira gôndola voltada ao hortifruti com nove unidades de cada variedade. Usa a segunda estante do depósito, antes reservada para Higiene, sem mover os demais produtos ou móveis.
+- Importa caixas de nove unidades por R$ 360 e vende cada unidade por R$ 40, reutilizando pedidos, caminhão, coleta, repositor e salvamento. Saves anteriores recebem o produto bloqueado e preservam progresso, estoque e pedidos pagos.
+- Ajusta as embalagens com caixa de bombons larga e baixa com arte dourada clara, pacote de balas com soldas achatadas e rótulos acompanhando as dobras, e impressão contínua nas duas metades da lata de amanteigados. Remove faces sobrepostas nas caixas e usa materiais iluminados nos rótulos.
+- Define dimensões explícitas nos SVGs de frente e verso para evitar texturas pretas no WebGL. Acrescenta regressão das dimensões e verificação de cores em memória por `scripts/verificar-cores-guloseimas.mjs`.
+- Validação: 313 testes, build de produção e rotas aprovados. Modelos, 27 SVGs das quatro classes e transporte verificados no Edge em desktop/celular com WebGL e Canvas, incluindo 32 medições de cor dos dois lados das quatro embalagens, sem faces pretas e sem salvar imagens.
+
+## 0.59.0 — 2026-10-26
 
 - Adiciona Mantimentos no nível 21: macarrão, feijão, arroz e farinha, com nove embalagens por nível na face da segunda gôndola voltada para os enlatados. Combina modelos 3D e rótulos SVG originais.
 - Arroz, feijão e farinha usam sacos com frente em branco frio, base firme, dobras, ombros afunilados e alça realmente vazada. As artes têm títulos em português e janelas ilustradas para identificar o conteúdo; o macarrão permanece em caixa.
