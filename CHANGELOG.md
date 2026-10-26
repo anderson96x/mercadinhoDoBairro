@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.58.7 — 2026-10-25
+## Versão atual: 0.59.0 — 2026-10-26
+
+- Adiciona Mantimentos no nível 21: macarrão, feijão, arroz e farinha, com nove embalagens por nível na face da segunda gôndola voltada para os enlatados. Combina modelos 3D e rótulos SVG originais.
+- Arroz, feijão e farinha usam sacos com frente em branco frio, base firme, dobras, ombros afunilados e alça realmente vazada. As artes têm títulos em português e janelas ilustradas para identificar o conteúdo; o macarrão permanece em caixa.
+- Identifica os mantimentos também pelo verso: macarrão em azul petróleo, feijão em verde sálvia, arroz em azul e farinha em dourado, com rótulos próprios, faixas coloridas e painéis claros. Laterais e fechamento acompanham cada cor, preservando a frente branca dos sacos.
+- Aplica os rótulos às superfícies dos pacotes com iluminação do relevo. O Canvas acompanha a geometria por triângulos com coordenadas UV e reutiliza texturas rasterizadas em memória. Preserva o volume e a separação das embalagens durante o transporte.
+- Importa caixas de nove unidades por R$ 315 e vende cada unidade por R$ 35. A classe usa a quarta estante do depósito, com quatro vagas exclusivas, e os sistemas existentes de entrega, coleta e reposição. Higiene fica reservada na face livre da primeira gôndola.
+- Preserva saves, estoque, pedidos pagos e a disposição dos enlatados e cereais. Partidas anteriores recebem Mantimentos bloqueado, sem cobrança ou alteração de progresso.
+- Validação: 306 testes, build de produção e rotas da loja aprovados, incluindo entrega, salvamento, reposição manual e automática, venda, circulação e recorte real da alça. As três classes, seus 19 SVGs, os versos coloridos e o transporte foram verificados em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.58.7 — 2026-10-25
 
 - Move os enlatados para a face da primeira gôndola antes ocupada pelos cereais, com rótulos, compra e reposição voltados ao corredor correspondente.
 - Preserva estoque, pedidos, preços e saves existentes.

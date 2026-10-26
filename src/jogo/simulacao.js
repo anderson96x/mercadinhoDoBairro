@@ -119,9 +119,11 @@ export function validarEstado(dados) {
     };
   }
   base.deposito = validarDeposito(dados.deposito, base.produtos);
-  // Cereais já adquiridos passam à segunda gôndola sem cobrar novamente pelo móvel.
-  if (base.produtos.cereal.liberado) {
-    base.melhorias.prateleirasImportados = Math.max(base.melhorias.prateleirasImportados, CLASSES_PRODUTOS.cereais.gondola + 1);
+  // Importados já adquiridos preservam o móvel necessário sem nova cobrança.
+  for (const [id, p] of Object.entries(PRODUTOS)) {
+    if (p.origem === 'importado' && base.produtos[id].liberado) {
+      base.melhorias.prateleirasImportados = Math.max(base.melhorias.prateleirasImportados, CLASSES_PRODUTOS[p.classe].gondola + 1);
+    }
   }
   for (const [id, p] of Object.entries(PRODUTOS)) {
     if (p.origem === 'importado') base.produtos[id].horta = [...base.deposito.pacotes, ...base.deposito.excedentes].filter(p => p.produto === id).reduce((total, p) => total + p.unidades, 0);

@@ -26,6 +26,7 @@ import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { criarIrrigador, animarIrrigador } from './irrigador.js';
 import { criarEnlatado } from './enlatados.js';
 import { criarCereal } from './cereais.js';
+import { criarMantimento } from './mantimentos.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
@@ -227,6 +228,9 @@ function criarSecaoHortifruti(pai, p) {
 }
 
 export function criarProduto(id, escala = 1, variante = 0) {
+  if (id === 'mantimento') {
+    const mantimento = criarMantimento(variante); mantimento.scale.setScalar(escala); return mantimento;
+  }
   if (id === 'enlatado') {
     const enlatado = criarEnlatado(variante); enlatado.scale.setScalar(escala); return enlatado;
   }

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="620" viewBox="0 0 360 620">
+  <defs><pattern id="massa" width="62" height="52" patternUnits="userSpaceOnUse" patternTransform="rotate(-12)"><path d="M8 31Q6 2 31 8t23 28Q31 58 8 31" fill="#efc157" stroke="#c08a27" stroke-width="3"/><path d="M15 29q15-16 32 3M19 18l7 20m6-22 4 24" fill="none" stroke="#ffe08a" stroke-width="3"/></pattern></defs>
+  <path fill="#075477" d="M0 0h360v620H0z"/>
+  <path fill="#f7c13b" d="M0 0h360v76H0zM0 568h360v52H0z"/>
+  <path fill="none" stroke="#fff0ab" stroke-width="5" d="M12 18q18-22 36 0t36 0 36 0 36 0 36 0 36 0 36 0 36 0 36 0M12 43q18-22 36 0t36 0 36 0 36 0 36 0 36 0 36 0 36 0 36 0"/>
+  <text x="180" y="135" text-anchor="middle" font-family="sans-serif" font-size="48" font-weight="bold" fill="#fff8df">MACARRÃO</text>
+  <text x="180" y="172" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#f8d167">CONCHINHAS</text>
+  <ellipse cx="180" cy="366" rx="147" ry="159" fill="url(#massa)" stroke="#f6cf66" stroke-width="12"/>
+  <text x="180" y="552" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#fff5dc">SÊMOLA DE TRIGO</text>
+  <text x="180" y="603" text-anchor="middle" font-family="sans-serif" font-size="23" font-weight="bold" fill="#075477">500 g</text>
+</svg>
