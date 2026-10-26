@@ -8,7 +8,8 @@ function resumoPadaria(estado) {
   const producao = estado.producao;
   const prontos = estado.produtos.pao.prateleira;
   const { cheia: vitrineCheia, assando, moendo } = trabalhoPadaria(estado);
-  const status = vitrineCheia ? 'Vitrine cheia' : assando ? 'Assando pães' : moendo ? 'Moendo trigo' : 'Aguardando trigo';
+  const entregando = producao.entregaPadaria?.paes > 0;
+  const status = vitrineCheia ? 'Vitrine cheia' : entregando ? 'Abastecendo a vitrine' : assando ? 'Assando pães' : moendo ? 'Moendo trigo' : 'Aguardando trigo';
   const progresso = assando ? producao.progressoForno / ALA_PADARIA.tempoForno
     : moendo ? producao.progressoMoagem / ALA_PADARIA.tempoMoagem : 0;
   return {

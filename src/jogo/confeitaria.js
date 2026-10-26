@@ -6,8 +6,8 @@ export const CONFEITARIA = {
   entrada: volumePadaria(MODELO_PADARIA.fechamento[1]),
   entrega: pontoPadaria({ x: 3.85, z: -3.375 }),
   limiteEntregaX: pontoPadaria({ x: 4.75, z: -4.3 }).x,
-  maquina: { x: 7.35, z: -5.65, w: 0.65, d: 0.75 },
-  posto: pontoPadaria({ x: 7.35, z: -4.65 }),
+  maquina: { x: 9.3, z: -5.4, w: 0.75, d: 0.65 },
+  posto: pontoPadaria({ x: 8.25, z: -5.4 }),
   produtos: {
     bolo: { nome: 'Bolo', plural: 'Bolos', balcao: 3, capacidade: 6, cor: 0xf1bba3, cliente: { x: 5.1625, z: -0.95 } },
     donut: { nome: 'Donut', plural: 'Donuts', balcao: 0, capacidade: 12, cor: 0xe998b2, cliente: { x: 11.45, z: -4.425 } },

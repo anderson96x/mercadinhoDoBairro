@@ -42,16 +42,14 @@ test('padaria girada mantém modelos, pães e trajetos dos padeiros dentro do sa
   const visual = { cena: new THREE.Scene(), produtos: {}, sim, criarLabel() {} };
   Cena.prototype.construirPadaria.call(visual);
   const padaria = visual.produtos.pao;
+  assert.equal(sim.obstaculos().filter(o => o === ALA_PADARIA.forno || o === ALA_PADARIA.moinho).length, 1, 'máquina combinada tem uma única colisão');
   const balcao = PRODUTOS.pao.prateleira;
   assert.ok(ALA_PADARIA.forno.x - ALA_PADARIA.forno.w / 2 - (balcao.x + balcao.w / 2) > 2);
   const paineis = padaria.grupo.children.filter(o => o.name === 'fechamento-madeira-padaria');
   assert.equal(paineis.length, ALA_PADARIA.fechamento.length + 1); // O balcão de entrega usa o volume da estação.
   for (const painel of paineis) assert.equal(painel.material.color.getHex(), padaria.grupo.getObjectByName('base-madeira-padaria').material.color.getHex());
   for (const painel of ALA_PADARIA.fechamento) assert.ok(sim.obstaculos().includes(painel));
-  const pontosMoedor = padaria.roteiros[0].flatMap(e => [e.de, e.para]);
-  const pontosForneiro = padaria.roteiros[1].flatMap(e => [e.de, e.para]);
-  assert.ok(pontosForneiro.some(forneiro => pontosMoedor.some(moedor => Math.hypot(forneiro.x - moedor.x, forneiro.z - moedor.z) < 0.001)),
-    'os dois roteiros compartilham a saída do moinho para entregar a farinha');
+  assert.equal(padaria.padeiros.length, 1);
   const bounds = new THREE.Box3().setFromObject(padaria.grupo);
   assert.ok(bounds.max.x < PLANTA_AMPLIADA.limites.maxX - 0.14);
   assert.ok(bounds.min.z > PLANTA_AMPLIADA.limites.minZ + 0.14);
@@ -60,7 +58,7 @@ test('padaria girada mantém modelos, pães e trajetos dos padeiros dentro do sa
     assert.ok(Math.abs(fruta.position.x - p.x) < p.w / 2);
     assert.ok(Math.abs(fruta.position.z - p.z) < p.d / 2);
   }
-  for (const roteiro of padaria.roteiros) for (const etapa of roteiro) {
+  for (const roteiro of [...padaria.roteiros, padaria.roteiroForno]) for (const etapa of roteiro) {
     assert.ok(segmentoLivre(etapa.de, etapa.para, sim.obstaculos(), 0.3), JSON.stringify(etapa));
   }
 });

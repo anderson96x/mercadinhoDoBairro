@@ -1,5 +1,5 @@
 import { CONFEITARIA, estadoConfeitaria, validarConfeitaria, produzirConfeitaria, maquinaConfeitaria } from './confeitaria.js';
-import { trabalhoPadaria } from './producao-padaria.js';
+import { trabalhoPadaria, estadoEntregaPadaria, validarEntregaPadaria, atualizarEntregaPadaria } from './producao-padaria.js';
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, folhasPortasExpansao, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
@@ -46,7 +46,7 @@ export function estadoInicial() {
       ingredientes: Object.fromEntries(Object.keys(receita.ingredientes).map(item => [item, 0])), progresso: 0, produzidos: 0
     }])),
     producao: { progressoOvo: 0, ovosProduzidos: 0, progressoLeite: 0, leitesProduzidos: 0,
-      trigoPadaria: 0, farinha: 0, progressoMoagem: 0, progressoForno: 0, paesProduzidos: 0, paesReserva: 0 },
+      trigoPadaria: 0, farinha: 0, progressoMoagem: 0, progressoForno: 0, paesProduzidos: 0, paesReserva: 0, entregaPadaria: estadoEntregaPadaria() },
     funcionarios: { ajudante: estadoAjudanteInicial() },
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0, crescimentoMelhorado: false, apresentado: false
@@ -100,6 +100,7 @@ export function validarEstado(dados) {
     base.producao.leitesProduzidos = numero(dados.producao?.leitesProduzidos);
   }
   if (base.melhorias[ALA_PADARIA.id]) {
+    base.producao.entregaPadaria = validarEntregaPadaria(dados.producao?.entregaPadaria);
     base.producao.paesReserva = numero(dados.producao?.paesReserva, ALA_PADARIA.paesPorTrigo - 1);
     for (const campo of ['trigoPadaria', 'farinha', 'paesProduzidos']) base.producao[campo] = numero(dados.producao?.[campo], campo === 'trigoPadaria' ? ALA_PADARIA.capacidadeTrigo : 1e9);
     for (const [campo, max] of [['progressoMoagem', ALA_PADARIA.tempoMoagem], ['progressoForno', ALA_PADARIA.tempoForno]]) {
@@ -687,7 +688,7 @@ export class Simulacao {
     if (this.estado.melhorias.expansao || oficinasConstruidas(this.estado.produtos)) caixas.push(...paredesOficinas(!!this.estado.melhorias.expansao));
     if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes.filter(p => !this.estado.melhorias.expansao || p.x !== 20.9));
     if (this.estado.melhorias.alaPadaria) caixas.push(
-      ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, ...ALA_PADARIA.fechamento
+      ALA_PADARIA.entrada, ALA_PADARIA.forno, ...ALA_PADARIA.fechamento
     );
 
     for (const [id, p] of Object.entries(this.produtos)) {
@@ -946,7 +947,7 @@ export class Simulacao {
     if (id === 'pao') {
       const indice = jogador.inventario.indexOf('trigo');
       if (indice >= 0 && this.estado.producao.trigoPadaria < ALA_PADARIA.capacidadeTrigo) {
-        this.atividade = 'Entregando trigo aos padeiros…';
+        this.atividade = 'Entregando trigo ao padeiro…';
         if (this.tempo >= this.proximaInteracao) {
           jogador.inventario.splice(indice, 1);
           this.estado.producao.trigoPadaria++;
@@ -1031,9 +1032,9 @@ export class Simulacao {
     }
     if (this.estado.melhorias.alaPadaria) {
       const paes = this.estado.produtos.pao;
-      if (dt > 0 && p.paesReserva > 0) {
+      if (dt > 0 && p.paesReserva > 0 && p.entregaPadaria.paes === 0 && !p.entregaPadaria.entregou) {
         const repostos = Math.min(p.paesReserva, this.produtos.pao.capacidadePrateleira - paes.prateleira);
-        paes.prateleira += repostos; p.paesReserva -= repostos; p.paesProduzidos += repostos;
+        p.entregaPadaria.paes += repostos; p.paesReserva -= repostos;
       }
       if (trabalhoPadaria(this.estado).moendo) {
         p.progressoMoagem += dt;
@@ -1046,14 +1047,11 @@ export class Simulacao {
         p.progressoForno += dt;
         if (p.progressoForno >= ALA_PADARIA.tempoForno) {
           p.progressoForno -= ALA_PADARIA.tempoForno;
-          const quantidade = Math.min(ALA_PADARIA.paesPorTrigo, this.produtos.pao.capacidadePrateleira - paes.prateleira);
-          const primeiroLote = p.paesProduzidos === 0;
-          p.farinha--; paes.prateleira += quantidade;
-          p.paesReserva += ALA_PADARIA.paesPorTrigo - quantidade;
-          p.paesProduzidos += quantidade;
-          if (primeiroLote) this.emitir('paoPronto', { texto: 'Primeiros pães quentinhos na vitrine!' });
+          p.farinha--; p.entregaPadaria.paes = ALA_PADARIA.paesPorTrigo;
         }
       }
+      const primeiroLote = p.paesProduzidos === 0;
+      if (atualizarEntregaPadaria(this.estado, dt) > 0 && primeiroLote) this.emitir('paoPronto', { texto: 'Primeiros pães quentinhos na vitrine!' });
     }
   }
   criarCliente() {

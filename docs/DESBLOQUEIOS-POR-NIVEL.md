@@ -45,7 +45,7 @@ Leve **mel e ovos ao balcão lateral da padaria**, na seção ao lado da entrega
 
 Cada lote prepara até um doce de cada tipo, somente para as vitrines com vagas: bolos cheios não impedem produzir donuts e éclairs. O preparo aguarda sem consumir insumos somente quando faltam mel ou ovos, ou quando todas as vitrines estão completas. Uma exclamação aparece sobre o confeiteiro quando há alguma vitrine vazia e falta mel ou ovos, exceto durante entregas. A pausa congela preparo, batedeira e percurso. Cada produto entra nos pedidos após sua primeira entrega. Clientes seguem as reações normais de falta de estoque. Compra, ingredientes, seleção dos doces do lote, progresso, percurso pendente e estoque são salvos; partidas anteriores recebem a confeitaria ainda não comprada.
 
-Os padeiros também completam qualquer vaga disponível: 16 / 18 ou 17 / 18 não impedem o trabalho. Cada trigo continua rendendo três pães. Se o lote não couber inteiro, os pães restantes ficam reservados e entram nas próximas vagas sem consumir outro trigo; essa reserva é salva.
+Um único padeiro opera o processador no topo e o forno industrial na base, busca trigo e abastece a vitrine. Pães assados ficam pendentes até ele retirar a bandeja e colocá-los no expositor; somente então aparecem e ficam disponíveis para compra. Ele também completa qualquer vaga disponível: 16 / 18 ou 17 / 18 não impedem o trabalho. Cada trigo continua rendendo três pães. Se o lote não couber inteiro, os pães restantes ficam reservados e são entregues nas próximas vagas sem consumir outro trigo. Tanto a reserva quanto a entrega em andamento são salvas. O confeiteiro continua dedicado aos doces.
 
 ## Estacionamento no nível 16
 

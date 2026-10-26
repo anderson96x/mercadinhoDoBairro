@@ -71,6 +71,13 @@ try {
       cena.atualizar(0);
       verificar(cena.modoCompativel === ${canvas}, 'Renderizador incorreto');
       const padaria = cena.produtos.pao;
+      verificar(padaria.padeiros.length === 1, 'Padaria deve ter apenas um padeiro');
+      verificar(padaria.moinho.parent === padaria.forno && padaria.moinho.position.y > 1.4, 'Processador deve ficar sobre o forno');
+      verificar(padaria.forno.getObjectByName('porta-forno-industrial') && padaria.forno.getObjectByName('bandeja-forno'), 'Modelo industrial incompleto');
+      verificar(padaria.forno.getObjectByName('carenagem-forno').material.color.getHex() === 0xadb7b9, 'Forno não voltou ao cinza claro');
+      const entreMaquinas = padaria.batedeira.grupo.position.clone().sub(padaria.forno.position).normalize();
+      verificar(padaria.forno.getWorldDirection(entreMaquinas.clone()).dot(entreMaquinas) > 0.999, 'Forno não aponta para a batedeira');
+      verificar(padaria.batedeira.grupo.getWorldDirection(entreMaquinas.clone()).dot(entreMaquinas) < -0.999, 'Batedeira não aponta para o forno');
       verificar(!padaria.vitrinesConfeitaria.visible && !padaria.confeiteiro.visible, 'Vitrines ou funcionário antes da compra');
       verificar(padaria.grupo.getObjectByName('tampo-balcao-padaria'), 'Balcão plano ausente');
       verificar(!sim.comprarMelhoria('confeitaria').sucesso, 'Compra antes do N17');
@@ -159,11 +166,29 @@ try {
         verificar(cena.produtos[id].frutas.filter(p => p.visible).length === 1, 'Estoque visual incorreto: ' + id);
         verificar(new Simulacao(sim.estado).estado.produtos[id].prateleira === 1, 'Estoque perdido ao carregar: ' + id);
       }
+      sim.estado.produtos.pao.prateleira = 0;
+      const cargasPadeiro = new Set();
+      for (let i = 0; i < 900; i++) {
+        cena.animarPadeiros(padaria, { trigoPadaria: 2, farinha: 1 }, i / 60, 1 / 60);
+        const d = padaria.padeiros[0].userData;
+        for (const carga of ['Trigo', 'Farinha', 'Pao']) if (d['carga' + carga].visible) cargasPadeiro.add(carga);
+      }
+      verificar(cargasPadeiro.size === 3, 'Único padeiro não transportou trigo, farinha e pão');
+      const posicaoPadeiro = padaria.padeiros[0].position.clone();
+      cena.animarPadeiros(padaria, { trigoPadaria: 2, farinha: 1 }, 15, 0);
+      verificar(posicaoPadeiro.equals(padaria.padeiros[0].position), 'Pausa move o padeiro');
+      let transportouPaoSemTrigo = false;
+      for (let i = 0; i < 900; i++) {
+        cena.animarPadeiros(padaria, { trigoPadaria: 0, farinha: 1 }, 15 + i / 60, 1 / 60);
+        transportouPaoSemTrigo ||= padaria.padeiros[0].userData.cargaPao.visible;
+      }
+      verificar(transportouPaoSemTrigo, 'Padeiro não termina a farinha restante');
       sim.estado.produtos.pao.prateleira = 16;
-      Object.assign(sim.estado.producao, { trigoPadaria: 8, farinha: 0, paesReserva: 0, progressoMoagem: 0, progressoForno: 0 });
+      Object.assign(sim.estado.producao, { trigoPadaria: 8, farinha: 0, paesReserva: 0, progressoMoagem: 0, progressoForno: 0, entregaPadaria: { modo: '', tempo: 0, paes: 0, entregou: false } });
+      sim.atualizarProducao(1 / 60);
       cena.animarPadeiros(padaria, sim.estado.producao, sim.tempo, 1 / 60);
       verificar(padaria.padeiros[0].userData.ativoPadaria, 'Moinho parado com trigo e 16/18 pães');
-      for (let i = 0; i < 100; i++) sim.atualizarProducao(0.1);
+      for (let i = 0; i < 300; i++) sim.atualizarProducao(0.1);
       verificar(sim.estado.produtos.pao.prateleira === 18 && sim.estado.producao.paesReserva === 1, 'Pães não completaram a vitrine preservando o excedente');
       Object.assign(sim.estado.confeitaria, { mel: 1, ovos: 1 });
       sim.estado.produtos.bolo.prateleira = 6;
@@ -171,8 +196,30 @@ try {
       sim.estado.produtos.eclair.prateleira = 5;
       sim.atualizarProducao(30); cena.atualizar(0);
       verificar(sim.estado.produtos.donut.prateleira === 12 && sim.estado.produtos.eclair.prateleira === 6, 'Confeitaria parou porque bolos estavam cheios');
+      sim.estado.produtos.pao.prateleira = 0;
+      Object.assign(sim.estado.producao, { trigoPadaria: 1, farinha: 0, paesReserva: 0, progressoMoagem: 0, progressoForno: 0, entregaPadaria: { modo: '', tempo: 0, paes: 0, entregou: false } });
+      const d = padaria.padeiros[0].userData;
+      for (const campo of ['cicloPadaria', 'tempoPadaria', 'modoPadaria', 'atorPadaria', 'ativoPadaria', 'caminhoPadaria']) delete d[campo];
+      const etapasPao = new Set();
+      for (let i = 0; i < 1800; i++) {
+        sim.atualizarProducao(1 / 60);
+        cena.animarPadeiros(padaria, sim.estado.producao, i / 60, 1 / 60);
+        const naVitrine = padaria.frutas.filter(pao => pao.visible).length;
+        if (!sim.estado.producao.entregaPadaria.entregou && sim.estado.producao.entregaPadaria.modo) verificar(naVitrine === 0 && sim.estado.produtos.pao.prateleira === 0, 'Pães apareceram antes da entrega da bandeja');
+        if (naVitrine > 0 && !etapasPao.has('entregou')) {
+          verificar(d.acaoPadaria === 'expor' && d.fasePadaria >= 0.7, 'Estoque não está sincronizado ao gesto de expor');
+          etapasPao.add('entregou');
+        }
+        if (!['receber', 'colocar', 'assar', 'retirar', 'expor'].includes(d.acaoPadaria) || d.fasePadaria < 0.6 || d.fasePadaria > 0.7) continue;
+        if (d.acaoPadaria === 'colocar' || d.acaoPadaria === 'retirar') verificar(padaria.portaForno.position.y > 1.5, 'Porta fechada durante transferência');
+        if (d.acaoPadaria === 'retirar') verificar(d.cargaPao.visible && !padaria.paesNoForno.visible, 'Pães não saíram da câmara para a bandeja');
+        if (!etapasPao.has(d.acaoPadaria)) cena.renderer.render(cena.cena, cena.camera);
+        etapasPao.add(d.acaoPadaria);
+      }
+      verificar([...etapasPao].join(',') === 'receber,colocar,assar,retirar,expor,entregou', 'Último trigo interrompe a sequência visual');
+      verificar(sim.estado.produtos.pao.prateleira === 3 && !d.ativoPadaria, 'Lote visual altera estoque ou não termina');
       cena.renderer.dispose?.(); root.remove(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, compra: true, batedeira: true, alerta: true, ingredientes: true, vitrines: true, estoque: true, funcionario: true, pausa: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, compra: true, batedeira: true, fornoCinza: true, sequenciaPao: [...etapasPao], padeiroUnico: true, farinhaSemTrigo: true, alerta: true, ingredientes: true, vitrines: true, estoque: true, funcionario: true, pausa: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }

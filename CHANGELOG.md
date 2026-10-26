@@ -1,6 +1,17 @@
 # Histórico de alterações
 
-## Versão atual: 0.63.2 — 2026-10-26
+## Versão atual: 0.63.3 — 2026-10-26
+
+- Move a batedeira de doces para o antigo posto do forno. Integra o moinho sobre o forno em uma única máquina na posição original do processador de trigo, com uma única colisão.
+- Restaura o cinza claro metálico da máquina de pão e refina o forno com janela, puxador, guias e porta que sobe para carregar e descarregar a câmara.
+- Mantém apenas um padeiro: o mesmo funcionário busca trigo, opera moagem e forno e abastece a vitrine. Farinha restante continua sendo preparada sem trigo; o confeiteiro permanece independente.
+- Gira a máquina de pão e a batedeira para ficarem de frente uma para a outra, mantendo seus centros nas posições atuais.
+- Corrige pães aparecendo na vitrine antes do padeiro: o lote fica pendente após assar e só entra no estoque durante o gesto de colocá-lo no expositor, depois de viajar na bandeja. Clientes não podem retirar esses pães antes da entrega.
+- Simulação e animação compartilham roteiro e relógio. A reserva de excedentes também aguarda entrega, e o cartão informa “Abastecendo a vitrine”. Receitas e tempos de moagem e forno permanecem iguais; o estoque passa a aguardar o transporte.
+- Salva lote pendente, posição no roteiro e entrega concluída para retomar sem perda ou duplicação. Saves anteriores preservam o estoque já exposto e recebem entrega vazia.
+- Validação: 341 testes, build e rotas aprovados. Edge em desktop/celular com WebGL e Canvas confirma vitrine vazia antes da entrega e estoque surgindo no gesto de expor. Pausa, reserva, migração e recarga sem duplicação cobertas, sem salvar imagens.
+
+## 0.63.2 — 2026-10-26
 
 - Padeiros continuam trabalhando enquanto houver trigo ou farinha e vagas na vitrine, inclusive em 16 / 18 ou 17 / 18. Um trigo continua rendendo três pães: o excedente fica reservado e preenche as próximas vagas sem novo consumo, inclusive após recarregar.
 - A confeitaria produz e entrega os doces cujas vitrines ainda têm espaço; uma classe cheia não bloqueia as demais. Mostra “Vitrine cheia” somente quando todas estão completas e identifica o ingrediente que falta para preparar outro lote.

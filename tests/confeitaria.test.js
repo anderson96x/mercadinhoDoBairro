@@ -138,7 +138,7 @@ test('doces só entram nos pedidos após a produção e são vendidos no caixa p
   assert.equal(sim.estado.estatisticas.faturamento, 45);
 });
 
-test('padaria mantém tampos planos antes da compra; vitrines, estoque real e terceiro trabalhador aparecem depois', () => {
+test('padaria mantém um padeiro; vitrines, estoque real e confeiteiro aparecem depois da compra', () => {
   const sim = preparar();
   const visual = { cena: new THREE.Scene(), produtos: {}, sim, criarLabel() {}, animarPersonagem: Cena.prototype.animarPersonagem };
   Cena.prototype.construirPadaria.call(visual);
@@ -151,7 +151,7 @@ test('padaria mantém tampos planos antes da compra; vitrines, estoque real e te
   Cena.prototype.animarConfeiteiro.call(visual, objetos, 0);
   assert.equal(objetos.vitrinesConfeitaria.visible, true);
   assert.equal(objetos.confeiteiro.visible, true);
-  assert.equal(objetos.padeiros.length, 2);
+  assert.equal(objetos.padeiros.length, 1);
   for (const id of ids) assert.equal(visual.produtos[id].frutas.length, PRODUTOS[id].capacidadePrateleira);
   Object.assign(sim.estado.confeitaria, { mel: 8, ovos: 8 });
   let andou = false, trabalhou = false, levouBandeja = false;
@@ -256,7 +256,7 @@ test('confeiteiro descansa parado de frente para os donuts, movimenta só a cabe
   assert.ok(d.cabecaPadaria.quaternion.equals(pausada));
 });
 
-test('batedeira trabalha ao lado do moinho; cada doce é entregue na vitrine correta e o retorno é vazio', () => {
+test('batedeira trabalha no antigo posto do forno; cada doce é entregue na vitrine correta e o retorno é vazio', () => {
   const sim = abrir();
   const visual = { cena: new THREE.Scene(), produtos: {}, sim, criarLabel() {}, animarPersonagem: Cena.prototype.animarPersonagem };
   Cena.prototype.construirPadaria.call(visual);
@@ -268,8 +268,27 @@ test('batedeira trabalha ao lado do moinho; cada doce é entregue na vitrine cor
   sim.atualizarProducao(1);
   Cena.prototype.animarConfeiteiro.call(visual, objetos, 1);
   assert.ok(objetos.batedeira.grupo.visible);
-  for (const roteiro of objetos.roteiros) for (const etapa of roteiro) {
-    assert.ok(segmentoLivre(etapa.de, etapa.para, [maquinaConfeitaria()], 0.12), 'batedeira deve preservar os trajetos dos dois padeiros');
+  assert.ok(Math.abs(objetos.batedeira.grupo.position.x - 19.4) < 1e-9);
+  assert.ok(Math.abs(objetos.batedeira.grupo.position.z + 1.1) < 1e-9);
+  const frentePao = objetos.forno.getWorldDirection(new THREE.Vector3());
+  const frenteDoces = objetos.batedeira.grupo.getWorldDirection(new THREE.Vector3());
+  const entreMaquinas = objetos.batedeira.grupo.position.clone().sub(objetos.forno.position).normalize();
+  assert.ok(frentePao.dot(entreMaquinas) > 0.999, 'porta do forno aponta para a máquina de doces');
+  assert.ok(frenteDoces.dot(entreMaquinas) < -0.999, 'frente da batedeira aponta para o forno');
+  const acessoDoces = new THREE.Vector3(CONFEITARIA.posto.x, 0, CONFEITARIA.posto.z).sub(objetos.batedeira.grupo.position).normalize();
+  assert.ok(frenteDoces.dot(acessoDoces) > 0.999, 'confeiteiro trabalha diante da cuba');
+  for (const etapa of objetos.roteiros[0].filter(etapa => ['colocar', 'retirar'].includes(etapa.acao))) {
+    const acessoPao = new THREE.Vector3(etapa.de.x, 0, etapa.de.z).sub(objetos.forno.position).normalize();
+    assert.ok(frentePao.dot(acessoPao) > 0.999, 'padeiro carrega e descarrega pela porta do forno');
+  }
+  const volumeDoces = maquinaConfeitaria(), limitesDoces = new THREE.Box3().setFromObject(objetos.batedeira.grupo);
+  assert.ok(limitesDoces.min.x >= volumeDoces.x - volumeDoces.w / 2 && limitesDoces.max.x <= volumeDoces.x + volumeDoces.w / 2);
+  assert.ok(limitesDoces.min.z >= volumeDoces.z - volumeDoces.d / 2 && limitesDoces.max.z <= volumeDoces.z + volumeDoces.d / 2);
+  for (const etapa of ROTEIRO_CONFEITARIA) {
+    assert.ok(segmentoLivre(etapa.de, etapa.para, sim.obstaculos(), 0.12), 'confeiteiro deve contornar as duas máquinas e os balcões');
+  }
+  for (const roteiro of [...objetos.roteiros, objetos.roteiroForno]) for (const etapa of roteiro) {
+    assert.ok(segmentoLivre(etapa.de, etapa.para, [maquinaConfeitaria()], 0.12), 'batedeira deve preservar o trajeto do padeiro');
   }
   assert.ok(objetos.batedeira.rotor.rotation.y > rotor);
   assert.equal(situacaoConfeiteiro(sim.estado).acao, 'misturar');

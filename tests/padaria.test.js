@@ -39,6 +39,9 @@ test('padaria exige nível 9, trigo e R$ 1.400; trigo entregue vira farinha e tr
   sim.atualizarProducao(ALA_PADARIA.tempoMoagem);
   assert.equal(sim.estado.producao.farinha, 1);
   sim.atualizarProducao(ALA_PADARIA.tempoForno);
+  assert.equal(sim.estado.produtos.pao.prateleira, 0, 'forno pronto ainda não abastece a vitrine');
+  assert.equal(sim.estado.producao.entregaPadaria.paes, 3);
+  for (let i = 0; i < 300; i++) sim.atualizarProducao(0.1);
   assert.equal(sim.estado.produtos.pao.prateleira, 3);
   const retomado = validarEstado(structuredClone(sim.estado));
   assert.equal(retomado.produtos.pao.prateleira, 3);
@@ -76,12 +79,12 @@ test('pão entra na demanda normal e clientes que o pedem levam pelo menos três
   assert.equal(sim.estado.produtos.pao.prateleira, 15);
 });
 
-test('padaria fica na parede direita e tem dois padeiros de avental e chapéu branco', () => {
+test('padaria tem forno industrial com processador superior e um padeiro de avental e chapéu branco', () => {
   const visual = { cena: new THREE.Scene(), produtos: {}, sim: new Simulacao(), criarLabel() {} };
   Cena.prototype.construirPadaria.call(visual);
   const { grupo, padeiros, frutas } = visual.produtos.pao;
   assert.equal(grupo.name, 'padaria');
-  assert.equal(padeiros.length, 2);
+  assert.equal(padeiros.length, 1);
   assert.equal(frutas.length, PRODUTOS.pao.capacidadePrateleira);
   assert.ok(PRODUTOS.ovos.prateleira.z < PRODUTOS.pao.prateleira.z, 'ovos ocupam a parede do fundo; padaria mantém sua área legada');
   const vitrine = grupo.getObjectByName('vitrine-paes');
@@ -98,8 +101,8 @@ test('padaria fica na parede direita e tem dois padeiros de avental e chapéu br
   assert.ok(grupo.getObjectByName('entrega-trigo-padaria').position.z < PRODUTOS.pao.prateleira.z);
   assert.equal(visual.produtos.pao.trigosRecebidos.length, ALA_PADARIA.capacidadeTrigo);
   const triturador = grupo.getObjectByName('triturador-padaria');
-  assert.ok(triturador.position.x > PRODUTOS.pao.prateleira.x);
-  assert.ok(new THREE.Box3().setFromObject(triturador).max.y < 2);
+  assert.ok(triturador.getWorldPosition(new THREE.Vector3()).x > PRODUTOS.pao.prateleira.x);
+  assert.ok(new THREE.Box3().setFromObject(triturador).max.y < 2.3);
   assert.equal(triturador.getObjectByName('corpo-triturador').material.color.getHex(), 0xadb7b9);
   assert.equal(triturador.getObjectByName('corpo-triturador').material.metalness, 0.58);
   const bandejaFarinha = triturador.getObjectByName('bandeja-farinha-padaria');
@@ -114,7 +117,20 @@ test('padaria fica na parede direita e tem dois padeiros de avental e chapéu br
   assert.ok(rotor.children.some(item => item.position.x !== 0));
   assert.ok(triturador.children.every(item => !item.children.some(parte => parte.material?.color?.getHex() === 0xe4bc57)));
   assert.equal(grupo.getObjectByName('base-madeira-padaria').material.color.getHex(), 0x936238);
-  assert.ok(grupo.getObjectByName('forno-padaria').position.x > PRODUTOS.pao.prateleira.x);
+  const forno = grupo.getObjectByName('forno-padaria');
+  assert.equal(forno.getObjectByName('porta-forno-industrial').position.y, 0.99);
+  assert.equal(forno.getObjectByName('carenagem-forno').material.color.getHex(), 0xadb7b9);
+  assert.ok(forno.getObjectByName('vidro-forno'));
+  assert.ok(forno.getObjectByName('bandeja-forno'));
+  assert.equal(triturador.parent, forno, 'moinho fica integrado sobre o forno');
+  assert.ok(triturador.position.y > 1);
+  assert.ok(Math.abs(forno.position.x - 19.4) < 1e-9);
+  assert.ok(Math.abs(forno.position.z + 4.5) < 1e-9, 'conjunto ocupa o antigo posto do trigo');
+  assert.deepEqual(ALA_PADARIA.moinho, ALA_PADARIA.forno);
+  const volume = ALA_PADARIA.forno;
+  const limites = new THREE.Box3().setFromObject(forno);
+  assert.ok(limites.min.x >= volume.x - volume.w / 2 && limites.max.x <= volume.x + volume.w / 2);
+  assert.ok(limites.min.z >= volume.z - volume.d / 2 && limites.max.z <= volume.z + volume.d / 2);
   assert.equal(new Set(frutas.map(pao => pao.position.y)).size, 3);
   assert.ok(frutas[12].position.y > frutas[0].position.y);
   for (const padeiro of padeiros) {
@@ -138,36 +154,104 @@ function visualPadaria() {
   return visual;
 }
 
-test('os dois padeiros seguem os movimentos originais durante o trabalho', () => {
+test('um único padeiro transporta trigo, farinha e pão e opera os dois estágios da máquina', () => {
   const visual = visualPadaria();
-  const padaria = visual.produtos.pao, forno = padaria.padeiros[1].userData;
-  const cargas = [false, false], maos = [new Set(), new Set()];
-  let levouFarinha = false, levouPao = false;
+  const padaria = visual.produtos.pao, padeiro = padaria.padeiros[0].userData;
+  const maos = new Set();
+  let levouTrigo = false, levouFarinha = false, levouPao = false;
   for (let quadro = 0; quadro < 900; quadro++) {
     Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 1, farinha: 1, paesProduzidos: 3 }, quadro / 60, 1 / 60);
-    levouFarinha ||= forno.cargaFarinha.visible;
-    levouPao ||= forno.cargaPao.visible;
-    if (forno.cargaFarinha.visible) assert.equal(padaria.farinha.visible, false, 'a farinha sai da bandeja quando aparece no saco');
-    padaria.padeiros.forEach((padeiro, i) => {
-      cargas[i] ||= padeiro.userData.cargaPadaria.visible;
-      maos[i].add(padeiro.userData.bracoE.userData.mao.position.y.toFixed(2));
-      assert.equal(padeiro.userData.alertaTrigo.visible, false);
-      if (quadro === 150) {
-        const d = padeiro.userData;
-        assert.ok(Math.abs(d.bracoE.userData.mao.position.y - (0.83 - Math.sin(2.5 * (i ? 7 : 10)) * 0.17)) < 0.001);
-        assert.ok(Math.abs(d.corpo.rotation.z - Math.sin(2.5 * 4) * 0.045) < 0.001);
-        assert.equal(d.cabecaPadaria.rotation.x, 0);
-      }
-    });
+    levouTrigo ||= padeiro.cargaTrigo.visible;
+    levouFarinha ||= padeiro.cargaFarinha.visible;
+    levouPao ||= padeiro.cargaPao.visible;
+    if (padeiro.cargaFarinha.visible) assert.equal(padaria.farinha.visible, false, 'a farinha sai da bandeja quando aparece no saco');
+    assert.ok([padeiro.cargaTrigo, padeiro.cargaFarinha, padeiro.cargaPao].filter(carga => carga.visible).length <= 1);
+    maos.add(padeiro.bracoE.userData.mao.position.y.toFixed(2));
+    assert.equal(padeiro.alertaTrigo.visible, false);
   }
-  assert.deepEqual(cargas, [true, true]);
-  assert.equal(levouFarinha, true, 'o padeiro do forno coleta farinha no moinho');
-  assert.equal(levouPao, true, 'depois ele transporta os pães prontos');
-  assert.ok(forno.cargaFarinha.children.length >= 3);
-  assert.equal(padaria.roteiros[1][0].acao, 'receber');
-  assert.equal(padaria.roteiros[1][1].carga, 'farinha');
-  assert.ok(maos[0].size > 10 && maos[1].size > 10);
-  assert.ok(padaria.padeiros.every(p => p.userData.tempoPadaria > 6));
+  assert.ok(levouTrigo && levouFarinha && levouPao);
+  assert.ok(padeiro.cargaFarinha.children.length >= 3);
+  for (const acao of ['buscar', 'moer', 'assar', 'expor']) assert.ok(padaria.roteiros[0].some(etapa => etapa.acao === acao));
+  assert.ok(maos.size > 10);
+  assert.ok(padeiro.ativoPadaria);
+});
+
+test('último trigo completa coleta de farinha, carga do forno, retirada e vitrine sem cortar o lote visual', () => {
+  const visual = visualPadaria(), objetos = visual.produtos.pao;
+  const sim = visual.sim, d = objetos.padeiros[0].userData;
+  sim.estado.producao.trigoPadaria = 1;
+  const acoes = [], transferencias = new Set();
+  for (let quadro = 0; quadro < 1800; quadro++) {
+    sim.atualizarProducao(1 / 60);
+    Cena.prototype.animarPadeiros.call(visual, objetos, sim.estado.producao, quadro / 60, 1 / 60);
+    if (!sim.estado.producao.entregaPadaria.entregou && sim.estado.producao.entregaPadaria.modo) {
+      assert.equal(sim.estado.produtos.pao.prateleira, 0, 'estoque não pode aparecer antes da entrega');
+      assert.equal(objetos.frutas.filter(pao => pao.visible).length, 0);
+    }
+    if (sim.estado.produtos.pao.prateleira > 0 && !transferencias.has('vitrine')) {
+      assert.equal(d.acaoPadaria, 'expor');
+      assert.ok(d.fasePadaria >= 0.7);
+    }
+    if (d.acaoPadaria && acoes.at(-1) !== d.acaoPadaria) acoes.push(d.acaoPadaria);
+    if (d.acaoPadaria === 'receber' && d.fasePadaria > 0.5) {
+      assert.ok(d.cargaFarinha.visible && !objetos.farinha.visible);
+      transferencias.add('farinha');
+    }
+    if (d.acaoPadaria === 'colocar' && d.fasePadaria > 0.6 && d.fasePadaria < 0.75) {
+      assert.ok(!d.cargaFarinha.visible && objetos.paesNoForno.visible);
+      assert.ok(objetos.portaForno.position.y > 1.5);
+      transferencias.add('forno');
+    }
+    if (d.acaoPadaria === 'retirar' && d.fasePadaria > 0.5 && d.fasePadaria < 0.75) {
+      assert.ok(d.cargaPao.visible && !objetos.paesNoForno.visible);
+      assert.ok(objetos.portaForno.position.y > 1.5);
+      transferencias.add('retirada');
+    }
+    if (d.acaoPadaria === 'expor' && d.fasePadaria > 0.75) {
+      assert.ok(!d.cargaPao.visible);
+      transferencias.add('vitrine');
+    }
+    if (['receber', 'colocar', 'retirar', 'expor'].includes(d.acaoPadaria)) {
+      const porta = objetos.portaForno.position.y, fase = d.fasePadaria;
+      const carga = d.cargaPadaria.position.clone(), ator = objetos.padeiros[0].position.clone();
+      Cena.prototype.animarPadeiros.call(visual, objetos, sim.estado.producao, quadro / 60, 0);
+      assert.equal(objetos.portaForno.position.y, porta);
+      assert.equal(d.fasePadaria, fase);
+      assert.ok(d.cargaPadaria.position.equals(carga) && objetos.padeiros[0].position.equals(ator));
+    }
+  }
+  const etapas = acoes.filter(acao => ['receber', 'colocar', 'assar', 'retirar', 'expor'].includes(acao));
+  assert.deepEqual(etapas, ['receber', 'colocar', 'assar', 'retirar', 'expor']);
+  assert.deepEqual([...transferencias], ['farinha', 'forno', 'retirada', 'vitrine']);
+  assert.equal(d.ativoPadaria, false);
+  assert.equal(objetos.portaForno.position.y, 0.99);
+  assert.equal(sim.estado.produtos.pao.prateleira, 3);
+  assert.equal(sim.estado.producao.paesProduzidos, 3);
+  assert.equal(sim.estado.producao.trigoPadaria, 0);
+});
+
+test('entrega salva na bandeja retoma sem antecipar a vitrine nem duplicar pães', () => {
+  let sim = abrirPadaria();
+  sim.estado.producao.trigoPadaria = 1;
+  for (let i = 0; i < 50; i++) sim.atualizarProducao(0.1);
+  assert.equal(sim.estado.produtos.pao.prateleira, 0);
+  assert.equal(sim.estado.producao.entregaPadaria.paes, 3);
+  sim = new Simulacao(structuredClone(sim.estado));
+  const pausado = structuredClone(sim.estado.producao);
+  sim.atualizarProducao(0);
+  assert.deepEqual(sim.estado.producao, pausado);
+  for (let i = 0; i < 300; i++) sim.atualizarProducao(0.1);
+  assert.equal(sim.estado.produtos.pao.prateleira, 3);
+  assert.equal(sim.estado.producao.paesProduzidos, 3);
+  sim = new Simulacao(structuredClone(sim.estado));
+  for (let i = 0; i < 300; i++) sim.atualizarProducao(0.1);
+  assert.equal(sim.estado.produtos.pao.prateleira, 3);
+  assert.equal(sim.estado.producao.paesProduzidos, 3);
+  const antigo = structuredClone(sim.estado);
+  delete antigo.producao.entregaPadaria;
+  const migrado = new Simulacao(antigo);
+  assert.equal(migrado.estado.produtos.pao.prateleira, 3);
+  assert.equal(migrado.estado.producao.entregaPadaria.paes, 0);
 });
 
 test('exclamação dos padeiros exige trigo e vitrine vazios ao mesmo tempo', () => {
@@ -202,18 +286,25 @@ test('sem trigo os padeiros esperam dentro da padaria voltados ao centro e movem
   });
 });
 
-test('vitrine sem espaço interrompe os dois padeiros; farinha restante pode terminar sem trigo', () => {
+test('vitrine cheia interrompe o padeiro; farinha restante pode terminar sem trigo', () => {
   const visual = visualPadaria(), padaria = visual.produtos.pao;
   visual.sim.estado.produtos.pao.prateleira = 18;
   Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 4, farinha: 1 }, 0, 1 / 60);
   assert.ok(padaria.padeiros.every(p => !p.userData.ativoPadaria && !p.userData.alertaTrigo.visible && !p.userData.cargaPadaria.visible));
   visual.sim.estado.produtos.pao.prateleira = 16;
   Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 4, farinha: 1 }, 0.5, 1 / 60);
-  assert.equal(padaria.padeiros[1].userData.ativoPadaria, true);
+  assert.equal(padaria.padeiros[0].userData.ativoPadaria, true);
   visual.sim.estado.produtos.pao.prateleira = 0;
   Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 0, farinha: 1 }, 1, 1 / 60);
-  assert.equal(padaria.padeiros[0].userData.ativoPadaria, false);
-  assert.equal(padaria.padeiros[1].userData.ativoPadaria, true);
+  assert.equal(padaria.padeiros[0].userData.ativoPadaria, true);
+  assert.ok(!padaria.roteiroForno.some(etapa => etapa.carga === 'trigo'));
+  let levouPao = false;
+  for (let quadro = 0; quadro < 900; quadro++) {
+    Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 0, farinha: 1 }, 1 + quadro / 60, 1 / 60);
+    levouPao ||= padaria.padeiros[0].userData.cargaPao.visible;
+  }
+  assert.ok(levouPao, 'o mesmo padeiro termina a farinha restante');
+  assert.equal(padaria.padeiros[0].userData.modoPadaria, 'forno');
   assert.ok(padaria.padeiros.every(p => p.userData.alertaTrigo.visible));
 });
 
@@ -222,7 +313,7 @@ test('padaria completa 16/18 e 17/18 com trigo, preserva os pães restantes e re
     const sim = abrirPadaria();
     sim.estado.produtos.pao.prateleira = estoque;
     sim.estado.producao.trigoPadaria = 8;
-    for (let i = 0; i < 100; i++) sim.atualizarProducao(0.1);
+    for (let i = 0; i < 300; i++) sim.atualizarProducao(0.1);
     assert.equal(sim.estado.produtos.pao.prateleira, 18);
     assert.equal(sim.estado.producao.trigoPadaria, 7);
     assert.equal(sim.estado.producao.paesReserva, estoque - 15);
@@ -230,6 +321,8 @@ test('padaria completa 16/18 e 17/18 com trigo, preserva os pães restantes e re
     assert.equal(retomado.estado.producao.paesReserva, estoque - 15);
     retomado.estado.produtos.pao.prateleira--;
     retomado.atualizarProducao(0.1);
+    assert.equal(retomado.estado.produtos.pao.prateleira, 17, 'reserva aguarda a bandeja');
+    for (let i = 0; i < 300; i++) retomado.atualizarProducao(0.1);
     assert.equal(retomado.estado.produtos.pao.prateleira, 18);
     assert.equal(retomado.estado.producao.paesReserva, estoque - 16);
     assert.equal(retomado.estado.producao.trigoPadaria, 7);
@@ -243,6 +336,8 @@ test('retomar, parar e pausar os padeiros mantém deslocamento contínuo sem atr
   Cena.prototype.animarPadeiros.call(visual, padaria, producao, 0, 1 / 60);
   for (let quadro = 1; quadro < 2400; quadro++) {
     if (quadro === 60) Object.assign(producao, { trigoPadaria: 2, farinha: 1 });
+    if (quadro === 500) Object.assign(producao, { trigoPadaria: 0, farinha: 1 });
+    if (quadro === 900) Object.assign(producao, { trigoPadaria: 2, farinha: 1 });
     if (quadro === 1200) Object.assign(producao, { trigoPadaria: 0, farinha: 0 });
     const anteriores = padaria.padeiros.map(p => p.position.clone());
     Cena.prototype.animarPadeiros.call(visual, padaria, producao, quadro / 60, 1 / 60);
