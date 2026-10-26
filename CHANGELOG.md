@@ -1,7 +1,15 @@
 # Histórico de alterações
 
-## Versão atual: 0.63.1 — 2026-10-26
+## Versão atual: 0.63.2 — 2026-10-26
 
+- Padeiros continuam trabalhando enquanto houver trigo ou farinha e vagas na vitrine, inclusive em 16 / 18 ou 17 / 18. Um trigo continua rendendo três pães: o excedente fica reservado e preenche as próximas vagas sem novo consumo, inclusive após recarregar.
+- A confeitaria produz e entrega os doces cujas vitrines ainda têm espaço; uma classe cheia não bloqueia as demais. Mostra “Vitrine cheia” somente quando todas estão completas e identifica o ingrediente que falta para preparar outro lote.
+- Sincroniza máquinas, animações e cartões com essas regras. Preserva a seleção de doces do lote durante entregas e recarga.
+- Validação: 339 testes e build de produção aprovados. Pães em 16 / 18, reserva de excedente, animação do moinho e continuidade dos doces com uma vitrine cheia verificados no Edge em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.63.1 — 2026-10-26
+
+- Padroniza a receita no cartão da padaria como “Por lote: 1 trigo → 3 pães”, mantendo os tempos de moagem e forno.
 - Padroniza o cartão da confeitaria com o visual do preparo de pão, mostrando ingredientes, receita resumida e estado do confeiteiro. O cartão aparece somente perto da bandeja de entrega de mel e ovos.
 - Mostra estoque / capacidade apenas no selo de cada cartão, como 11 / 18 para pães e 19 / 24 para doces. O cabeçalho “Produção” mantém somente o título e a seta de expandir.
 - Exibe barra de progresso e porcentagem somente durante produção ou entrega ativa. Em espera por ingredientes ou com vitrine cheia, mantém apenas o texto do estado.

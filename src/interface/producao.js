@@ -2,13 +2,12 @@ import { produtosDaLoja, ALA_PADARIA, CONFIG, OFICINAS, PRODUTOS } from '../jogo
 import { distanciaEstacao, geometriaEstacao } from '../jogo/estacoes.js';
 import { icone } from './icones.js';
 import { CONFEITARIA, podeProduzirConfeitaria, situacaoConfeiteiro } from '../jogo/confeitaria.js';
+import { trabalhoPadaria } from '../jogo/producao-padaria.js';
 
 function resumoPadaria(estado) {
   const producao = estado.producao;
   const prontos = estado.produtos.pao.prateleira;
-  const vitrineCheia = prontos + ALA_PADARIA.paesPorTrigo > PRODUTOS.pao.capacidadePrateleira;
-  const assando = producao.farinha > 0 && !vitrineCheia;
-  const moendo = producao.trigoPadaria > 0 && producao.farinha < 3 && !vitrineCheia;
+  const { cheia: vitrineCheia, assando, moendo } = trabalhoPadaria(estado);
   const status = vitrineCheia ? 'Vitrine cheia' : assando ? 'Assando pães' : moendo ? 'Moendo trigo' : 'Aguardando trigo';
   const progresso = assando ? producao.progressoForno / ALA_PADARIA.tempoForno
     : moendo ? producao.progressoMoagem / ALA_PADARIA.tempoMoagem : 0;
@@ -18,7 +17,7 @@ function resumoPadaria(estado) {
       { id: 'trigo', nome: 'Trigo', disponivel: producao.trigoPadaria, quantidade: ALA_PADARIA.capacidadeTrigo, faltando: !producao.trigoPadaria },
       { id: 'farinha', nome: 'Farinha', disponivel: producao.farinha, quantidade: 3, faltando: !producao.farinha && !producao.trigoPadaria }
     ],
-    receitaTexto: `Por trigo: ${ALA_PADARIA.paesPorTrigo} pães · moagem ${ALA_PADARIA.tempoMoagem}s + forno ${ALA_PADARIA.tempoForno}s`,
+    receitaTexto: `Por lote: 1 trigo → ${ALA_PADARIA.paesPorTrigo} pães · moagem ${ALA_PADARIA.tempoMoagem}s + forno ${ALA_PADARIA.tempoForno}s`,
     status, progresso: Math.max(0, Math.min(100, Math.floor(progresso * 100))), produzindo: assando || moendo
   };
 }
@@ -43,13 +42,14 @@ export function resumoProducao(estado) {
     const ingredientes = Object.keys(CONFEITARIA.ingredientes).map(id => ({ id, disponivel: producao[id], quantidade: CONFEITARIA.capacidadeIngredientes, faltando: producao[id] < 1 }));
     const prontos = Object.keys(CONFEITARIA.produtos).reduce((total, id) => total + estado.produtos[id].prateleira, 0);
     const capacidade = Object.values(CONFEITARIA.produtos).reduce((total, produto) => total + produto.capacidade, 0);
-    const cheia = Object.entries(CONFEITARIA.produtos).some(([id, p]) => estado.produtos[id].prateleira >= p.capacidade);
+    const cheia = Object.entries(CONFEITARIA.produtos).every(([id, p]) => estado.produtos[id].prateleira >= p.capacidade);
     const entregando = producao.etapaEntrega >= 0;
     const situacao = situacaoConfeiteiro(estado);
+    const faltantes = ingredientes.filter(item => item.faltando).map(item => item.id === 'ovos' ? 'ovos' : 'mel');
     confeitaria.push({ id: 'confeitaria', nome: 'Confeitaria', prontos, capacidade, prontosTexto: `${prontos} / ${capacidade}`, ingredientes,
-      receitaTexto: 'Por lote: 1 mel + 1 ovo → 1 bolo, 1 donut e 1 éclair · preparo 6s + entrega',
+      receitaTexto: 'Por lote: 1 mel + 1 ovo → até 1 bolo, 1 donut e 1 éclair, conforme as vagas · preparo 6s + entrega',
       status: entregando ? situacao.carga.length ? 'Abastecendo as vitrines' : 'Voltando à batedeira'
-        : cheia ? 'Vitrine cheia' : ingredientes.some(i => i.faltando) ? 'Aguardando mel e ovos' : 'Misturando na batedeira',
+        : cheia ? 'Vitrine cheia' : faltantes.length ? `Aguardando ${faltantes.join(' e ')}` : 'Misturando na batedeira',
       progresso: entregando ? 100 : Math.floor(producao.progresso / CONFEITARIA.segundos * 100), produzindo: entregando || podeProduzirConfeitaria(estado) });
   }
   return estado.melhorias.alaPadaria ? [resumoPadaria(estado), ...confeitaria, ...oficinas] : oficinas;

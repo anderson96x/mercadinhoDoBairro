@@ -76,7 +76,7 @@ test('produção respeita pausa, ingrediente faltante, capacidade de entrada e v
   const antes = structuredClone(sim.estado.confeitaria);
   sim.atualizarProducao(0);
   assert.deepEqual(sim.estado.confeitaria, antes);
-  sim.estado.produtos.bolo.prateleira = PRODUTOS.bolo.capacidadePrateleira;
+  for (const id of ids) sim.estado.produtos[id].prateleira = PRODUTOS[id].capacidadePrateleira;
   sim.atualizarProducao(60);
   assert.deepEqual(sim.estado.confeitaria, antes);
   sim.estado.produtos.bolo.prateleira--;
@@ -204,7 +204,32 @@ test('painel explica a receita e indica falta de ingredientes e vitrine cheia', 
   Object.assign(sim.estado.confeitaria, { mel: 1, ovos: 1 });
   assert.equal(resumo().produzindo, true);
   sim.estado.produtos.bolo.prateleira = PRODUTOS.bolo.capacidadePrateleira;
+  assert.equal(resumo().produzindo, true, 'uma vitrine cheia não bloqueia as demais');
+  for (const id of ids) sim.estado.produtos[id].prateleira = PRODUTOS[id].capacidadePrateleira;
   assert.equal(resumo().status, 'Vitrine cheia');
+});
+
+test('confeitaria completa donuts e éclairs enquanto bolos já estão cheios e retoma depois de uma venda', () => {
+  const sim = abrir();
+  Object.assign(sim.estado.confeitaria, { mel: 3, ovos: 3 });
+  sim.estado.produtos.bolo.prateleira = 6;
+  sim.estado.produtos.donut.prateleira = 10;
+  sim.estado.produtos.eclair.prateleira = 4;
+  sim.atualizarProducao(TEMPO_LOTE * 3);
+  assert.equal(sim.estado.produtos.bolo.prateleira, 6);
+  assert.equal(sim.estado.produtos.donut.prateleira, 12);
+  assert.equal(sim.estado.produtos.eclair.prateleira, 6);
+  assert.equal(sim.estado.confeitaria.mel, 1);
+  assert.equal(sim.estado.confeitaria.ovos, 1);
+  sim.estado.produtos.donut.prateleira--;
+  sim.atualizarProducao(6);
+  assert.deepEqual(sim.estado.confeitaria.produtosLote, ['donut']);
+  const retomado = new Simulacao(sim.estado);
+  retomado.atualizarProducao(TEMPO_LOTE);
+  assert.equal(retomado.estado.produtos.donut.prateleira, 12);
+  assert.equal(retomado.estado.produtos.bolo.prateleira, 6);
+  assert.equal(retomado.estado.produtos.eclair.prateleira, 6);
+  assert.equal(retomado.estado.confeitaria.mel, 0);
 });
 
 test('confeiteiro descansa parado de frente para os donuts, movimenta só a cabeça e congela na pausa', () => {

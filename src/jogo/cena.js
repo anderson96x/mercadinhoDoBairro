@@ -1,3 +1,4 @@
+import { trabalhoPadaria } from './producao-padaria.js';
 import { construirBatedeira } from './batedeira.js';
 import { construirBalcoesDecorados, criarVitrineCurva, criarBandejaRecebimento } from './padaria-decoracao.js';
 import { CONFEITARIA, podeProduzirConfeitaria, situacaoConfeiteiro, maquinaConfeitaria } from './confeitaria.js';
@@ -1357,10 +1358,8 @@ export class Cena {
     const PRODUTOS = produtosDaLoja(this.sim?.estado);
     const maquinas = [objetos.moinho.position, objetos.forno.position];
     const paes = this.sim.estado.produtos.pao.prateleira;
-    const cheia = paes + ALA_PADARIA.paesPorTrigo > PRODUTOS.pao.capacidadePrateleira;
-    const ativos = [!cheia && producao.trigoPadaria > 0 && producao.farinha < 3
-      && paes + (producao.farinha + 1) * ALA_PADARIA.paesPorTrigo <= PRODUTOS.pao.capacidadePrateleira,
-    !cheia && producao.farinha > 0];
+    const { moendo, assando } = trabalhoPadaria({ ...this.sim.estado, producao });
+    const ativos = [moendo, assando];
     objetos.padeiros.forEach((padeiro, i) => {
       const d = padeiro.userData;
       d.tempoPadaria ??= 0;
@@ -2027,10 +2026,7 @@ export class Cena {
         objetos.transitos = objetos.transitos.filter(item => item.visual.parent);
         objetos.frutas.forEach((f, i) => { f.visible = ativa && i < estado.prateleira && !objetos.transitos.some(item => item.lugar === i); });
         if (ativa) {
-          const cabeLote = estado.prateleira + ALA_PADARIA.paesPorTrigo <= PRODUTOS.pao.capacidadePrateleira;
-          const moendo = e.producao.trigoPadaria > 0 && e.producao.farinha < 3
-            && estado.prateleira + (e.producao.farinha + 1) * ALA_PADARIA.paesPorTrigo <= PRODUTOS.pao.capacidadePrateleira;
-          const assando = e.producao.farinha > 0 && cabeLote;
+          const { moendo, assando } = trabalhoPadaria(e);
           objetos.trigosRecebidos.forEach((espiga, i) => { espiga.visible = i < e.producao.trigoPadaria; });
           if (moendo) objetos.rotor.rotation.y += dt * 9;
           objetos.farinha.visible = moendo || assando;

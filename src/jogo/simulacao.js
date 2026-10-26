@@ -1,4 +1,5 @@
 import { CONFEITARIA, estadoConfeitaria, validarConfeitaria, produzirConfeitaria, maquinaConfeitaria } from './confeitaria.js';
+import { trabalhoPadaria } from './producao-padaria.js';
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, folhasPortasExpansao, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
 import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
@@ -45,7 +46,7 @@ export function estadoInicial() {
       ingredientes: Object.fromEntries(Object.keys(receita.ingredientes).map(item => [item, 0])), progresso: 0, produzidos: 0
     }])),
     producao: { progressoOvo: 0, ovosProduzidos: 0, progressoLeite: 0, leitesProduzidos: 0,
-      trigoPadaria: 0, farinha: 0, progressoMoagem: 0, progressoForno: 0, paesProduzidos: 0 },
+      trigoPadaria: 0, farinha: 0, progressoMoagem: 0, progressoForno: 0, paesProduzidos: 0, paesReserva: 0 },
     funcionarios: { ajudante: estadoAjudanteInicial() },
     produtos: Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => [id, {
       liberado: p.liberado, horta: p.liberado ? p.capacidadeHorta : 0, prateleira: 0, crescimento: 0, crescimentoMelhorado: false, apresentado: false
@@ -99,6 +100,7 @@ export function validarEstado(dados) {
     base.producao.leitesProduzidos = numero(dados.producao?.leitesProduzidos);
   }
   if (base.melhorias[ALA_PADARIA.id]) {
+    base.producao.paesReserva = numero(dados.producao?.paesReserva, ALA_PADARIA.paesPorTrigo - 1);
     for (const campo of ['trigoPadaria', 'farinha', 'paesProduzidos']) base.producao[campo] = numero(dados.producao?.[campo], campo === 'trigoPadaria' ? ALA_PADARIA.capacidadeTrigo : 1e9);
     for (const [campo, max] of [['progressoMoagem', ALA_PADARIA.tempoMoagem], ['progressoForno', ALA_PADARIA.tempoForno]]) {
       base.producao[campo] = Number.isFinite(dados.producao?.[campo]) ? limitar(dados.producao[campo], 0, max) : 0;
@@ -1029,20 +1031,27 @@ export class Simulacao {
     }
     if (this.estado.melhorias.alaPadaria) {
       const paes = this.estado.produtos.pao;
-      if (p.trigoPadaria > 0 && p.farinha < 3 && paes.prateleira + (p.farinha + 1) * ALA_PADARIA.paesPorTrigo <= this.produtos.pao.capacidadePrateleira) {
+      if (dt > 0 && p.paesReserva > 0) {
+        const repostos = Math.min(p.paesReserva, this.produtos.pao.capacidadePrateleira - paes.prateleira);
+        paes.prateleira += repostos; p.paesReserva -= repostos; p.paesProduzidos += repostos;
+      }
+      if (trabalhoPadaria(this.estado).moendo) {
         p.progressoMoagem += dt;
         if (p.progressoMoagem >= ALA_PADARIA.tempoMoagem) {
           p.progressoMoagem -= ALA_PADARIA.tempoMoagem;
           p.trigoPadaria--; p.farinha++;
         }
       }
-      if (p.farinha > 0 && paes.prateleira + ALA_PADARIA.paesPorTrigo <= this.produtos.pao.capacidadePrateleira) {
+      if (trabalhoPadaria(this.estado).assando) {
         p.progressoForno += dt;
         if (p.progressoForno >= ALA_PADARIA.tempoForno) {
           p.progressoForno -= ALA_PADARIA.tempoForno;
-          p.farinha--; paes.prateleira += ALA_PADARIA.paesPorTrigo;
-          p.paesProduzidos += ALA_PADARIA.paesPorTrigo;
-          if (p.paesProduzidos === ALA_PADARIA.paesPorTrigo) this.emitir('paoPronto', { texto: 'Primeiros pães quentinhos na vitrine!' });
+          const quantidade = Math.min(ALA_PADARIA.paesPorTrigo, this.produtos.pao.capacidadePrateleira - paes.prateleira);
+          const primeiroLote = p.paesProduzidos === 0;
+          p.farinha--; paes.prateleira += quantidade;
+          p.paesReserva += ALA_PADARIA.paesPorTrigo - quantidade;
+          p.paesProduzidos += quantidade;
+          if (primeiroLote) this.emitir('paoPronto', { texto: 'Primeiros pães quentinhos na vitrine!' });
         }
       }
     }

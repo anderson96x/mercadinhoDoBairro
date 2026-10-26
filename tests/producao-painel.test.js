@@ -22,6 +22,7 @@ test('barra e porcentagem aparecem somente durante produção ativa e o estado d
     assert.match(lista.innerHTML, /<progress/);
     assert.match(lista.innerHTML, /<b>\d+%/);
     estado.produtos[id === 'pao' ? 'pao' : 'bolo'].prateleira = PRODUTOS[id === 'pao' ? 'pao' : 'bolo'].capacidadePrateleira;
+    if (id === 'confeitaria') for (const produto of Object.keys(CONFEITARIA.produtos)) estado.produtos[produto].prateleira = PRODUTOS[produto].capacidadePrateleira;
     atualizarPainelProducao(painel, estado);
     assert.match(lista.innerHTML, /Vitrine cheia/);
     assert.doesNotMatch(lista.innerHTML, /<progress|<b>\d+%/);

@@ -204,14 +204,36 @@ test('sem trigo os padeiros esperam dentro da padaria voltados ao centro e movem
 
 test('vitrine sem espaço interrompe os dois padeiros; farinha restante pode terminar sem trigo', () => {
   const visual = visualPadaria(), padaria = visual.produtos.pao;
-  visual.sim.estado.produtos.pao.prateleira = 16;
+  visual.sim.estado.produtos.pao.prateleira = 18;
   Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 4, farinha: 1 }, 0, 1 / 60);
   assert.ok(padaria.padeiros.every(p => !p.userData.ativoPadaria && !p.userData.alertaTrigo.visible && !p.userData.cargaPadaria.visible));
+  visual.sim.estado.produtos.pao.prateleira = 16;
+  Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 4, farinha: 1 }, 0.5, 1 / 60);
+  assert.equal(padaria.padeiros[1].userData.ativoPadaria, true);
   visual.sim.estado.produtos.pao.prateleira = 0;
   Cena.prototype.animarPadeiros.call(visual, padaria, { trigoPadaria: 0, farinha: 1 }, 1, 1 / 60);
   assert.equal(padaria.padeiros[0].userData.ativoPadaria, false);
   assert.equal(padaria.padeiros[1].userData.ativoPadaria, true);
   assert.ok(padaria.padeiros.every(p => p.userData.alertaTrigo.visible));
+});
+
+test('padaria completa 16/18 e 17/18 com trigo, preserva os pães restantes e repõe sem gastar outro ingrediente', () => {
+  for (const estoque of [16, 17]) {
+    const sim = abrirPadaria();
+    sim.estado.produtos.pao.prateleira = estoque;
+    sim.estado.producao.trigoPadaria = 8;
+    for (let i = 0; i < 100; i++) sim.atualizarProducao(0.1);
+    assert.equal(sim.estado.produtos.pao.prateleira, 18);
+    assert.equal(sim.estado.producao.trigoPadaria, 7);
+    assert.equal(sim.estado.producao.paesReserva, estoque - 15);
+    const retomado = new Simulacao(sim.estado);
+    assert.equal(retomado.estado.producao.paesReserva, estoque - 15);
+    retomado.estado.produtos.pao.prateleira--;
+    retomado.atualizarProducao(0.1);
+    assert.equal(retomado.estado.produtos.pao.prateleira, 18);
+    assert.equal(retomado.estado.producao.paesReserva, estoque - 16);
+    assert.equal(retomado.estado.producao.trigoPadaria, 7);
+  }
 });
 
 test('retomar, parar e pausar os padeiros mantém deslocamento contínuo sem atravessar balcões', () => {

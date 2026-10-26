@@ -123,6 +123,9 @@ try {
       verificar(root.querySelector('.confeitaria progress'), 'Barra ausente durante o preparo dos doces');
       sim.estado.produtos.bolo.prateleira = CONFEITARIA.produtos.bolo.capacidade;
       atualizarPainelProducao(root.querySelector('#producao'), sim.estado);
+      verificar(root.querySelector('.confeitaria progress'), 'Uma vitrine cheia bloqueou os outros doces');
+      for (const [id, produto] of Object.entries(CONFEITARIA.produtos)) sim.estado.produtos[id].prateleira = produto.capacidade;
+      atualizarPainelProducao(root.querySelector('#producao'), sim.estado);
       verificar(!root.querySelector('.confeitaria progress') && !root.querySelector('.confeitaria .producao-status b'), 'Progresso visível com vitrine cheia');
       Object.assign(sim.estado.jogador, sim.produtos.pao.cliente);
       atualizarPainelProducao(root.querySelector('#producao'), sim.estado);
@@ -156,6 +159,18 @@ try {
         verificar(cena.produtos[id].frutas.filter(p => p.visible).length === 1, 'Estoque visual incorreto: ' + id);
         verificar(new Simulacao(sim.estado).estado.produtos[id].prateleira === 1, 'Estoque perdido ao carregar: ' + id);
       }
+      sim.estado.produtos.pao.prateleira = 16;
+      Object.assign(sim.estado.producao, { trigoPadaria: 8, farinha: 0, paesReserva: 0, progressoMoagem: 0, progressoForno: 0 });
+      cena.animarPadeiros(padaria, sim.estado.producao, sim.tempo, 1 / 60);
+      verificar(padaria.padeiros[0].userData.ativoPadaria, 'Moinho parado com trigo e 16/18 pães');
+      for (let i = 0; i < 100; i++) sim.atualizarProducao(0.1);
+      verificar(sim.estado.produtos.pao.prateleira === 18 && sim.estado.producao.paesReserva === 1, 'Pães não completaram a vitrine preservando o excedente');
+      Object.assign(sim.estado.confeitaria, { mel: 1, ovos: 1 });
+      sim.estado.produtos.bolo.prateleira = 6;
+      sim.estado.produtos.donut.prateleira = 11;
+      sim.estado.produtos.eclair.prateleira = 5;
+      sim.atualizarProducao(30); cena.atualizar(0);
+      verificar(sim.estado.produtos.donut.prateleira === 12 && sim.estado.produtos.eclair.prateleira === 6, 'Confeitaria parou porque bolos estavam cheios');
       cena.renderer.dispose?.(); root.remove(); container.remove();
       return { mobile: ${mobile}, canvas: ${canvas}, compra: true, batedeira: true, alerta: true, ingredientes: true, vitrines: true, estoque: true, funcionario: true, pausa: true };
     })()`);

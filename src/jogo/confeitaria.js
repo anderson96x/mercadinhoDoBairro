@@ -28,7 +28,7 @@ export const ROTEIRO_CONFEITARIA = [
   andar(donut, eclair), entregar(eclair, 'eclair'), andar(eclair, corredor), andar(corredor, posto)
 ];
 export const maquinaConfeitaria = () => volumePadaria(CONFEITARIA.maquina);
-export const estadoConfeitaria = () => ({ mel: 0, ovos: 0, progresso: 0, lotes: 0, etapaEntrega: -1, tempoEntrega: 0 });
+export const estadoConfeitaria = () => ({ mel: 0, ovos: 0, progresso: 0, lotes: 0, etapaEntrega: -1, tempoEntrega: 0, produtosLote: [] });
 
 export function validarConfeitaria(dados, liberada) {
   const estado = estadoConfeitaria();
@@ -41,6 +41,8 @@ export function validarConfeitaria(dados, liberada) {
     estado.etapaEntrega = dados.etapaEntrega;
     estado.tempoEntrega = Number.isFinite(dados.tempoEntrega) ? Math.max(0, Math.min(ROTEIRO_CONFEITARIA[estado.etapaEntrega].duracao, dados.tempoEntrega)) : 0;
     estado.progresso = 0;
+    estado.produtosLote = Array.isArray(dados.produtosLote)
+      ? Object.keys(CONFEITARIA.produtos).filter(id => dados.produtosLote.includes(id)) : Object.keys(CONFEITARIA.produtos);
   }
   return estado;
 }
@@ -49,7 +51,18 @@ export function podeProduzirConfeitaria(estado) {
   return !!estado.melhorias.confeitaria
     && estado.confeitaria.etapaEntrega < 0
     && Object.entries(CONFEITARIA.ingredientes).every(([id, quantidade]) => estado.confeitaria[id] >= quantidade)
-    && Object.entries(CONFEITARIA.produtos).every(([id, produto]) => estado.produtos[id].prateleira < produto.capacidade);
+    && Object.entries(CONFEITARIA.produtos).some(([id, produto]) => estado.produtos[id].prateleira < produto.capacidade);
+}
+
+function avancarEntrega(producao) {
+  const concluido = producao.etapaEntrega === ROTEIRO_CONFEITARIA.findLastIndex(etapa => etapa.produto);
+  if (concluido) producao.lotes++;
+  producao.etapaEntrega++; producao.tempoEntrega = 0;
+  if (producao.etapaEntrega >= ROTEIRO_CONFEITARIA.length) {
+    producao.etapaEntrega = -1;
+    producao.produtosLote = [];
+  }
+  return concluido ? 1 : 0;
 }
 
 export function produzirConfeitaria(estado, dt) {
@@ -59,6 +72,10 @@ export function produzirConfeitaria(estado, dt) {
   while (dt > 0) {
     if (producao.etapaEntrega >= 0) {
       const etapa = ROTEIRO_CONFEITARIA[producao.etapaEntrega];
+      if (etapa.produto && !producao.produtosLote.includes(etapa.produto)) {
+        lotes += avancarEntrega(producao);
+        continue;
+      }
       const passo = Math.min(dt, Math.max(0, etapa.duracao - producao.tempoEntrega));
       producao.tempoEntrega += passo; dt -= passo;
       if (producao.tempoEntrega + 1e-9 < etapa.duracao) break;
@@ -66,16 +83,15 @@ export function produzirConfeitaria(estado, dt) {
         const estoque = estado.produtos[etapa.produto];
         if (estoque.prateleira >= CONFEITARIA.produtos[etapa.produto].capacidade) break;
         estoque.prateleira++; estoque.apresentado = true;
-        if (etapa.produto === 'eclair') { producao.lotes++; lotes++; }
       }
-      producao.etapaEntrega++; producao.tempoEntrega = 0;
-      if (producao.etapaEntrega >= ROTEIRO_CONFEITARIA.length) producao.etapaEntrega = -1;
+      lotes += avancarEntrega(producao);
     } else {
       if (!podeProduzirConfeitaria(estado)) break;
       const passo = Math.min(dt, CONFEITARIA.segundos - producao.progresso);
       producao.progresso += passo; dt -= passo;
       if (producao.progresso + 1e-9 < CONFEITARIA.segundos) break;
       for (const [id, quantidade] of Object.entries(CONFEITARIA.ingredientes)) producao[id] -= quantidade;
+      producao.produtosLote = Object.entries(CONFEITARIA.produtos).filter(([id, produto]) => estado.produtos[id].prateleira < produto.capacidade).map(([id]) => id);
       producao.progresso = 0; producao.etapaEntrega = 0; producao.tempoEntrega = 0;
     }
   }
@@ -89,6 +105,6 @@ export function situacaoConfeiteiro(estado) {
   const t = Math.min(1, producao.tempoEntrega / etapa.duracao);
   return { x: etapa.de.x + (etapa.para.x - etapa.de.x) * t, z: etapa.de.z + (etapa.para.z - etapa.de.z) * t,
     acao: etapa.produto ? 'entregar' : 'andar', produto: etapa.produto,
-    carga: Object.keys(CONFEITARIA.produtos).filter(id => ROTEIRO_CONFEITARIA.findIndex(e => e.produto === id) >= producao.etapaEntrega),
+    carga: producao.produtosLote.filter(id => ROTEIRO_CONFEITARIA.findIndex(e => e.produto === id) >= producao.etapaEntrega),
     angulo: Math.atan2(etapa.para.x - etapa.de.x, etapa.para.z - etapa.de.z) };
 }
