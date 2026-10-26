@@ -73,7 +73,7 @@ export function validarEstado(dados) {
     base.melhorias[m.id] = numero(dados.melhorias?.[m.id], liberada || compradaAntes ? m.max : 0);
   }
   // Migra o formato provisório que guardava cada prateleira em uma melhoria.
-  if (nivelSalvo >= 17 && dados.melhorias?.prateleirasImportados === undefined) {
+  if (MELHORIAS.find(m => m.id === 'prateleirasImportados').ativa !== false && nivelSalvo >= 17 && dados.melhorias?.prateleirasImportados === undefined) {
     base.melhorias.prateleirasImportados = numero(
       numero(dados.melhorias?.prateleiraImportados1, 1) + numero(dados.melhorias?.prateleiraImportados2, 1), 2
     );
@@ -534,24 +534,24 @@ export class Simulacao {
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
-      if (this.nivel >= 18 && !this.estado.melhorias.expansao) {
+      if (MELHORIAS.find(m => m.id === 'expansao').ativa !== false && this.nivel >= 18 && !this.estado.melhorias.expansao) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: 'Amplie os fundos da loja', texto: 'No celular, compre Expansão por R$ 10.000 para construir um anexo atrás da loja e da cozinha e recuar a fazenda. Exige a padaria.',
           destino: 'celular', exibir: true };
       }
-      if (this.nivel >= 19 && !this.estado.produtos.enlatado.liberado) {
+      if (MELHORIAS.find(m => m.id === 'importarProdutos').ativa !== false && this.nivel >= 19 && !this.estado.produtos.enlatado.liberado) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: 'Importe os primeiros produtos', texto: 'Com a expansão comprada, peça caixas de 9 enlatados por R$ 270 pelo celular. O caminhão usa o pátio exclusivo à esquerda e entrega no depósito; depois abasteça a gôndola.',
           destino: 'celular', exibir: true };
       }
-      if (this.nivel >= 19 && this.estado.produtos.enlatado.liberado && !this.estado.produtos.enlatado.apresentado) {
+      if (MELHORIAS.find(m => m.id === 'importarProdutos').ativa !== false && this.nivel >= 19 && this.estado.produtos.enlatado.liberado && !this.estado.produtos.enlatado.apresentado) {
         const disponivel = this.estado.produtos.enlatado.horta > 0 || this.estado.jogador.inventario.includes('enlatado');
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: disponivel ? 'Abasteça os enlatados' : 'Aguarde a entrega',
           texto: disponivel ? 'Retire enlatados na estante Enlatados do depósito e leve-os à primeira gôndola. O repositor também pode ajudar.' : 'O caminhão usa o acesso exclusivo à esquerda. Mantenha o mercado aberto para receber as caixas no depósito.',
           destino: disponivel ? this.estado.jogador.inventario.includes('enlatado') ? 'prateleira-enlatado' : 'coleta-enlatado' : 'celular', exibir: true };
       }
-      if (this.nivel >= 17 && this.estado.melhorias.prateleirasImportados < PRATELEIRAS_IMPORTADOS.length) {
+      if (MELHORIAS.find(m => m.id === 'prateleirasImportados').ativa !== false && this.nivel >= 17 && this.estado.melhorias.prateleirasImportados < PRATELEIRAS_IMPORTADOS.length) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: 'Prepare as prateleiras de importados', texto: 'No celular, compre as duas prateleiras por R$ 1.000 cada. A primeira recebe enlatados importados a partir do nível 19.',
           destino: 'celular', exibir: true };
@@ -604,7 +604,7 @@ export class Simulacao {
       };
       let orientacaoNivel = orientacoesNivel[this.nivel] || (this.nivel > 9 ? orientacaoPadaria : this.nivel > 7 ? orientacaoTrigo : {});
       if (this.nivel >= 10) {
-        const proxima = MELHORIAS.filter(m => m.nivelMinimo >= 10 && m.nivelMinimo <= this.nivel && !this.estado.melhorias[m.id])
+        const proxima = MELHORIAS.filter(m => m.ativa !== false && m.nivelMinimo >= 10 && m.nivelMinimo <= this.nivel && !this.estado.melhorias[m.id])
           .sort((a, b) => a.nivelMinimo - b.nivelMinimo)[0];
         const novoProduto = Object.entries(this.produtos).find(([id, p]) => p.nivelMinimo >= 11 && this.estado.produtos[id].liberado && !this.estado.produtos[id].apresentado && !this.estado.produtos[id].prateleira);
         orientacaoNivel = proxima

@@ -4,6 +4,8 @@ O início da loja usa a [nova planta N1](PLANTA-LOJA-N1.md), seguida pelo [milho
 
 ## Regras rápidas
 
+Prateleiras de importados, expansão dos fundos e as quatro importações estão temporariamente com `ativa: false` em `MELHORIAS`. Os antigos níveis 17 a 22 não representam desbloqueios jogáveis; a nova etapa depois do nível 20 ainda será definida. As suítes desses sistemas usam `tests/helpers/importados-suspensos.js` para testar a implementação guardada em processos isolados; `tests/conteudo-suspenso.test.js` verifica a configuração desativada real. Não reative o conjunto ao criar conteúdo intermediário.
+
 O [N4](PLANTA-LOJA-N4.md) usa `PLANTA_OVOS` e o [N5](PLANTA-LOJA-N5.md), `PLANTA_LEITE`. Os estágios 1 e 2 registram instalações de equipamentos mantendo o salão inicial. O N7 também mantém o salão inicial. No N9, `PLANTA_AMPLIADA` define o salão 24 × 16 u; `ALA_PADARIA` ativa o piso lateral e substitui a parede direita inicial. `MODELO_PADARIA`, `pontoPadaria()` e `volumePadaria()` mantêm coordenadas locais, rotação de 90° e volumes coerentes entre modelos, animações e colisão. `selecionarExpositorPosterior()` delimita as faixas de reposição pela frente de ovos e leite; na divisória, ovos têm prioridade estável. Verificações de espaçamento permitem alcances próximos com seleção exclusiva ou parede contínua cobrindo toda a projeção compartilhada. O gerador produz N1, N3, N4, N5, N7 e N9.
 
 Abra `src/jogo/configuracao.js`. Ele concentra os ajustes mais frequentes:

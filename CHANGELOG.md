@@ -1,6 +1,14 @@
 # Histórico de alterações
 
-## Versão atual: 0.61.1 — 2026-10-26
+## Versão atual: 0.62.0 — 2026-10-26
+
+- Desativa prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22. Remove as ofertas e orientações de compra, inclusive no DEV; o estacionamento no nível 16 permanece como último desbloqueio ativo.
+- Mantém modelos e sistemas no código para reorganização futura depois do nível 20, sem definir novos níveis de liberação. A progressão de níveis continua normalmente.
+- Compatibilidade de desenvolvimento: ao recarregar, remove compras e estoques do conteúdo suspenso, sem migração para preservá-los; impede a restauração das gôndolas pelo formato antigo.
+- Mantém testes dos sistemas guardados com reativação somente nas suítes específicas e acrescenta regressões da configuração desativada real.
+- Validação: 320 testes e build de produção aprovados. Menus, cena, DEV e restauração verificados no Edge em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.61.1 — 2026-10-26
 
 - A ação DEV de encher prateleiras também libera e abastece importados sem pedido prévio quando o nível, a expansão e a gôndola necessária estão disponíveis.
 - Preserva o estoque ao recarregar, sem cobrar dinheiro nem alterar caixas e pedidos do depósito. Produtos ainda bloqueados continuam vazios.
