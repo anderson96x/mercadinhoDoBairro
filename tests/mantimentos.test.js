@@ -99,7 +99,7 @@ test('sacos kraft têm base firme, ombros afunilados e alça realmente vazada', 
 test('corredor dos mantimentos tem rotas de compra, coleta, reposição e saída livres', () => {
   const sim = loja(); sim.comprarMelhoria('prateleirasImportados');
   for (const destino of [sim.produtos.mantimento.coleta, sim.produtos.mantimento.reposicao, ...sim.produtos.mantimento.pontosCompra, CONFIG.clienteCaixa]) {
-    const ator = { ...CONFIG.inicio }; let chegou = false;
+    const ator = Object.assign(sim.estado.jogador, CONFIG.inicio); let chegou = false;
     for (let i = 0; i < 3000 && !chegou; i++) chegou = sim.caminharCliente(ator, destino, 0.05);
     assert.ok(chegou, JSON.stringify(destino));
   }

@@ -33,8 +33,9 @@ test('estações futuras não aparecem nem criam marcações antes da compra', (
   assert.equal(visualComLeite.produtos.leite.grupo.visible, true);
 });
 
-test('refrigerador de parede tem duas portas de vidro, três níveis e acesso frontal desde N5', () => {
+test('refrigerador de parede tem duas portas de vidro, três níveis e acesso frontal desde N12', () => {
   const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 11 * CONFIG.clientesPorNivel;
   sim.estado.estagioLoja = ALA_LEITE.indice;
   sim.estado.melhorias.alaProducao = 1;
   sim.estado.melhorias.alaLeite = 1;
@@ -56,7 +57,7 @@ test('refrigerador de parede tem duas portas de vidro, três níveis e acesso fr
   assert.ok(grade.min.z > base.max.z, 'ventilação visível na frente da base');
   assert.ok(bounds.max.x < 15.1 - 0.8, 'não depende da parede removida na próxima expansão');
   for (const ponto of [sim.produtos.leite.reposicao, ...PRODUTOS.leite.pontosCompra]) {
-    const ator = { ...CONFIG.inicio, andando: false };
+    const ator = Object.assign(sim.estado.jogador, CONFIG.inicio, { andando: false });
     let chegou = false;
     for (let i = 0; i < 2400 && !chegou; i++) {
       sim.tempo += 0.05;
@@ -306,7 +307,7 @@ test('N4 conserva a parede lateral e oferece rotas entre fazenda, ovos e caixa',
   abrirAla(sim);
   assert.ok(!sim.obstaculos().some(o => o.x === ALA_PRODUCAO.piso.x && o.z === ALA_PRODUCAO.piso.z && o.w === ALA_PRODUCAO.piso.w));
   assert.ok(sim.obstaculos().some(o => o.lateral));
-  const ator = { x: 5.35, z: -5.1, andando: false };
+  const ator = Object.assign(sim.estado.jogador, { x: 5.35, z: -5.1, andando: false });
   for (const alvo of [PRODUTOS.ovos.coleta, PRODUTOS.ovos.cliente, CONFIG.clienteCaixa]) {
     let chegou = false;
     for (let i = 0; i < 2400 && !chegou; i++) {

@@ -5,7 +5,7 @@ export const PLANTA_INICIAL = {
   terreno: { x: 4, z: -5.5, w: 40, d: 40 },
   salao: { x: 3.9, z: -1.3, w: 14, d: 16 },
   limites: { minX: -3.1, maxX: 10.9, minZ: -9.3, maxZ: 6.7 },
-  portaProducao: { x: 3.6, z: -9.3, w: 3, d: 0.12 },
+  portaProducao: { x: 4.35, z: -9.3, w: 1.5, d: 0.12 },
   cercaFundos: { minX: -10.3, maxX: 3.6, z: -25 },
   // Painel N1: tomate na faixa posterior esquerda, acima da parede do fundo.
   // Referência visual: canteiro compacto, com oito plantas, atrás da loja.
@@ -322,9 +322,7 @@ export function volumePortaoDeposito() {
 }
 
 export function folhasPortasExpansao() {
-  return PLANTA_EXPANSAO.portas.flatMap(porta => [-1, 1].map(lado => ({
-    x: porta.x + lado * porta.w / 2, z: porta.z - 0.72, w: 0.12, d: 1.44
-  })));
+  return PLANTA_EXPANSAO.portas.map(porta => volumePortaProducao(1, porta));
 }
 
 export const PLANTA_COMPACTA = {
@@ -347,10 +345,19 @@ export function paredesPlantaInicial(alturaBaixa, planta = PLANTA_INICIAL) {
   ];
 }
 
-export const FOLHAS_PORTA_PRODUCAO = [-1, 1].map(lado => ({
-  x: PLANTA_INICIAL.portaProducao.x + lado * PLANTA_INICIAL.portaProducao.w / 2,
-  z: PLANTA_INICIAL.portaProducao.z - 0.72, w: 0.12, d: 1.44
-}));
+export function anguloPortaProducao(abertura) {
+  const t = Math.max(0, Math.min(1, abertura));
+  return -Math.PI / 2 * t * t * (3 - 2 * t);
+}
+
+export function volumePortaProducao(abertura, porta = PLANTA_INICIAL.portaProducao) {
+  const angulo = anguloPortaProducao(abertura), centro = -porta.w / 2;
+  return { x: porta.x + porta.w / 2 + centro * Math.cos(angulo),
+    z: porta.z - centro * Math.sin(angulo), w: porta.w - 0.06, d: 0.12,
+    angulo, portaProducao: true };
+}
+
+export const FOLHAS_PORTA_PRODUCAO = [volumePortaProducao(1)];
 
 export function compartimentoHortifruti(id) {
   const indice = PRODUTOS_HORTIFRUTI.indexOf(id);

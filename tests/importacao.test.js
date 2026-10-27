@@ -171,7 +171,7 @@ test('cereais exigem nível 20 e saldo, reservam sua classe e preservam saves an
   for (let i = 0; i < 20000 && restaurado.estado.produtos.cereal.prateleira < 36; i++) { restaurado.tempo += 0.05; restaurado.atualizarAjudante(0.05); }
   assert.equal(restaurado.estado.produtos.cereal.prateleira, 36);
   for (const destino of [...restaurado.produtos.cereal.pontosCompra, CONFIG.clienteCaixa]) {
-    const ator = { ...restaurado.produtos.cereal.coleta };
+    const ator = Object.assign(restaurado.estado.jogador, restaurado.produtos.cereal.coleta);
     let chegou = false;
     for (let i = 0; i < 3000 && !chegou; i++) chegou = restaurado.caminharCliente(ator, destino, 0.05);
     assert.ok(chegou, `Rota de cereais: ${JSON.stringify(destino)}`);

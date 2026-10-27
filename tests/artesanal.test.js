@@ -185,7 +185,7 @@ test('todas as bancas, oficinas e pontos de compra têm rotas livres na loja amp
   for (const id of novos) {
     const p = PRODUTOS[id];
     for (const ponto of [p.coleta, p.reposicao, ...p.pontosCompra]) {
-      const ator = { ...CONFIG.inicio };
+      const ator = Object.assign(sim.estado.jogador, CONFIG.inicio);
       let chegou = false;
       for (let i = 0; i < 3000 && !chegou; i++) { sim.tempo += 0.05; chegou = sim.caminharCliente(ator, ponto, 0.05); }
       assert.equal(chegou, true, `${id}: ${JSON.stringify(ponto)}; parou em ${JSON.stringify(ator)}`);

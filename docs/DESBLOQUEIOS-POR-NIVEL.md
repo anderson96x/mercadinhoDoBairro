@@ -4,6 +4,8 @@ A progressão avança a cada **25 clientes atendidos**, com bônus de **R$ 100 p
 
 A loja começa com **14 × 8 u** nos níveis 1–5. Ao alcançar o **nível 6**, volta automaticamente a **14 × 16 u**, mantendo a fachada no lugar e sem custo. No **nível 13**, comprar a padaria amplia o salão à direita para **24 × 16 u**.
 
+A porta dos fundos tem uma única folha, na antiga metade direita, e abre automaticamente **apenas para o jogador e o repositor contratado**. Clientes não acionam a abertura nem são encaminhados por esse acesso de serviço. Fecha quando os funcionários se afastam e congela durante a pausa. A lixeira fica **fora da loja**, no espaço da antiga folha esquerda, com acesso pelo lado do gramado. Porta e lixeira acompanham a profundidade do salão.
+
 Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros históricos: seus números de nível não correspondem necessariamente à progressão atual. As importações continuam suspensas; não há novos desbloqueios ativos a partir do nível 20.
 
 ## Disponíveis

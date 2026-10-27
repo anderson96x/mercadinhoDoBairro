@@ -1,6 +1,19 @@
 # Histórico de alterações
 
-## Versão atual: 0.67.2 — 2026-10-27
+## Versão atual: 0.68.1 — 2026-10-27
+
+- Restringe a abertura automática da porta dos fundos ao jogador e ao repositor contratado. Clientes não acionam nem mantêm a abertura por proximidade; suas rotas deixam de planejar a porta de serviço aberta.
+- Mantém a proteção da folha contra sobreposição com pessoas e atualiza as verificações de rotas de coleta para usar um funcionário autorizado.
+- Validação: 371 testes, build de produção e rotas N1–N19 aprovados. Regressões verificam clientes parados e navegando, fechamento após a saída do jogador e abertura pelo repositor contratado.
+
+## 0.68.0 — 2026-10-27
+
+- Substitui a porta dupla dos fundos por uma única folha na metade direita, preservando a dobradiça original e fechando a metade esquerda com parede. A porta abre e fecha por proximidade, respeita a pausa e compartilha o giro entre modelo e colisão.
+- Move a lixeira para fora da loja, no espaço da antiga folha esquerda, apoiada no gramado e virada para o acesso externo. Porta e lixeira acompanham a loja compacta, a profundidade completa e a expansão guardada.
+- Ajusta a navegação para planejar o vão aberto e respeitar a folha em movimento. O repositor aguarda fora do arco antes de atravessar. Atualiza o layout para reposicionar personagens com segurança.
+- Validação: 369 testes, build de produção e rotas N1–N19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica a folha única, abertura e fechamento, pausa e lixeira externa nas duas profundidades, sem salvar imagens.
+
+## 0.67.2 — 2026-10-27
 
 - Iguala a velocidade de movimento do repositor à velocidade atual do jogador, incluindo o bônus da cesta de trabalho. Reposição ágil e Repositor ligeiro continuam desativados e sem bônus adicionais.
 - Atualiza a documentação e verifica a distância percorrida pelos dois personagens com e sem a cesta de trabalho.

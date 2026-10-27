@@ -56,6 +56,7 @@ try {
       const { Cena } = await import('/src/jogo/cena.js');
       const verificar = (ok, mensagem) => { if (!ok) throw Error(mensagem); };
       const sim = new Simulacao();
+      sim.proximoCliente = Infinity;
       sim.estado.dinheiro = 100000;
       const container = document.createElement('div');
       container.style.cssText = 'position:fixed;inset:0;z-index:1000'; document.body.append(container);
@@ -79,6 +80,32 @@ try {
       verificar(sim.compacta, 'Inicio compacto');
       verificar(cena.cena.getObjectByName('piso-inicial').scale.z === 0.5, 'Piso com metade da profundidade');
       verificar(cena.cena.getObjectByName('entrada-producao').position.z === 8, 'Porta compacta');
+      const verificarPortaProducao = () => {
+        const entrada = cena.cena.getObjectByName('entrada-producao');
+        const folhas = entrada.children.filter(o => o.name.startsWith('porta-producao-'));
+        verificar(folhas.length === 1 && folhas[0].position.x === 5.1, 'Apenas a folha direita original');
+        const contratado = sim.estado.melhorias.ajudante;
+        sim.estado.melhorias.ajudante = 0;
+        Object.assign(sim.estado.jogador, { x: sim.portaProducao.x, z: sim.portaProducao.z + 2 });
+        sim.atualizar(0.05); cena.atualizar(0.05);
+        verificar(folhas[0].rotation.y < 0 && folhas[0].rotation.y > -Math.PI / 2, 'Abertura gradual');
+        const parcial = sim.aberturasPortasProducao[0];
+        sim.pausado = true; sim.atualizar(0.05);
+        verificar(sim.aberturasPortasProducao[0] === parcial, 'Pausa congela a porta');
+        sim.pausado = false;
+        for (let i = 0; i < 15; i++) sim.atualizar(0.05);
+        cena.atualizar(0);
+        verificar(folhas[0].rotation.y === -Math.PI / 2, 'Porta totalmente aberta');
+        Object.assign(sim.estado.jogador, CONFIG.inicio);
+        for (let i = 0; i < 15; i++) sim.atualizar(0.05);
+        cena.atualizar(0);
+        verificar(folhas[0].rotation.y === 0, 'Porta fecha ao afastar');
+        const lixeira = cena.cena.getObjectByName('lixeira');
+        verificar(lixeira.position.x === 2.85 && lixeira.position.y < 0, 'Lixeira apoiada no gramado');
+        verificar(lixeira.position.z === sim.lixeira.z && sim.lixeira.z + sim.lixeira.d / 2 < sim.portaProducao.z, 'Lixeira fora da loja');
+        sim.estado.melhorias.ajudante = contratado;
+      };
+      verificarPortaProducao();
       cena.renderer.render(cena.cena, cena.camera);
       sim.estado.estatisticas.clientes = 3 * CONFIG.clientesPorNivel;
       for (const id of ['caixa', 'milho', 'alaTrigo']) verificar(sim.comprarMelhoria(id).sucesso, id);
@@ -102,6 +129,7 @@ try {
       verificar(!sim.compacta && cena.cena.getObjectByName('piso-inicial').scale.z === 1, 'Expansao automatica N6');
       verificar(sim.estado.dinheiro === saldo + CONFIG.bonusNivel, 'Expansao sem custo');
       verificar(cena.cena.getObjectByName('entrada-producao').position.z === 0, 'Porta restaurada');
+      verificarPortaProducao();
       verificar(cena.produtos.trigo.frutas.filter(f => f.visible).length === 1, 'Estoque preservado na expansao');
       const retomadoN6 = new Simulacao(structuredClone(sim.estado));
       verificar(!retomadoN6.compacta && retomadoN6.estado.produtos.milho.prateleira === 1, 'Recarga N6');
@@ -143,7 +171,7 @@ try {
       }
       cena.renderer.render(cena.cena, cena.camera);
       cena.renderer.dispose?.(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, progressaoAteN19: true, trigoCompactoN4: true, expansaoN6: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, portaUnicaAnimada: true, lixeiraExterna: true, progressaoAteN19: true, trigoCompactoN4: true, expansaoN6: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }

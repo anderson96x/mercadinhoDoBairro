@@ -11,7 +11,7 @@ export const ALTURA_PAREDE_BAIXA = 0.75;
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 25,
+  versaoLayout: 26,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -54,8 +54,8 @@ export const CONFIG = {
   acessoCaixa: { x: 3.55, z: 4.65 },
   clienteCaixa: { x: 4.2, z: 3.5 },
   cadeiraCaixa: { x: 5.45, z: 6.05 },
-  // Encostada na face interna da parede do fundo.
-  lixeira: { x: 1.61, z: -8.75, w: 0.84, d: 0.82 },
+  // Fora da loja, no espaço da antiga folha esquerda da porta de produção.
+  lixeira: { x: 2.85, z: -10, w: 0.84, d: 0.82 },
   areaFuncionarioCaixa: { x: 5.45, z: 6.05, w: 0.8, d: 0.9 },
   anguloCaixa: Math.PI,
   entrada: { x: -1.3, z: 8.4 },

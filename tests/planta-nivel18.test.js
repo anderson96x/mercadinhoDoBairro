@@ -75,6 +75,7 @@ test('compra acrescenta o anexo, recua a fazenda e encosta as bancadas na parede
   assert.equal(sim.portaProducao.z, -15.3);
   assert.deepEqual(sim.limitesMundo, PLANTA_EXPANSAO.limites);
   assert.equal(segmentoLivre({ x: 10, z: -9.3 }, { x: 10, z: -11 }, sim.obstaculos(), 0.32), false);
+  sim.aberturasPortasProducao.fill(1);
   for (const porta of PLANTA_EXPANSAO.portas) assert.ok(segmentoLivre({ x: porta.x, z: porta.z + 0.8 }, { x: porta.x, z: porta.z - 1 }, sim.obstaculos(), 0.32));
 });
 

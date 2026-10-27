@@ -5,7 +5,7 @@ import { Simulacao } from '../src/jogo/simulacao.js';
 
 function juntoDaLixeira() {
   const sim = new Simulacao();
-  Object.assign(sim.estado.jogador, { x: sim.lixeira.x, z: sim.lixeira.z + 0.8, andando: false, inventario: ['tomate', 'milho', 'tomate'] });
+  Object.assign(sim.estado.jogador, { x: sim.lixeira.x, z: sim.lixeira.z - 0.8, andando: false, inventario: ['tomate', 'milho', 'tomate'] });
   return sim;
 }
 
@@ -22,7 +22,7 @@ test('lixeira abre ao parar, sem descartar automaticamente nem reabrir ao fechar
   assert.equal(sim.consumirEventos().length, 0);
   Object.assign(sim.estado.jogador, CONFIG.inicio);
   sim.interagir();
-  Object.assign(sim.estado.jogador, { x: sim.lixeira.x, z: sim.lixeira.z + 0.8 });
+  Object.assign(sim.estado.jogador, { x: sim.lixeira.x, z: sim.lixeira.z - 0.8 });
   sim.interagir();
   assert.equal(sim.consumirEventos()[0].tipo, 'lixeira');
 });
@@ -50,11 +50,11 @@ test('não permite descarte distante da lixeira', () => {
   assert.equal(sim.estado.jogador.inventario.length, 3);
 });
 
-test('lixeira tem colisão e pode ser alcançada pelo salão', () => {
+test('lixeira tem colisão e pode ser alcançada pelo lado de fora', () => {
   const sim = juntoDaLixeira();
   assert.ok(sim.obstaculos().some(p => p.x === sim.lixeira.x && p.z === sim.lixeira.z && p.w === sim.lixeira.w));
   assert.ok(sim.pertoDaLixeira());
-  sim.mover(sim.estado.jogador, 0, -1, 0.05, 4.3);
-  sim.mover(sim.estado.jogador, 0, -1, 0.05, 4.3);
-  assert.ok(sim.estado.jogador.z >= sim.lixeira.z + sim.lixeira.d / 2 + 0.27);
+  sim.mover(sim.estado.jogador, 0, 1, 0.05, 4.3);
+  sim.mover(sim.estado.jogador, 0, 1, 0.05, 4.3);
+  assert.ok(sim.estado.jogador.z <= sim.lixeira.z - sim.lixeira.d / 2 - 0.27);
 });

@@ -1930,6 +1930,7 @@ export class Cena {
     this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo, !!e.melhorias.expansao);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
+    this.bairro.animarPortasProducao(sim.aberturasPortasProducao);
     this.bairro.animarDeposito(e.lojaAberta, dt);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
     const base = this.baseCamera(), limites = e.melhorias.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;

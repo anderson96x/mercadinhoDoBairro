@@ -25,7 +25,7 @@ for (let nivel = 1; nivel <= 19; nivel++) {
     if (!sim.estado.produtos[id].liberado) continue;
     const pontos = produto.origem === 'importado' ? produto.pontosCompra : [produto.coleta, produto.reposicao, ...produto.pontosCompra];
     for (const ponto of pontos) {
-      const ator = { ...CONFIG.inicio };
+      const ator = Object.assign(sim.estado.jogador, CONFIG.inicio);
       let chegou = false;
       for (let tick = 0; tick < 3000 && !chegou; tick++) {
         sim.tempo += 0.05;

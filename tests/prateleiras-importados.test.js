@@ -92,6 +92,7 @@ test('corredores das prateleiras preservam os dez lugares da fila e acesso ao fu
   sim.comprarMelhoria('prateleirasImportados');
   for (let i = 0; i < 10; i++) assert.ok(segmentoLivre(pontoFila(i), pontoFila(i), sim.obstaculos(), 0.32));
   const livre = (a, b) => segmentoLivre(a, b, sim.obstaculosCliente({}), 0.32);
+  sim.aberturasPortasProducao.fill(1);
   for (const p of PRATELEIRAS_IMPORTADOS) for (const lado of [-1, 1]) {
     const destino = { x: p.x + lado * (p.w / 2 + 0.6), z: p.z };
     assert.ok(buscarCaminho(CONFIG.inicio, destino, livre, sim.limitesClientes).length);

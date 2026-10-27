@@ -1,12 +1,12 @@
 import { CONFEITARIA, estadoConfeitaria, validarConfeitaria, produzirConfeitaria, maquinaConfeitaria } from './confeitaria.js';
 import { trabalhoPadaria, estadoEntregaPadaria, validarEntregaPadaria, atualizarEntregaPadaria } from './producao-padaria.js';
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
-import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, folhasPortasExpansao, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
-import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
+import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
+import { PAREDES_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
 import { produtosDaLoja, extremosCalcadaDaLoja, CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
-import { PLANTA_COMPACTA, paredesPlantaInicial } from './planta.js';
+import { PLANTA_COMPACTA, paredesPlantaInicial, volumePortaProducao } from './planta.js';
 import { lojaCompacta, ALTURA_PAREDE_BAIXA } from './configuracao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
@@ -17,6 +17,7 @@ import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from './classes-produtos.js';
 import { PLANTA_CARGA, obstaculosCarga } from './planta.js';
 
 const LIXEIRA_COMPACTA = { ...CONFIG.lixeira, z: CONFIG.lixeira.z + PLANTA_COMPACTA.deslocamentoFundos };
+const LIXEIRA_EXPANDIDA = { ...CONFIG.lixeira, z: CONFIG.lixeira.z - PLANTA_EXPANSAO.profundidade };
 
 // A fila vira após cinco lugares, preservando a parede e o corredor dos importados.
 export function pontoFila(indice) {
@@ -203,6 +204,7 @@ export class Simulacao {
     this.proximoLadoEntrada = Math.random() < 0.5 ? 0 : 1;
     this.proximoLadoSaida = Math.random() < 0.5 ? 0 : 1;
     this.aberturaPortaEntrada = 0;
+    this.aberturasPortasProducao = [0, 0];
     this.progressoCaixa = 0;
     this.atividade = '';
     this.pausado = false;
@@ -245,7 +247,9 @@ export class Simulacao {
   get produtos() { return produtosDaLoja(this.estado); }
   get extremosCalcada() { return extremosCalcadaDaLoja(this.estado); }
   get compacta() { return lojaCompacta(this.estado); }
-  get lixeira() { return this.compacta ? LIXEIRA_COMPACTA : CONFIG.lixeira; }
+  get lixeira() { return this.estado.melhorias.expansao ? LIXEIRA_EXPANDIDA : this.compacta ? LIXEIRA_COMPACTA : CONFIG.lixeira; }
+  get portasProducao() { return [this.compacta ? PLANTA_COMPACTA.portaProducao : CONFIG.portaProducao,
+    ...(this.estado.melhorias.expansao ? PLANTA_EXPANSAO.portas : [])]; }
   get portaProducao() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.portaProducao : this.compacta ? PLANTA_COMPACTA.portaProducao : CONFIG.portaProducao; }
   get limitesMundo() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.limites : this.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.limites : this.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.limites : this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
   get capacidade() { return CONFIG.capacidadeInicial + 4 * this.estado.melhorias.logistica + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
@@ -696,10 +700,10 @@ export class Simulacao {
       ...volumesPortasEntrada(this.aberturaPortaEntrada),
       ...(this.compacta ? paredesPlantaInicial(ALTURA_PAREDE_BAIXA, PLANTA_COMPACTA) : PAREDES_LOJA)
         .filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice),
-      ...(this.compacta ? [this.lixeira] : MOBILIARIO_LOJA),
-      ...FOLHAS_PORTA_PRODUCAO.map(p => this.compacta ? { ...p, z: p.z + PLANTA_COMPACTA.deslocamentoFundos } : p)
+      this.lixeira,
+      ...this.portasProducao.map((porta, i) => volumePortaProducao(this.aberturasPortasProducao[i], porta))
     ];
-    if (this.estado.melhorias.expansao) caixas.push(...paredesExpansao(), ...folhasPortasExpansao(), ...obstaculosDeposito(), ...obstaculosCarga());
+    if (this.estado.melhorias.expansao) caixas.push(...paredesExpansao(), ...obstaculosDeposito(), ...obstaculosCarga());
     if (this.estado.melhorias.expansao && !this.estado.lojaAberta) caixas.push(volumePortaoDeposito());
     if (this.estado.melhorias.expansao || oficinasConstruidas(this.estado.produtos)) caixas.push(...paredesOficinas(!!this.estado.melhorias.expansao));
     if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes.filter(p => !this.estado.melhorias.expansao || p.x !== 20.9));
@@ -752,9 +756,10 @@ export class Simulacao {
     return caixas;
   }
   mover(ator, dx, dz, dt, velocidade, colisao = true) {
+    if (!this.atualizandoPasso) this.atualizarPortasProducao(dt, ator);
     const limites = this.limitesMundo;
     const obstaculos = colisao ? this.obstaculos() : [];
-    const portas = obstaculos.filter(o => o.portaEntrada);
+    const portas = obstaculos.filter(o => o.portaEntrada || o.portaProducao);
     const testar = (x, z) => !colisao || (segmentoLivre({ x, z }, { x, z }, obstaculos, 0.27)
       && segmentoLivre(ator, { x, z }, portas, 0.27));
     const nx = limitar(ator.x + dx * dt * velocidade, limites.minX, limites.maxX);
@@ -790,6 +795,7 @@ export class Simulacao {
     return this.caminharCliente(ator, ponto, dt);
   }
   caminharCliente(ator, ponto, dt, velocidade = 2.4, limites = this.limitesClientes) {
+    if (!this.atualizandoPasso) this.atualizarPortasProducao(dt, ator);
     ator.andando = false;
     if (distancia(ator, ponto) < 0.025) { ator.x = ponto.x; ator.z = ponto.z; return true; }
     if (!dt) return false;
@@ -803,7 +809,8 @@ export class Simulacao {
     // Se já está no espaço que a folha aberta ocuparia, permita sair dele
     // respeitando a geometria real, em vez de prender a origem numa colisão virtual.
     const preverAbertura = segmentoLivre(ator, ator, folhasAbertas, 0.32);
-    const obstaculosRota = [...obstaculos.filter(o => !o.portaEntrada),
+    const obstaculosRota = [...obstaculos.filter(o => !o.portaEntrada && !o.portaProducao),
+      ...this.portasProducao.map(porta => volumePortaProducao(this.podeAbrirPortaProducao(ator) ? 1 : 0, porta)),
       ...(preverAbertura ? folhasAbertas : []),
       ...(pelaCalcada || !preverAbertura ? obstaculos.filter(o => o.portaEntrada) : [])];
     const livre = (inicio, fim, planejar = false) => {
@@ -849,6 +856,8 @@ export class Simulacao {
     if (this.pausado) return;
     this.sincronizarProfundidade();
     dt = limitar(dt, 0, 0.05);
+    this.atualizandoPasso = true;
+    this.atualizarPortasProducao(dt);
     this.tempo += dt;
     const deposito = atualizarBanco(this.estado.banco, dt);
     if (deposito !== null) this.emitir('depositoConcluido', { valor: deposito });
@@ -878,6 +887,22 @@ export class Simulacao {
     if (this.ajudanteContratado) this.atualizarAjudante(dt);
     const missao = this.missao();
     if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: `Próximo passo: ${missao.titulo}` }); this.missaoAnterior = missao.indice; }
+    this.atualizandoPasso = false;
+  }
+  podeAbrirPortaProducao(ator) {
+    return ator === this.estado.jogador || (this.ajudanteContratado && ator === this.ajudante);
+  }
+  atualizarPortasProducao(dt, atorExtra) {
+    if (this.pausado || dt <= 0) return;
+    const funcionarios = [this.estado.jogador, ...(this.ajudanteContratado ? [this.ajudante] : [])];
+    const atores = [...funcionarios, ...this.clientes,
+      ...(atorExtra ? [atorExtra] : [])];
+    this.portasProducao.forEach((porta, i) => {
+      const perto = funcionarios.some(ator => Math.abs(ator.x - porta.x) < 2.4 && Math.abs(ator.z - porta.z) < 4.5);
+      const abertura = limitar(this.aberturasPortasProducao[i] + (perto ? 1 : -1) * Math.min(dt, 0.05) * 1.8, 0, 1);
+      const folha = volumePortaProducao(abertura, porta);
+      if (atores.every(ator => segmentoLivre(ator, ator, [folha], 0.32))) this.aberturasPortasProducao[i] = abertura;
+    });
   }
   pertoDaLixeira() {
     const jogador = this.estado.jogador, objeto = this.lixeira;
@@ -1355,7 +1380,7 @@ export class Simulacao {
     if (!trajeto || distancia(trajeto.destino, destino) > 0.1) {
       const dentro = p => p.x > PLANTA_INICIAL.limites.minX && p.z > this.portaProducao.z && p.z < CONFIG.portaEntrada.z;
       const interior = { x: this.portaProducao.x, z: this.portaProducao.z + 0.8 };
-      const exterior = { x: this.portaProducao.x + this.portaProducao.w / 4, z: this.portaProducao.z - 1 };
+      const exterior = { x: this.portaProducao.x, z: this.portaProducao.z - 2 };
       const pontos = dentro(ator) === dentro(destino) ? [destino]
         : dentro(ator) ? [interior, exterior, destino] : [exterior, interior, destino];
       trajeto = { destino: { ...destino }, pontos };
@@ -1363,6 +1388,10 @@ export class Simulacao {
     }
     if (this.caminharCliente(ator, trajeto.pontos[0], dt, this.velocidadeAjudante)) {
       if (trajeto.pontos.length === 1) return true;
+      // Aguarda fora do arco da folha antes de atravessar, sem prender o funcionário.
+      const proximo = trajeto.pontos[1];
+      if (this.portasProducao.some((porta, i) => (ator.z - porta.z) * (proximo.z - porta.z) < 0
+        && Math.abs(ator.z - porta.z) < 2.1 && this.aberturasPortasProducao[i] < 1)) return false;
       trajeto.pontos.shift();
     }
     return false;

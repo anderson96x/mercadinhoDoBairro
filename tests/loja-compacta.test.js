@@ -23,6 +23,7 @@ test('N1 a N5 tÃªm metade da profundidade, fachada fixa e porta posterior acessÃ
   for (let nivel = 1; nivel <= 5; nivel++) {
     sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
     assert.ok(sim.compacta);
+    sim.aberturasPortasProducao[0] = 1;
     const paredes = sim.obstaculos();
     assert.equal(segmentoLivre({ x: 6, z: 0 }, { x: 6, z: -3 }, paredes, 0.32), false);
     assert.ok(segmentoLivre({ x: sim.portaProducao.x, z: 0 }, { x: sim.portaProducao.x, z: -3 }, paredes, 0.32));
