@@ -102,6 +102,12 @@ A entrega de mel e ovos ocupa a seção contígua ao trigo. `CONFEITARIA.limiteE
 
 `criarBandejaRecebimento()` fornece o mesmo modelo para trigo e confeitaria. As unidades de mel e ovos são filhas da bandeja e refletem o estado dos ingredientes. `situacaoConfeiteiro()` deriva posição, ação e doces restantes do estado da simulação; a cena não mantém um relógio independente para entregas. `batedeira.js` constrói a máquina industrial com cuba e batedor. `maquinaConfeitaria()` fornece sua colisão, somente após a compra. Preserve a passagem do padeiro. O alerta reutiliza a exclamação da padaria quando alguma vitrine está vazia e falta ingrediente, sem aparecer durante entregas. `dt = 0` congela a pose e o batedor.
 
+## Laranjeira (nível 18)
+
+`PLANTA_LARANJA` define a árvore ao lado do apiário e o acesso frontal. `origem: 'pomar'` usa crescimento renovável sem aplicar irrigação ou fertilizante das hortas. A compra `laranja` custa R$ 800, exige nível 18 e inclui a seção de venda; não exige outras compras. O catálogo e a validação de estado preservam compra, crescimento e estoques, com defaults bloqueados em saves anteriores.
+
+`PRODUTOS_HORTIFRUTI` mantém laranja após morango. `compartimentoHortifruti()` começa em z = 3,6 e reserva seis seções de 2,2 u dentro da parede esquerda: a sexta continua livre para a próxima fruta. Modelo, placas, interações, colisões e pontos de compra compartilham essa geometria. A versão de layout 23 reposiciona atores de saves anteriores. Verifique com `node --test tests/laranja.test.js`, `node scripts/check-store-layout.mjs` e `node scripts/verificar-laranja.mjs`; este último usa desktop/celular e WebGL/Canvas sem salvar imagens.
+
 ## Receitas e fase artesanal (níveis 10 a 15)
 
 `ALA_ARTESANAL` define piso, paredes e câmera do anexo ao fundo. A parede traseira da ala dos ovos vira uma passagem; simulação e geometria aplicam a mesma abertura. Produtos novos têm `nivelMinimo`, modelo próprio em `Cena.construirArtesanal()` e melhoria de `tipo: 'construcao'` com o campo `produto`.

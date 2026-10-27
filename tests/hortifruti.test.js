@@ -7,7 +7,7 @@ import { PRODUTOS } from '../src/jogo/configuracao.js';
 import { PRODUTOS_HORTIFRUTI } from '../src/jogo/planta.js';
 
 test('cada produto recebe o expositor de madeira sem exigir os demais desbloqueios', () => {
-  for (let mascara = 0; mascara < 16; mascara++) {
+  for (let mascara = 0; mascara < 2 ** PRODUTOS_HORTIFRUTI.length; mascara++) {
     const sim = new Simulacao();
     sim.estado.estagioLoja = 5;
     const visual = { sim, cena: new THREE.Scene(), produtos: {}, alvosHorta: [], criarLabel() {} };

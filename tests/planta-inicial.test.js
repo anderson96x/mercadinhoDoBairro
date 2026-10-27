@@ -43,8 +43,8 @@ test('horta N1 respeita a posição posterior esquerda e o canteiro compacto da 
 
 function completa() {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
-  sim.estado.estatisticas.clientes = 350; sim.estado.dinheiro = 40000;
-  for (const id of ['milho', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
+  sim.estado.estatisticas.clientes = 425; sim.estado.dinheiro = 40000;
+  for (const id of ['milho', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'laranja']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
   return sim;
 }
 
@@ -72,7 +72,7 @@ test('banca cresce por compra, preserva tomates e não cria seção de produto b
   const volumes = volumesHortifruti(sim.estado.produtos);
   assert.equal(volumes.length, 1);
   assert.equal(volumes[0].d, 8.8);
-  assert.ok(Math.abs(volumes[0].z - (PLANTA_INICIAL.salao.z - 1)) < 1e-9, 'banca completa deslocada um metro além do centro da parede lateral');
+  assert.ok(Math.abs(volumes[0].z - 0.3) < 1e-9, 'banca deslocada para reservar espaço às duas novas frutas');
   assert.equal(sim.estado.produtos.tomate.prateleira, 5);
   assert.equal(sim.obstaculos().filter(o => o.movel === 'hortifruti').length, 1);
   const visual = { cena: new THREE.Scene(), sim: new Simulacao(), produtos: {}, alvosHorta: [], criarLabel() {} };
@@ -96,7 +96,7 @@ test('divisórias escolhem uma única seção, inclusive com inventário misto',
       assert.equal(sim.estado.produtos[esperado].prateleira, 1, `${id}: offset ${offset}`);
       assert.equal(Object.values(sim.estado.produtos).reduce((total, e) => total + e.prateleira, 0), 1);
       sim.tempo += 1; sim.interagir();
-      assert.equal(sim.estado.jogador.inventario.length, 3, 'não alterna ao esgotar o produto escolhido');
+      assert.equal(sim.estado.jogador.inventario.length, PRODUTOS_HORTIFRUTI.length - 1, 'não alterna ao esgotar o produto escolhido');
     }
   }
 });

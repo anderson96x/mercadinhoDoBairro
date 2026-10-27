@@ -630,7 +630,7 @@ export class Simulacao {
           const temIngrediente = faltante && this.estado.jogador.inventario.includes(faltante);
           orientacaoNivel = {
             titulo: `Primeira banca de ${produto.nome.toLocaleLowerCase('pt-BR')}`,
-            texto: receita ? `${MELHORIAS.find(m => m.id === receita.melhoria).descricao}` : `Colete ${produto.plural.toLocaleLowerCase('pt-BR')} e abasteça ${id === 'morango' ? 'a seção do hortifruti junto à parede esquerda' : id === 'mel' ? 'o expositor na frente direita da loja' : 'a banca na ala ao fundo da loja'}. O repositor também pode ajudar.`,
+            texto: receita ? `${MELHORIAS.find(m => m.id === receita.melhoria).descricao}` : `Colete ${produto.plural.toLocaleLowerCase('pt-BR')} e abasteça ${['morango', 'laranja'].includes(id) ? 'a seção do hortifruti junto à parede esquerda' : id === 'mel' ? 'o expositor na frente direita da loja' : 'a banca na ala ao fundo da loja'}. O repositor também pode ajudar.`,
             destino: carregando ? `prateleira-${id}` : faltante && !temIngrediente ? `coleta-${faltante}` : `coleta-${id}`
           };
         }
@@ -844,9 +844,9 @@ export class Simulacao {
     }
     for (const [id, estoque] of Object.entries(this.estado.produtos)) {
       const p = this.produtos[id];
-      if (estoque.liberado && p.origem === 'horta' && estoque.horta < p.capacidadeHorta) {
+      if (estoque.liberado && ['horta', 'pomar'].includes(p.origem) && estoque.horta < p.capacidadeHorta) {
         estoque.crescimento += dt;
-        const tempoCrescimento = p.tempoCrescimento * (this.estado.melhorias.irrigacao ? 0.75 : 1) * (estoque.crescimentoMelhorado ? CONFIG.multiplicadorCrescimentoMelhorado : 1);
+        const tempoCrescimento = p.tempoCrescimento * (p.origem === 'horta' && this.estado.melhorias.irrigacao ? 0.75 : 1) * (estoque.crescimentoMelhorado ? CONFIG.multiplicadorCrescimentoMelhorado : 1);
         if (estoque.crescimento >= tempoCrescimento) { estoque.horta++; estoque.crescimento = 0; }
       }
     }

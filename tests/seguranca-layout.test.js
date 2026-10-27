@@ -8,9 +8,9 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function lojaCompleta() {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 350; sim.estado.dinheiro = 40000;
+  sim.estado.estatisticas.clientes = 425; sim.estado.dinheiro = 40000;
   for (const id of ['caixa','milho','alaProducao','alaLeite','ajudante','alaTrigo','cestasExtras','alaPadaria',
-    'logistica','alaArtesanal','apiario','queijaria','cozinhaGeleia']) assert.equal(sim.comprarMelhoria(id).sucesso,true,id);
+    'logistica','alaArtesanal','apiario','queijaria','cozinhaGeleia','laranja']) assert.equal(sim.comprarMelhoria(id).sucesso,true,id);
   sim.proximoCliente = Infinity;
   return sim;
 }
