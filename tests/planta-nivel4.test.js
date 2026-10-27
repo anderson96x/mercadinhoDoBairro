@@ -112,12 +112,12 @@ test('N4 produz, coleta pela porta dos fundos, abastece e vende um ovo por R$ 15
   assert.equal(sim.estado.produtos.ovos.horta, 0);
   sim.atualizar(0.05);
   assert.equal(sim.estado.produtos.ovos.horta, 1);
-  ir({ x: CONFIG.portaProducao.x, z: CONFIG.portaProducao.z - 1.1 });
+  ir({ x: CONFIG.portaProducao.x, z: sim.portaProducao.z - 1.1 });
   ir(PRODUTOS.ovos.coleta);
   for (let i = 0; i < 300 && sim.estado.jogador.inventario.length < 4; i++) sim.atualizar(0.05);
   assert.deepEqual(sim.estado.jogador.inventario, Array(4).fill('ovos'));
-  ir({ x: CONFIG.portaProducao.x, z: CONFIG.portaProducao.z - 1.1 });
-  ir(PRODUTOS.ovos.reposicao);
+  ir({ x: CONFIG.portaProducao.x, z: sim.portaProducao.z - 1.1 });
+  ir(sim.produtos.ovos.reposicao);
   for (let i = 0; i < 30; i++) sim.atualizar(0.05);
   assert.equal(sim.estado.produtos.ovos.prateleira, 4);
   assert.equal(sim.estado.jogador.inventario.length, 0);

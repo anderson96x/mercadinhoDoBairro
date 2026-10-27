@@ -1,6 +1,31 @@
 # Histórico de alterações
 
-## Versão atual: 0.65.0 — 2026-10-27
+## Versão atual: 0.66.3 — 2026-10-27
+
+- Desloca todo o conjunto do caixa e o suporte de cestas 2 u para a direita, incluindo cadeira, funcionário, interações, pagamentos e coleta de cestas.
+- Ajusta a curva da fila para manter dez posições dentro do salão. Atualiza a migração de layout para liberar personagens de móveis reposicionados, preservando saldo e estoques.
+- Desconta pequenos ajustes nos cantos da rota do passo de movimento, evitando um salto ao contornar a entrada no trajeto até as cestas.
+- Validação: 358 testes, build e rotas até N19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica alinhamento do caixa, funcionário e cestas, sem salvar imagens.
+
+## 0.66.2 — 2026-10-27
+
+- Substitui as árvores decorativas pelo mesmo modelo do pomar, com copa arredondada em seis volumes, tronco ramificado e variações de escala e rotação. Compartilha o modelo entre bairro, laranjeira e macieira.
+- Corrige as manchas de grama que não recebiam sombras e criavam círculos claros recortando a sombra das árvores.
+- Validação: 358 testes e build de produção aprovados. Edge em desktop/celular com WebGL e Canvas verifica modelos, configuração de sombras da grama, colheita e reposição do pomar, sem salvar imagens.
+
+## 0.66.1 — 2026-10-27
+
+- Remove completamente o caminho decorativo de pedras brancas entre a porta dos fundos e a horta, em todas as plantas e expansões.
+- Validação: 358 testes e build de produção aprovados. Edge em desktop/celular com WebGL e Canvas verificado sem salvar imagens.
+
+## 0.66.0 — 2026-10-27
+
+- Reduz a profundidade inicial da loja à metade: salão de 14 × 8 u até o nível 5, com fachada fixa. No nível 6, restaura automaticamente os 14 × 16 u, sem compra ou cobrança.
+- Ajusta piso, paredes, porta posterior, lixeira e expositores de ovos e leite à planta compacta, preservando a produção externa e a ordem atual dos desbloqueios.
+- Preserva dinheiro, compras, estoques e cargas dos saves; a migração de layout reposiciona personagens com segurança e a expansão limpa percursos antigos.
+- Validação: 358 testes, build de produção e verificação de rotas incluindo N6 aprovados. Edge em desktop/celular com WebGL e Canvas verifica planta compacta, reposição de ovos e leite, expansão automática, recarga e pomar, sem salvar imagens.
+
+## 0.65.0 — 2026-10-27
 
 - Adiciona macieira no nível 19 por R$ 800, ao lado da laranjeira no gramado, com maçãs em vermelho rubi visíveis na copa e venda por R$ 7. Usa a sexta seção do hortifruti, junto às laranjas.
 - Mantém produção de uma fruta a cada 3 segundos, até oito na árvore e doze na banca. Integra colheita, repositor, pedidos após primeiro abastecimento e salvamento; saves anteriores recebem a macieira não comprada.

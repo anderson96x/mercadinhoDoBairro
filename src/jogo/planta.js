@@ -327,14 +327,21 @@ export function folhasPortasExpansao() {
   })));
 }
 
-export function paredesPlantaInicial(alturaBaixa) {
-  const l = PLANTA_INICIAL.limites, porta = PLANTA_INICIAL.portaProducao;
+export const PLANTA_COMPACTA = {
+  salao: { ...PLANTA_INICIAL.salao, z: 2.7, d: 8 },
+  limites: { ...PLANTA_INICIAL.limites, minZ: -1.3 },
+  portaProducao: { ...PLANTA_INICIAL.portaProducao, z: -1.3 },
+  deslocamentoFundos: 8
+};
+
+export function paredesPlantaInicial(alturaBaixa, planta = PLANTA_INICIAL) {
+  const l = planta.limites, porta = planta.portaProducao;
   const esquerdaPorta = porta.x - porta.w / 2, direitaPorta = porta.x + porta.w / 2;
   return [
     { x: (l.minX + esquerdaPorta) / 2, z: l.minZ, w: esquerdaPorta - l.minX, d: 0.28, h: 2.8 },
     { x: (direitaPorta + l.maxX) / 2, z: l.minZ, w: l.maxX - direitaPorta, d: 0.28, h: 2.8 },
-    { x: l.maxX, z: PLANTA_INICIAL.salao.z, w: 0.28, d: PLANTA_INICIAL.salao.d, h: alturaBaixa, lateral: true },
-    { x: l.minX, z: PLANTA_INICIAL.salao.z, w: 0.28, d: PLANTA_INICIAL.salao.d, h: 2.8 },
+    { x: l.maxX, z: planta.salao.z, w: 0.28, d: planta.salao.d, h: alturaBaixa, lateral: true },
+    { x: l.minX, z: planta.salao.z, w: 0.28, d: planta.salao.d, h: 2.8 },
     { x: (l.minX - 2.8) / 2, z: l.maxZ, w: -2.8 - l.minX, d: 0.28, h: alturaBaixa },
     { x: (0.2 + l.maxX) / 2, z: l.maxZ, w: l.maxX - 0.2, d: 0.28, h: alturaBaixa, fachada: true }
   ];

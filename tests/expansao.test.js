@@ -55,7 +55,7 @@ test('refrigerador de parede tem duas portas de vidro, três níveis e acesso fr
   const grade = new THREE.Box3().setFromObject(refrigerador.grupo.getObjectByName('grade-refrigerador-leite'));
   assert.ok(grade.min.z > base.max.z, 'ventilação visível na frente da base');
   assert.ok(bounds.max.x < 15.1 - 0.8, 'não depende da parede removida na próxima expansão');
-  for (const ponto of [PRODUTOS.leite.reposicao, ...PRODUTOS.leite.pontosCompra]) {
+  for (const ponto of [sim.produtos.leite.reposicao, ...PRODUTOS.leite.pontosCompra]) {
     const ator = { ...CONFIG.inicio, andando: false };
     let chegou = false;
     for (let i = 0; i < 2400 && !chegou; i++) {
@@ -220,7 +220,7 @@ test('galinhas produzem ovos sem insumos, que podem ser coletados e vendidos', (
   assert.deepEqual(sim.estado.jogador.inventario, ['ovos']);
   assert.equal(sim.missao().destino, 'prateleiraOvos');
   sim.tempo = 11;
-  Object.assign(sim.estado.jogador, PRODUTOS.ovos.reposicao);
+  Object.assign(sim.estado.jogador, sim.produtos.ovos.reposicao);
   sim.interagir();
   assert.equal(sim.estado.produtos.ovos.prateleira, 1);
   assert.deepEqual(sim.estado.jogador.inventario, []);

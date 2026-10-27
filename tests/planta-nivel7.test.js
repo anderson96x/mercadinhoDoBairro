@@ -42,6 +42,7 @@ test('save V8 preserva trigo e cargas ao recuperar atores da antiga expansão N7
 
 test('dez posições de fila cabem e são alcançáveis no salão antes do N9', () => {
   const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 6 * CONFIG.clientesPorNivel;
   for (let i = 0; i < 10; i++) {
     const alvo = pontoFila(i), ator = { ...CONFIG.inicio };
     assert.ok(alvo.x < 10.9 - 0.5 && alvo.z < 6.7 - 0.5);

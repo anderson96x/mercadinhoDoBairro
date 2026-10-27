@@ -19,7 +19,7 @@ export function abrirLoja(nivel = 15) {
   return sim;
 }
 
-for (const nivel of [1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15, 17, 18, 19]) {
+for (const nivel of [1, 3, 4, 5, 6, 7, 8, 9, 11, 12, 13, 15, 17, 18, 19]) {
   const sim = abrirLoja(nivel);
   for (const [id, produto] of Object.entries(sim.produtos)) {
     if (!sim.estado.produtos[id].liberado) continue;

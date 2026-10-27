@@ -40,8 +40,8 @@ test('funcionário usa o vão de serviço em ambos os sentidos', () => {
     const antes = { x: sim.ajudante.x, z: sim.ajudante.z };
     sim.atualizar(1 / 60);
     const depois = sim.ajudante;
-    if (depois.x > -3.1 && depois.x < 10.9 && (antes.z - CONFIG.portaProducao.z) * (depois.z - CONFIG.portaProducao.z) < 0) {
-      assert.ok(Math.abs(depois.x - CONFIG.portaProducao.x) < CONFIG.portaProducao.w / 2 - 0.32, 'travessia precisa estar na porta posterior');
+    if (depois.x > -3.1 && depois.x < 10.9 && (antes.z - sim.portaProducao.z) * (depois.z - sim.portaProducao.z) < 0) {
+      assert.ok(Math.abs(depois.x - sim.portaProducao.x) < sim.portaProducao.w / 2 - 0.32, 'travessia precisa estar na porta posterior');
       if (depois.z < antes.z) paraHorta++; else paraLoja++;
     }
   }

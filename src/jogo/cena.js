@@ -22,6 +22,7 @@ import { ALTURA_BANDEJA_MEL, construirColmeia, animarAbelhas } from './colmeia.j
 import { atualizarMarcha, animarPernas } from './marcha.js';
 import { icone } from '../interface/icones.js';
 import { criarSol } from './iluminacao.js';
+import { criarArvore } from './arvores.js';
 import { criarPlacaProduto } from './placas-produtos.js';
 import { construirEstacionamento } from './estacionamento.js';
 import { construirPrateleirasImportados, alturaPrateleiraImportados } from './prateleiras-importados.js';
@@ -841,6 +842,7 @@ export class Cena {
     this.raycaster = new THREE.Raycaster(); this.ponteiroRaycast = new THREE.Vector2();
     const PRODUTOS = produtosDaLoja(this.sim.estado);
     this.expansaoConstruida = !!this.sim.estado.melhorias.expansao;
+    this.lojaCompactaConstruida = this.sim.compacta;
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (id === 'pao') this.construirPadaria();
@@ -864,6 +866,7 @@ export class Cena {
     const c = new THREE.Group(); c.position.set(-5.5, 0, -4.1); suporte.add(c);
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera });
     this.bairro.atualizarEstagio(this.sim.estado.estagioLoja);
+    this.bairro.atualizarProfundidade(this.sim.compacta);
     this.bairro.atualizarExpansao(this.sim.estado.melhorias.expansao);
     this.estacionamento = construirEstacionamento(); this.cena.add(this.estacionamento.grupo);
     this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento, 0, [], 0, !!this.sim.estado.melhorias.expansao);
@@ -1072,17 +1075,7 @@ export class Cena {
         esfera(grupo, 0.3, 0x429852, x, 0.67, z, 1.2, 0.6, 1);
       }
     } else if (p.origem === 'pomar') {
-      const arvore = new THREE.Group(); arvore.name = id === 'maca' ? 'macieira' : 'laranjeira'; grupo.add(arvore);
-      cilindro(arvore, 0.18, 0.28, 2, 0x87603a, h.x, 1.1, h.z, 7);
-      for (const lado of [-1, 1]) {
-        const galho = cilindro(arvore, 0.08, 0.12, 1.1, 0x87603a, h.x + lado * 0.3, 1.8, h.z, 6);
-        galho.rotation.z = -lado * 0.55;
-      }
-      for (const [x, y, z, raio, cor] of [
-        [0, 3.35, 0, 1, 0x8fc92d], [-0.7, 2.7, 0, 0.95, 0x78b52b],
-        [0.7, 2.75, -0.15, 0.95, 0x92cc31], [0, 2.65, 0.65, 1, 0x6eac29],
-        [0, 2.8, -0.65, 0.85, 0x83be2d], [-0.5, 3.15, 0.5, 0.75, 0x9bd43a]
-      ]) esfera(arvore, raio, cor, h.x + x, y, h.z + z, 1, 0.85, 1);
+      criarArvore(grupo, { x: h.x, z: h.z, nome: id === 'maca' ? 'macieira' : 'laranjeira' }, { cilindro, esfera });
     } else if (id === 'mel') {
       abelhas.push(...construirColmeia(grupo, h, { caixa, esfera, cilindro }));
     } else {
@@ -1913,16 +1906,18 @@ export class Cena {
       });
     }
     this.bairro.atualizarExpansao(e.melhorias.expansao);
+    this.bairro.atualizarProfundidade(sim.compacta);
     this.bairro.atualizarOficinas(e.produtos);
-    if (this.expansaoConstruida !== !!e.melhorias.expansao) {
+    if (this.expansaoConstruida !== !!e.melhorias.expansao || this.lojaCompactaConstruida !== sim.compacta) {
       this.expansaoConstruida = !!e.melhorias.expansao;
+      this.lojaCompactaConstruida = sim.compacta;
       this.alvosHorta = [];
       this.labels = this.labels.filter(label => {
-        if (label.id.endsWith('-pao')) return true;
+        if (['pao', ...Object.keys(CONFEITARIA.produtos)].some(id => label.id.endsWith(`-${id}`))) return true;
         label.el.remove(); return false;
       });
       for (const [id, p] of Object.entries(PRODUTOS)) {
-        if (id === 'pao') continue;
+        if (id === 'pao' || p.origem === 'confeitaria') continue;
         const anterior = this.produtos[id].grupo;
         this.cena.remove(anterior); liberarGeometrias(anterior);
         if (p.origem === 'importado') this.construirImportado(id, p);

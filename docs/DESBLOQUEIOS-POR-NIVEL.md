@@ -1,6 +1,6 @@
 # Desbloqueios por nível
 
-O início usa a [nova planta N1](PLANTA-LOJA-N1.md), sem alterar os níveis, custos ou receitas abaixo. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. As oficinas compartilham uma sala com piso e paredes baixas nos fundos direitos, com entrada lateral aberta. A sala aparece com a primeira compra de uma dessas oficinas.
+A loja começa com **14 × 8 u** do nível 1 ao 5, mantendo a fachada na posição atual. Ao alcançar o **nível 6**, o salão volta automaticamente a **14 × 16 u**, sem custo ou compra, independentemente das melhorias adquiridas. Parede posterior, porta de produção, lixeira e expositores de ovos e leite acompanham a profundidade; hortas e animais mantêm suas posições. Saves anteriores preservam saldo, compras e estoques, com reposicionamento seguro dos personagens. Os níveis, custos e receitas abaixo permanecem iguais; a reorganização dos produtos será feita em outra etapa. Os registros das plantas N1–N5 descrevem a geometria anterior. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. As oficinas compartilham uma sala com piso e paredes baixas nos fundos direitos, com entrada lateral aberta. A sala aparece com a primeira compra de uma dessas oficinas.
 
 No [nível 7](PLANTA-LOJA-N7.md), comprar trigo por R$ 400 acrescenta o canteiro atrás do milho e a terceira seção do hortifruti, sem ampliar o salão. Todos os canteiros de cultivos medem 3,6 × 2,5 u.
 
@@ -10,9 +10,9 @@ No [nível 9](PLANTA-LOJA-N9.md), a padaria amplia o salão para 24 × 16 u à d
 
 A progressão ativa inclui o estacionamento no nível 16, a confeitaria no nível 17, a laranjeira no nível 18 e a macieira no nível 19. Prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22 continuam desativadas, inclusive no DEV. Os níveis continuam avançando, mas ainda não há novos desbloqueios a partir do 20. O conjunto de importações será reorganizado depois do nível 20, sem níveis novos definidos por enquanto. A referência da implementação anterior está ao final deste documento.
 
-No [nível 4](PLANTA-LOJA-N4.md), a compra de ovos instala o galinheiro atrás da loja e uma estante alta de três níveis junto à parede posterior, à direita da porta de produção. O salão mantém 14 × 16 u. As galinhas produzem um ovo a cada 3,5 segundos, sem insumos; coleta e reposição continuam manuais ou pelo repositor contratado posteriormente.
+No [nível 4](PLANTA-LOJA-N4.md), a compra de ovos instala o galinheiro atrás da loja e uma estante alta de três níveis junto à parede posterior, à direita da porta de produção. O salão mantém 14 × 8 u até alcançar o nível 6. As galinhas produzem um ovo a cada 3,5 segundos, sem insumos; coleta e reposição continuam manuais ou pelo repositor contratado posteriormente.
 
-No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinheiro, e o refrigerador vertical de duas portas de vidro fica à direita dos ovos na parede posterior. O salão continua com 14 × 16 u. O curral produz uma garrafa a cada 4,5 segundos, sem insumos. Abasteça ovos e leite pela frente do expositor correspondente; os estoques são separados, inclusive na divisória.
+No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinheiro, e o refrigerador vertical de duas portas de vidro fica à direita dos ovos na parede posterior. O salão continua com 14 × 8 u até alcançar o nível 6. O curral produz uma garrafa a cada 4,5 segundos, sem insumos. Abasteça ovos e leite pela frente do expositor correspondente; os estoques são separados, inclusive na divisória.
 
 | Nível | Melhoria ou produto | Custo | Preço de venda por unidade |
 | --- | --- | --- | --- |
@@ -21,6 +21,7 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 3 | Milho | R$ 350 | R$ 10 |
 | 4 | Ala dos ovos | R$ 500 | R$ 15 por ovo |
 | 5 | Ala do leite | R$ 800 | R$ 20 por garrafa |
+| 6 | Salão volta a 14 × 16 u automaticamente | Grátis | — |
 | 6 | Repositor | R$ 900 | — |
 | 7 | Ala do trigo | R$ 400 | R$ 5 por trigo |
 | 8 | Mais 5 cestas (até 10 clientes na loja) | R$ 100 | — |

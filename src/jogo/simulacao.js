@@ -6,6 +6,8 @@ import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, volumesPortasEntrada 
 import { produtosDaLoja, extremosCalcadaDaLoja, CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
+import { PLANTA_COMPACTA, paredesPlantaInicial } from './planta.js';
+import { lojaCompacta, ALTURA_PAREDE_BAIXA } from './configuracao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
@@ -14,10 +16,12 @@ import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, classeProduto
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from './classes-produtos.js';
 import { PLANTA_CARGA, obstaculosCarga } from './planta.js';
 
-// A fila vira para o fundo após sete lugares, cabendo no salão anterior ao N9.
+const LIXEIRA_COMPACTA = { ...CONFIG.lixeira, z: CONFIG.lixeira.z + PLANTA_COMPACTA.deslocamentoFundos };
+
+// A fila vira após cinco lugares, preservando a parede e o corredor dos importados.
 export function pontoFila(indice) {
-  return { x: CONFIG.clienteCaixa.x + Math.min(indice, 6) * CONFIG.espacoClientes,
-    z: CONFIG.clienteCaixa.z - Math.max(0, indice - 6) * CONFIG.espacoClientes };
+  return { x: CONFIG.clienteCaixa.x + Math.min(indice, 4) * CONFIG.espacoClientes,
+    z: CONFIG.clienteCaixa.z - Math.max(0, indice - 4) * CONFIG.espacoClientes };
 }
 
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -194,6 +198,7 @@ export class Simulacao {
     this.reposicoes = new WeakMap();
     this.caminhosClientes = new WeakMap();
     this.trajetosProducao = new WeakMap();
+    this.ultimaPlantaCompacta = this.compacta;
     this.tempo = 0;
     this.proximoCliente = 2;
     this.proximaInteracao = 0;
@@ -233,9 +238,19 @@ export class Simulacao {
     }
     this.missaoAnterior = this.missao().indice;
   }
+  sincronizarProfundidade() {
+    if (this.ultimaPlantaCompacta === this.compacta) return;
+    this.ultimaPlantaCompacta = this.compacta;
+    this.caminhosClientes = new WeakMap();
+    this.trajetosProducao = new WeakMap();
+    this.reposicoes = new WeakMap();
+    for (const ator of [this.estado.jogador, this.ajudante, ...this.clientes]) this.liberarPosicao(ator);
+  }
   get produtos() { return produtosDaLoja(this.estado); }
   get extremosCalcada() { return extremosCalcadaDaLoja(this.estado); }
-  get portaProducao() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.portaProducao : CONFIG.portaProducao; }
+  get compacta() { return lojaCompacta(this.estado); }
+  get lixeira() { return this.compacta ? LIXEIRA_COMPACTA : CONFIG.lixeira; }
+  get portaProducao() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.portaProducao : this.compacta ? PLANTA_COMPACTA.portaProducao : CONFIG.portaProducao; }
   get limitesMundo() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.limites : this.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.limites : this.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.limites : this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
   get capacidade() { return CONFIG.capacidadeInicial + 4 * this.estado.melhorias.logistica + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + 0.15 * this.estado.melhorias.logistica + (velocidadeJogadorAtiva ? this.estado.melhorias.velocidade * 0.2 : 0)); }
@@ -251,6 +266,7 @@ export class Simulacao {
   get faixaReputacao() { return this.reputacao <= 40 ? 'ruim' : this.reputacao <= 60 ? 'media' : 'boa'; }
   aumentarNivelDev() {
     this.estado.estatisticas.clientes = this.nivel * CONFIG.clientesPorNivel;
+    this.sincronizarProfundidade();
     this.estado.dinheiro += CONFIG.bonusNivel;
     this.emitir('nivel', { nivel: this.nivel });
     return this.nivel;
@@ -681,7 +697,10 @@ export class Simulacao {
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
       ...volumesPortasEntrada(this.aberturaPortaEntrada),
-      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
+      ...(this.compacta ? paredesPlantaInicial(ALTURA_PAREDE_BAIXA, PLANTA_COMPACTA) : PAREDES_LOJA)
+        .filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice),
+      ...(this.compacta ? [this.lixeira] : MOBILIARIO_LOJA),
+      ...FOLHAS_PORTA_PRODUCAO.map(p => this.compacta ? { ...p, z: p.z + PLANTA_COMPACTA.deslocamentoFundos } : p)
     ];
     if (this.estado.melhorias.expansao) caixas.push(...paredesExpansao(), ...folhasPortasExpansao(), ...obstaculosDeposito(), ...obstaculosCarga());
     if (this.estado.melhorias.expansao && !this.estado.lojaAberta) caixas.push(volumePortaoDeposito());
@@ -806,7 +825,7 @@ export class Simulacao {
       return segmentoLivre(inicio, fim, planejar ? obstaculosRota : obstaculos, 0.32);
     };
     const livreRota = (inicio, fim) => livre(inicio, fim, true);
-    let alvo = ponto;
+    let alvo = ponto, percorrido = 0;
     if (!livreRota(ator, ponto)) {
       let rota = this.caminhosClientes.get(ator);
       if (!rota || distancia(rota.destino, ponto) > 0.1 || this.tempo >= rota.recalcular) {
@@ -814,12 +833,15 @@ export class Simulacao {
         this.caminhosClientes.set(ator, rota);
       }
       while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) {
+        const trecho = distancia(ator, rota.pontos[0]);
+        if (percorrido + trecho > velocidade * dt) break;
+        percorrido += trecho;
         Object.assign(ator, rota.pontos.shift());
       }
       if (!rota.pontos.length) return false;
       alvo = rota.pontos[0];
     } else this.caminhosClientes.delete(ator);
-    const d = distancia(ator, alvo), passo = Math.min(d, velocidade * dt);
+    const d = distancia(ator, alvo), passo = Math.min(d, Math.max(0, velocidade * dt - percorrido));
     const proximo = { x: ator.x + (alvo.x - ator.x) / d * passo, z: ator.z + (alvo.z - ator.z) / d * passo };
     if (!livre(ator, proximo)) return false;
     ator.angulo = Math.atan2(proximo.x - ator.x, proximo.z - ator.z);
@@ -828,6 +850,7 @@ export class Simulacao {
   }
   atualizar(dt, entrada = { x: 0, y: 0 }) {
     if (this.pausado) return;
+    this.sincronizarProfundidade();
     dt = limitar(dt, 0, 0.05);
     this.tempo += dt;
     const deposito = atualizarBanco(this.estado.banco, dt);
@@ -860,7 +883,7 @@ export class Simulacao {
     if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: `Próximo passo: ${missao.titulo}` }); this.missaoAnterior = missao.indice; }
   }
   pertoDaLixeira() {
-    const jogador = this.estado.jogador, objeto = CONFIG.lixeira;
+    const jogador = this.estado.jogador, objeto = this.lixeira;
     return distanciaEstacao(jogador, objeto) < CONFIG.raioInteracao &&
       segmentoLivre(jogador, pontoMaisProximo(jogador, objeto), this.obstaculos().filter(o => o !== objeto));
   }
@@ -919,7 +942,7 @@ export class Simulacao {
     }
     candidatos.sort((a, b) => a.distancia - b.distancia);
     const alvo = candidatos[0];
-    if (pertoLixeira && (!alvo || distanciaEstacao(jogador, CONFIG.lixeira) < alvo.distancia)) {
+    if (pertoLixeira && (!alvo || distanciaEstacao(jogador, this.lixeira) < alvo.distancia)) {
       this.atividade = jogador.inventario.length ? 'Lixeira · pare para descartar produtos' : 'Lixeira · inventário vazio';
       if (!jogador.andando && jogador.inventario.length && !this.lixeiraVisitada) {
         this.lixeiraVisitada = true;
@@ -1285,6 +1308,7 @@ export class Simulacao {
         this.progressoCaixa = 0;
         this.emitir('venda', { valor, ponto: CONFIG.caixa });
         if (this.nivel > nivelAnterior) {
+          this.sincronizarProfundidade();
           this.estado.dinheiro += CONFIG.bonusNivel;
           this.emitir('nivel', { nivel: this.nivel });
         }

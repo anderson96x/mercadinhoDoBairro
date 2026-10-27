@@ -1,6 +1,6 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
 import { CONFEITARIA } from './confeitaria.js';
-import { PLANTA_LARANJA, PLANTA_MACA } from './planta.js';
+import { PLANTA_LARANJA, PLANTA_MACA, PLANTA_COMPACTA } from './planta.js';
 import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, pontoPadaria, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes-produtos.js';
 const ESTANTE_ENLATADOS = PLANTA_DEPOSITO.estantes[CLASSES_PRODUTOS.enlatados.estante];
@@ -11,7 +11,7 @@ export const ALTURA_PAREDE_BAIXA = 0.75;
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 23,
+  versaoLayout: 25,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -49,19 +49,19 @@ export const CONFIG = {
   limiteCamera: { minX: -16, maxX: 24, minZ: -25.5, maxZ: 14.5 },
   inicio: { x: 0.2, z: 3.4 },
   portaProducao: PLANTA_INICIAL.portaProducao,
-  caixa: { x: 3.45, z: 6.05 },
-  balcao: { x: 3.45, z: 4.65 },
-  acessoCaixa: { x: 1.55, z: 4.65 },
-  clienteCaixa: { x: 2.2, z: 3.5 },
-  cadeiraCaixa: { x: 3.45, z: 6.05 },
+  caixa: { x: 5.45, z: 6.05 },
+  balcao: { x: 5.45, z: 4.65 },
+  acessoCaixa: { x: 3.55, z: 4.65 },
+  clienteCaixa: { x: 4.2, z: 3.5 },
+  cadeiraCaixa: { x: 5.45, z: 6.05 },
   // Encostada na face interna da parede do fundo.
   lixeira: { x: 1.61, z: -8.75, w: 0.84, d: 0.82 },
-  areaFuncionarioCaixa: { x: 3.45, z: 6.05, w: 0.8, d: 0.9 },
+  areaFuncionarioCaixa: { x: 5.45, z: 6.05, w: 0.8, d: 0.9 },
   anguloCaixa: Math.PI,
   entrada: { x: -1.3, z: 8.4 },
   portaEntrada: { x: -1.3, z: 6.7 },
-  cestas: { x: 0.8, z: 5.2 },
-  pontoCestasCliente: { x: -0.05, z: 5.2 },
+  cestas: { x: 2.8, z: 5.2 },
+  pontoCestasCliente: { x: 1.95, z: 5.2 },
   // Mantém o corpo dentro da calçada, junto às extremidades visíveis da rua.
   extremosCalcada: [
     { x: PLANTA_INICIAL.terreno.x - PLANTA_INICIAL.terreno.w / 2 + 0.5, z: 8.4 },
@@ -201,7 +201,17 @@ const PRODUTOS_EXPANSAO = Object.fromEntries(Object.entries(PRODUTOS).map(([id, 
   return [id, p];
 }));
 
-export const produtosDaLoja = estado => estado?.melhorias?.expansao ? PRODUTOS_EXPANSAO : PRODUTOS;
+export const NIVEL_LOJA_COMPLETA = 6;
+export const lojaCompacta = estado => !estado?.melhorias?.expansao
+  && 1 + Math.floor((estado?.estatisticas?.clientes ?? 0) / CONFIG.clientesPorNivel) < NIVEL_LOJA_COMPLETA;
+const PRODUTOS_COMPACTOS = Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => {
+  if (!['ovos', 'leite'].includes(id)) return [id, p];
+  const deslocar = ponto => ({ ...ponto, z: ponto.z + PLANTA_COMPACTA.deslocamentoFundos });
+  return [id, { ...p, prateleira: deslocar(p.prateleira), reposicao: deslocar(p.reposicao),
+    cliente: deslocar(p.cliente), pontosCompra: p.pontosCompra.map(deslocar) }];
+}));
+export const produtosDaLoja = estado => estado?.melhorias?.expansao ? PRODUTOS_EXPANSAO
+  : estado && lojaCompacta(estado) ? PRODUTOS_COMPACTOS : PRODUTOS;
 
 // As alas dos ovos, do leite e do trigo e o ajudante entram em marcos separados da progressão.
 export const NIVEL_OVOS = 4;

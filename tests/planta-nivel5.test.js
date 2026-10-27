@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
-import { CONFIG, PRODUTOS, ALA_LEITE } from '../src/jogo/configuracao.js';
-import { PLANTA_INICIAL } from '../src/jogo/planta.js';
+import { CONFIG, PRODUTOS, ALA_LEITE, ALTURA_PAREDE_BAIXA } from '../src/jogo/configuracao.js';
+import { PLANTA_INICIAL, PLANTA_COMPACTA, paredesPlantaInicial } from '../src/jogo/planta.js';
 import { PAREDES_LOJA, construirBairro } from '../src/jogo/bairro.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { Cena } from '../src/jogo/cena.js';
@@ -71,7 +71,7 @@ test('N5 exige nível e R$ 800, conserva piso e paredes mesmo sem comprar milho 
   assert.equal(sim.estado.dinheiro, 0); assert.equal(sim.estado.estagioLoja, ALA_LEITE.indice);
   assert.equal(sim.estado.produtos.leite.horta, 0);
   assert.equal(sim.estado.produtos.ovos.liberado, false); assert.equal(sim.estado.produtos.milho.liberado, false);
-  for (const p of PAREDES_LOJA) assert.ok(sim.obstaculos().some(o => o.x === p.x && o.z === p.z && o.w === p.w && o.d === p.d));
+  for (const p of paredesPlantaInicial(ALTURA_PAREDE_BAIXA, PLANTA_COMPACTA)) assert.ok(sim.obstaculos().some(o => o.x === p.x && o.z === p.z && o.w === p.w && o.d === p.d));
   const cena = new THREE.Scene(), geometria = new THREE.BoxGeometry(1, 1, 1), material = new THREE.MeshBasicMaterial();
   const mesh = (grupo, ...args) => { const m = new THREE.Mesh(geometria, material); grupo.add(m); return m; };
   const bairro = construirBairro(cena, { caixa: mesh, esfera: mesh, cilindro: mesh });
@@ -89,7 +89,7 @@ test('divisória entre ovos e leite seleciona um expositor, mesmo com inventári
   const divisoria = (e.x + e.w / 2 + l.x - l.w / 2) / 2;
   for (const [offset, esperado] of [[-0.001, 'ovos'], [0, 'ovos'], [0.001, 'leite']]) {
     sim.estado.produtos.ovos.prateleira = 0; sim.estado.produtos.leite.prateleira = 0;
-    Object.assign(sim.estado.jogador, { x: divisoria + offset, z: PRODUTOS.leite.reposicao.z, inventario: ['ovos', 'leite'] });
+    Object.assign(sim.estado.jogador, { x: divisoria + offset, z: sim.produtos.leite.reposicao.z, inventario: ['ovos', 'leite'] });
     sim.tempo++; sim.interagir();
     assert.equal(sim.estado.produtos[esperado].prateleira, 1);
     assert.equal(sim.estado.jogador.inventario.length, 1);
@@ -106,11 +106,11 @@ test('N5 completa produção, coleta posterior, reposição e venda de leite por
     }
     assert.ok(chegou, `rota até ${JSON.stringify(alvo)}`);
   }
-  ir({ x: CONFIG.portaProducao.x, z: CONFIG.portaProducao.z - 1.1 });
+  ir({ x: CONFIG.portaProducao.x, z: sim.portaProducao.z - 1.1 });
   ir(PRODUTOS.leite.coleta);
   for (let i = 0; i < 400 && sim.estado.jogador.inventario.length < 4; i++) sim.atualizar(0.05);
   assert.deepEqual(sim.estado.jogador.inventario, Array(4).fill('leite'));
-  ir({ x: CONFIG.portaProducao.x, z: CONFIG.portaProducao.z - 1.1 }); ir(PRODUTOS.leite.reposicao);
+  ir({ x: CONFIG.portaProducao.x, z: sim.portaProducao.z - 1.1 }); ir(sim.produtos.leite.reposicao);
   for (let i = 0; i < 30; i++) sim.atualizar(0.05);
   assert.equal(sim.estado.produtos.leite.prateleira, 4);
   ir(CONFIG.cadeiraCaixa); assert.ok(sim.estado.jogador.sentadoCaixa);

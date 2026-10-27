@@ -1,4 +1,4 @@
-// Verifica as duas árvores do pomar sem imagens ou saves pessoais.
+// Verifica a loja compacta, a expansão no N6 e o pomar, sem imagens ou saves pessoais.
 import { spawn } from 'node:child_process';
 import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -56,15 +56,56 @@ try {
       const { Cena } = await import('/src/jogo/cena.js');
       const verificar = (ok, mensagem) => { if (!ok) throw Error(mensagem); };
       const sim = new Simulacao();
-      sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
       sim.estado.dinheiro = 100000;
-      for (const id of ['milho', 'alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario']) verificar(sim.comprarMelhoria(id).sucesso, id);
       const container = document.createElement('div');
       container.style.cssText = 'position:fixed;inset:0;z-index:1000'; document.body.append(container);
       const original = HTMLCanvasElement.prototype.getContext;
       if (${canvas}) HTMLCanvasElement.prototype.getContext = function(type, ...args) { return type.startsWith('webgl') ? null : original.call(this, type, ...args); };
       let cena;
       try { cena = new Cena(container, sim); } finally { HTMLCanvasElement.prototype.getContext = original; }
+      cena.atualizar(0);
+      verificar(cena.cestasEntrada[0].parent.position.x === CONFIG.cestas.x, 'Suporte de cestas acompanha a nova posicao');
+      verificar(cena.caixeiro.position.x === CONFIG.cadeiraCaixa.x, 'Funcionario acompanha o caixa');
+      verificar(cena.cena.children.some(g => g.isGroup && g.position.x === CONFIG.balcao.x
+        && g.position.z === CONFIG.balcao.z && g.rotation.y === Math.PI / 2), 'Conjunto completo do caixa acompanha a planta');
+      for (let i = 1; i <= 3; i++) {
+        const arvore = cena.cena.getObjectByName('arvore-bairro-' + i);
+        verificar(arvore && arvore.children.length === 9, 'Modelo ramificado da arvore decorativa');
+        verificar(arvore.children.every(m => m.castShadow && m.receiveShadow), 'Sombras das arvores');
+      }
+      const manchas = [];
+      cena.cena.traverse(m => { if (m.name === 'mancha-grama') manchas.push(m); });
+      verificar(manchas.length === 10 && manchas.every(m => m.receiveShadow), 'Grama recebe sombras sem recortes claros');
+      verificar(sim.compacta, 'Inicio compacto');
+      verificar(cena.cena.getObjectByName('piso-inicial').scale.z === 0.5, 'Piso com metade da profundidade');
+      verificar(cena.cena.getObjectByName('entrada-producao').position.z === 8, 'Porta compacta');
+      cena.renderer.render(cena.cena, cena.camera);
+      sim.estado.estatisticas.clientes = 4 * CONFIG.clientesPorNivel;
+      for (const id of ['milho', 'alaProducao', 'alaLeite']) verificar(sim.comprarMelhoria(id).sucesso, id);
+      cena.atualizar(0); cena.atualizar(10);
+      for (const id of ['ovos', 'leite']) {
+        sim.estado.produtos[id].horta = 1;
+        Object.assign(sim.estado.jogador, sim.produtos[id].coleta);
+        sim.tempo++; sim.interagir();
+        Object.assign(sim.estado.jogador, sim.produtos[id].reposicao);
+        sim.tempo++; sim.interagir();
+        cena.atualizar(1);
+        verificar(sim.estado.produtos[id].prateleira === 1, 'Reposicao compacta de ' + id);
+        verificar(cena.produtos[id].frutas.filter(f => f.visible).length === 1, 'Estoque visual compacto de ' + id);
+        verificar(Math.abs(cena.produtos[id].frutas[0].position.z - sim.produtos[id].prateleira.z) < 1, 'Expositor acompanha parede');
+      }
+      cena.renderer.render(cena.cena, cena.camera);
+      const saldo = sim.estado.dinheiro;
+      sim.aumentarNivelDev(); cena.atualizar(0);
+      verificar(!sim.compacta && cena.cena.getObjectByName('piso-inicial').scale.z === 1, 'Expansao automatica N6');
+      verificar(sim.estado.dinheiro === saldo + CONFIG.bonusNivel, 'Expansao sem custo');
+      verificar(cena.cena.getObjectByName('entrada-producao').position.z === 0, 'Porta restaurada');
+      verificar(cena.produtos.ovos.frutas.filter(f => f.visible).length === 1, 'Estoque preservado na expansao');
+      const retomadoN6 = new Simulacao(structuredClone(sim.estado));
+      verificar(!retomadoN6.compacta && retomadoN6.estado.produtos.leite.prateleira === 1, 'Recarga N6');
+      cena.renderer.render(cena.cena, cena.camera);
+      sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
+      for (const id of ['alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario']) verificar(sim.comprarMelhoria(id).sucesso, id);
       cena.atualizar(0);
       for (const [produto, modelo] of [['laranja', 'laranjeira'], ['maca', 'macieira']]) {
         sim.estado.jogador.inventario = [];
@@ -90,7 +131,7 @@ try {
       }
       cena.renderer.render(cena.cena, cena.camera);
       cena.renderer.dispose?.(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, produtos: ['laranja', 'maca'], compra: true, arvore: true, colheita: true, reposicao: true, recarga: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, arvoresBairro: true, gramaRecebeSombras: true, lojaCompacta: true, expansaoN6: true, produtos: ['laranja', 'maca'], compra: true, arvore: true, colheita: true, reposicao: true, recarga: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }
