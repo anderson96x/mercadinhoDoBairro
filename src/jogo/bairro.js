@@ -136,7 +136,9 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     bloco(porta.w + 0.2, 0.22, 0.2, 0x286750, porta.x, 3.02, porta.z, 'principal');
     const folha = new THREE.Group(); folha.name = 'porta-producao-1'; entrada.add(folha);
     folha.position.set(porta.x + porta.w / 2, 0.23, porta.z); destino = folha;
-    bloco(porta.w - 0.12, 2.3, 0.08, 0x286750, -porta.w / 2, 1.2, 0, 'principal');
+    const painelPorta = bloco(porta.w - 0.12, 2.68, 0.08, 0x286750,
+      -porta.w / 2, 1.34, 0, 'principal');
+    painelPorta.name = 'painel-porta-producao';
     bloco(porta.w - 0.34, 1.3, 0.09, 0xa8c7c9, -porta.w / 2, 1.45, 0);
     for (const lado of [-1, 1]) bloco(0.055, 0.4, 0.07, 0xf5eddc, -porta.w + 0.22, 1.16, lado * 0.08);
     folhasProducao.push(folha); destino = grupo;

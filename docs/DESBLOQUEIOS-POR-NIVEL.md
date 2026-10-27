@@ -2,7 +2,7 @@
 
 A progressão avança a cada **25 clientes atendidos**, com bônus de **R$ 100 por nível**. Atingir um nível libera a compra; produtos, funcionários e construções continuam exigindo o saldo e os pré-requisitos indicados abaixo.
 
-A loja começa com **14 × 8 u** nos níveis 1–5. Ao alcançar o **nível 6**, volta automaticamente a **14 × 16 u**, mantendo a fachada no lugar e sem custo. No **nível 13**, comprar a padaria amplia o salão à direita para **24 × 16 u**.
+A loja começa com **14 × 8 u** e mantém esse tamanho até comprar a seção de laranjas, disponível no **nível 6**. Essa compra inclui o aumento para **14 × 16 u**, mantendo a fachada no lugar. Atingir o nível sozinho não altera o salão; o aumento não é um desbloqueio separado. No **nível 13**, comprar a padaria amplia o salão à direita para **24 × 16 u**.
 
 A porta dos fundos tem uma única folha, na antiga metade direita, e abre automaticamente **apenas para o jogador e o repositor contratado**. Clientes não acionam a abertura nem são encaminhados por esse acesso de serviço. Fecha quando os funcionários se afastam e congela durante a pausa. A lixeira fica **fora da loja**, no espaço da antiga folha esquerda, com acesso pelo lado do gramado. Porta e lixeira acompanham a profundidade do salão.
 
@@ -18,7 +18,6 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 | 4 | Ala do trigo | R$ 400 | R$ 5 |
 | 5 | Repositor | R$ 900 | — |
 | 6 | Laranjeira e seção de laranjas | R$ 800 | R$ 7 |
-| 6 | Salão volta automaticamente a 14 × 16 u | Grátis | — |
 | 7 | Macieira e seção de maçãs | R$ 800 | R$ 7 |
 | 8 | Mais 5 cestas, até 10 clientes com cesta | R$ 100 | — |
 | 9 | Estufa de morangos | R$ 1.200 | R$ 16 |
@@ -35,11 +34,11 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 
 ## Hortifruti: níveis 1 a 9
 
-A banca cresce na ordem **tomate → milho → trigo → laranja → maçã → morango**, com estoques e pontos de reposição separados. Só aparecem as seções compradas. Na loja compacta, tomate, milho e trigo usam seções de **1,9 u de profundidade**, com pontos de compra ajustados para preservar a entrada e a parede posterior. No nível 6, passam às seções de **2,2 u** da banca completa. Abasteça pelo corredor interno.
+A banca cresce na ordem **tomate → milho → trigo → laranja → maçã → morango**, com estoques e pontos de reposição separados. Só aparecem as seções compradas. Na loja compacta, tomate, milho e trigo usam seções de **1,9 u de profundidade**, com pontos de compra ajustados para preservar a entrada e a parede posterior. Ao comprar laranjas, passam às seções de **2,2 u** da banca completa. Abasteça pelo corredor interno.
 
 Tomate, milho e trigo ficam alinhados na faixa posterior esquerda, com milho atrás dos tomates e trigo atrás do milho. Os canteiros medem **3,6 × 2,5 u**. A estufa de morangos fica na faixa posterior direita, com o mesmo tamanho de canteiro. **Morangos não exigem padaria, ovos nem leite.**
 
-A laranjeira é comprada no nível 6 e a macieira no nível 7, em **Celular → Melhorias → Mercado**. Cada árvore custa **R$ 800**, produz uma fruta a cada **3 segundos**, guarda até **8 frutas** na copa e abastece uma seção com capacidade de **12 unidades**. Ambas vendem por **R$ 7** e não dependem de outras compras. As frutas visíveis desaparecem conforme são colhidas.
+A laranjeira é comprada no nível 6 e a macieira no nível 7, em **Celular → Melhorias → Mercado**. Cada árvore custa **R$ 800**, produz uma fruta a cada **3 segundos**, guarda até **8 frutas** na copa e abastece uma seção com capacidade de **12 unidades**. Ambas vendem por **R$ 7**. A laranjeira não depende de outras compras; maçãs e morangos exigem a seção de laranjas para garantir espaço no salão. As frutas visíveis desaparecem conforme são colhidas.
 
 A laranjeira fica no pomar nos fundos direitos, na posição à direita do futuro apiário, com coleta frontal. A macieira fica ao lado, em direção às oficinas, com coleta pela lateral esquerda. O repositor pode colher e abastecer ambas. Irrigação e fertilizante das hortas não afetam o pomar.
 
@@ -49,7 +48,7 @@ Laranja, maçã e morango entram nos pedidos **após o primeiro abastecimento**.
 
 O caixa do nível 2 atende a fila enquanto o jogador cuida da loja. O repositor do nível 5 colhe e abastece os produtos liberados, incluindo trigo e frutas; não exige ovos. Ele anda na **mesma velocidade atual do jogador**, inclusive com o bônus de 15% da cesta de trabalho.
 
-No nível 8, mais cinco cestas aumentam a capacidade para **dez clientes com cesta**. Sem uma cesta disponível, os novos pedestres passam pela calçada. A cesta de trabalho do nível 10 permite carregar **oito produtos** e aumenta a velocidade do jogador em **15%**, acompanhada pelo repositor. As melhorias avulsas Reposição ágil e Repositor ligeiro continuam desativadas.
+No nível 8, mais cinco cestas aumentam a capacidade para **dez clientes com cesta**. A compra exige a seção de laranjas para acomodar a fila no salão maior. Sem uma cesta disponível, os novos pedestres passam pela calçada. A cesta de trabalho do nível 10 permite carregar **oito produtos** e aumenta a velocidade do jogador em **15%**, acompanhada pelo repositor. As melhorias avulsas Reposição ágil e Repositor ligeiro continuam desativadas.
 
 ## Ovos no nível 11 e leite no nível 12
 
@@ -57,7 +56,7 @@ Comprar ovos instala o galinheiro atrás da loja e uma estante alta de três ní
 
 Comprar leite instala o curral ao lado do galinheiro e um refrigerador vertical de duas portas de vidro à direita dos ovos. O curral produz uma garrafa a cada **4,5 segundos**, sem insumos. Ovos e leite têm estoques independentes; abasteça pela frente de cada expositor. O jogador e o repositor podem coletar e repor.
 
-Essas compras mantêm o salão de **14 × 16 u** e não exigem comprar as colheitas ou o pomar.
+Essas compras exigem a seção de laranjas e mantêm o salão de **14 × 16 u**. Não exigem milho, trigo ou maçãs.
 
 ## Padaria no nível 13
 
@@ -118,7 +117,7 @@ As melhorias abaixo não aparecem no catálogo e não podem ser compradas, inclu
 | 21 | Importação de mantimentos | R$ 315 por caixa de 9 |
 | 22 | Importação de biscoitos e doces | R$ 360 por caixa de 9 |
 
-A cesta de trabalho do nível 10 continua concedendo sua capacidade e seu bônus de velocidade do jogador. A expansão gratuita de profundidade no nível 6 e a ampliação lateral da padaria no nível 13 também continuam ativas; a expansão suspensa é a construção adicional dos fundos e do pátio de carga descrita abaixo.
+A cesta de trabalho do nível 10 continua concedendo sua capacidade e seu bônus de velocidade do jogador. O aumento de profundidade incluído na compra de laranjas e a ampliação lateral da padaria no nível 13 também continuam ativos; a expansão suspensa é a construção adicional dos fundos e do pátio de carga descrita abaixo.
 
 ## Conteúdo suspenso: referência da implementação anterior
 

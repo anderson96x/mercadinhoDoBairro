@@ -1,3 +1,4 @@
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import { reativarImportadosParaTeste } from './helpers/importados-suspensos.js';
 reativarImportadosParaTeste();
 
@@ -17,6 +18,7 @@ function loja(nivel = 18) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
+  prepararLojaCompleta(sim);
   for (const id of ['alaProducao', 'alaLeite', 'milho', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario', 'queijaria', 'cozinhaGeleia', 'ajudante']) {
     assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }

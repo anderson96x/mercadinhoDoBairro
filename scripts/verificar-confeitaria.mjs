@@ -61,7 +61,7 @@ try {
       const sim = new Simulacao();
       sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
       sim.estado.dinheiro = 100000;
-      for (const id of ['alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario', 'caixa']) verificar(sim.comprarMelhoria(id).sucesso, id);
+      for (const id of ['laranja', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario', 'caixa']) verificar(sim.comprarMelhoria(id).sucesso, id);
       const container = document.createElement('div');
       container.style.cssText = 'position:fixed;inset:0;z-index:1000'; document.body.append(container);
       const original = HTMLCanvasElement.prototype.getContext;

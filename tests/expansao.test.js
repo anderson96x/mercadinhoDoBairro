@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import { Simulacao, estadoInicial, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS, ALA_PRODUCAO, ALA_LEITE, NIVEL_OVOS } from '../src/jogo/configuracao.js';
@@ -36,6 +37,7 @@ test('estações futuras não aparecem nem criam marcações antes da compra', (
 test('refrigerador de parede tem duas portas de vidro, três níveis e acesso frontal desde N12', () => {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 11 * CONFIG.clientesPorNivel;
+  prepararLojaCompleta(sim);
   sim.estado.estagioLoja = ALA_LEITE.indice;
   sim.estado.melhorias.alaProducao = 1;
   sim.estado.melhorias.alaLeite = 1;
@@ -164,6 +166,7 @@ test('save da antiga área lateral mantém ovos e compras e reposiciona ajudante
 function abrirAla(sim) {
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * (NIVEL_OVOS - 1);
   sim.estado.dinheiro = 2000;
+  prepararLojaCompleta(sim);
   assert.equal(sim.comprarMelhoria('milho').sucesso, true);
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, true);
 }
@@ -190,6 +193,7 @@ test('galinheiro exige nível 11 sem depender de milho e preserva o terreno', ()
   sim.estado.dinheiro = 2000;
   assert.match(sim.comprarMelhoria('alaProducao').motivo, /nível 11/);
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 10;
+  prepararLojaCompleta(sim);
 
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, true);
   assert.equal(sim.estado.estagioLoja, ALA_PRODUCAO.indice);

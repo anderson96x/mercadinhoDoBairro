@@ -2,6 +2,7 @@ import { reativarImportadosParaTeste } from './helpers/importados-suspensos.js';
 reativarImportadosParaTeste();
 
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
@@ -16,6 +17,7 @@ function abrir(nivel = 19, dinheiro = 2000) {
   sim.proximoCliente = Infinity;
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = dinheiro;
+  prepararLojaCompleta(sim);
   return sim;
 }
 

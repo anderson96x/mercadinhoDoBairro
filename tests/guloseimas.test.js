@@ -1,3 +1,4 @@
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import { reativarImportadosParaTeste } from './helpers/importados-suspensos.js';
 reativarImportadosParaTeste();
 
@@ -29,6 +30,7 @@ test('rótulos SVG de guloseimas têm dimensões explícitas para upload no WebG
 function loja(nivel = 22) {
   const sim = new Simulacao(); sim.estado.dinheiro = 100000; sim.proximoCliente = Infinity;
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+  prepararLojaCompleta(sim);
   for (const id of ['alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', 'expansao', 'prateleirasImportados']) {
     assert.equal(sim.comprarMelhoria(id).sucesso, true);
   }

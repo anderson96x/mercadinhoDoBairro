@@ -1,4 +1,4 @@
-// Verifica a loja compacta, a expansão no N6 e o pomar, sem imagens ou saves pessoais.
+// Verifica a loja compacta, a expansão ao comprar laranja e o pomar, sem imagens ou saves pessoais.
 import { spawn } from 'node:child_process';
 import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -126,20 +126,27 @@ try {
       verificar(sim.comprarMelhoria('ajudante').sucesso, 'Repositor no N5');
       const saldo = sim.estado.dinheiro;
       sim.aumentarNivelDev(); cena.atualizar(0);
-      verificar(!sim.compacta && cena.cena.getObjectByName('piso-inicial').scale.z === 1, 'Expansao automatica N6');
-      verificar(sim.estado.dinheiro === saldo + CONFIG.bonusNivel, 'Expansao sem custo');
-      verificar(cena.cena.getObjectByName('entrada-producao').position.z === 0, 'Porta restaurada');
-      verificarPortaProducao();
-      verificar(cena.produtos.trigo.frutas.filter(f => f.visible).length === 1, 'Estoque preservado na expansao');
+      verificar(sim.compacta && cena.cena.getObjectByName('piso-inicial').scale.z === 0.5, 'N6 permanece compacto');
+      verificar(sim.estado.dinheiro === saldo + CONFIG.bonusNivel, 'Bonus de nivel preservado');
+      verificar(cena.cena.getObjectByName('entrada-producao').position.z === 8, 'Porta permanece compacta');
       const retomadoN6 = new Simulacao(structuredClone(sim.estado));
-      verificar(!retomadoN6.compacta && retomadoN6.estado.produtos.milho.prateleira === 1, 'Recarga N6');
+      verificar(retomadoN6.compacta && retomadoN6.estado.produtos.milho.prateleira === 1, 'Recarga N6 sem laranja');
       cena.renderer.render(cena.cena, cena.camera);
       for (const [nivel, produto, modelo] of [[6, 'laranja', 'laranjeira'], [7, 'maca', 'macieira']]) {
         sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
         sim.estado.jogador.inventario = [];
         verificar(!cena.produtos[produto].grupo.visible, 'Arvore antes da compra');
+        const saldoAntes = sim.estado.dinheiro;
         verificar(sim.comprarMelhoria(produto).sucesso, 'Compra');
         cena.atualizar(0);
+        if (produto === 'laranja') {
+          verificar(!sim.compacta && cena.cena.getObjectByName('piso-inicial').scale.z === 1, 'Expansao ao comprar laranja');
+          verificar(sim.estado.dinheiro === saldoAntes - 800, 'Aumento incluido na compra');
+          verificar(cena.cena.getObjectByName('entrada-producao').position.z === 0, 'Porta restaurada');
+          verificarPortaProducao();
+          verificar(cena.produtos.trigo.frutas.filter(f => f.visible).length === 1, 'Estoque preservado na expansao');
+          verificar(!new Simulacao(structuredClone(sim.estado)).compacta, 'Recarga apos compra de laranja');
+        }
         verificar(cena.modoCompativel === ${canvas}, 'Renderizador');
         const objetos = cena.produtos[produto];
         verificar(objetos.grupo.visible && objetos.grupo.getObjectByName(modelo), 'Modelo da arvore');
@@ -171,7 +178,7 @@ try {
       }
       cena.renderer.render(cena.cena, cena.camera);
       cena.renderer.dispose?.(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, portaUnicaAnimada: true, lixeiraExterna: true, progressaoAteN19: true, trigoCompactoN4: true, expansaoN6: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, portaUnicaAnimada: true, lixeiraExterna: true, progressaoAteN19: true, trigoCompactoN4: true, expansaoAoComprarLaranja: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }

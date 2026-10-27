@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
@@ -19,6 +20,7 @@ test('macieira exige nível 7 e R$ 800, com compra única', () => {
   sim.estado.dinheiro = 800;
   assert.equal(sim.comprarMelhoria('maca').sucesso, false);
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
+  prepararLojaCompleta(sim);
   sim.estado.dinheiro = 799;
   assert.equal(sim.comprarMelhoria('maca').sucesso, false);
   sim.estado.dinheiro = 800;

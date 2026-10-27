@@ -1,3 +1,4 @@
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import { reativarImportadosParaTeste } from './helpers/importados-suspensos.js';
 reativarImportadosParaTeste();
 
@@ -25,6 +26,7 @@ function primitivas() {
 test('compra do N18 amplia 12 u à esquerda e preserva jogadores no novo terreno ao salvar', () => {
   const sim = new Simulacao(); sim.estado.dinheiro = 100000;
   sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
+  prepararLojaCompleta(sim);
   for (const id of ['alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria']) assert.equal(sim.comprarMelhoria(id).sucesso, true);
   assert.equal(sim.limitesMundo.minX, CONFIG.limiteMundo.minX);
   const antes = structuredClone(sim.estado.produtos);

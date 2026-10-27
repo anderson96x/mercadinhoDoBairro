@@ -1,6 +1,18 @@
 # Histórico de alterações
 
-## Versão atual: 0.68.1 — 2026-10-27
+## Versão atual: 0.68.3 — 2026-10-27
+
+- Fecha o vão visual acima da porta dos fundos, prolongando a folha até a verga sem alterar a dobradiça, o vidro ou a animação de abertura.
+- Validação: teste do modelo da porta, suíte completa e build de produção aprovados.
+
+## 0.68.2 — 2026-10-27
+
+- Mantém a loja compacta de 14 × 8 u ao atingir o nível 6. A compra da seção de laranjas inclui o aumento para 14 × 16 u, preservando estoques e reposicionando os personagens com segurança.
+- Remove o aumento do salão como desbloqueio separado. Maçãs, morangos, ovos, leite e cestas extras exigem laranjas para acomodar seus expositores e a fila na planta completa.
+- Atualiza a documentação, os cenários de teste e a verificação de navegador para distinguir subir de nível de comprar a seção.
+- Validação: 372 testes, build de produção e rotas N1–N19 aprovados. Edge em desktop/celular com WebGL e Canvas confirma a loja compacta no N6, o aumento somente após a compra de laranjas, a recarga e a preservação dos estoques, sem salvar imagens.
+
+## 0.68.1 — 2026-10-27
 
 - Restringe a abertura automática da porta dos fundos ao jogador e ao repositor contratado. Clientes não acionam nem mantêm a abertura por proximidade; suas rotas deixam de planejar a porta de serviço aberta.
 - Mantém a proteção da folha contra sobreposição com pessoas e atualiza as verificações de rotas de coleta para usar um funcionário autorizado.

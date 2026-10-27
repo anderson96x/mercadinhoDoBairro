@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
@@ -13,6 +14,7 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 function nivel5() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 275; sim.estado.dinheiro = 800; sim.proximoCliente = Infinity;
+  prepararLojaCompleta(sim);
   return sim;
 }
 

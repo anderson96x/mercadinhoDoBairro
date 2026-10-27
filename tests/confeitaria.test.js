@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
@@ -14,6 +15,7 @@ function preparar(nivel = 19) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
+  prepararLojaCompleta(sim);
   for (const id of ['alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario', 'caixa']) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   sim.proximoCliente = Infinity; sim.definirAssaltosAtivos(false);
   return sim;

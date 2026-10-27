@@ -1,5 +1,5 @@
 // Nova planta: 2 unidades por cm anotado; x para a direita, z para a rua.
-// A profundidade dobra no N6; a padaria amplia à direita no N13.
+// A compra de laranja dobra a profundidade; a padaria amplia à direita no N13.
 export const PLANTA_INICIAL = {
   escala: 2,
   terreno: { x: 4, z: -5.5, w: 40, d: 40 },

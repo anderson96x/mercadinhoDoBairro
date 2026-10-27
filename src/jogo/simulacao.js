@@ -527,6 +527,7 @@ export class Simulacao {
     if (m.tipo === 'confeitaria') {
       for (const produto of Object.keys(CONFEITARIA.produtos)) this.estado.produtos[produto].liberado = true;
     }
+    if (id === 'laranja') this.sincronizarProfundidade();
     this.emitir('melhoria', { id, texto: id === ALA_PADARIA.id
       ? `Padaria: cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${this.produtos.pao.preco}.`
       : id === 'milho'

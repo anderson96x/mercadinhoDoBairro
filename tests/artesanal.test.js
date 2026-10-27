@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS, MELHORIAS, OFICINAS, ALA_ARTESANAL, ALA_PADARIA } from '../src/jogo/configuracao.js';
@@ -12,6 +13,7 @@ function abrir(nivel = 17) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 30000;
+  if (nivel >= 6) prepararLojaCompleta(sim);
   for (const id of ['caixa', 'milho', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
     'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'cozinhaGeleia']) {
     if (MELHORIAS.find(m => m.id === id).nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
@@ -78,6 +80,7 @@ test('morango e mel renovam estoque limitado e podem ser colhidos e repostos', (
 test('objetivos guiam ingredientes, coleta do lote pronto e primeiro abastecimento', () => {
   const sim = abrir(15);
   sim.estado.produtos.morango.apresentado = true;
+  sim.estado.produtos.laranja.apresentado = true;
   sim.estado.produtos.mel.apresentado = true;
   assert.equal(sim.missao().destino, 'coleta-leite');
   sim.estado.jogador.inventario = ['leite'];
@@ -88,7 +91,7 @@ test('objetivos guiam ingredientes, coleta do lote pronto e primeiro abastecimen
   interagir(sim, PRODUTOS.queijo.coleta);
   assert.equal(sim.missao().destino, 'prateleira-queijo');
   interagir(sim, PRODUTOS.queijo.reposicao);
-  assert.equal(sim.missao().titulo, 'Laranjeira');
+  assert.equal(sim.missao().titulo, 'Macieira');
 });
 
 test('clientes simultâneos circulam no anexo e devolvem todas as cestas', () => {

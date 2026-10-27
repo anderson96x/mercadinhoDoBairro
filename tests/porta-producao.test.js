@@ -10,6 +10,7 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 function loja(nivel = 1) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+  if (nivel >= 6) { sim.estado.dinheiro = 800; sim.comprarMelhoria('laranja'); }
   sim.proximoCliente = Infinity;
   return sim;
 }
@@ -123,6 +124,11 @@ test('modelo usa uma folha direita, acompanha a animação e apoia a lixeira no 
   const folhas = entrada.children.filter(c => c.name.startsWith('porta-producao-'));
   assert.equal(folhas.length, 1);
   assert.equal(folhas[0].position.x, 5.1);
+  const painel = folhas[0].getObjectByName('painel-porta-producao');
+  const topoPainel = folhas[0].position.y + painel.position.y + painel.geometry.parameters.height / 2;
+  const verga = entrada.children.find(c => c !== folhas[0] && c.geometry?.parameters.width > 1.5);
+  const baseVerga = verga.position.y - verga.geometry.parameters.height / 2;
+  assert.ok(baseVerga - topoPainel <= 0.02, 'folha encontra a verga sem vão superior');
   for (const abertura of [0, 0.5, 1]) {
     bairro.animarPortasProducao([abertura]);
     assert.equal(folhas[0].rotation.y, anguloPortaProducao(abertura));

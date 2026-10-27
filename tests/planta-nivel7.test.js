@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { PAREDES_LOJA } from '../src/jogo/bairro.js';
@@ -8,6 +9,7 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 test('N7 mantém paredes iniciais e canteiros iguais, com trigo atrás do milho', () => {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 150; sim.estado.dinheiro = 400;
+  prepararLojaCompleta(sim);
   assert.equal(sim.estado.produtos.trigo.liberado, false);
   assert.ok(sim.comprarMelhoria('alaTrigo').sucesso);
   assert.equal(sim.estado.produtos.milho.liberado, false);
@@ -43,6 +45,7 @@ test('save V8 preserva trigo e cargas ao recuperar atores da antiga expansão N7
 test('dez posições de fila cabem e são alcançáveis no salão antes do N9', () => {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 6 * CONFIG.clientesPorNivel;
+  prepararLojaCompleta(sim);
   for (let i = 0; i < 10; i++) {
     const alvo = pontoFila(i), ator = { ...CONFIG.inicio };
     assert.ok(alvo.x < 10.9 - 0.5 && alvo.z < 6.7 - 0.5);

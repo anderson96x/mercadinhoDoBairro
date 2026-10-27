@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao, validarEstado } from '../src/jogo/simulacao.js';
@@ -11,6 +12,7 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 function abrirPadaria() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * (ALA_PADARIA.nivelMinimo - 1);
+  prepararLojaCompleta(sim);
   sim.estado.melhorias.alaProducao = 1;
   sim.estado.melhorias.alaTrigo = 1;
   sim.estado.produtos.trigo.liberado = true;

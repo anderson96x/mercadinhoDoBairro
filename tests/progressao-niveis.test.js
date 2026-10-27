@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG, MELHORIAS, PRODUTOS, ALA_PADARIA } from '../src/jogo/configuracao.js';
@@ -87,9 +88,23 @@ test('mel e queijo aguardam o salão da padaria mesmo quando a estufa já foi co
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 14 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 20000;
+  prepararLojaCompleta(sim);
   sim.comprarMelhoria('alaArtesanal'); sim.comprarMelhoria('alaLeite');
   for (const id of ['apiario', 'queijaria']) {
     assert.equal(sim.disponibilidadeMelhoria(id).requisitoMelhoria, 'alaPadaria');
     assert.equal(sim.comprarMelhoria(id).sucesso, false);
   }
+});
+
+test('seções e cestas que precisam da planta maior aguardam a compra de laranja', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
+  sim.estado.dinheiro = 20000;
+  for (const id of ['maca', 'cestasExtras', 'alaArtesanal', 'alaProducao', 'alaLeite']) {
+    assert.equal(sim.disponibilidadeMelhoria(id).requisitoMelhoria, 'laranja', id);
+    assert.equal(sim.comprarMelhoria(id).sucesso, false, id);
+    assert.equal(sim.compacta, true);
+  }
+  assert.equal(sim.comprarMelhoria('logistica').sucesso, true);
+  assert.equal(sim.compacta, true, 'outras compras não ampliam a loja');
 });

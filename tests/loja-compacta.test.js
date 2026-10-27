@@ -16,11 +16,11 @@ function nivel5() {
   return sim;
 }
 
-test('N1 a N5 têm metade da profundidade, fachada fixa e porta posterior acessível', () => {
+test('loja mantém metade da profundidade e a porta acessível sem comprar laranja, mesmo em níveis altos', () => {
   const sim = new Simulacao();
   assert.equal(PLANTA_COMPACTA.salao.d, PLANTA_INICIAL.salao.d / 2);
   assert.equal(PLANTA_COMPACTA.limites.maxZ, PLANTA_INICIAL.limites.maxZ);
-  for (let nivel = 1; nivel <= 5; nivel++) {
+  for (const nivel of [1, 5, 6, 7, 19]) {
     sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
     assert.ok(sim.compacta);
     sim.aberturasPortasProducao[0] = 1;
@@ -30,7 +30,7 @@ test('N1 a N5 têm metade da profundidade, fachada fixa e porta posterior acess�
   }
 });
 
-test('N6 restaura automaticamente a profundidade sem cobrança e mantém estoques e compras', () => {
+test('somente a compra de laranja amplia a loja, cobrando uma vez e preservando estoques e compras', () => {
   const sim = nivel5();
   sim.estado.produtos.trigo.prateleira = 5;
   sim.estado.produtos.milho.prateleira = 3;
@@ -39,17 +39,27 @@ test('N6 restaura automaticamente a profundidade sem cobrança e mantém estoque
   Object.assign(sim.estado.jogador, PRODUTOS.trigo.prateleira);
   assert.equal(sim.produtos.trigo.prateleira.z, PRODUTOS.trigo.prateleira.z + 0.6);
   assert.equal(sim.aumentarNivelDev(), 6);
+  assert.equal(sim.compacta, true, 'subir de nível não amplia a loja');
+  const saldoN6 = sim.estado.dinheiro;
+  sim.estado.dinheiro = 799;
+  assert.equal(sim.comprarMelhoria('laranja').sucesso, false);
+  assert.equal(sim.compacta, true, 'compra recusada não amplia a loja');
+  sim.estado.dinheiro = saldoN6;
+  assert.equal(sim.comprarMelhoria('laranja').sucesso, true);
   assert.equal(sim.compacta, false);
-  assert.equal(sim.estado.dinheiro, dinheiro + CONFIG.bonusNivel);
-  assert.deepEqual(sim.estado.produtos, produtos);
-  assert.deepEqual(sim.estado.melhorias, melhorias);
+  assert.equal(sim.estado.dinheiro, dinheiro + CONFIG.bonusNivel - 800);
+  assert.deepEqual(sim.estado.produtos.trigo, produtos.trigo);
+  assert.deepEqual(sim.estado.produtos.milho, produtos.milho);
+  assert.deepEqual(sim.estado.melhorias, { ...melhorias, laranja: 1 });
+  assert.equal(sim.comprarMelhoria('laranja').sucesso, false);
+  assert.equal(sim.estado.dinheiro, dinheiro + CONFIG.bonusNivel - 800);
   assert.equal(sim.produtos, PRODUTOS);
   assert.deepEqual(sim.portaProducao, PLANTA_INICIAL.portaProducao);
   assert.ok(segmentoLivre(sim.estado.jogador, sim.estado.jogador, sim.obstaculos(), 0.32));
   assert.ok(segmentoLivre({ x: 6, z: 0 }, { x: 6, z: -3 }, sim.obstaculos(), 0.32));
 });
 
-test('pagamento do cliente que libera N6 também restaura a loja', () => {
+test('pagamento do cliente que libera N6 mantém a loja compacta até comprar laranja', () => {
   const sim = nivel5();
   sim.estado.estatisticas.clientes = 5 * CONFIG.clientesPorNivel - 1;
   sim.estado.melhorias.caixa = 1;
@@ -58,6 +68,9 @@ test('pagamento do cliente que libera N6 também restaura a loja', () => {
   sim.clientes.push(cliente);
   sim.atualizarCaixa(CONFIG.tempoCaixa);
   assert.equal(sim.nivel, 6);
+  assert.equal(sim.compacta, true);
+  assert.equal(sim.ultimaPlantaCompacta, true);
+  assert.equal(sim.comprarMelhoria('laranja').sucesso, true);
   assert.equal(sim.compacta, false);
   assert.equal(sim.ultimaPlantaCompacta, false);
 });
@@ -66,6 +79,7 @@ test('saves anteriores preservam produção, saldo e carga na loja compacta ou c
   for (const nivel of [5, 6, 19]) {
     const sim = nivel5();
     sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+    if (nivel >= 6) assert.equal(sim.comprarMelhoria('laranja').sucesso, true);
     sim.estado.versaoLayout = 23;
     sim.estado.produtos.trigo.prateleira = 5;
     sim.estado.produtos.trigo.apresentado = true;
