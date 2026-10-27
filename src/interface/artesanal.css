@@ -1,6 +1,8 @@
 .item.morango, .melhoria-icone.alaArtesanal { background: #f9dce3; color: #bd3c5b; }
 .item.laranja, .melhoria-icone.laranja { background: #ffead0; color: #bb650c; }
 .etiqueta-laranja b { color: #bb650c; }
+.item.maca, .melhoria-icone.maca { background: #f7dce0; color: #a62636; }
+.etiqueta-maca b { color: #a62636; }
 .item.mel, .melhoria-icone.apiario { background: #faeac1; color: #a77415; }
 .item.queijo, .melhoria-icone.queijaria { background: #f8edbd; color: #9e771d; }
 .item.geleia, .melhoria-icone.cozinhaGeleia { background: #f0d9e5; color: #9d3c65; }

@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.64.0 — 2026-10-27
+## Versão atual: 0.65.0 — 2026-10-27
+
+- Adiciona macieira no nível 19 por R$ 800, ao lado da laranjeira no gramado, com maçãs em vermelho rubi visíveis na copa e venda por R$ 7. Usa a sexta seção do hortifruti, junto às laranjas.
+- Mantém produção de uma fruta a cada 3 segundos, até oito na árvore e doze na banca. Integra colheita, repositor, pedidos após primeiro abastecimento e salvamento; saves anteriores recebem a macieira não comprada.
+- Validação: 353 testes, build de produção e rotas até N19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica as duas árvores, compra, colheita, reposição visual e recarga, sem salvar imagens.
+
+## 0.64.0 — 2026-10-27
 
 - Adiciona laranjeira no nível 18 por R$ 800, ao lado do apiário, com laranjas visíveis na copa e venda por R$ 7. Colheita, repositor, pedidos e salvamento integrados; produção de uma fruta a cada 3 segundos, até oito.
 - Remove a base quadrada sob a laranjeira e aumenta as frutas, distribuindo-as na face visível da copa.

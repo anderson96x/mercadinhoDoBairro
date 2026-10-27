@@ -43,8 +43,8 @@ test('horta N1 respeita a posição posterior esquerda e o canteiro compacto da 
 
 function completa() {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
-  sim.estado.estatisticas.clientes = 425; sim.estado.dinheiro = 40000;
-  for (const id of ['milho', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'laranja']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
+  sim.estado.estatisticas.clientes = 450; sim.estado.dinheiro = 40000;
+  for (const id of ['milho', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'laranja', 'maca']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
   return sim;
 }
 

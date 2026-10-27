@@ -31,6 +31,7 @@ const caminhos = {
   mudo: '<path d="m4 9 4 0 5-4v14l-5-4H4V9Zm12 0 5 6m0-6-5 6"/>',
   morango: '<path d="M12 7C1 2 2 14 12 21 22 14 23 2 12 7Zm0 0L8 2m4 5 4-5m-4 5V2M8 11v1m8-1v1m-4 3v1"/>',
   laranja: '<circle cx="12" cy="14" r="8"/><path d="M12 6V3m0 3c0-4 5-5 7-3-1 3-4 4-7 3"/>',
+  maca: '<path d="M12 7C3 2 1 11 5 18c2 4 5 3 7 2 2 1 5 2 7-2 4-7 2-16-7-11Zm0 0V3m0 3c1-4 5-5 7-3-1 3-4 4-7 3"/>',
   mel: '<path d="M7 3h10v4H7zM6 7h12l1 3v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9zM5 12h14M5 17h14"/><path d="m12 12 2 3-2 2-2-2z"/>',
   queijo: '<path d="m3 10 12-7 6 7v10H3zM3 10h18"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="16" r="2"/>',
   geleia: '<path d="M7 3h10v4H7zM6 7h12l1 3v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9z"/><path d="M12 12c-5-3-5 3 0 6 5-3 5-9 0-6Zm0 0V9"/>',

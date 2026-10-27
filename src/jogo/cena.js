@@ -255,6 +255,12 @@ export function criarProduto(id, escala = 1, variante = 0) {
     esfera(grupo, 0.16, 0xff3f32, 0, 0, 0, 1, 0.86, 1);
     const folha = caixa(grupo, 0.2, 0.04, 0.09, 0x2a9b40, 0, 0.14, 0); folha.rotation.y = 0.7;
     caixa(grupo, 0.04, 0.09, 0.04, 0x2a9b40, 0, 0.18, 0);
+  } else if (id === 'maca') {
+    esfera(grupo, 0.16, 0xb52b3a, -0.065, 0, 0, 0.9, 1, 1);
+    esfera(grupo, 0.16, 0xce3a49, 0.065, 0, 0, 0.9, 1, 1);
+    cilindro(grupo, 0.025, 0.03, 0.12, 0x795335, 0, 0.19, 0, 5);
+    const folha = esfera(grupo, 0.11, 0x4b962e, 0.09, 0.22, 0, 1, 0.22, 0.45);
+    folha.rotation.z = 0.3;
   } else if (id === 'laranja') {
     esfera(grupo, 0.18, 0xf79520, 0, 0, 0, 1, 0.96, 1);
     cilindro(grupo, 0.025, 0.03, 0.07, 0x795335, 0, 0.19, 0, 5);
@@ -1065,8 +1071,8 @@ export class Cena {
         const x = h.x - 1.1 + i % 4 * 2.2 / 3, z = h.z - 0.55 + Math.floor(i / 4) * 1.1;
         esfera(grupo, 0.3, 0x429852, x, 0.67, z, 1.2, 0.6, 1);
       }
-    } else if (id === 'laranja') {
-      const arvore = new THREE.Group(); arvore.name = 'laranjeira'; grupo.add(arvore);
+    } else if (p.origem === 'pomar') {
+      const arvore = new THREE.Group(); arvore.name = id === 'maca' ? 'macieira' : 'laranjeira'; grupo.add(arvore);
       cilindro(arvore, 0.18, 0.28, 2, 0x87603a, h.x, 1.1, h.z, 7);
       for (const lado of [-1, 1]) {
         const galho = cilindro(arvore, 0.08, 0.12, 1.1, 0x87603a, h.x + lado * 0.3, 1.8, h.z, 6);
@@ -1093,7 +1099,7 @@ export class Cena {
       const oficina = !!OFICINAS[id];
       if (id === 'mel') {
         fruto.position.set(h.x - 0.69 + i % 4 * 0.46, ALTURA_BANDEJA_MEL + 0.15 * 0.85, h.z + 1.02 + Math.floor(i / 4) * 0.46);
-      } else if (id === 'laranja') {
+      } else if (p.origem === 'pomar') {
         const [x, y, z] = [
           [1.05, 2.55, 0.65], [0.45, 3.05, 1.02], [-0.35, 2.62, 1.08], [-0.95, 3.08, 0.55],
           [1.12, 3.18, -0.2], [0.72, 3.68, 0.18], [-0.1, 3.72, 0.72], [-0.72, 3.48, 0.92]
@@ -1113,7 +1119,7 @@ export class Cena {
     }
     const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h, p.canteiro) : null;
     this.produtos[id] = { grupo, frutos, frutas, galinhas: [], abelhas, irrigador, refrigerador, banca };
-    this.criarLabel(`horta-${id}`, { ...h, y: id === 'laranja' ? 4.4 : id === 'morango' ? 2.6 : id === 'mel' ? 3 : 2 }, OFICINAS[id]?.nome.toLocaleUpperCase('pt-BR') || (id === 'laranja' ? 'LARANJEIRA' : id === 'mel' ? 'APIÁRIO' : 'ESTUFA DE MORANGOS'), 'Pronto para colher', id);
+    this.criarLabel(`horta-${id}`, { ...h, y: p.origem === 'pomar' ? 4.4 : id === 'morango' ? 2.6 : id === 'mel' ? 3 : 2 }, OFICINAS[id]?.nome.toLocaleUpperCase('pt-BR') || (id === 'maca' ? 'MACIEIRA' : id === 'laranja' ? 'LARANJEIRA' : id === 'mel' ? 'APIÁRIO' : 'ESTUFA DE MORANGOS'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...s, y: id === 'queijo' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   construirPadaria() {

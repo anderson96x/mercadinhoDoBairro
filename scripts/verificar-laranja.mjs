@@ -1,4 +1,4 @@
-// Browser checks for orange tree; no images or personal saves.
+// Verifica as duas árvores do pomar sem imagens ou saves pessoais.
 import { spawn } from 'node:child_process';
 import { mkdtemp, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -56,7 +56,7 @@ try {
       const { Cena } = await import('/src/jogo/cena.js');
       const verificar = (ok, mensagem) => { if (!ok) throw Error(mensagem); };
       const sim = new Simulacao();
-      sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
+      sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
       sim.estado.dinheiro = 100000;
       for (const id of ['milho', 'alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario']) verificar(sim.comprarMelhoria(id).sucesso, id);
       const container = document.createElement('div');
@@ -66,28 +66,31 @@ try {
       let cena;
       try { cena = new Cena(container, sim); } finally { HTMLCanvasElement.prototype.getContext = original; }
       cena.atualizar(0);
-      verificar(!cena.produtos.laranja.grupo.visible, 'Arvore antes da compra');
-      verificar(sim.comprarMelhoria('laranja').sucesso, 'Compra');
-      cena.atualizar(0);
-      verificar(cena.modoCompativel === ${canvas}, 'Renderizador');
-      const objetos = cena.produtos.laranja;
-      verificar(objetos.grupo.visible && objetos.grupo.getObjectByName('laranjeira'), 'Modelo da arvore');
-      verificar(objetos.frutos.filter(f => f.visible).length === 8, 'Frutas da copa');
-      verificar(objetos.frutas.every(f => !f.visible), 'Expositor inicialmente vazio');
-      Object.assign(sim.estado.jogador, PRODUTOS.laranja.coleta);
-      sim.tempo += 1; sim.interagir(); cena.atualizar(0);
-      verificar(sim.estado.jogador.inventario[0] === 'laranja', 'Colheita');
-      verificar(objetos.frutos.filter(f => f.visible).length === 7, 'Copa apos colher');
-      Object.assign(sim.estado.jogador, PRODUTOS.laranja.reposicao);
-      sim.tempo += 1; sim.interagir(); cena.atualizar(0);
-      for (let i = 0; i < 10; i++) cena.atualizar(0.1);
-      verificar(objetos.frutas.filter(f => f.visible).length === 1, 'Reposicao visual');
-      verificar(objetos.grupo.getObjectByName('placa-produto-laranja'), 'Placa');
-      const retomado = new Simulacao(structuredClone(sim.estado));
-      verificar(retomado.estado.produtos.laranja.prateleira === 1, 'Recarga');
+      for (const [produto, modelo] of [['laranja', 'laranjeira'], ['maca', 'macieira']]) {
+        sim.estado.jogador.inventario = [];
+        verificar(!cena.produtos[produto].grupo.visible, 'Arvore antes da compra');
+        verificar(sim.comprarMelhoria(produto).sucesso, 'Compra');
+        cena.atualizar(0);
+        verificar(cena.modoCompativel === ${canvas}, 'Renderizador');
+        const objetos = cena.produtos[produto];
+        verificar(objetos.grupo.visible && objetos.grupo.getObjectByName(modelo), 'Modelo da arvore');
+        verificar(objetos.frutos.filter(f => f.visible).length === 8, 'Frutas da copa');
+        verificar(objetos.frutas.every(f => !f.visible), 'Expositor inicialmente vazio');
+        Object.assign(sim.estado.jogador, PRODUTOS[produto].coleta);
+        sim.tempo += 1; sim.interagir(); cena.atualizar(0);
+        verificar(sim.estado.jogador.inventario[0] === produto, 'Colheita');
+        verificar(objetos.frutos.filter(f => f.visible).length === 7, 'Copa apos colher');
+        Object.assign(sim.estado.jogador, PRODUTOS[produto].reposicao);
+        sim.tempo += 1; sim.interagir(); cena.atualizar(0);
+        for (let i = 0; i < 10; i++) cena.atualizar(0.1);
+        verificar(objetos.frutas.filter(f => f.visible).length === 1, 'Reposicao visual');
+        verificar(objetos.grupo.getObjectByName('placa-produto-' + produto), 'Placa');
+        const retomado = new Simulacao(structuredClone(sim.estado));
+        verificar(retomado.estado.produtos[produto].prateleira === 1, 'Recarga');
+      }
       cena.renderer.render(cena.cena, cena.camera);
       cena.renderer.dispose?.(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, compra: true, arvore: true, colheita: true, reposicao: true, recarga: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, produtos: ['laranja', 'maca'], compra: true, arvore: true, colheita: true, reposicao: true, recarga: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }

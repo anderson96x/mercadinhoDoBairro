@@ -8,7 +8,7 @@ No [nível 9](PLANTA-LOJA-N9.md), a padaria amplia o salão para 24 × 16 u à d
 
 ## Disponíveis
 
-A progressão ativa inclui o estacionamento no nível 16, a confeitaria no nível 17 e a laranjeira no nível 18. Prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22 continuam desativadas, inclusive no DEV. Os níveis continuam avançando, mas ainda não há novos desbloqueios a partir do 19. O conjunto de importações será reorganizado depois do nível 20, sem níveis novos definidos por enquanto. A referência da implementação anterior está ao final deste documento.
+A progressão ativa inclui o estacionamento no nível 16, a confeitaria no nível 17, a laranjeira no nível 18 e a macieira no nível 19. Prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22 continuam desativadas, inclusive no DEV. Os níveis continuam avançando, mas ainda não há novos desbloqueios a partir do 20. O conjunto de importações será reorganizado depois do nível 20, sem níveis novos definidos por enquanto. A referência da implementação anterior está ao final deste documento.
 
 No [nível 4](PLANTA-LOJA-N4.md), a compra de ovos instala o galinheiro atrás da loja e uma estante alta de três níveis junto à parede posterior, à direita da porta de produção. O salão mantém 14 × 16 u. As galinhas produzem um ovo a cada 3,5 segundos, sem insumos; coleta e reposição continuam manuais ou pelo repositor contratado posteriormente.
 
@@ -35,14 +35,23 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
 | 17 | Confeitaria da padaria: bolos, donuts e éclairs + confeiteiro | R$ 1.000 | R$ 15 por unidade |
 | 18 | Laranjeira e seção de laranjas no hortifruti | R$ 800 | R$ 7 por laranja |
+| 19 | Macieira e seção de maçãs no hortifruti | R$ 800 | R$ 7 por maçã |
 
 ## Laranjeira no nível 18
 
 Em **Celular → Melhorias → Mercado**, compre **Laranjeira** por **R$ 800**, uma única vez. A árvore fica à direita do apiário, com copa arredondada e tronco ramificado. Produz uma laranja a cada **3 segundos**, até **8 frutas** na copa; cada laranja é vendida por **R$ 7**. A irrigação das hortas não altera o pomar.
 
-Colha pela frente da árvore e abasteça a seção junto aos morangos na banca de hortifruti. O repositor também pode colher e abastecer. A banca inteira foi deslocada 2,6 u em direção à fachada, reservando uma seção completa depois das laranjas para a fruta do próximo nível, sem criar um expositor vazio. Laranjas entram nos pedidos após o primeiro abastecimento.
+Colha pela frente da árvore e abasteça a seção junto aos morangos na banca de hortifruti. O repositor também pode colher e abastecer. A banca inteira foi deslocada 2,6 u em direção à fachada, reservando a sexta seção para as maçãs do nível 19, sem criar um expositor vazio antes da compra. Laranjas entram nos pedidos após o primeiro abastecimento.
 
 Compra, estoques e crescimento são salvos. Saves anteriores recebem a laranjeira ainda não comprada e preservam saldo e progresso; a atualização da planta reposiciona os personagens em locais seguros.
+
+## Macieira no nível 19
+
+Em **Celular → Melhorias → Mercado**, compre **Macieira** por **R$ 800**, uma única vez. A árvore fica no gramado ao lado da laranjeira, em direção às oficinas, sem base quadrada. A copa arredondada exibe maçãs vermelhas grandes, que desaparecem conforme são colhidas. Acesso de coleta pela lateral esquerda, preservando os corredores entre árvores e oficinas.
+
+Produz uma maçã a cada **3 segundos**, até **8 frutas** na árvore. Venda cada maçã por **R$ 7** na sexta seção do hortifruti, junto às laranjas, com capacidade para **12 maçãs**. O repositor também colhe e abastece. Maçãs entram nos pedidos após o primeiro abastecimento. Irrigação e fertilizante das hortas não afetam o pomar.
+
+A compra não exige outras melhorias. Compra, estoques e crescimento são salvos; saves anteriores recebem a macieira ainda não comprada, preservando saldo, laranjeira e demais progressos.
 
 ## Confeitaria no nível 17
 

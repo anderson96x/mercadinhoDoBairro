@@ -1,6 +1,6 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
 import { CONFEITARIA } from './confeitaria.js';
-import { PLANTA_LARANJA } from './planta.js';
+import { PLANTA_LARANJA, PLANTA_MACA } from './planta.js';
 import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, pontoPadaria, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes-produtos.js';
 const ESTANTE_ENLATADOS = PLANTA_DEPOSITO.estantes[CLASSES_PRODUTOS.enlatados.estante];
@@ -118,6 +118,12 @@ export const PRODUTOS = {
     ...PLANTA_LARANJA,
     ...compartimentoHortifruti('laranja'), liberado: false
   },
+  maca: {
+    nome: 'Maçã', plural: 'Maçãs', cor: 0xc33242, preco: 7, origem: 'pomar', nivelMinimo: 19,
+    tempoCrescimento: 3, capacidadeHorta: 8, capacidadePrateleira: 12,
+    ...PLANTA_MACA,
+    ...compartimentoHortifruti('maca'), liberado: false
+  },
   mel: {
     nome: 'Mel', plural: 'Garrafas de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 12,
     tempoCrescimento: 5, capacidadeHorta: 8, capacidadePrateleira: 12,
@@ -183,7 +189,7 @@ export const PRODUTOS = {
 const PRODUTOS_EXPANSAO = Object.fromEntries(Object.entries(PRODUTOS).map(([id, produto]) => {
   const p = { ...produto };
   const recuar = (ponto, distancia) => ({ ...ponto, z: ponto.z - distancia });
-  if (['tomate', 'milho', 'trigo', 'ovos', 'leite', 'morango', 'mel', 'laranja'].includes(id)) {
+  if (['tomate', 'milho', 'trigo', 'ovos', 'leite', 'morango', 'mel', 'laranja', 'maca'].includes(id)) {
     p.horta = recuar(p.horta, PLANTA_EXPANSAO.profundidade);
     p.coleta = recuar(p.coleta, PLANTA_EXPANSAO.profundidade);
   }
@@ -271,6 +277,7 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
+  { id: 'maca', titulo: 'Macieira', descricao: 'Plante uma macieira ao lado da laranjeira e abra a seção de maçãs junto às laranjas. Colha e venda cada maçã por R$ 7.', custo: 800, icone: 'maca', produto: 'maca', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 19 },
   { id: 'laranja', titulo: 'Laranjeira', descricao: 'Plante uma laranjeira ao lado do apiário e abra a seção de laranjas junto aos morangos. Colha e venda cada laranja por R$ 7.', custo: 800, icone: 'laranja', produto: 'laranja', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 18 },
   { id: 'confeitaria', titulo: 'Confeitaria da padaria', descricao: 'Instale vitrines, uma batedeira e um confeiteiro. Entregue mel e ovos: 1 mel + 1 ovo rendem um bolo, um donut e um éclair, com preparo de 6 segundos e entrega nas vitrines. Venda por R$ 15 cada.', custo: CONFEITARIA.custo, icone: 'bolo', max: 1, tipo: 'confeitaria', categoria: 'mercado', nivelMinimo: CONFEITARIA.nivel, requisitoMelhoria: 'alaPadaria', requisitos: ['apiario', 'alaProducao'] },
   { id: 'importarProdutos', titulo: 'Enlatados', descricao: 'Enlatados variados, como feijão, milho, ervilha e sardinha.', custo: 270, icone: 'enlatado', max: 1000000000, tipo: 'importacao', produto: 'enlatado', categoria: 'importados', nivelMinimo: 19, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
