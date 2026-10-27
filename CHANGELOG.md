@@ -1,6 +1,24 @@
 # Histórico de alterações
 
-## Versão atual: 0.68.3 — 2026-10-27
+## Versão atual: 0.70.0 — 2026-10-27
+
+- Adiciona máquina de sucos ao lado da queijaria e geladeira vertical junto ao hortifruti no N23, por R$ 1.000. Reserva espaço para outra geladeira igual.
+- Laranja, morango e maçã rendem uma garrafa por fruta; o mix usa uma de cada e rende três garrafas. Cada preparo leva 5 segundos e cada garrafa vende por R$ 25. A máquina encosta na parede dos fundos, com um balcão para seis garrafas de cada sabor. O jogador ou o repositor recolhe as garrafas e abastece a geladeira, também com seis vagas por sabor.
+- Preserva partidas anteriores com ingredientes e progresso validados; a compra exige queijaria, expansão e macieira.
+- Refina a máquina conforme a referência: motor cilíndrico escuro, cuba transparente arredondada, alimentador alto e torneira frontal. O líquido aparece somente durante o preparo, com redemoinho na cor do sabor, e esvazia ao engarrafar cada lote; pausar congela o conteúdo. As garrafas ganham ombros cônicos, tampa escura, rótulo verde com faixas claras e acabamento brilhante.
+- Refaz a geladeira com porta única de vidro, faixa vermelha, grade inferior e quatro prateleiras exclusivas por sabor. Cada prateleira acomoda seis garrafas maiores, alinhadas em uma fileira ocupando a largura útil, com reposição e visibilidade sincronizadas ao estoque.
+- Validação: 386 testes e build de produção aprovados; rotas N1–N23 verificadas no ajuste anterior. Edge em desktop/celular com WebGL e Canvas confirma cuba vazia fora do preparo e após cada lote, líquido animado nas quatro cores, pausa, quatro prateleiras com fileiras completas, coleta, reposição e recarga, sem salvar imagens.
+
+## 0.69.0 — 2026-10-27
+
+- Reativa importações em pares: gôndola de biscoitos e enlatados no N21 e gôndola de mantimentos e cereais no N22. Cada melhoria custa R$ 1.000, exige expansão e habilita pedidos das duas categorias, sem estoque instantâneo.
+- Mantém compras e visibilidade independentes e migra gôndolas antigas sem nova cobrança.
+- Reativa a compra da expansão no nível 20 por R$ 10.000, exigindo padaria. A dica explica que o depósito e o pátio de carga preparam a loja para importações dos níveis seguintes.
+- Encurta a dica da expansão, removendo as frases sobre importações suspensas e exigência da padaria.
+- Preserva compras e estoques salvos; atualiza documentação e cenários de regressão para o novo nível.
+- Validação: 375 testes, build de produção e rotas N1–N22 aprovados. Edge em desktop/celular com WebGL e Canvas confirma as duas melhorias, visibilidade por compra, menus de importação habilitados e pedido das quatro categorias preservado ao recarregar, sem salvar imagens.
+
+## 0.68.3 — 2026-10-27
 
 - Fecha o vão visual acima da porta dos fundos, prolongando a folha até a verga sem alterar a dobradiça, o vidro ou a animação de abertura.
 - Validação: teste do modelo da porta, suíte completa e build de produção aprovados.

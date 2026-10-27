@@ -166,19 +166,41 @@ try {
       }
       for (const [nivel, id] of [[8, 'cestasExtras'], [9, 'alaArtesanal'], [10, 'logistica'], [11, 'alaProducao'],
         [12, 'alaLeite'], [13, 'alaPadaria'], [14, 'apiario'], [15, 'queijaria'], [16, 'irrigacao'],
-        [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria']]) {
+        [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria'], [20, 'expansao'], [21, 'prateleiraBiscoitosEnlatados'], [22, 'prateleiraMantimentosCereais']]) {
         sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+        if (nivel === 20) verificar(sim.missao().texto.includes('habilitar importações no futuro'), 'Dica de futuras importacoes');
         verificar(sim.comprarMelhoria(id).sucesso, 'Compra N' + nivel + ': ' + id);
         cena.atualizar(0); cena.atualizar(10);
+        if (nivel === 21) verificar(!cena.cena.getObjectByName('prateleira-importados-2').visible, 'Segunda gondola aguarda compra');
         verificar(cena.cena.getObjectByName('ampliacao-padaria').visible === (nivel >= 13), 'Padaria amplia somente no N13');
         if (nivel === 9) {
           verificar(cena.produtos.morango.grupo.visible, 'Morango visivel sem padaria');
           verificar(!cena.produtos.ovos.grupo.visible && !cena.produtos.leite.grupo.visible, 'Animais ainda bloqueados');
         }
       }
+      verificar(cena.cena.getObjectByName('expansao-fundos').visible, 'Expansao visivel no N20');
+      verificar(new Simulacao(structuredClone(sim.estado)).estado.melhorias.expansao === 1, 'Expansao persiste');
+      verificar(!sim.estado.produtos.enlatado.liberado, 'Instalacao sem estoque instantaneo');
+      verificar(cena.cena.getObjectByName('prateleira-importados-1').visible, 'Primeira gondola visivel');
+      verificar(cena.cena.getObjectByName('prateleira-importados-2').visible, 'Segunda gondola visivel');
       cena.renderer.render(cena.cena, cena.camera);
+      const { Interface } = await import('/src/interface/interface.js');
+      const ui = new Interface(sim, { pausar() {}, somAtivo: () => false });
+      ui.abrir('melhorias');
+      for (const id of ['prateleiraBiscoitosEnlatados', 'prateleiraMantimentosCereais']) {
+        const botao = document.querySelector('[data-melhoria="' + id + '"]');
+        verificar(botao && botao.disabled && botao.textContent.includes('Pronto'), 'Melhoria separada concluida: ' + id);
+      }
+      ui.abrir('importacoes');
+      for (const id of ['importarDoces', 'importarProdutos', 'importarMantimentos', 'importarCereais']) {
+        const botao = document.querySelector('[data-importacao="' + id + '"][data-importacao-quantidade="1"]');
+        verificar(botao && !botao.disabled, 'Importacao habilitada no menu: ' + id);
+      }
+      verificar(sim.encomendarImportacoes({ importarDoces: 1, importarProdutos: 1, importarMantimentos: 1, importarCereais: 1 }).sucesso, 'Pedido das quatro categorias');
+      verificar(new Simulacao(structuredClone(sim.estado)).estado.deposito.pedidos[0].pacotes.length === 4, 'Pedido persiste');
+      ui.fechar();
       cena.renderer.dispose?.(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, portaUnicaAnimada: true, lixeiraExterna: true, progressaoAteN19: true, trigoCompactoN4: true, expansaoAoComprarLaranja: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, portaUnicaAnimada: true, lixeiraExterna: true, progressaoAteN22: true, trigoCompactoN4: true, expansaoAoComprarLaranja: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }

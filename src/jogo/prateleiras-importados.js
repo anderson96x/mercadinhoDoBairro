@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { gondolaInstalada } from './classes-produtos.js';
 import { PRATELEIRAS_IMPORTADOS } from './planta.js';
 
 const ALTURA_BASE = 0.2;
@@ -37,7 +38,7 @@ export function construirPrateleirasImportados(caixa) {
   return {
     grupo,
     atualizar(melhorias) {
-      prateleiras.forEach((p, i) => { p.visible = i < melhorias.prateleirasImportados; });
+      prateleiras.forEach((p, i) => { p.visible = gondolaInstalada(melhorias, i); });
     }
   };
 }

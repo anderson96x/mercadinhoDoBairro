@@ -16,7 +16,7 @@ function lojaCompleta() {
 }
 
 test('móveis independentes têm alcances separados ou parede contínua; hortifruti compartilha seções', () => {
-  const pontos = Object.entries(PRODUTOS).filter(([, p]) => !['importado', 'confeitaria'].includes(p.origem)).flatMap(([id,p]) => (id === 'pao' ? ['reposicao'] : ['coleta','reposicao'])
+  const pontos = Object.entries(PRODUTOS).filter(([, p]) => !['importado', 'confeitaria', 'sucos'].includes(p.origem)).flatMap(([id,p]) => (id === 'pao' ? ['reposicao'] : ['coleta','reposicao'])
     .map(tipo => ({ id, tipo, ...geometriaEstacao(id, tipo) })));
   for(let i=0;i<pontos.length;i++) for(let j=i+1;j<pontos.length;j++) {
     if (pontos[i].tipo === 'reposicao' && pontos[j].tipo === 'reposicao' && pontos[i].movel
@@ -28,7 +28,7 @@ test('móveis independentes têm alcances separados ou parede contínua; hortifr
 });
 
 test('cada ponto de coleta pega somente seu produto com todas as construções abertas', () => {
-  for (const [id,p] of Object.entries(PRODUTOS).filter(([id, p])=>id!=='pao' && !['importado', 'confeitaria'].includes(p.origem))) {
+  for (const [id,p] of Object.entries(PRODUTOS).filter(([id, p])=>id!=='pao' && !['importado', 'confeitaria', 'sucos'].includes(p.origem))) {
     const sim = lojaCompleta();
     for(const e of Object.values(sim.estado.produtos)) e.horta = 8;
     Object.assign(sim.estado.jogador,p.coleta);
@@ -39,7 +39,7 @@ test('cada ponto de coleta pega somente seu produto com todas as construções a
 });
 
 test('inventário misto abastece apenas a banca visitada', () => {
-  const ids = Object.keys(PRODUTOS).filter(id=>id!=='pao' && !['importado', 'confeitaria'].includes(PRODUTOS[id].origem));
+  const ids = Object.keys(PRODUTOS).filter(id=>id!=='pao' && !['importado', 'confeitaria', 'sucos'].includes(PRODUTOS[id].origem));
   for(const id of ids) {
     const sim=lojaCompleta();
     const outros=ids.filter(outro=>outro!==id).slice(0,3);
@@ -75,7 +75,7 @@ test('fontes artesanais ficam longe das oficinas correspondentes', () => {
 });
 
 test('coleta e reposição funcionam em todos os lados acessíveis dos objetos', () => {
-  for (const id of Object.keys(PRODUTOS).filter(id => !['importado', 'confeitaria'].includes(PRODUTOS[id].origem))) {
+  for (const id of Object.keys(PRODUTOS).filter(id => !['importado', 'confeitaria', 'sucos'].includes(PRODUTOS[id].origem))) {
     for (const tipo of id === 'pao' ? ['reposicao'] : ['coleta', 'reposicao']) {
       const objeto = geometriaEstacao(id, tipo);
       let lados = 0;

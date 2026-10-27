@@ -7,3 +7,8 @@ export const CLASSES_PRODUTOS = {
   mantimentos: { nome: 'Mantimentos', estante: 3, gondola: 1, lado: -1, cor: 0xe5b933 },
   cereais: { nome: 'Cereais', estante: 2, gondola: 1, lado: 1, cor: 0x69ad3c }
 };
+
+export const MELHORIAS_GONDOLAS = ['prateleiraBiscoitosEnlatados', 'prateleiraMantimentosCereais'];
+export function gondolaInstalada(melhorias, indice) {
+  return Boolean(melhorias[MELHORIAS_GONDOLAS[indice]] || indice < (melhorias.prateleirasImportados || 0));
+}

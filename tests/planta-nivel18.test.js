@@ -14,7 +14,7 @@ import { Cena } from '../src/jogo/cena.js';
 import { atualizarPainelProducao } from '../src/interface/producao.js';
 import { geometriaEstacao, intervaloEstacoes } from '../src/jogo/estacoes.js';
 
-function loja(nivel = 18) {
+function loja(nivel = 20) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
@@ -26,9 +26,9 @@ function loja(nivel = 18) {
   return sim;
 }
 
-test('expansão exige nível 18, padaria e R$ 10.000, com uma única compra', () => {
-  const sim = loja(17);
-  assert.match(sim.comprarMelhoria('expansao').motivo, /nível 18/);
+test('expansão exige nível 20, padaria e R$ 10.000, com uma única compra', () => {
+  const sim = loja(19);
+  assert.match(sim.comprarMelhoria('expansao').motivo, /nível 20/);
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 9999;
   assert.equal(sim.comprarMelhoria('expansao').sucesso, false);
@@ -39,7 +39,7 @@ test('expansão exige nível 18, padaria e R$ 10.000, com uma única compra', ()
   assert.equal(sim.estado.melhorias.expansao, 1);
   assert.match(sim.comprarMelhoria('expansao').motivo, /completa/);
   const semPadaria = new Simulacao();
-  semPadaria.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
+  semPadaria.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
   semPadaria.estado.dinheiro = 10000;
   assert.match(semPadaria.comprarMelhoria('expansao').motivo, /Padaria/);
   assert.equal(semPadaria.estado.dinheiro, 10000);
@@ -98,7 +98,7 @@ test('saves antigos mantêm planta e saldo; expansão e posições na fazenda pe
   assert.deepEqual(restaurado.ajudante.inventario, ['mel']);
   assert.equal(restaurado.estado.oficinas.queijo.ingredientes.leite, 3);
   assert.equal(restaurado.estado.dinheiro, antigo.estado.dinheiro);
-  const adulterado = loja(17).estado;
+  const adulterado = loja(19).estado;
   adulterado.melhorias.expansao = 1;
   assert.equal(new Simulacao(adulterado).estado.melhorias.expansao, 0);
 });
@@ -211,7 +211,7 @@ test('visual mantém o salão e a porta originais e remove a mureta da cozinha a
   const labels = [];
   const visual = { cena, sim, produtos: {}, alvosHorta: [], criarLabel(id, ponto) { labels.push({ id, ponto }); } };
   for (const [id, p] of Object.entries(sim.produtos)) {
-    if (id === 'pao' || p.origem === 'confeitaria') continue;
+    if (id === 'pao' || ['confeitaria', 'sucos'].includes(p.origem)) continue;
     Cena.prototype.construirEstacao.call(visual, id, p);
     assert.equal(labels.find(label => label.id === `horta-${id}`).ponto.z, p.horta.z);
     assert.equal(visual.produtos[id].frutas[0].position.z >= p.prateleira.z - p.prateleira.d / 2, true, id);

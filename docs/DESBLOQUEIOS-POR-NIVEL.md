@@ -6,7 +6,7 @@ A loja começa com **14 × 8 u** e mantém esse tamanho até comprar a seção d
 
 A porta dos fundos tem uma única folha, na antiga metade direita, e abre automaticamente **apenas para o jogador e o repositor contratado**. Clientes não acionam a abertura nem são encaminhados por esse acesso de serviço. Fecha quando os funcionários se afastam e congela durante a pausa. A lixeira fica **fora da loja**, no espaço da antiga folha esquerda, com acesso pelo lado do gramado. Porta e lixeira acompanham a profundidade do salão.
 
-Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros históricos: seus números de nível não correspondem necessariamente à progressão atual. As importações continuam suspensas; não há novos desbloqueios ativos a partir do nível 20.
+Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros históricos: seus números de nível não correspondem necessariamente à progressão atual. A expansão está disponível no nível 20. As gôndolas e importações são liberadas em pares nos níveis 21 e 22.
 
 ## Disponíveis
 
@@ -31,6 +31,10 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 | 17 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote |
 | 18 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
 | 19 | Confeitaria: bolos, donuts e éclairs + confeiteiro | R$ 1.000 | R$ 15 por unidade |
+| 20 | Expansão dos fundos, depósito e pátio de carga (exige padaria) | R$ 10.000 | — |
+| 21 | Prateleira de biscoitos e enlatados | R$ 1.000 | R$ 40 / R$ 30 |
+| 22 | Prateleira de mantimentos e cereais | R$ 1.000 | R$ 35 / R$ 45 |
+| 23 | Máquina e geladeira de sucos | R$ 1.000 | R$ 25 por garrafa |
 
 ## Hortifruti: níveis 1 a 9
 
@@ -99,66 +103,15 @@ O confeiteiro prepara apenas os doces com vaga e deposita cada unidade na vitrin
 
 Compras, estoques, ingredientes e produção continuam sendo salvos normalmente. A reorganização da versão **0.67.0** foi feita para partidas novas, sem migração dedicada da sequência anterior.
 
-## Desativadas
+## Expansão no nível 20
 
-As melhorias abaixo não aparecem no catálogo e não podem ser compradas, inclusive pelo DEV. Os níveis e custos servem apenas como referência da configuração guardada. Os bônus de velocidade do repositor ficam inativos mesmo se uma partida antiga trouxer a compra registrada. O **Repositor normal do nível 5 continua disponível**.
-
-| Nível de referência | Melhoria | Custo |
-| --- | --- | --- |
-| 1 | Mais capacidade | R$ 25 |
-| 4 | Fertilizante | R$ 250 por aplicação |
-| 5 | Passo ligeiro: melhoria avulsa de velocidade do jogador | R$ 100 |
-| 5 | Repositor ligeiro: +20% de velocidade | R$ 100 |
-| 16 | Reposição ágil: +30% de velocidade do repositor | R$ 500 |
-| 17 | Prateleiras de importados | R$ 1.000 por prateleira |
-| 18 | Expansão dos fundos, depósito e pátio de carga | R$ 10.000 |
-| 19 | Importação de enlatados | R$ 270 por caixa de 9 |
-| 20 | Importação de cereais | R$ 405 por caixa de 9 |
-| 21 | Importação de mantimentos | R$ 315 por caixa de 9 |
-| 22 | Importação de biscoitos e doces | R$ 360 por caixa de 9 |
-
-A cesta de trabalho do nível 10 continua concedendo sua capacidade e seu bônus de velocidade do jogador. O aumento de profundidade incluído na compra de laranjas e a ampliação lateral da padaria no nível 13 também continuam ativos; a expansão suspensa é a construção adicional dos fundos e do pátio de carga descrita abaixo.
-
-## Conteúdo suspenso: referência da implementação anterior
-
-<details>
-<summary>Prateleiras, expansão e importações (desativadas)</summary>
-
-Os níveis e instruções abaixo são históricos e não estão ativos no jogo. A nova etapa será reorganizada depois do nível 20, ainda sem desbloqueios definidos.
-
-## Biscoitos e doces no nível 22
-
-No nível 22, abra **Celular → Importar produtos → Biscoitos e doces**. Cada caixa com nove unidades custa **R$ 360**, e cada unidade vale **R$ 40**. Exige a expansão e pelo menos a primeira prateleira de importados.
-
-Cookies de chocolate em caixa vermelha, biscoitos amanteigados em lata azul, balas de frutas em pacote verde e bombons em caixa dourada ocupam a face **−x da primeira gôndola, voltada ao hortifruti**. São quatro níveis com nove unidades cada, totalizando 36. A segunda estante do depósito recebe até quatro caixas dessa classe, incluindo pedidos a caminho. Caminhão, coleta, reposição manual e automática e vendas seguem o fluxo das demais importações. A reserva anterior de Higiene passa a receber Biscoitos e doces; não havia produtos de higiene disponíveis. Saves anteriores recebem a nova classe bloqueada, preservando dinheiro, estoques e pedidos pagos.
-
-## Mantimentos no nível 21
-
-No nível 21, abra **Celular → Importar produtos → Mantimentos**. Cada caixa de nove unidades custa **R$ 315**, e cada embalagem vale **R$ 35**. Exige a expansão e as duas prateleiras de importados. A classe reúne quatro variedades visuais: macarrão, feijão, arroz e farinha, com nove unidades de cada na gôndola cheia (36 no total).
-
-Os mantimentos ocupam a face **−x da segunda gôndola**, de frente para os enlatados na face +x da primeira; cereais permanecem na face oposta, voltada à padaria. O corredor entre os móveis atende às compras e à reposição. A quarta estante do depósito recebe até quatro caixas dessa classe, contando entregas pendentes. Reutiliza caminhão, retirada e repositor. Saves anteriores recebem a classe bloqueada, preservando saldo, produtos e pedidos pagos.
-
-## Importação de produtos no nível 19
-
-No nível 19, abra o celular e selecione **Importar produtos**, imediatamente abaixo de **Melhorias**. O catálogo começa com **Enlatados**, por **R$ 270 por caixa de 9 unidades**. É necessário ter ao menos uma prateleira de importados e a expansão com depósito e pátio de carga. O estacionamento de clientes é independente.
-
-Cada pedido confirmado gera **uma entrega de caminhão baú branco**. O caminhão surge à esquerda da rua, avança além do **acesso exclusivo**, para e entra de ré pela única faixa do pátio. A vaga mede **2,6 × 6,4 u**, com a cabine voltada para a rua e o baú para os fundos. As seis vagas e o acesso de clientes continuam funcionando durante a descarga; carros de clientes não usam o pátio privativo. O entregador desce da cabine, contorna a lateral até o baú, leva uma caixa por viagem até as estantes e retorna ao veículo. Terminada a descarga, o caminhão sai de frente pela mesma faixa e o próximo pedido pode chegar. As duas faixas da rua aguardam a manobra e são liberadas durante a descarga. Se o mercado estiver fechado, a chegada aguarda a abertura. Pausar congela a entrega.
-
-O depósito tem **quatro estantes, uma por classe, com quatro pacotes de nove unidades cada** (16 posições físicas). As duas gôndolas têm duas classes cada, totalizando quatro classes. **Enlatados** está disponível no nível 19, **Cereais** no nível 20 **Mantimentos** no nível 21 e **Biscoitos e doces** no nível 22. Cereais usa a terceira estante do depósito e a face voltada à padaria na segunda gôndola, com capacidade de 36 unidades. As caixas têm quatro variedades com rótulos próprios. Para novas importações de cereais, instale a segunda gôndola; saves que já possuem cereais recebem esse móvel sem custo, preservando estoque e pedidos. Mantimentos usa a quarta estante e a face da segunda gôndola de frente para os enlatados; Biscoitos e doces usa a segunda estante e a face da primeira gôndola voltada ao hortifruti. Cada caixa ocupa uma posição até ficar vazia. Caixas já guardadas e caixas de pedidos pendentes contam no limite da própria classe; vagas de outra classe não podem ser usadas e não é possível pagar por mais mercadoria do que cabe. As estantes começam vazias e exibem somente os pacotes realmente entregues.
-
-Os enlatados ocupam a face da primeira gôndola antes usada pelos cereais, voltada para a segunda gôndola. Retire os enlatados junto à primeira estante, identificada como Enlatados e leve-os à primeira gôndola, ou deixe o repositor fazer o transporte. Cada lata vale **R$ 30**, e a gôndola comporta **36 unidades**. O estoque não aparece na loja no momento da compra. O catálogo mostra unidades na gôndola e no depósito, ocupação e limite de quatro pacotes por classe e caixas a caminho. Monte o pedido com **−** e **+**, e confirme tudo de uma vez em **Finalizar pedido**; a cobrança ocorre somente se o pedido inteiro for válido.
-
-Estoque, caixas parcialmente abertas e pedidos pagos são salvos. Recarregar durante a descarga retoma a viagem com as caixas restantes, sem nova cobrança ou duplicação. Saves sem depósito preservam os enlatados que já estavam na gôndola e recebem o depósito vazio. Saves com mais de quatro caixas da mesma classe mantêm o excedente em uma reserva de migração: caixas já entregues entram automaticamente na estante conforme surge uma vaga, e pedidos pagos aguardam espaço durante a descarga. O catálogo informa a reserva; novas compras ficam bloqueadas até haver capacidade, sem perda de unidades, inclusive caixas parcialmente abertas.
-
-## Expansão no nível 18
-
-No nível 18, abra **Celular → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra.
+No nível 20, abra **Celular → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra. O cartão de dica explica que o depósito e o pátio são essenciais para habilitar importações no futuro; cada gôndola habilita suas duas categorias de importação.
 
 O salão original de **24 × 16 u**, seus expositores e a padaria mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
 
 A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de produção original. A abertura junto à cozinha fica fechada. As bancadas da queijaria e da cozinha de geleias recuam até encostar nessa parede; os pontos de entrega e coleta acompanham as bancadas. A mureta que ficava atrás delas é removida. A lateral direita permanece em uma única peça contínua. O piso novo ocupa apenas os espaços adicionais, preservando o piso já construído da cozinha.
 
-A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Quatro estantes metálicas comportam quatro caixas de papelão por classe, com duas caixas em cada um dos dois níveis, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. No N18, as estantes ficam vazias; no N19, recebem as importações entregues pelo caminhão.
+A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Quatro estantes metálicas comportam quatro caixas de papelão por classe, com duas caixas em cada um dos dois níveis, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. As estantes recebem as entregas das categorias habilitadas pela compra das gôndolas.
 
 A expansão também acrescenta **12 u à esquerda do mapa**, ampliando o terreno para **52 × 46 u**. Nessa lateral fica o **pátio exclusivo de carga**, com asfalto, vaga demarcada em amarelo, setas de entrada/saída, placa com pictograma de caminhão e guias separando-o das vagas públicas. A rua e a calçada acompanham a nova largura, com um acesso próprio recortado para os caminhões. Um caminho pavimentado liga o pátio ao portão do depósito. Câmera, navegação e salvamento aceitam a nova área. Saves com a expansão comprada recebem tudo ao carregar, sem nova cobrança; o estacionamento de clientes não é necessário para receber entregas.
 
@@ -170,13 +123,35 @@ O portão externo acompanha o funcionamento do mercado: suas lâminas descem sua
 
 Toda a fazenda — tomate, milho, trigo, galinheiro, curral, estufa e apiário — recua 6 unidades, junto com a cerca e o caminho de coleta. O terreno cresce nos fundos para acomodar os cultivos. Estoques, ingredientes, produção e melhorias são preservados. Saves antigos recebem a expansão desmarcada; partidas com a compra mantêm a nova planta ao recarregar.
 
-## Prateleiras de importados no nível 17
+## Desativadas
 
-No nível 17, abra **Celular → Melhorias → Mercado** e compre a melhoria **Prateleiras de importados**. Ela tem dois níveis; cada nível custa **R$ 1.000** e instala uma prateleira, sem depender do estacionamento.
+As melhorias abaixo não aparecem no catálogo e não podem ser compradas, inclusive pelo DEV. Os níveis e custos servem apenas como referência da configuração guardada. Os bônus de velocidade do repositor ficam inativos mesmo se uma partida antiga trouxer a compra registrada. O **Repositor normal do nível 5 continua disponível**.
 
-São duas gôndolas metálicas idênticas de 5,775 unidades, quatro níveis e dois lados, paralelas ao hortifruti no centro do salão e alinhadas pela frente com o balcão da padaria, conforme a [planta N17](PLANTA-LOJA-N17.svg). Os corredores dão acesso aos expositores posteriores e preservam a fila de dez clientes. Cada móvel e sua colisão aparecem somente após a respectiva compra.
+| Nível de referência | Melhoria | Custo |
+| --- | --- | --- |
+| 1 | Mais capacidade | R$ 25 |
+| 4 | Fertilizante | R$ 250 por aplicação |
+| 5 | Passo ligeiro: melhoria avulsa de velocidade do jogador | R$ 100 |
+| 5 | Repositor ligeiro: +20% de velocidade | R$ 100 |
+| 16 | Reposição ágil: +30% de velocidade do repositor | R$ 500 |
 
-As prateleiras permanecem vazias até o nível 19, quando a opção **Importar produtos** libera a compra recorrente de caixas de enlatados. O nível comprado das gôndolas é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
+A cesta de trabalho do nível 10 continua concedendo sua capacidade e seu bônus de velocidade do jogador. O aumento de profundidade incluído na compra de laranjas e a ampliação lateral da padaria no nível 13 também continuam ativos; a expansão dos fundos e do pátio de carga está disponível no nível 20.
 
+## Gôndolas e importações: níveis 21 e 22
 
-</details>
+Em **Celular → Melhorias → Mercado**, compre cada gôndola separadamente por **R$ 1.000**, após a expansão. Atingir o nível apenas libera a compra. A primeira não é requisito da segunda.
+
+- **N21 — Prateleira de biscoitos e enlatados:** biscoitos e doces na face do hortifruti; enlatados na face oposta. A compra habilita as duas opções em **Celular → Importar produtos**.
+- **N22 — Prateleira de mantimentos e cereais:** mantimentos na face voltada aos enlatados; cereais na face da padaria. A compra habilita as duas opções de importação correspondentes.
+
+Cada face comporta **36 unidades**, em quatro níveis de nove. Cada caixa importada contém **9 unidades**: biscoitos e doces R$ 360 (venda R$ 40), enlatados R$ 270 (venda R$ 30), mantimentos R$ 315 (venda R$ 35) e cereais R$ 405 (venda R$ 45). A instalação não fornece estoque: encomende pelo celular, aguarde o caminhão e abasteça a gôndola com os produtos do depósito. Cada classe reserva quatro vagas, incluindo caixas a caminho. Aguarde o caminhão ir embora antes de fazer outro pedido.
+
+Compras antigas de gôndolas são convertidas nas novas melhorias, sem nova cobrança.
+
+## Sucos no nível 23
+
+A compra **Geladeira de sucos**, em **Celular → Melhorias → Mercado**, custa **R$ 1.000** e exige queijaria, expansão e macieira. A máquina fica à esquerda da queijaria, encostada na parede dos fundos do anexo, sobre um balcão de saída; a geladeira vertical de vidro fica junto à parede posterior, ao lado do hortifruti. A posição imediatamente à direita permanece livre para uma segunda geladeira idêntica no futuro.
+
+A geladeira tem **uma porta de vidro e quatro prateleiras**, uma para cada sabor, com **seis garrafas alinhadas por prateleira**. A cuba da máquina mostra líquido somente enquanto prepara um lote e fica vazia ao transferir o suco às garrafas do balcão.
+
+Leve **laranja, morango e maçã** na cesta e aproxime-se da máquina. Ela armazena até **8 frutas de cada tipo**. Cada preparo leva **5 segundos**: uma fruta rende uma garrafa do sabor correspondente; **1 laranja + 1 morango + 1 maçã → 3 garrafas de suco misto**. A máquina alterna os sabores disponíveis e coloca as garrafas no **balcão de saída**, com capacidade de **6 por sabor**. Recolha-as e leve à geladeira, que também guarda **6 por sabor**; o repositor pode fazer esse transporte. Falta de ingredientes ou espaço no balcão pausa a receita sem consumir frutas. Cada garrafa custa **R$ 25**, e o sabor entra nos pedidos após o primeiro abastecimento da geladeira. Ingredientes, progresso, garrafas no balcão e na geladeira são preservados ao recarregar; partidas antigas recebem a instalação bloqueada e vazia.
