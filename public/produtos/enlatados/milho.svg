@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="360" viewBox="0 0 240 360">
+  <path fill="#f2bf39" d="M0 0h240v360H0z"/>
+  <path fill="#ffe08a" d="M0 0h38v360H0z"/>
+  <path fill="#517e43" d="M0 262Q140 292 240 170v190H0z"/>
+  <path fill="#315b36" d="M0 326q130 54 240-26v28q-110 65-240 20z"/>
+  <path fill="#fff5cd" d="M0 18h240v8H0zM0 44h240v3H0z"/>
+  <ellipse cx="120" cy="111" rx="95" ry="32" fill="#517e43"/>
+  <text x="120" y="122" text-anchor="middle" font-family="sans-serif" font-size="32" font-weight="bold" fill="#fff8de">MILHO</text>
+  <path fill="#44713b" d="M120 280q-73-15-67-76 47 10 67 76m0 0q72-26 66-84-47 22-66 84"/>
+  <rect x="92" y="159" width="55" height="103" rx="27" fill="#ffe28a"/>
+  <path stroke="#e5a52e" stroke-width="5" d="M110 167v86m19-86v86m-33-68h46m-49 20h51m-51 20h51m-48 20h44"/>
+</svg>

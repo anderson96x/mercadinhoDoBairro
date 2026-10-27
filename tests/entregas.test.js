@@ -1,3 +1,6 @@
+import { reativarImportadosParaTeste } from './helpers/importados-suspensos.js';
+reativarImportadosParaTeste();
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -69,7 +72,7 @@ test('quatro caixas ocupam somente a estante da classe e só liberam posição q
   assert.equal(sim.estado.produtos.enlatado.horta, 36);
   assert.equal(sim.estado.deposito.pacotes.length, 4);
   assert.deepEqual(sim.estado.deposito.pacotes.map(p => p.slot), [0, 1, 2, 3]);
-  assert.equal(vagasDeposito(sim.estado.deposito, 'higiene'), 4, 'outra classe vazia não aumenta a capacidade de enlatados');
+  assert.equal(vagasDeposito(sim.estado.deposito, 'doces'), 4, 'outra classe vazia não aumenta a capacidade de enlatados');
   assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
   for (let i = 0; i < 8; i++) sim.retirarProdutoDeposito('enlatado');
   assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
@@ -315,6 +318,7 @@ test('entregador sai da cabine com os braços livres durante a chegada', () => {
 
 test('caminhão e entregador mantêm identidade geral dourada sem logos', () => {
   const sim = loja(); sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
+  assert.equal(sim.comprarMelhoria('prateleirasImportados').sucesso, true);
   sim.encomendarImportacoes({ importarCereais: 1, importarProdutos: 1 });
   sim.entregas.atualizar(sim, 0.05);
   assert.equal(sim.entregas.caminhao.classe, 'cereais');
@@ -467,6 +471,7 @@ test('acesso dedicado recebe entrega mesmo sem comprar estacionamento de cliente
 test('entrega chega quando um cliente quer sair e outro ainda aguarda carro do tráfego', () => {
   const sim = loja();
   sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
+  assert.equal(sim.comprarMelhoria('prateleirasImportados').sucesso, true);
   sim.encomendarImportacoes({ importarCereais: 1 });
   sim.clientes = [{ id: 901, noCarro: true }, { id: 902, noCarro: true }];
   sim.estacionamento.carros = [
@@ -532,22 +537,23 @@ test('caixas guardadas e pedidos separados disputam as mesmas quatro vagas da cl
 
 test('produtos da mesma classe compartilham vagas; outra classe entrega na própria estante', t => {
   // Produtos de teste exercitam a extensão do catálogo sem lançar conteúdo futuro.
-  for (const [id, classe] of [['conservaTeste', 'enlatados'], ['saboneteTeste', 'higiene']]) {
+  for (const [id, classe] of [['conservaTeste', 'enlatados'], ['doceTeste', 'doces']]) {
     PRODUTOS[id] = { ...PRODUTOS.enlatado, classe };
     MELHORIAS.push({ ...MELHORIAS.find(m => m.id === 'importarProdutos'), id, produto: id });
     t.after(() => { delete PRODUTOS[id]; MELHORIAS.splice(MELHORIAS.findIndex(m => m.id === id), 1); });
   }
   const sim = loja();
+  assert.equal(sim.comprarMelhoria('prateleirasImportados').sucesso, true);
   const antes = structuredClone(sim.estado);
-  assert.equal(sim.encomendarImportacoes({ importarProdutos: 3, conservaTeste: 2, saboneteTeste: 1 }).sucesso, false);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 3, conservaTeste: 2, doceTeste: 1 }).sucesso, false);
   assert.deepEqual(sim.estado, antes, 'pedido misto inválido não cobra nem libera produtos');
-  assert.equal(sim.encomendarImportacoes({ importarProdutos: 2, conservaTeste: 2, saboneteTeste: 4 }).sucesso, true);
+  assert.equal(sim.encomendarImportacoes({ importarProdutos: 2, conservaTeste: 2, doceTeste: 4 }).sucesso, true);
   assert.equal(vagasDeposito(sim.estado.deposito, 'enlatados'), 0);
-  assert.equal(vagasDeposito(sim.estado.deposito, 'higiene'), 0);
+  assert.equal(vagasDeposito(sim.estado.deposito, 'doces'), 0);
   entregar(sim);
-  const higiene = sim.estado.deposito.pacotes.filter(p => p.produto === 'saboneteTeste');
-  assert.deepEqual(higiene.map(p => p.slot), [4, 5, 6, 7]);
-  for (const pacote of higiene) {
+  const doces = sim.estado.deposito.pacotes.filter(p => p.produto === 'doceTeste');
+  assert.deepEqual(doces.map(p => p.slot), [4, 5, 6, 7]);
+  for (const pacote of doces) {
     const ponto = posicaoPacote(pacote.slot), estante = PLANTA_DEPOSITO.estantes[1];
     assert.ok(Math.abs(ponto.x - estante.x) < estante.w / 2);
     assert.equal(ponto.z, estante.z);

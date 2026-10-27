@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <path fill="#4b789f" d="M0 0h360v560H0z"/>
+  <path fill="#ffffff" opacity=".12" d="M0 0h34v560H0zM0 434l360-88v40L0 474z"/>
+  <path stroke="#ffffff" stroke-width="3" opacity=".65" d="M22 30h316M22 530h316"/>
+  <text x="180" y="111" text-anchor="middle" font-family="sans-serif" font-size="49" font-weight="bold" fill="#ffffff">ARROZ</text>
+  <text x="180" y="147" text-anchor="middle" font-family="sans-serif" font-size="18" letter-spacing="3" fill="#eaf0f4">SELEÇÃO DO BAIRRO</text>
+  <rect x="32" y="183" width="296" height="221" rx="17" fill="#f4f7f9"/>
+  <circle cx="180" cy="279" r="66" fill="#e4ebee"/>
+  <g fill="#f7f2df" stroke="#aaa38b" stroke-width="2"><ellipse cx="151" cy="279" rx="10" ry="28" transform="rotate(-25 151 279)"/><ellipse cx="184" cy="267" rx="10" ry="28" transform="rotate(20 184 267)"/><ellipse cx="209" cy="295" rx="10" ry="28" transform="rotate(45 209 295)"/></g>
+  <text x="180" y="374" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#4b789f">LAVE E COZINHE A GOSTO</text>
+  <path stroke="#ffffff" opacity=".5" stroke-width="3" d="M58 441h244M83 456h194"/>
+  <text x="180" y="497" text-anchor="middle" font-family="sans-serif" font-size="31" font-weight="bold" fill="#ffffff">5 kg</text>
+</svg>

@@ -3,14 +3,16 @@ import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
 import { geometriaEstacao, intervaloEstacoes, estacoesSeparadasPorParede } from '../src/jogo/estacoes.js';
 import { PAREDES_LOJA } from '../src/jogo/bairro.js';
+import { CONFEITARIA } from '../src/jogo/confeitaria.js';
 
 export function abrirLoja(nivel = 15) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 40000;
   for (const id of ['caixa', 'milho', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
-    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'prateleirasImportados', 'expansao', 'importarProdutos']) {
-    if (MELHORIAS.find(m => m.id === id).nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
+    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'confeitaria', 'prateleirasImportados', 'expansao', 'importarProdutos']) {
+    const melhoria = MELHORIAS.find(m => m.id === id);
+    if (melhoria.ativa !== false && melhoria.nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }
   sim.proximoCliente = Infinity;
   sim.estado.lojaAberta = false;
@@ -42,9 +44,15 @@ for (const nivel of [1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15, 17, 18, 19]) {
   console.log(`N${nivel}: purchase, collection, stocking and checkout routes pass.`);
 }
 
-const pads = Object.entries(PRODUTOS).filter(([, p]) => p.origem !== 'importado').flatMap(([id,p]) =>
+const pads = Object.entries(PRODUTOS).filter(([, p]) => !['importado', 'confeitaria'].includes(p.origem)).flatMap(([id,p]) =>
   (id === 'pao' ? ['reposicao'] : ['coleta','reposicao']).map(tipo => ({ id, tipo, ...geometriaEstacao(id, tipo) })));
+pads.push({ id: 'confeitaria', tipo: 'entrega', ...CONFEITARIA.entrada });
 for (let i=0;i<pads.length;i++) for (let j=i+1;j<pads.length;j++) {
+  if ([pads[i].id, pads[j].id].includes('confeitaria') && [pads[i].id, pads[j].id].includes('pao')) {
+    // Duas seções contíguas do mesmo balcão, selecionadas por lados exclusivos em interagir().
+    assert.ok(Math.abs(Math.abs(pads[i].x - pads[j].x) - (pads[i].w + pads[j].w) / 2) < 1e-8);
+    continue;
+  }
   if (pads[i].tipo === 'reposicao' && pads[j].tipo === 'reposicao' && pads[i].movel
     && pads[i].movel === pads[j].movel && ['hortifruti', 'parede-frios', 'doces'].includes(pads[i].movel)) continue;
   assert.ok(intervaloEstacoes(pads[i],pads[j]) > CONFIG.raioInteracao * 2

@@ -1,10 +1,43 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import * as THREE from 'three';
 import { Cena, ajustarSacola, ajudanteUsaCaixaMadeira, aplicarPaletaFuncionario, criarSacola, personagem, posicaoProdutoSacola, usarCaixaMadeira } from '../src/jogo/cena.js';
 import { PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { APARENCIAS_CLIENTES } from '../src/jogo/aparencias-clientes.js';
 import { PALETAS } from '../src/jogo/personalizacao.js';
+
+test('jogador carrega importados em camadas sem embalagens atravessadas, mesmo após girar', () => {
+  const modelo = personagem(0xffffff, 0xf2c49c, true);
+  const ator = { x: 12, z: -8, angulo: 1.3, andando: false };
+  const itens = ['enlatado', 'cereal', 'enlatado', 'cereal', 'enlatado', 'enlatado', 'cereal', 'enlatado'];
+  for (const quantidade of [4, 8, 3]) {
+    Cena.prototype.animarPersonagem(modelo, ator, 1, 0, itens.slice(0, quantidade));
+    modelo.updateMatrixWorld(true);
+    const limites = modelo.userData.carga.children.map(produto => {
+      const copia = produto.clone(); copia.position.copy(produto.position);
+      return new THREE.Box3().setFromObject(copia);
+    });
+    for (const [i, a] of limites.entries()) {
+      assert.ok(a.min.x >= -0.23 && a.max.x <= 0.23);
+      assert.ok(a.min.y >= 0.059 && a.max.y < 0.66);
+      for (const b of limites.slice(i + 1)) assert.equal(a.intersectsBox(b), false, 'volumes da carga separados');
+    }
+  }
+});
+
+test('cereais carregados preservam profundidade visível e corpo sólido em todos os lados', () => {
+  const modelo = personagem(0xffffff, 0xf2c49c, true);
+  Cena.prototype.animarPersonagem(modelo, { x: 0, z: 0, andando: false }, 1, 0, Array(8).fill('cereal'));
+  const produtos = modelo.userData.carga.children;
+  for (const produto of produtos) {
+    const corpo = produto.getObjectByName('caixa-cereal');
+    const tamanho = new THREE.Box3().setFromObject(produto.clone()).getSize(new THREE.Vector3());
+    assert.equal(corpo.geometry.type, 'BoxGeometry');
+    assert.ok(tamanho.z >= 0.1, 'profundidade mantida mesmo na escala de transporte');
+    assert.ok(tamanho.z / tamanho.x >= 0.65, 'caixa tem lateral ampla, não apenas frente impressa');
+  }
+});
 
 test('sacola cresce com a compra e organiza os produtos em camadas internas', () => {
   const sacola = criarSacola();

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <path fill="#548165" d="M0 0h360v560H0z"/>
+  <path fill="#ffffff" opacity=".12" d="M0 0h34v560H0zM0 434l360-88v40L0 474z"/>
+  <path stroke="#ffffff" stroke-width="3" opacity=".65" d="M22 30h316M22 530h316"/>
+  <text x="180" y="111" text-anchor="middle" font-family="sans-serif" font-size="49" font-weight="bold" fill="#ffffff">FEIJÃO</text>
+  <text x="180" y="147" text-anchor="middle" font-family="sans-serif" font-size="18" letter-spacing="3" fill="#eaf0f4">SELEÇÃO DO BAIRRO</text>
+  <rect x="32" y="183" width="296" height="221" rx="17" fill="#f4f7f9"/>
+  <circle cx="180" cy="279" r="66" fill="#e4ebee"/>
+  <path d="M132 282c-12-47 67-61 88-19s-75 80-88 19" fill="#e8dbb9" stroke="#9d8862" stroke-width="4"/><path d="m169 266-10 31" stroke="#9d8862" stroke-width="5"/>
+  <text x="180" y="374" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#548165">SELECIONE E COZINHE BEM</text>
+  <path stroke="#ffffff" opacity=".5" stroke-width="3" d="M58 441h244M83 456h194"/>
+  <text x="180" y="497" text-anchor="middle" font-family="sans-serif" font-size="31" font-weight="bold" fill="#ffffff">1 kg</text>
+</svg>

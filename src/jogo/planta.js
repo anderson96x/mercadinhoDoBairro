@@ -133,8 +133,9 @@ export function paredesAmpliacao(alturaBaixa) {
 export const MODELO_PADARIA = {
   prateleira: { x: 7.6, z: -2, w: 3.4, d: 0.9 },
   entrada: { x: 4.75, z: -5.35, w: 0.65, d: 2.1 },
-  moinho: { x: 5.9, z: -5.4, w: 0.85, d: 0.85 },
-  forno: { x: 9.3, z: -5.4, w: 1.05, d: 1.15 },
+  // Uma única máquina: moinho superior e forno na base, no antigo posto do trigo.
+  moinho: { x: 5.9, z: -5.4, w: 1.35, d: 1.05 },
+  forno: { x: 5.9, z: -5.4, w: 1.35, d: 1.05 },
   // Balcões de atendimento; a faixa junto à parede direita fica aberta.
   fechamento: [
     // Laterais terminam na borda interna da frente; os cantos ficam alinhados.

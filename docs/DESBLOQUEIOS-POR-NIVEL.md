@@ -8,6 +8,8 @@ No [nível 9](PLANTA-LOJA-N9.md), a padaria amplia o salão para 24 × 16 u à d
 
 ## Disponíveis
 
+A progressão ativa inclui o estacionamento no nível 16 e a confeitaria no nível 17. Prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22 continuam desativadas, inclusive no DEV. Os níveis continuam avançando, mas ainda não há novos desbloqueios a partir do 18. O conjunto de importações será reorganizado depois do nível 20, sem níveis novos definidos por enquanto. A referência da implementação anterior está ao final deste documento.
+
 No [nível 4](PLANTA-LOJA-N4.md), a compra de ovos instala o galinheiro atrás da loja e uma estante alta de três níveis junto à parede posterior, à direita da porta de produção. O salão mantém 14 × 16 u. As galinhas produzem um ovo a cada 3,5 segundos, sem insumos; coleta e reposição continuam manuais ou pelo repositor contratado posteriormente.
 
 No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinheiro, e o refrigerador vertical de duas portas de vidro fica à direita dos ovos na parede posterior. O salão continua com 14 × 16 u. O curral produz uma garrafa a cada 4,5 segundos, sem insumos. Abasteça ovos e leite pela frente do expositor correspondente; os estoques são separados, inclusive na divisória.
@@ -31,10 +33,74 @@ No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinh
 | 14 | Reposição ágil: repositor anda 30% mais rápido | R$ 500 | — |
 | 15 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote de geleia |
 | 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
-| 17 | Prateleiras de importados (2 níveis) | R$ 1.000 por nível | — |
-| 18 | Expansão dos fundos | R$ 10.000 | — |
-| 19 | Importar produtos: caixa com 9 enlatados | R$ 270 por caixa | R$ 30 por lata |
-| 20 | Importar cereais: caixa com 9 unidades | R$ 405 por caixa | R$ 45 por unidade |
+| 17 | Confeitaria da padaria: bolos, donuts e éclairs + confeiteiro | R$ 1.000 | R$ 15 por unidade |
+
+## Confeitaria no nível 17
+
+Em **Celular → Melhorias → Mercado**, compre **Confeitaria da padaria** por **R$ 1.000**, uma única vez. Exige padaria, apiário e ala dos ovos. A compra libera bolos, donuts e éclairs, todos vendidos a **R$ 15 por unidade**, e inclui um terceiro funcionário dedicado à confeitaria.
+
+Antes da compra, os três balcões secundários da padaria têm apenas tampos planos de trabalho; a vitrine de pães permanece funcionando. A compra instala as três vitrines curvas, inicialmente vazias. São seis lugares para bolos, doze para donuts e seis para éclairs. Os doces exibidos representam o estoque real e desaparecem conforme os clientes compram.
+
+Leve **mel e ovos ao balcão lateral da padaria**, na seção ao lado da entrega de trigo. Cada ingrediente tem capacidade de oito unidades; trigo continua na seção própria. O painel de produção mostra a receita e o progresso. **1 mel + 1 ovo → 1 bolo + 1 donut + 1 éclair**, com **6 segundos de preparo na batedeira industrial ao lado do moinho**, seguidos do percurso de entrega. O confeiteiro mistura os ingredientes, leva a bandeja até as três vitrines e coloca cada doce no expositor correspondente. O estoque aumenta durante cada entrega; o retorno à batedeira é feito com a bandeja vazia. Não é preciso recolher os doces nem pedir ao repositor para transportá-los.
+
+Cada lote prepara até um doce de cada tipo, somente para as vitrines com vagas: bolos cheios não impedem produzir donuts e éclairs. O preparo aguarda sem consumir insumos somente quando faltam mel ou ovos, ou quando todas as vitrines estão completas. Uma exclamação aparece sobre o confeiteiro quando há alguma vitrine vazia e falta mel ou ovos, exceto durante entregas. A pausa congela preparo, batedeira e percurso. Cada produto entra nos pedidos após sua primeira entrega. Clientes seguem as reações normais de falta de estoque. Compra, ingredientes, seleção dos doces do lote, progresso, percurso pendente e estoque são salvos; partidas anteriores recebem a confeitaria ainda não comprada.
+
+Um único padeiro opera o processador no topo e o forno industrial na base, busca trigo e abastece a vitrine. Pães assados ficam pendentes até ele retirar a bandeja e colocá-los no expositor; somente então aparecem e ficam disponíveis para compra. Ele também completa qualquer vaga disponível: 16 / 18 ou 17 / 18 não impedem o trabalho. Cada trigo continua rendendo três pães. Se o lote não couber inteiro, os pães restantes ficam reservados e são entregues nas próximas vagas sem consumir outro trigo. Tanto a reserva quanto a entrega em andamento são salvas. O confeiteiro continua dedicado aos doces.
+
+## Estacionamento no nível 16
+
+Ao alcançar o nível 16, abra **Celular → Melhorias → Mercado → Estacionamento**. A construção custa **R$ 10.000**, pode ser comprada uma única vez e ocupa o terreno à esquerda da loja, entre o salão e a borda lateral do terreno, com acesso pela rua.
+
+O estacionamento tem seis vagas demarcadas que começam vazias, setas de circulação, passagem pela calçada, canteiro central com arbustos, iluminação e placa de estacionamento. Parte dos compradores usa os carros que j? circulam na rua, preservando modelo, cor e tamanho. Cada motorista reserva uma vaga, estaciona com uma curva suave, abre a porta e caminha até a loja. Após comprar, volta ao mesmo carro, embarca, sai de ré e segue pela rua. A vaga só fica livre quando o carro vai embora; novas chegadas esperam quando o estacionamento está cheio. Rodas, direção, portas, piscas e luzes de freio e ré são animados. Os carros cedem passagem aos pedestres e coordenam o uso da rua com o trânsito e os veículos do banco.
+
+Ocupa o terreno até perto da borda esquerda. O acesso usa o mesmo asfalto do estacionamento e fica centralizado nas duas faixas de entrada e saída. A vegetação que ocupava essa área é substituída durante a construção; a calçada e o meio-fio são recortados no acesso e o poste é movido para fora dele. O acesso à horta e a circulação pela calçada permanecem livres. Os carros presentes e o canteiro têm colisão. Viagens de clientes são transitórias, como as demais visitas à loja; ao recarregar, novas visitas começam com o estacionamento vazio.
+
+Clientes que chegam de carro sempre pedem a capacidade máxima da cesta: **5 unidades**, independentemente da reputação da loja. O pedido pode repetir produtos e também fica completo quando inclui pão. Com estoque suficiente, compram as cinco unidades; se faltar mercadoria, seguem o tempo de espera e as reações normais do jogo, pagando somente o que encontraram. Pedestres mantêm seus pedidos variáveis por reputação.
+
+A compra exige apenas o nível e o saldo; não depende da cozinha de geleias nem libera produtos adicionais. É salva com as demais melhorias. Partidas antigas recebem o estacionamento ainda não comprado, preservando saldo e progresso.
+
+## Como jogar a fase artesanal
+
+- A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 16 acrescenta o estacionamento após a fase artesanal; a loja pode continuar funcionando e subindo de nível depois dele.
+- A cesta de trabalho prepara o jogador para viagens maiores sem mudar o começo do jogo.
+- A estufa de morangos exige a padaria. No nível 11, acrescenta um canteiro de 3,6 × 2,5 u à direita do curral e a quarta seção do hortifruti na parede esquerda. O salão ampliado no nível 9 permanece igual, sem anexo posterior. O identificador salvo continua sendo `alaArtesanal`.
+- Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Abasteça morangos na seção de hortifruti à esquerda e mel na banca do anexo.
+- A queijaria exige a estufa de morangos e a ala do leite. A queijaria fica na sala dos fundos direitos; o expositor refrigerado permanece ao lado do leite. Entregue **1 leite → 2 queijos**, em 5 segundos. O lote vale R$ 36, contra R$ 20 pela garrafa de leite vendida diretamente.
+- O apiário do N12 fica à direita da estufa, alinhado com ela. O expositor de mel fica na frente direita do salão, sem nova ampliação. No N15, a geleia prolonga esse balcão para a esquerda, com estoque e reposição próprios.
+- A cozinha de geleias exige o apiário. Fica ao lado da queijaria, na mesma sala dos fundos. O acesso para entrega e coleta fica aberto na lateral esquerda, sem porta. Os potes são vendidos na seção esquerda do balcão de mel e geleia, na frente direita. Entregue **2 morangos + 1 mel → 3 geleias**, em 6 segundos. O lote vale R$ 90, contra R$ 56 pelos ingredientes vendidos diretamente.
+- Para entregar ingredientes, aproxime-se da oficina carregando-os. Cada ingrediente tem estoque de entrada de até 8 unidades. A etiqueta mostra ingredientes disponíveis, receita, progresso e produtos prontos. Depois, recolha o lote e leve-o à banca. O repositor também coleta e abastece produtos prontos; o jogador fornece os ingredientes das receitas.
+- Uma oficina cheia pausa a produção sem consumir ingredientes: até 8 queijos ou 9 geleias aguardam coleta. As bancas comportam 12 unidades de cada produto.
+- Os quatro novos produtos entram nos pedidos **após o primeiro abastecimento**. Depois disso, continue repondo para atender à demanda.
+- A irrigação atende tomate, milho, trigo e morango. As oficinas, a colmeia, o galinheiro e o curral mantêm seus tempos próprios.
+- Compras, estoques, ingredientes e progresso das receitas são salvos. Partidas anteriores recebem as novas construções bloqueadas, preservando o progresso existente.
+
+## Desativadas
+
+| Nível | Melhoria | Custo |
+| --- | --- | --- |
+| 1 | Mais capacidade | R$ 25 |
+| 4 | Fertilizante | R$ 250 por aplicação |
+| 5 | Velocidade do jogador | R$ 100 |
+| 6 | Velocidade do repositor | R$ 100 |
+
+## Conteúdo suspenso: referência da implementação anterior
+
+<details>
+<summary>Prateleiras, expansão e importações (desativadas)</summary>
+
+Os níveis e instruções abaixo são históricos e não estão ativos no jogo. A nova etapa será reorganizada depois do nível 20, ainda sem desbloqueios definidos.
+
+## Biscoitos e doces no nível 22
+
+No nível 22, abra **Celular → Importar produtos → Biscoitos e doces**. Cada caixa com nove unidades custa **R$ 360**, e cada unidade vale **R$ 40**. Exige a expansão e pelo menos a primeira prateleira de importados.
+
+Cookies de chocolate em caixa vermelha, biscoitos amanteigados em lata azul, balas de frutas em pacote verde e bombons em caixa dourada ocupam a face **−x da primeira gôndola, voltada ao hortifruti**. São quatro níveis com nove unidades cada, totalizando 36. A segunda estante do depósito recebe até quatro caixas dessa classe, incluindo pedidos a caminho. Caminhão, coleta, reposição manual e automática e vendas seguem o fluxo das demais importações. A reserva anterior de Higiene passa a receber Biscoitos e doces; não havia produtos de higiene disponíveis. Saves anteriores recebem a nova classe bloqueada, preservando dinheiro, estoques e pedidos pagos.
+
+## Mantimentos no nível 21
+
+No nível 21, abra **Celular → Importar produtos → Mantimentos**. Cada caixa de nove unidades custa **R$ 315**, e cada embalagem vale **R$ 35**. Exige a expansão e as duas prateleiras de importados. A classe reúne quatro variedades visuais: macarrão, feijão, arroz e farinha, com nove unidades de cada na gôndola cheia (36 no total).
+
+Os mantimentos ocupam a face **−x da segunda gôndola**, de frente para os enlatados na face +x da primeira; cereais permanecem na face oposta, voltada à padaria. O corredor entre os móveis atende às compras e à reposição. A quarta estante do depósito recebe até quatro caixas dessa classe, contando entregas pendentes. Reutiliza caminhão, retirada e repositor. Saves anteriores recebem a classe bloqueada, preservando saldo, produtos e pedidos pagos.
 
 ## Importação de produtos no nível 19
 
@@ -42,9 +108,9 @@ No nível 19, abra o celular e selecione **Importar produtos**, imediatamente ab
 
 Cada pedido confirmado gera **uma entrega de caminhão baú branco**. O caminhão surge à esquerda da rua, avança além do **acesso exclusivo**, para e entra de ré pela única faixa do pátio. A vaga mede **2,6 × 6,4 u**, com a cabine voltada para a rua e o baú para os fundos. As seis vagas e o acesso de clientes continuam funcionando durante a descarga; carros de clientes não usam o pátio privativo. O entregador desce da cabine, contorna a lateral até o baú, leva uma caixa por viagem até as estantes e retorna ao veículo. Terminada a descarga, o caminhão sai de frente pela mesma faixa e o próximo pedido pode chegar. As duas faixas da rua aguardam a manobra e são liberadas durante a descarga. Se o mercado estiver fechado, a chegada aguarda a abertura. Pausar congela a entrega.
 
-O depósito tem **quatro estantes, uma por classe, com quatro pacotes de nove unidades cada** (16 posições físicas). As duas gôndolas têm duas classes cada, totalizando quatro classes. **Enlatados** está disponível no nível 19 e **Cereais** no nível 20. Cereais usa a terceira estante do depósito e a face oposta aos enlatados na primeira gôndola, com capacidade de 36 unidades. As embalagens têm as mesmas quatro cores das latas. Higiene fica prevista na segunda gôndola, sem produtos à venda; a quarta estante permanece reservada. Cada caixa ocupa uma posição até ficar vazia. Caixas já guardadas e caixas de pedidos pendentes contam no limite da própria classe; vagas de outra classe não podem ser usadas e não é possível pagar por mais mercadoria do que cabe. As estantes começam vazias e exibem somente os pacotes realmente entregues.
+O depósito tem **quatro estantes, uma por classe, com quatro pacotes de nove unidades cada** (16 posições físicas). As duas gôndolas têm duas classes cada, totalizando quatro classes. **Enlatados** está disponível no nível 19, **Cereais** no nível 20 **Mantimentos** no nível 21 e **Biscoitos e doces** no nível 22. Cereais usa a terceira estante do depósito e a face voltada à padaria na segunda gôndola, com capacidade de 36 unidades. As caixas têm quatro variedades com rótulos próprios. Para novas importações de cereais, instale a segunda gôndola; saves que já possuem cereais recebem esse móvel sem custo, preservando estoque e pedidos. Mantimentos usa a quarta estante e a face da segunda gôndola de frente para os enlatados; Biscoitos e doces usa a segunda estante e a face da primeira gôndola voltada ao hortifruti. Cada caixa ocupa uma posição até ficar vazia. Caixas já guardadas e caixas de pedidos pendentes contam no limite da própria classe; vagas de outra classe não podem ser usadas e não é possível pagar por mais mercadoria do que cabe. As estantes começam vazias e exibem somente os pacotes realmente entregues.
 
-Retire os enlatados junto à primeira estante, identificada como Enlatados e leve-os à primeira gôndola, ou deixe o repositor fazer o transporte. Cada lata vale **R$ 30**, e a gôndola comporta **36 unidades**. O estoque não aparece na loja no momento da compra. O catálogo mostra unidades na gôndola e no depósito, ocupação e limite de quatro pacotes por classe e caixas a caminho. Monte o pedido com **−** e **+**, e confirme tudo de uma vez em **Finalizar pedido**; a cobrança ocorre somente se o pedido inteiro for válido.
+Os enlatados ocupam a face da primeira gôndola antes usada pelos cereais, voltada para a segunda gôndola. Retire os enlatados junto à primeira estante, identificada como Enlatados e leve-os à primeira gôndola, ou deixe o repositor fazer o transporte. Cada lata vale **R$ 30**, e a gôndola comporta **36 unidades**. O estoque não aparece na loja no momento da compra. O catálogo mostra unidades na gôndola e no depósito, ocupação e limite de quatro pacotes por classe e caixas a caminho. Monte o pedido com **−** e **+**, e confirme tudo de uma vez em **Finalizar pedido**; a cobrança ocorre somente se o pedido inteiro for válido.
 
 Estoque, caixas parcialmente abertas e pedidos pagos são salvos. Recarregar durante a descarga retoma a viagem com as caixas restantes, sem nova cobrança ou duplicação. Saves sem depósito preservam os enlatados que já estavam na gôndola e recebem o depósito vazio. Saves com mais de quatro caixas da mesma classe mantêm o excedente em uma reserva de migração: caixas já entregues entram automaticamente na estante conforme surge uma vaga, e pedidos pagos aguardam espaço durante a descarga. O catálogo informa a reserva; novas compras ficam bloqueadas até haver capacidade, sem perda de unidades, inclusive caixas parcialmente abertas.
 
@@ -76,36 +142,5 @@ São duas gôndolas metálicas idênticas de 5,775 unidades, quatro níveis e do
 
 As prateleiras permanecem vazias até o nível 19, quando a opção **Importar produtos** libera a compra recorrente de caixas de enlatados. O nível comprado das gôndolas é salvo; partidas antigas recebem a melhoria no nível 0, preservando dinheiro e progresso.
 
-## Estacionamento no nível 16
 
-Ao alcançar o nível 16, abra **Celular → Melhorias → Mercado → Estacionamento**. A construção custa **R$ 10.000**, pode ser comprada uma única vez e ocupa o terreno à esquerda da loja, entre o salão e a borda lateral do terreno, com acesso pela rua.
-
-O estacionamento tem seis vagas demarcadas que começam vazias, setas de circulação, passagem pela calçada, canteiro central com arbustos, iluminação e placa de estacionamento. Parte dos compradores usa os carros que j? circulam na rua, preservando modelo, cor e tamanho. Cada motorista reserva uma vaga, estaciona com uma curva suave, abre a porta e caminha até a loja. Após comprar, volta ao mesmo carro, embarca, sai de ré e segue pela rua. A vaga só fica livre quando o carro vai embora; novas chegadas esperam quando o estacionamento está cheio. Rodas, direção, portas, piscas e luzes de freio e ré são animados. Os carros cedem passagem aos pedestres e coordenam o uso da rua com o trânsito e os veículos do banco.
-
-Ocupa o terreno até perto da borda esquerda. O acesso usa o mesmo asfalto do estacionamento e fica centralizado nas duas faixas de entrada e saída. A vegetação que ocupava essa área é substituída durante a construção; a calçada e o meio-fio são recortados no acesso e o poste é movido para fora dele. O acesso à horta e a circulação pela calçada permanecem livres. Os carros presentes e o canteiro têm colisão. Viagens de clientes são transitórias, como as demais visitas à loja; ao recarregar, novas visitas começam com o estacionamento vazio.
-
-A compra exige apenas o nível e o saldo; não depende da cozinha de geleias nem libera produtos adicionais. É salva com as demais melhorias. Partidas antigas recebem o estacionamento ainda não comprado, preservando saldo e progresso.
-
-## Como jogar a fase artesanal
-
-- A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 16 acrescenta o estacionamento após a fase artesanal; a loja pode continuar funcionando e subindo de nível depois dele.
-- A cesta de trabalho prepara o jogador para viagens maiores sem mudar o começo do jogo.
-- A estufa de morangos exige a padaria. No nível 11, acrescenta um canteiro de 3,6 × 2,5 u à direita do curral e a quarta seção do hortifruti na parede esquerda. O salão ampliado no nível 9 permanece igual, sem anexo posterior. O identificador salvo continua sendo `alaArtesanal`.
-- Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Abasteça morangos na seção de hortifruti à esquerda e mel na banca do anexo.
-- A queijaria exige a estufa de morangos e a ala do leite. A queijaria fica na sala dos fundos direitos; o expositor refrigerado permanece ao lado do leite. Entregue **1 leite → 2 queijos**, em 5 segundos. O lote vale R$ 36, contra R$ 20 pela garrafa de leite vendida diretamente.
-- O apiário do N12 fica à direita da estufa, alinhado com ela. O expositor de mel fica na frente direita do salão, sem nova ampliação. No N15, a geleia prolonga esse balcão para a esquerda, com estoque e reposição próprios.
-- A cozinha de geleias exige o apiário. Fica ao lado da queijaria, na mesma sala dos fundos. O acesso para entrega e coleta fica aberto na lateral esquerda, sem porta. Os potes são vendidos na seção esquerda do balcão de mel e geleia, na frente direita. Entregue **2 morangos + 1 mel → 3 geleias**, em 6 segundos. O lote vale R$ 90, contra R$ 56 pelos ingredientes vendidos diretamente.
-- Para entregar ingredientes, aproxime-se da oficina carregando-os. Cada ingrediente tem estoque de entrada de até 8 unidades. A etiqueta mostra ingredientes disponíveis, receita, progresso e produtos prontos. Depois, recolha o lote e leve-o à banca. O repositor também coleta e abastece produtos prontos; o jogador fornece os ingredientes das receitas.
-- Uma oficina cheia pausa a produção sem consumir ingredientes: até 8 queijos ou 9 geleias aguardam coleta. As bancas comportam 12 unidades de cada produto.
-- Os quatro novos produtos entram nos pedidos **após o primeiro abastecimento**. Depois disso, continue repondo para atender à demanda.
-- A irrigação atende tomate, milho, trigo e morango. As oficinas, a colmeia, o galinheiro e o curral mantêm seus tempos próprios.
-- Compras, estoques, ingredientes e progresso das receitas são salvos. Partidas anteriores recebem as novas construções bloqueadas, preservando o progresso existente.
-
-## Desativadas
-
-| Nível | Melhoria | Custo |
-| --- | --- | --- |
-| 1 | Mais capacidade | R$ 25 |
-| 4 | Fertilizante | R$ 250 por aplicação |
-| 5 | Velocidade do jogador | R$ 100 |
-| 6 | Velocidade do repositor | R$ 100 |
+</details>

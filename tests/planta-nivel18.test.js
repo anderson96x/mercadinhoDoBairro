@@ -1,3 +1,6 @@
+import { reativarImportadosParaTeste } from './helpers/importados-suspensos.js';
+reativarImportadosParaTeste();
+
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -205,7 +208,7 @@ test('visual mantém o salão e a porta originais e remove a mureta da cozinha a
   const labels = [];
   const visual = { cena, sim, produtos: {}, alvosHorta: [], criarLabel(id, ponto) { labels.push({ id, ponto }); } };
   for (const [id, p] of Object.entries(sim.produtos)) {
-    if (id === 'pao') continue;
+    if (id === 'pao' || p.origem === 'confeitaria') continue;
     Cena.prototype.construirEstacao.call(visual, id, p);
     assert.equal(labels.find(label => label.id === `horta-${id}`).ponto.z, p.horta.z);
     assert.equal(visual.produtos[id].frutas[0].position.z >= p.prateleira.z - p.prateleira.d / 2, true, id);

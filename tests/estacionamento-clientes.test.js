@@ -41,6 +41,50 @@ function sobrepoeIlha(carro, obstaculo = P.ilha) {
   });
 }
 
+test('motoristas pedem uma cesta cheia com pouca variedade, pão e qualquer reputação', () => {
+  for (const reputacao of [20, 60, 80, 100]) for (const produtos of [['tomate'], ['pao'], ['tomate', 'pao'], ['tomate', 'milho', 'morango', 'trigo', 'pao']]) {
+    const sim = preparar();
+    sim.estado.satisfacoesRecentes = Array.from({ length: CONFIG.tamanhoHistoricoReputacao }, (_, i) => i < reputacao / 10 ? 'feliz' : 'irritado');
+    assert.equal(sim.reputacao, reputacao);
+    for (const [id, estado] of Object.entries(sim.estado.produtos)) {
+      estado.liberado = produtos.includes(id);
+      estado.apresentado = estado.liberado;
+    }
+    assert.equal(sim.criarCliente(), true);
+    const cliente = sim.clientes[0];
+    assert.ok(cliente.carroId);
+    assert.equal(cliente.compras.reduce((total, compra) => total + compra.desejado, 0), CONFIG.capacidadeCestaCliente);
+    assert.ok(cliente.compras.every(compra => produtos.includes(compra.produto) && compra.desejado > 0));
+  }
+});
+
+test('pedestres mantêm pedidos variáveis mesmo com estacionamento comprado', () => {
+  const sim = preparar();
+  sim.aleatorio = () => 0.8;
+  assert.equal(sim.criarCliente(), true);
+  const cliente = sim.clientes[0];
+  assert.equal(cliente.carroId, undefined);
+  assert.equal(cliente.compras.reduce((total, compra) => total + compra.desejado, 0), 1 + Math.floor(0.8 * sim.limitePedidoCliente));
+});
+
+test('motorista reage à falta de estoque pelo fluxo normal e paga somente o que encontrou', () => {
+  for (const estoque of [0, 2]) {
+    const sim = preparar();
+    sim.estado.produtos.tomate.prateleira = estoque;
+    sim.criarCliente();
+    const cliente = sim.clientes[0];
+    for (let i = 0; i < 6000 && cliente.fase !== 'fim'; i++) {
+      sim.tempo += 0.05;
+      sim.atualizarClientes(0.05); sim.atualizarCaixa(0.05);
+    }
+    assert.equal(cliente.fase, 'fim');
+    assert.equal(cliente.quantidade, estoque);
+    assert.equal(cliente.satisfacao, estoque ? 'neutro' : 'irritado');
+    assert.equal(sim.estado.estatisticas.faturamento, estoque * sim.produtos.tomate.preco);
+    assert.equal(sim.estado.produtos.tomate.prateleira, 0);
+  }
+});
+
 test('construção fica vazia e espera a obra terminar antes da primeira chegada', () => {
   const sim = preparar(); sim.tempo = 0;
   assert.equal(sim.estacionamento.carros.length, 0);
@@ -68,6 +112,8 @@ test('a 60 FPS, cliente dirige, estaciona, desembarca, compra, paga, volta ao pr
   }
   assert.equal(cliente.fase, 'fim');
   assert.equal(sim.estado.estatisticas.clientes, antes + 1);
+  assert.equal(cliente.quantidade, CONFIG.capacidadeCestaCliente, 'motorista compra a cesta cheia com estoque disponível');
+  assert.equal(sim.estado.estatisticas.faturamento, CONFIG.capacidadeCestaCliente * sim.produtos.tomate.preco);
   assert.ok(abriuPorta && saiuComSacola);
   assert.deepEqual(direcoes, new Set(['direita', 'esquerda']));
   assert.equal(freou, true);

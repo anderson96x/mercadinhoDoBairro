@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <path fill="#075477" d="M0 0h360v560H0z"/>
+  <path fill="#ffffff" opacity=".12" d="M0 0h34v560H0zM0 434l360-88v40L0 474z"/>
+  <path stroke="#ffffff" stroke-width="3" opacity=".65" d="M22 30h316M22 530h316"/>
+  <text x="180" y="111" text-anchor="middle" font-family="sans-serif" font-size="44" font-weight="bold" fill="#ffffff">MACARRÃO</text>
+  <text x="180" y="147" text-anchor="middle" font-family="sans-serif" font-size="18" letter-spacing="3" fill="#eaf0f4">SELEÇÃO DO BAIRRO</text>
+  <rect x="32" y="183" width="296" height="221" rx="17" fill="#f4f7f9"/>
+  <circle cx="180" cy="279" r="66" fill="#e4ebee"/>
+  <path d="M135 294q-11-46 28-51t58 50q-47 37-86 1" fill="#e5bd60" stroke="#9a742f" stroke-width="4"/><path d="m153 265 10 40m14-43 6 40m14-35 4 30" stroke="#fff0ba" stroke-width="4"/>
+  <text x="180" y="374" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#075477">COZINHE EM ÁGUA FERVENTE</text>
+  <path stroke="#ffffff" opacity=".5" stroke-width="3" d="M58 441h244M83 456h194"/>
+  <text x="180" y="497" text-anchor="middle" font-family="sans-serif" font-size="31" font-weight="bold" fill="#ffffff">500 g</text>
+</svg>

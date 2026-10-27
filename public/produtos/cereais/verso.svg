@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="660" viewBox="0 0 360 660">
+  <path fill="#fffaf0" d="M0 0h360v660H0z"/>
+  <text x="180" y="85" text-anchor="middle" font-family="Georgia,serif" font-size="46" font-weight="bold" fill="#7c713f">CEREAIS</text>
+  <text x="180" y="137" text-anchor="middle" font-family="sans-serif" font-size="21" fill="#7c713f">PARA COMEÇAR O DIA</text>
+  <path fill="#e9dba6" d="M34 182h292v9H34zM34 208h292v7H34zM34 232h242v7H34zM34 280h292v186H34z"/>
+  <path stroke="#faf4dd" stroke-width="5" d="M48 312h264M48 342h264M48 372h264M48 402h264M48 432h264M228 292v160"/>
+  <path stroke="#68634d" stroke-width="7" d="M84 517v65m11-65v65m15-65v65m9-65v65m17-65v65m11-65v65m17-65v65m9-65v65m16-65v65m12-65v65m17-65v65m9-65v65m16-65v65m13-65v65"/>
+  <text x="180" y="623" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#7c713f">CONSERVE EM LOCAL SECO</text>
+</svg>

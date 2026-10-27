@@ -1,6 +1,119 @@
 # Histórico de alterações
 
-## Versão atual: 0.58.3 — 2026-10-23
+## Versão atual: 0.63.3 — 2026-10-26
+
+- Move a batedeira de doces para o antigo posto do forno. Integra o moinho sobre o forno em uma única máquina na posição original do processador de trigo, com uma única colisão.
+- Restaura o cinza claro metálico da máquina de pão e refina o forno com janela, puxador, guias e porta que sobe para carregar e descarregar a câmara.
+- Mantém apenas um padeiro: o mesmo funcionário busca trigo, opera moagem e forno e abastece a vitrine. Farinha restante continua sendo preparada sem trigo; o confeiteiro permanece independente.
+- Gira a máquina de pão e a batedeira para ficarem de frente uma para a outra, mantendo seus centros nas posições atuais.
+- Corrige pães aparecendo na vitrine antes do padeiro: o lote fica pendente após assar e só entra no estoque durante o gesto de colocá-lo no expositor, depois de viajar na bandeja. Clientes não podem retirar esses pães antes da entrega.
+- Simulação e animação compartilham roteiro e relógio. A reserva de excedentes também aguarda entrega, e o cartão informa “Abastecendo a vitrine”. Receitas e tempos de moagem e forno permanecem iguais; o estoque passa a aguardar o transporte.
+- Salva lote pendente, posição no roteiro e entrega concluída para retomar sem perda ou duplicação. Saves anteriores preservam o estoque já exposto e recebem entrega vazia.
+- Validação: 341 testes, build e rotas aprovados. Edge em desktop/celular com WebGL e Canvas confirma vitrine vazia antes da entrega e estoque surgindo no gesto de expor. Pausa, reserva, migração e recarga sem duplicação cobertas, sem salvar imagens.
+
+## 0.63.2 — 2026-10-26
+
+- Padeiros continuam trabalhando enquanto houver trigo ou farinha e vagas na vitrine, inclusive em 16 / 18 ou 17 / 18. Um trigo continua rendendo três pães: o excedente fica reservado e preenche as próximas vagas sem novo consumo, inclusive após recarregar.
+- A confeitaria produz e entrega os doces cujas vitrines ainda têm espaço; uma classe cheia não bloqueia as demais. Mostra “Vitrine cheia” somente quando todas estão completas e identifica o ingrediente que falta para preparar outro lote.
+- Sincroniza máquinas, animações e cartões com essas regras. Preserva a seleção de doces do lote durante entregas e recarga.
+- Validação: 339 testes e build de produção aprovados. Pães em 16 / 18, reserva de excedente, animação do moinho e continuidade dos doces com uma vitrine cheia verificados no Edge em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.63.1 — 2026-10-26
+
+- Padroniza a receita no cartão da padaria como “Por lote: 1 trigo → 3 pães”, mantendo os tempos de moagem e forno.
+- Padroniza o cartão da confeitaria com o visual do preparo de pão, mostrando ingredientes, receita resumida e estado do confeiteiro. O cartão aparece somente perto da bandeja de entrega de mel e ovos.
+- Mostra estoque / capacidade apenas no selo de cada cartão, como 11 / 18 para pães e 19 / 24 para doces. O cabeçalho “Produção” mantém somente o título e a seta de expandir.
+- Exibe barra de progresso e porcentagem somente durante produção ou entrega ativa. Em espera por ingredientes ou com vitrine cheia, mantém apenas o texto do estado.
+- Remove o balão flutuante “MEL + OVOS” e a dica de entrega de ingredientes do rodapé do painel, incluindo seu estilo sem uso.
+- Validação: 337 testes e build de produção aprovados. Cartões, contagens, progresso e exibição junto à bandeja verificados no Edge em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.63.0 — 2026-10-26
+
+- Adiciona Confeitaria da padaria no nível 17 por R$ 1.000, com bolos, donuts e éclairs vendidos a R$ 15 cada. Exige padaria, apiário e ala dos ovos e inclui um confeiteiro dedicado.
+- Mantém tampos planos nos balcões secundários antes da compra. Após a instalação, as três vitrines curvas mostram somente o estoque real dos doces, com modelos próprios.
+- Recebe mel e ovos em uma bandeja igual à do trigo, na seção ao lado dele, mostrando as quantidades entregues. Um mel e um ovo rendem um doce de cada, com seis segundos de preparo na batedeira industrial junto ao moinho, seguidos das entregas.
+- Anima o confeiteiro trabalhando na batedeira, com cuba metálica e batedor giratório, e abastecendo a vitrine correspondente a cada doce. Os produtos saem da bandeja quando entram no estoque; o funcionário retorna com a bandeja vazia mesmo sem mais ingredientes. A máquina tem colisão própria e preserva a passagem dos dois padeiros.
+- No descanso, o confeiteiro fica parado, com braços relaxados, voltado para os donuts e movimentando suavemente a cabeça. Mostra uma exclamação quando alguma vitrine está vazia e falta mel ou ovos, exceto durante entregas. A pausa congela a pose e a produção.
+- Salva compra, ingredientes, preparo, entregas pendentes e estoque sem duplicar produtos. Falta de insumos ou espaço interrompe o trabalho sem perdas. Partidas anteriores recebem a confeitaria bloqueada; importações e expansão continuam desativadas para reorganização futura.
+- Validação: 334 testes, build de produção e rotas aprovados. Compra, bandejas, vitrines, batedeira, entregas, recarga, exclamação, descanso e pausa verificados no Edge em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.62.0 — 2026-10-26
+
+- Desativa prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22. Remove as ofertas e orientações de compra, inclusive no DEV; o estacionamento no nível 16 permanece como último desbloqueio ativo.
+- Mantém modelos e sistemas no código para reorganização futura depois do nível 20, sem definir novos níveis de liberação. A progressão de níveis continua normalmente.
+- Compatibilidade de desenvolvimento: ao recarregar, remove compras e estoques do conteúdo suspenso, sem migração para preservá-los; impede a restauração das gôndolas pelo formato antigo.
+- Mantém testes dos sistemas guardados com reativação somente nas suítes específicas e acrescenta regressões da configuração desativada real.
+- Validação: 320 testes e build de produção aprovados. Menus, cena, DEV e restauração verificados no Edge em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.61.1 — 2026-10-26
+
+- A ação DEV de encher prateleiras também libera e abastece importados sem pedido prévio quando o nível, a expansão e a gôndola necessária estão disponíveis.
+- Preserva o estoque ao recarregar, sem cobrar dinheiro nem alterar caixas e pedidos do depósito. Produtos ainda bloqueados continuam vazios.
+- Validação: 318 testes e build de produção aprovados, com regressões para as quatro classes importadas, requisitos de desbloqueio e preservação do estoque ao recarregar.
+
+## 0.61.0 — 2026-10-26
+
+- Clientes que chegam de carro sempre pedem cinco unidades, a capacidade máxima da cesta, independentemente da reputação e da variedade disponível, inclusive em pedidos com pão.
+- Mantém o fluxo normal de falta de estoque: clientes esperam, reagem à compra incompleta e pagam somente o que encontraram. Pedestres continuam com pedidos variáveis por reputação.
+- Explica o benefício na melhoria Estacionamento e na documentação de desbloqueios. Preserva saves, preço e requisitos da construção.
+- Validação: 316 testes e build de produção aprovados, incluindo pedidos com pouca variedade e pão, diferentes reputações, compra e pagamento de cinco unidades, pedestres e reações normais a estoque vazio ou insuficiente.
+
+## 0.60.1 — 2026-10-26
+
+- Oculta “Importar produtos” nas opções quando nenhuma importação está disponível, respeitando nível, melhorias, espaço no depósito e entregas em andamento.
+- Substitui o ícone de enlatado por uma caixa com seta de entrada no menu e no cabeçalho de importações. Preserva saves e progressão.
+- Validação: 313 testes e build de produção aprovados. Menu verificado no Edge em desktop e celular: início, pré-requisitos, importação disponível, ícone, navegação e pedido pendente, sem salvar imagens.
+
+## 0.60.0 — 2026-10-26
+
+- Adiciona Biscoitos e doces no nível 22, com cookies de chocolate, amanteigados, balas de frutas e bombons. Combina quatro embalagens 3D de formatos e cores diferentes com oito rótulos SVG originais, para frente e verso.
+- Abastece a face da primeira gôndola voltada ao hortifruti com nove unidades de cada variedade. Usa a segunda estante do depósito, antes reservada para Higiene, sem mover os demais produtos ou móveis.
+- Importa caixas de nove unidades por R$ 360 e vende cada unidade por R$ 40, reutilizando pedidos, caminhão, coleta, repositor e salvamento. Saves anteriores recebem o produto bloqueado e preservam progresso, estoque e pedidos pagos.
+- Ajusta as embalagens com caixa de bombons larga e baixa com arte dourada clara, pacote de balas com soldas achatadas e rótulos acompanhando as dobras, e impressão contínua nas duas metades da lata de amanteigados. Remove faces sobrepostas nas caixas e usa materiais iluminados nos rótulos.
+- Define dimensões explícitas nos SVGs de frente e verso para evitar texturas pretas no WebGL. Acrescenta regressão das dimensões e verificação de cores em memória por `scripts/verificar-cores-guloseimas.mjs`.
+- Validação: 313 testes, build de produção e rotas aprovados. Modelos, 27 SVGs das quatro classes e transporte verificados no Edge em desktop/celular com WebGL e Canvas, incluindo 32 medições de cor dos dois lados das quatro embalagens, sem faces pretas e sem salvar imagens.
+
+## 0.59.0 — 2026-10-26
+
+- Adiciona Mantimentos no nível 21: macarrão, feijão, arroz e farinha, com nove embalagens por nível na face da segunda gôndola voltada para os enlatados. Combina modelos 3D e rótulos SVG originais.
+- Arroz, feijão e farinha usam sacos com frente em branco frio, base firme, dobras, ombros afunilados e alça realmente vazada. As artes têm títulos em português e janelas ilustradas para identificar o conteúdo; o macarrão permanece em caixa.
+- Identifica os mantimentos também pelo verso: macarrão em azul petróleo, feijão em verde sálvia, arroz em azul e farinha em dourado, com rótulos próprios, faixas coloridas e painéis claros. Laterais e fechamento acompanham cada cor, preservando a frente branca dos sacos.
+- Aplica os rótulos às superfícies dos pacotes com iluminação do relevo. O Canvas acompanha a geometria por triângulos com coordenadas UV e reutiliza texturas rasterizadas em memória. Preserva o volume e a separação das embalagens durante o transporte.
+- Importa caixas de nove unidades por R$ 315 e vende cada unidade por R$ 35. A classe usa a quarta estante do depósito, com quatro vagas exclusivas, e os sistemas existentes de entrega, coleta e reposição. Higiene fica reservada na face livre da primeira gôndola.
+- Preserva saves, estoque, pedidos pagos e a disposição dos enlatados e cereais. Partidas anteriores recebem Mantimentos bloqueado, sem cobrança ou alteração de progresso.
+- Validação: 306 testes, build de produção e rotas da loja aprovados, incluindo entrega, salvamento, reposição manual e automática, venda, circulação e recorte real da alça. As três classes, seus 19 SVGs, os versos coloridos e o transporte foram verificados em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.58.7 — 2026-10-25
+
+- Move os enlatados para a face da primeira gôndola antes ocupada pelos cereais, com rótulos, compra e reposição voltados ao corredor correspondente.
+- Preserva estoque, pedidos, preços e saves existentes.
+- Validação: 299 testes, build de produção e rotas da loja aprovados; desktop/celular com WebGL e Canvas verificados sem salvar imagens.
+
+## 0.58.6 — 2026-10-25
+
+- Move os cereais para a segunda gôndola, na face voltada à padaria, com compra e reposição pelo corredor correspondente.
+- Exige a segunda prateleira para novas importações de cereais. Saves que já possuem cereais recebem o móvel sem custo, preservando saldo, estoque e pedidos.
+- Validação: 299 testes, build de produção e rotas da loja aprovados. Cereais e enlatados verificados nas respectivas gôndolas em desktop/celular com WebGL e Canvas, sem salvar imagens.
+
+## 0.58.5 — 2026-10-25
+
+- Atualiza os cereais com caixas 3D e quatro artes SVG originais: anéis de mel em amarelo, flocos de milho em azul, chocolate em verde e anéis de frutas em rosa. Inclui tigelas, leite e grãos ilustrados, além de verso, painéis laterais e vincos da tampa. Compartilha o carregamento dos rótulos com os enlatados.
+- Amplia a profundidade física das caixas de cereais e preserva uma escala maior no transporte, mantendo laterais e tampa visíveis nas mãos do jogador sem sobrepor as embalagens.
+- Preserva preços, importações, progressão e saves existentes.
+- Validação: 298 testes e build de produção aprovados, com regressão garantindo profundidade nas caixas carregadas. Gôndola cheia, onze SVGs de enlatados e cereais e carga de oito cereais verificados em desktop/celular com WebGL e Canvas por `node scripts/verificar-enlatados.mjs`, incluindo giros do jogador, sem salvar imagens.
+
+## 0.58.4 — 2026-10-25
+
+- Substitui as quatro cores de enlatados por milho em lata alta, atum em lata baixa e sardinhas em latas retangulares azul e vermelha ao tomate. Combina volumes 3D e aros metálicos com rótulos SVG originais e tampa ilustrada com anel de abertura.
+- Mantém nove unidades por variedade e compartilha materiais e texturas entre exemplares, com arte também no renderizador Canvas.
+- Corrige produtos parcialmente escondidos nas tábuas da gôndola: compartilha as alturas entre o móvel e os produtos, considera o deslocamento vertical do móvel e apoia cada embalagem pela base real do modelo.
+- Distribui os importados com margens simétricas nas pontas da gôndola e alinha as frentes das diferentes embalagens com o mesmo recuo da borda, mantendo os produtos dentro da largura da prateleira.
+- Organiza importados carregados pelo jogador em camadas de quatro, ajustando a escala ao volume de cada embalagem para evitar interseções. A reposição usa o destino e a variedade reais da prateleira, sem ampliar excessivamente o produto durante o movimento.
+- Corrige o Canvas para ocultar o verso dos rótulos SVG ao girar as embalagens.
+- Preserva preços, importações, progressão e saves existentes.
+- Validação: 297 testes, build de produção e rotas da loja aprovados, com regressão comparando os 72 produtos de uma gôndola cheia às tábuas reais. Gôndola cheia, cinco SVGs e carga de oito importados verificados em desktop/celular com WebGL e Canvas por `node scripts/verificar-enlatados.mjs`, incluindo giros do jogador, sem salvar imagens.
+
+## 0.58.3 — 2026-10-23
 
 - Corrige os braços do entregador desde a saída da cabine para usar a pose livre durante a caminhada, sem prolongar o gesto de segurar a porta nem simular uma cesta invisível.
 - Corrige o bloqueio na curva de saída usando colisões alinhadas à rotação do caminhão. Clientes dos dois lados podem contornar o baú pelo acesso quando houver espaço, sem atravessar o veículo ou desviar por dentro da loja.

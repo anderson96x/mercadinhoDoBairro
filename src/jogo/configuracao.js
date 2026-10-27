@@ -1,8 +1,11 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
-import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
+import { CONFEITARIA } from './confeitaria.js';
+import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, pontoPadaria, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes-produtos.js';
 const ESTANTE_ENLATADOS = PLANTA_DEPOSITO.estantes[CLASSES_PRODUTOS.enlatados.estante];
 const ESTANTE_CEREAIS = PLANTA_DEPOSITO.estantes[CLASSES_PRODUTOS.cereais.estante];
+const ESTANTE_MANTIMENTOS = PLANTA_DEPOSITO.estantes[CLASSES_PRODUTOS.mantimentos.estante];
+const ESTANTE_DOCES = PLANTA_DEPOSITO.estantes[CLASSES_PRODUTOS.doces.estante];
 export const ALTURA_PAREDE_BAIXA = 0.75;
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
@@ -123,26 +126,49 @@ export const PRODUTOS = {
     capacidadeHorta: 9, capacidadePrateleira: 12,
     ...PLANTA_GELEIA, liberado: false
   },
+  ...Object.fromEntries(Object.entries(CONFEITARIA.produtos).map(([id, p]) => [id, {
+    nome: p.nome, plural: p.plural, cor: p.cor, preco: 15, origem: 'confeitaria', nivelMinimo: CONFEITARIA.nivel,
+    capacidadeHorta: 0, capacidadePrateleira: p.capacidade, liberado: false,
+    horta: CONFEITARIA.entrada, coleta: CONFEITARIA.entrega, reposicao: CONFEITARIA.entrega,
+    prateleira: { ...volumePadaria(MODELO_PADARIA.fechamento[p.balcao]), movel: 'confeitaria' },
+    cliente: pontoPadaria(p.cliente), pontosCompra: [pontoPadaria(p.cliente)]
+  }])),
   pao: {
     nome: 'Pão', plural: 'Pães', cor: 0xc87833, preco: 10, origem: 'padaria',
     capacidadeHorta: 0, capacidadePrateleira: 18,
     ...PLANTA_PADARIA, liberado: false
+  },
+  guloseima: {
+    nome: 'Guloseima', plural: 'Biscoitos e doces', cor: 0xc74352, preco: 40, origem: 'importado', classe: 'doces', nivelMinimo: 22,
+    capacidadeHorta: PACOTES_POR_CLASSE * UNIDADES_PACOTE, capacidadePrateleira: 36,
+    horta: { ...ESTANTE_DOCES }, coleta: { x: ESTANTE_DOCES.x, z: ESTANTE_DOCES.z + 1.45 },
+    prateleira: { ...PRATELEIRAS_IMPORTADOS[CLASSES_PRODUTOS.doces.gondola], movel: 'importados' },
+    reposicao: { x: 3.45, z: -2.5 }, cliente: { x: 3.45, z: -2.5 },
+    pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 3.45, z })), liberado: false
+  },
+  mantimento: {
+    nome: 'Mantimento', plural: 'Mantimentos', cor: 0xe5b933, preco: 35, origem: 'importado', classe: 'mantimentos', nivelMinimo: 21,
+    capacidadeHorta: PACOTES_POR_CLASSE * UNIDADES_PACOTE, capacidadePrateleira: 36,
+    horta: { ...ESTANTE_MANTIMENTOS }, coleta: { x: ESTANTE_MANTIMENTOS.x, z: ESTANTE_MANTIMENTOS.z + 1.45 },
+    prateleira: { ...PRATELEIRAS_IMPORTADOS[CLASSES_PRODUTOS.mantimentos.gondola], movel: 'importados' },
+    reposicao: { x: 9.05, z: -2.5 }, cliente: { x: 9.05, z: -2.5 },
+    pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 9.05, z })), liberado: false
   },
   cereal: {
     nome: 'Cereal', plural: 'Cereais', cor: 0x69ad3c, preco: 45, origem: 'importado', classe: 'cereais', nivelMinimo: 20,
     capacidadeHorta: PACOTES_POR_CLASSE * UNIDADES_PACOTE, capacidadePrateleira: 36,
     horta: { ...ESTANTE_CEREAIS }, coleta: { x: ESTANTE_CEREAIS.x, z: ESTANTE_CEREAIS.z + 1.45 },
     prateleira: { ...PRATELEIRAS_IMPORTADOS[CLASSES_PRODUTOS.cereais.gondola], movel: 'importados' },
-    reposicao: { x: 6.15, z: -2.5 }, cliente: { x: 6.15, z: -2.5 },
-    pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 6.15, z })), liberado: false
+    reposicao: { x: 11.75, z: -2.5 }, cliente: { x: 11.75, z: -2.5 },
+    pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 11.75, z })), liberado: false
   },
   enlatado: {
     nome: 'Enlatado', plural: 'Enlatados', cor: 0xd85b45, preco: 30, origem: 'importado', classe: 'enlatados', nivelMinimo: 19,
     capacidadeHorta: PACOTES_POR_CLASSE * UNIDADES_PACOTE, capacidadePrateleira: 36,
     horta: { ...ESTANTE_ENLATADOS }, coleta: { x: ESTANTE_ENLATADOS.x, z: ESTANTE_ENLATADOS.z + 1.45 },
     prateleira: { ...PRATELEIRAS_IMPORTADOS[CLASSES_PRODUTOS.enlatados.gondola], movel: 'importados' },
-    reposicao: { x: 3.45, z: -2.5 }, cliente: { x: 3.45, z: -2.5 },
-    pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 3.45, z })), liberado: false
+    reposicao: { x: 6.15, z: -2.5 }, cliente: { x: 6.15, z: -2.5 },
+    pontosCompra: [-4.35, -3.1, -1.85, -0.6].map(z => ({ x: 6.15, z })), liberado: false
   }
 };
 
@@ -238,11 +264,14 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
-  { id: 'importarProdutos', titulo: 'Enlatados', descricao: 'Enlatados variados, como feijão, milho, ervilha e sardinha.', custo: 270, icone: 'enlatado', max: 1000000000, tipo: 'importacao', produto: 'enlatado', categoria: 'importados', nivelMinimo: 19, requisitoMelhoria: 'prateleirasImportados', recorrente: true },
-  { id: 'importarCereais', titulo: 'Cereais', descricao: 'Caixas de cereais em quatro variedades.', custo: 405, icone: 'cereal', max: 1000000000, tipo: 'importacao', produto: 'cereal', categoria: 'importados', nivelMinimo: 20, requisitoMelhoria: 'prateleirasImportados', recorrente: true },
-  { id: 'expansao', titulo: 'Expansão', descricao: 'Amplie os fundos e o terreno à esquerda. Inclui depósito de 27 caixas e pátio de caminhões com acesso exclusivo pela rua. A fazenda recua e as bancadas da cozinha acompanham a nova parede dos fundos.', custo: 10000, icone: 'prateleira', max: 1, tipo: 'expansaoFundos', categoria: 'mercado', nivelMinimo: 18, requisitoMelhoria: 'alaPadaria' },
-  { id: 'prateleirasImportados', titulo: 'Prateleiras de importados', descricao: 'Instale até duas prateleiras metálicas de dois lados no centro da loja. No nível 19, a primeira recebe produtos importados.', custo: 1000, icone: 'prateleira', max: 2, tipo: 'mobiliario', categoria: 'mercado', nivelMinimo: 17 },
-  { id: 'estacionamento', titulo: 'Estacionamento', descricao: 'Construa seis vagas ao lado da loja. Clientes chegam de carro, estacionam e voltam ao veículo depois das compras.', custo: 10000, icone: 'estacionamento', max: 1, tipo: 'construcaoExterna', categoria: 'mercado', nivelMinimo: 16 },
+  { id: 'confeitaria', titulo: 'Confeitaria da padaria', descricao: 'Instale vitrines, uma batedeira e um confeiteiro. Entregue mel e ovos: 1 mel + 1 ovo rendem um bolo, um donut e um éclair, com preparo de 6 segundos e entrega nas vitrines. Venda por R$ 15 cada.', custo: CONFEITARIA.custo, icone: 'bolo', max: 1, tipo: 'confeitaria', categoria: 'mercado', nivelMinimo: CONFEITARIA.nivel, requisitoMelhoria: 'alaPadaria', requisitos: ['apiario', 'alaProducao'] },
+  { id: 'importarProdutos', titulo: 'Enlatados', descricao: 'Enlatados variados, como feijão, milho, ervilha e sardinha.', custo: 270, icone: 'enlatado', max: 1000000000, tipo: 'importacao', produto: 'enlatado', categoria: 'importados', nivelMinimo: 19, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
+  { id: 'importarCereais', titulo: 'Cereais', descricao: 'Caixas de cereais em quatro variedades.', custo: 405, icone: 'cereal', max: 1000000000, tipo: 'importacao', produto: 'cereal', categoria: 'importados', nivelMinimo: 20, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
+  { id: 'importarMantimentos', titulo: 'Mantimentos', descricao: 'Macarrão, feijão, arroz e farinha em embalagens variadas.', custo: 315, icone: 'mantimento', max: 1000000000, tipo: 'importacao', produto: 'mantimento', categoria: 'importados', nivelMinimo: 21, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
+  { id: 'importarDoces', titulo: 'Biscoitos e doces', descricao: 'Cookies de chocolate, biscoitos amanteigados, balas de frutas e bombons.', custo: 360, icone: 'guloseima', max: 1000000000, tipo: 'importacao', produto: 'guloseima', categoria: 'importados', nivelMinimo: 22, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
+  { id: 'expansao', titulo: 'Expansão', descricao: 'Amplie os fundos e o terreno à esquerda. Inclui depósito de 27 caixas e pátio de caminhões com acesso exclusivo pela rua. A fazenda recua e as bancadas da cozinha acompanham a nova parede dos fundos.', custo: 10000, icone: 'prateleira', max: 1, tipo: 'expansaoFundos', categoria: 'mercado', nivelMinimo: 18, requisitoMelhoria: 'alaPadaria', ativa: false },
+  { id: 'prateleirasImportados', titulo: 'Prateleiras de importados', descricao: 'Instale até duas prateleiras metálicas de dois lados no centro da loja. No nível 19, a primeira recebe produtos importados.', custo: 1000, icone: 'prateleira', max: 2, tipo: 'mobiliario', categoria: 'mercado', nivelMinimo: 17, ativa: false },
+  { id: 'estacionamento', titulo: 'Estacionamento', descricao: 'Construa seis vagas ao lado da loja. Clientes que chegam de carro sempre pedem uma cesta cheia de 5 produtos. Mantenha as prateleiras abastecidas para atender ao pedido.', custo: 10000, icone: 'estacionamento', max: 1, tipo: 'construcaoExterna', categoria: 'mercado', nivelMinimo: 16 },
   { id: 'logistica', titulo: 'Cesta de trabalho', descricao: 'Carregue 8 produtos e ande 15% mais rápido para cuidar de uma loja maior.', custo: 400, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 10 },
   { id: 'alaArtesanal', titulo: 'Estufa de morangos', descricao: 'Construa uma estufa à direita do curral. Abasteça a nova seção do hortifruti junto à parede esquerda.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
   { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa uma colmeia à direita da estufa. Recolha as garrafas de mel na bandeja e abasteça o expositor na frente direita da loja.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 12, requisitoMelhoria: 'alaArtesanal' },

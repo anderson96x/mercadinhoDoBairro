@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="560" viewBox="0 0 360 560">
+  <path fill="#bd9840" d="M0 0h360v560H0z"/>
+  <path fill="#ffffff" opacity=".12" d="M0 0h34v560H0zM0 434l360-88v40L0 474z"/>
+  <path stroke="#ffffff" stroke-width="3" opacity=".65" d="M22 30h316M22 530h316"/>
+  <text x="180" y="111" text-anchor="middle" font-family="sans-serif" font-size="49" font-weight="bold" fill="#ffffff">FARINHA</text>
+  <text x="180" y="147" text-anchor="middle" font-family="sans-serif" font-size="18" letter-spacing="3" fill="#eaf0f4">SELEÇÃO DO BAIRRO</text>
+  <rect x="32" y="183" width="296" height="221" rx="17" fill="#f4f7f9"/>
+  <circle cx="180" cy="279" r="66" fill="#e4ebee"/>
+  <g fill="#d5ae42" stroke="#b48c2e" stroke-width="3"><path fill="none" d="m149 319 59-91"/><path d="m167 292-15-22 17 3 7 13zM183 269l-13-21 17 5 5 11zM182 286l28-4-7 14-22-3zM197 261l27-1-9 13-19-4z"/></g>
+  <text x="180" y="374" text-anchor="middle" font-family="sans-serif" font-size="16" font-weight="bold" fill="#bd9840">IDEAL PARA PÃES E MASSAS</text>
+  <path stroke="#ffffff" opacity=".5" stroke-width="3" d="M58 441h244M83 456h194"/>
+  <text x="180" y="497" text-anchor="middle" font-family="sans-serif" font-size="31" font-weight="bold" fill="#ffffff">1 kg</text>
+</svg>

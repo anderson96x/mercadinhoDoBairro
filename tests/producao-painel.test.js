@@ -3,6 +3,85 @@ import assert from 'node:assert/strict';
 import { estadoInicial } from '../src/jogo/simulacao.js';
 import { ALA_PADARIA, PRODUTOS } from '../src/jogo/configuracao.js';
 import { atualizarPainelProducao, resumoProducao } from '../src/interface/producao.js';
+import { CONFEITARIA, maquinaConfeitaria } from '../src/jogo/confeitaria.js';
+
+test('barra e porcentagem aparecem somente durante produção ativa e o estado de espera continua visível', () => {
+  const estado = estadoInicial();
+  estado.melhorias.alaPadaria = 1;
+  estado.melhorias.confeitaria = 1;
+  const lista = { innerHTML: '' };
+  const painel = { hidden: true, dataset: {}, querySelector: () => lista };
+  for (const id of ['pao', 'confeitaria']) {
+    Object.assign(estado.jogador, id === 'pao' ? PRODUTOS.pao.cliente : CONFEITARIA.entrega);
+    atualizarPainelProducao(painel, estado);
+    assert.match(lista.innerHTML, /Aguardando/);
+    assert.doesNotMatch(lista.innerHTML, /<progress|<b>\d+%/);
+    if (id === 'pao') estado.producao.farinha = 1;
+    else Object.assign(estado.confeitaria, { mel: 1, ovos: 1, progresso: 3 });
+    atualizarPainelProducao(painel, estado);
+    assert.match(lista.innerHTML, /<progress/);
+    assert.match(lista.innerHTML, /<b>\d+%/);
+    estado.produtos[id === 'pao' ? 'pao' : 'bolo'].prateleira = PRODUTOS[id === 'pao' ? 'pao' : 'bolo'].capacidadePrateleira;
+    if (id === 'confeitaria') for (const produto of Object.keys(CONFEITARIA.produtos)) estado.produtos[produto].prateleira = PRODUTOS[produto].capacidadePrateleira;
+    atualizarPainelProducao(painel, estado);
+    assert.match(lista.innerHTML, /Vitrine cheia/);
+    assert.doesNotMatch(lista.innerHTML, /<progress|<b>\d+%/);
+  }
+});
+
+test('selos mostram estoque sobre capacidade para doces, pães e os dois cartões juntos', () => {
+  const estado = estadoInicial();
+  estado.melhorias.alaPadaria = 1;
+  estado.melhorias.confeitaria = 1;
+  estado.produtos.pao.prateleira = 11;
+  estado.produtos.bolo.prateleira = 4;
+  estado.produtos.donut.prateleira = 10;
+  estado.produtos.eclair.prateleira = 5;
+  const lista = { innerHTML: '' };
+  const painel = { hidden: true, dataset: {}, querySelector: seletor => { assert.equal(seletor, '#lista-producao'); return lista; } };
+  Object.assign(estado.jogador, CONFEITARIA.entrega);
+  atualizarPainelProducao(painel, estado);
+  assert.match(lista.innerHTML, /class="producao-prontos">19 \/ 24</);
+  Object.assign(estado.jogador, PRODUTOS.pao.cliente);
+  atualizarPainelProducao(painel, estado);
+  assert.match(lista.innerHTML, /class="producao-prontos">11 \/ 18</);
+  Object.assign(estado.jogador, { x: CONFEITARIA.limiteEntregaX, z: CONFEITARIA.entrada.z });
+  atualizarPainelProducao(painel, estado);
+  assert.match(lista.innerHTML, /19 \/ 24/);
+  assert.match(lista.innerHTML, /11 \/ 18/);
+});
+
+test('cartão da confeitaria aparece somente junto à bandeja de mel e ovos com ingredientes e progresso', () => {
+  const estado = estadoInicial();
+  estado.melhorias.alaPadaria = 1;
+  const lista = { innerHTML: '' };
+  const painel = { hidden: true, dataset: {}, querySelector: seletor => { assert.equal(seletor, '#lista-producao'); return lista; } };
+  Object.assign(estado.jogador, CONFEITARIA.posto);
+  atualizarPainelProducao(painel, estado);
+  assert.doesNotMatch(lista.innerHTML, /producao-cartao confeitaria/);
+  estado.melhorias.confeitaria = 1;
+  Object.assign(estado.confeitaria, { mel: 2, ovos: 3, progresso: 3 });
+  for (const ponto of [CONFEITARIA.entrega, CONFEITARIA.entrada]) {
+    Object.assign(estado.jogador, ponto);
+    atualizarPainelProducao(painel, estado);
+    assert.equal(painel.hidden, false);
+    assert.match(lista.innerHTML, /producao-cartao confeitaria/);
+    assert.match(lista.innerHTML, /Mel/);
+    assert.match(lista.innerHTML, /Ovo/);
+    assert.match(lista.innerHTML, /2 \/ 8/);
+    assert.match(lista.innerHTML, /3 \/ 8/);
+    assert.match(lista.innerHTML, /50%/);
+    assert.match(lista.innerHTML, /Misturando na batedeira/);
+  }
+  for (const ponto of [CONFEITARIA.posto, maquinaConfeitaria(), ...Object.keys(CONFEITARIA.produtos).map(id => PRODUTOS[id].cliente)]) {
+    Object.assign(estado.jogador, ponto);
+    atualizarPainelProducao(painel, estado);
+    assert.ok(painel.hidden || !lista.innerHTML.includes('producao-cartao confeitaria'));
+  }
+  Object.assign(estado.jogador, { x: 0, z: 3 });
+  atualizarPainelProducao(painel, estado);
+  assert.equal(painel.hidden, true);
+});
 
 test('painel exibe somente oficinas liberadas e identifica os ingredientes faltantes', () => {
   const estado = estadoInicial();
@@ -41,9 +120,8 @@ test('painel aparece somente junto à oficina em uso', () => {
   const estado = estadoInicial();
   estado.produtos.queijo.liberado = true;
   estado.produtos.geleia.liberado = true;
-  const resumo = { textContent: '' }, lista = { innerHTML: '' };
-  const painel = { hidden: true, dataset: {}, querySelector: seletor =>
-    seletor === '#producao-resumo' ? resumo : lista };
+  const lista = { innerHTML: '' };
+  const painel = { hidden: true, dataset: {}, querySelector: seletor => { assert.equal(seletor, '#lista-producao'); return lista; } };
 
   atualizarPainelProducao(painel, estado);
   assert.equal(painel.hidden, true);
@@ -97,9 +175,8 @@ test('cartão da padaria acompanha trigo, farinha, forno e vitrine', () => {
 test('cartão da padaria aparece junto à entrega, forno ou vitrine e some ao sair', () => {
   const estado = estadoInicial();
   estado.melhorias.alaPadaria = 1;
-  const resumo = { textContent: '' }, lista = { innerHTML: '' };
-  const painel = { hidden: true, dataset: {}, querySelector: seletor =>
-    seletor === '#producao-resumo' ? resumo : lista };
+  const lista = { innerHTML: '' };
+  const painel = { hidden: true, dataset: {}, querySelector: seletor => { assert.equal(seletor, '#lista-producao'); return lista; } };
 
   atualizarPainelProducao(painel, estado);
   assert.equal(painel.hidden, true);
@@ -109,7 +186,6 @@ test('cartão da padaria aparece junto à entrega, forno ou vitrine e some ao sa
   assert.equal(painel.hidden, false);
   assert.match(lista.innerHTML, /Padaria/);
   assert.match(lista.innerHTML, /Farinha/);
-  assert.equal(resumo.textContent, '0 pães');
 
   Object.assign(estado.jogador, { x: ALA_PADARIA.forno.x + 0.8, z: ALA_PADARIA.forno.z });
   atualizarPainelProducao(painel, estado);
