@@ -13,11 +13,11 @@ const DESBLOQUEIOS = [
   [6, 'laranja'], [7, 'maca'], [8, 'cestasExtras'], [9, 'alaArtesanal'],
   [10, 'logistica'], [11, 'alaProducao'], [12, 'alaLeite'], [13, 'alaPadaria'],
   [14, 'apiario'], [15, 'queijaria'], [16, 'irrigacao'],
-  [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria'], [20, 'expansao']
+  [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria'], [20, 'expansao'], [21, 'prateleiraBiscoitosEnlatados'], [22, 'prateleiraMantimentosCereais']
 ];
 
-test('catálogo ativo segue exatamente os desbloqueios aprovados dos níveis 1 a 20', () => {
-  const ativos = MELHORIAS.filter(m => m.ativa !== false)
+test('catálogo ativo segue exatamente os desbloqueios aprovados dos níveis 1 a 22', () => {
+  const ativos = MELHORIAS.filter(m => m.ativa !== false && m.tipo !== 'importacao')
     .map(m => [m.nivelMinimo, m.id]).sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1]));
   assert.deepEqual(ativos, [...DESBLOQUEIOS].sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1])));
   assert.deepEqual(PRODUTOS_HORTIFRUTI, ['tomate', 'milho', 'trigo', 'laranja', 'maca', 'morango']);

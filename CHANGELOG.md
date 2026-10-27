@@ -2,10 +2,12 @@
 
 ## Versão atual: 0.69.0 — 2026-10-27
 
-- Reativa a compra da expansão no nível 20 por R$ 10.000, exigindo padaria. A dica explica que o depósito e o pátio de carga preparam a loja para futuras importações, que continuam suspensas.
+- Reativa importações em pares: gôndola de biscoitos e enlatados no N21 e gôndola de mantimentos e cereais no N22. Cada melhoria custa R$ 1.000, exige expansão e habilita pedidos das duas categorias, sem estoque instantâneo.
+- Mantém compras e visibilidade independentes e migra gôndolas antigas sem nova cobrança.
+- Reativa a compra da expansão no nível 20 por R$ 10.000, exigindo padaria. A dica explica que o depósito e o pátio de carga preparam a loja para importações dos níveis seguintes.
 - Encurta a dica da expansão, removendo as frases sobre importações suspensas e exigência da padaria.
 - Preserva compras e estoques salvos; atualiza documentação e cenários de regressão para o novo nível.
-- Validação: 373 testes, build de produção e rotas N1–N20 aprovados. Edge em desktop/celular com WebGL e Canvas confirma compra, dica, expansão visível e recarga no N20, mantendo importações suspensas, sem salvar imagens.
+- Validação: 375 testes, build de produção e rotas N1–N22 aprovados. Edge em desktop/celular com WebGL e Canvas confirma as duas melhorias, visibilidade por compra, menus de importação habilitados e pedido das quatro categorias preservado ao recarregar, sem salvar imagens.
 
 ## 0.68.3 — 2026-10-27
 

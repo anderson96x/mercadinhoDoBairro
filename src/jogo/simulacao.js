@@ -13,7 +13,7 @@ import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
 import { EstacionamentoClientes, pontoPortaCarro, volumeCarro, SAIDA_PEDESTRES } from './estacionamento-clientes.js';
 import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, classeProduto, acomodarExcedentes, UNIDADES_PACOTE, obstaculoCaminhao } from './entregas.js';
-import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from './classes-produtos.js';
+import { CLASSES_PRODUTOS, MELHORIAS_GONDOLAS, gondolaInstalada, PACOTES_POR_CLASSE } from './classes-produtos.js';
 import { PLANTA_CARGA, obstaculosCarga } from './planta.js';
 
 const LIXEIRA_COMPACTA = { ...CONFIG.lixeira, z: CONFIG.lixeira.z + PLANTA_COMPACTA.deslocamentoFundos };
@@ -85,6 +85,10 @@ export function validarEstado(dados) {
       numero(dados.melhorias?.prateleiraImportados1, 1) + numero(dados.melhorias?.prateleiraImportados2, 1), 2
     );
   }
+  for (const [indice, id] of MELHORIAS_GONDOLAS.entries()) {
+    if (MELHORIAS.find(m => m.id === id).ativa !== false && base.melhorias.expansao
+      && (dados.melhorias?.prateleirasImportados > indice || dados.melhorias?.[`prateleiraImportados${indice + 1}`] > 0)) base.melhorias[id] = 1;
+  }
   // As novas construções dependem de instalações existentes, inclusive ao restaurar.
   for (const m of MELHORIAS.filter(m => m.nivelMinimo >= 10)) {
     if ([m.requisitoMelhoria, ...(m.requisitos || [])].filter(Boolean).some(id => !base.melhorias[id])) base.melhorias[m.id] = 0;
@@ -129,7 +133,12 @@ export function validarEstado(dados) {
   // Importados já adquiridos preservam o móvel necessário sem nova cobrança.
   for (const [id, p] of Object.entries(PRODUTOS)) {
     if (p.origem === 'importado' && base.produtos[id].liberado) {
-      base.melhorias.prateleirasImportados = Math.max(base.melhorias.prateleirasImportados, CLASSES_PRODUTOS[p.classe].gondola + 1);
+      const indice = CLASSES_PRODUTOS[p.classe].gondola;
+      if (MELHORIAS.find(m => m.id === 'prateleirasImportados').ativa !== false) {
+        base.melhorias.prateleirasImportados = Math.max(base.melhorias.prateleirasImportados, indice + 1);
+      } else {
+        base.melhorias[MELHORIAS_GONDOLAS[indice]] = 1;
+      }
     }
   }
   for (const [id, p] of Object.entries(PRODUTOS)) {
@@ -332,7 +341,7 @@ export class Simulacao {
         const importacao = MELHORIAS.find(m => m.tipo === 'importacao' && m.produto === id && m.ativa !== false);
         const gondolas = CLASSES_PRODUTOS[produto.classe].gondola + 1;
         if (importacao && this.nivel >= (importacao.nivelMinimo || 1) && this.estado.melhorias.expansao
-          && this.estado.melhorias.prateleirasImportados >= gondolas) {
+          && gondolaInstalada(this.estado.melhorias, gondolas - 1)) {
           // Registra a liberação para que o estoque DEV sobreviva à validação do save.
           this.estado.melhorias[importacao.id] = Math.max(1, this.estado.melhorias[importacao.id]);
           estoque.liberado = true;
@@ -469,7 +478,7 @@ export class Simulacao {
     }
     if (m.tipo === 'importacao') {
       const gondolas = CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].gondola + 1;
-      if (this.estado.melhorias.prateleirasImportados < gondolas) return { disponivel: false, motivo: `Instale a segunda Prateleira de importados antes de importar ${CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].nome.toLocaleLowerCase('pt-BR')}.`, requisitoMelhoria: 'prateleirasImportados' };
+      if (!gondolaInstalada(this.estado.melhorias, gondolas - 1)) return { disponivel: false, motivo: `Instale a segunda Prateleira de importados antes de importar ${CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].nome.toLocaleLowerCase('pt-BR')}.`, requisitoMelhoria: 'prateleirasImportados' };
       if (!this.estado.melhorias.expansao) return { disponivel: false, motivo: 'Compre Expansão para receber entregas no pátio exclusivo.', requisitoMelhoria: 'expansao' };
       if (this.estado.deposito.pedidos.length || this.entregas?.caminhao) return { disponivel: false, motivo: 'Aguarde o caminhão concluir a entrega e ir embora antes de fazer outro pedido.' };
       if (vagasDeposito(this.estado.deposito, classeProduto(m.produto)) < 1) return { disponivel: false, motivo: `A classe ${CLASSES_PRODUTOS[classeProduto(m.produto)]?.nome || ''} está cheia: limite de ${PACOTES_POR_CLASSE} pacotes, incluindo pedidos a caminho.` };
@@ -565,12 +574,17 @@ export class Simulacao {
           titulo: 'Amplie os fundos da loja', texto: 'No celular, compre Expansão por R$ 10.000 para construir um anexo atrás da loja e da cozinha e recuar a fazenda. O depósito e o pátio de carga são essenciais para habilitar importações no futuro.',
           destino: 'celular', exibir: true };
       }
-      if (MELHORIAS.find(m => m.id === 'importarProdutos').ativa !== false && this.nivel >= 19 && !this.estado.produtos.enlatado.liberado) {
+      const prateleira = MELHORIAS.find(m => MELHORIAS_GONDOLAS.includes(m.id) && m.ativa !== false
+        && this.nivel >= m.nivelMinimo && !this.estado.melhorias[m.id]);
+      if (prateleira) return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
+        titulo: prateleira.titulo, texto: `No celular, compre ${prateleira.titulo} por R$ 1.000. ${prateleira.descricao}`,
+        destino: 'celular', exibir: true };
+      if (MELHORIAS.find(m => m.id === 'importarProdutos').ativa !== false && this.nivel >= MELHORIAS.find(m => m.id === 'importarProdutos').nivelMinimo && !this.estado.produtos.enlatado.liberado) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: 'Importe os primeiros produtos', texto: 'Com a expansão comprada, peça caixas de 9 enlatados por R$ 270 pelo celular. O caminhão usa o pátio exclusivo à esquerda e entrega no depósito; depois abasteça a gôndola.',
           destino: 'celular', exibir: true };
       }
-      if (MELHORIAS.find(m => m.id === 'importarProdutos').ativa !== false && this.nivel >= 19 && this.estado.produtos.enlatado.liberado && !this.estado.produtos.enlatado.apresentado) {
+      if (MELHORIAS.find(m => m.id === 'importarProdutos').ativa !== false && this.nivel >= MELHORIAS.find(m => m.id === 'importarProdutos').nivelMinimo && this.estado.produtos.enlatado.liberado && !this.estado.produtos.enlatado.apresentado) {
         const disponivel = this.estado.produtos.enlatado.horta > 0 || this.estado.jogador.inventario.includes('enlatado');
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: disponivel ? 'Abasteça os enlatados' : 'Aguarde a entrega',
@@ -720,7 +734,7 @@ export class Simulacao {
     }
     if (this.estado.melhorias.confeitaria) caixas.push(maquinaConfeitaria());
     caixas.push(...volumesHortifruti(this.estado.produtos, this.produtos), ...volumesDoces(this.estado.produtos));
-    caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
+    caixas.push(...PRATELEIRAS_IMPORTADOS.filter((p, i) => gondolaInstalada(this.estado.melhorias, i)));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
       ...this.estacionamento.carros.filter(c => c.fase !== 'aguardando').map(volumeCarro));
     if (this.entregas?.caminhao && this.entregas.caminhao.fase !== 'aguardando') caixas.push(obstaculoCaminhao(this.entregas.caminhao));
