@@ -42,6 +42,7 @@ const leiteVitrine = new THREE.MeshBasicMaterial({ color: 0xfafcf3 });
 const vidroMel = new THREE.MeshStandardMaterial({ color: 0xffe3a0, transparent: true, opacity: 0.24, roughness: 0.22, depthWrite: false });
 const verdeLeiteVitrine = new THREE.MeshBasicMaterial({ color: 0x087e64 });
 function estacaoDesbloqueada(id, estado) {
+  if (PRODUTOS[id]?.origem === 'pomar') return !!estado.produtos[id]?.liberado;
   const estagioNecessario = PRODUTOS[id]?.origem === 'confeitaria' ? ALA_PADARIA.indice : PRODUTOS[id]?.origem === 'importado' ? 0 : PRODUTOS[id]?.nivelMinimo >= 11 ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
   return !!estado.produtos[id]?.liberado && estado.estagioLoja >= estagioNecessario;
 }
@@ -254,6 +255,17 @@ export function criarProduto(id, escala = 1, variante = 0) {
     esfera(grupo, 0.16, 0xff3f32, 0, 0, 0, 1, 0.86, 1);
     const folha = caixa(grupo, 0.2, 0.04, 0.09, 0x2a9b40, 0, 0.14, 0); folha.rotation.y = 0.7;
     caixa(grupo, 0.04, 0.09, 0.04, 0x2a9b40, 0, 0.18, 0);
+  } else if (id === 'maca') {
+    esfera(grupo, 0.16, 0xb52b3a, -0.065, 0, 0, 0.9, 1, 1);
+    esfera(grupo, 0.16, 0xce3a49, 0.065, 0, 0, 0.9, 1, 1);
+    cilindro(grupo, 0.025, 0.03, 0.12, 0x795335, 0, 0.19, 0, 5);
+    const folha = esfera(grupo, 0.11, 0x4b962e, 0.09, 0.22, 0, 1, 0.22, 0.45);
+    folha.rotation.z = 0.3;
+  } else if (id === 'laranja') {
+    esfera(grupo, 0.18, 0xf79520, 0, 0, 0, 1, 0.96, 1);
+    cilindro(grupo, 0.025, 0.03, 0.07, 0x795335, 0, 0.19, 0, 5);
+    const folha = esfera(grupo, 0.09, 0x4b962e, 0.07, 0.19, 0, 1, 0.22, 0.45);
+    folha.rotation.z = 0.3;
   } else if (id === 'morango') {
     esfera(grupo, 0.17, 0xe74769, 0, 0, 0, 0.9, 1.1, 0.85);
     for (const x of [-0.07, 0.07]) for (const y of [-0.06, 0.05]) esfera(grupo, 0.018, 0xffe9a5, x, y, 0.135);
@@ -1059,6 +1071,18 @@ export class Cena {
         const x = h.x - 1.1 + i % 4 * 2.2 / 3, z = h.z - 0.55 + Math.floor(i / 4) * 1.1;
         esfera(grupo, 0.3, 0x429852, x, 0.67, z, 1.2, 0.6, 1);
       }
+    } else if (p.origem === 'pomar') {
+      const arvore = new THREE.Group(); arvore.name = id === 'maca' ? 'macieira' : 'laranjeira'; grupo.add(arvore);
+      cilindro(arvore, 0.18, 0.28, 2, 0x87603a, h.x, 1.1, h.z, 7);
+      for (const lado of [-1, 1]) {
+        const galho = cilindro(arvore, 0.08, 0.12, 1.1, 0x87603a, h.x + lado * 0.3, 1.8, h.z, 6);
+        galho.rotation.z = -lado * 0.55;
+      }
+      for (const [x, y, z, raio, cor] of [
+        [0, 3.35, 0, 1, 0x8fc92d], [-0.7, 2.7, 0, 0.95, 0x78b52b],
+        [0.7, 2.75, -0.15, 0.95, 0x92cc31], [0, 2.65, 0.65, 1, 0x6eac29],
+        [0, 2.8, -0.65, 0.85, 0x83be2d], [-0.5, 3.15, 0.5, 0.75, 0x9bd43a]
+      ]) esfera(arvore, raio, cor, h.x + x, y, h.z + z, 1, 0.85, 1);
     } else if (id === 'mel') {
       abelhas.push(...construirColmeia(grupo, h, { caixa, esfera, cilindro }));
     } else {
@@ -1075,6 +1099,13 @@ export class Cena {
       const oficina = !!OFICINAS[id];
       if (id === 'mel') {
         fruto.position.set(h.x - 0.69 + i % 4 * 0.46, ALTURA_BANDEJA_MEL + 0.15 * 0.85, h.z + 1.02 + Math.floor(i / 4) * 0.46);
+      } else if (p.origem === 'pomar') {
+        const [x, y, z] = [
+          [1.05, 2.55, 0.65], [0.45, 3.05, 1.02], [-0.35, 2.62, 1.08], [-0.95, 3.08, 0.55],
+          [1.12, 3.18, -0.2], [0.72, 3.68, 0.18], [-0.1, 3.72, 0.72], [-0.72, 3.48, 0.92]
+        ][i];
+        fruto.scale.setScalar(1.9);
+        fruto.position.set(h.x + x, y, h.z + z);
       } else fruto.position.set(h.x + (oficina ? 0.5 + i % 3 * 0.22 : -1.1 + i % 4 * 2.2 / 3), oficina ? 1.35 : 0.95,
         h.z + (oficina ? -0.36 + Math.floor(i / 3) * 0.3 : -0.55 + Math.floor(i / 4) * 1.1));
       fruto.userData.baseY = fruto.position.y;
@@ -1088,7 +1119,7 @@ export class Cena {
     }
     const irrigador = p.origem === 'horta' ? criarIrrigador(grupo, h, p.canteiro) : null;
     this.produtos[id] = { grupo, frutos, frutas, galinhas: [], abelhas, irrigador, refrigerador, banca };
-    this.criarLabel(`horta-${id}`, { ...h, y: id === 'morango' ? 2.6 : id === 'mel' ? 3 : 2 }, OFICINAS[id]?.nome.toLocaleUpperCase('pt-BR') || (id === 'mel' ? 'APIÁRIO' : 'ESTUFA DE MORANGOS'), 'Pronto para colher', id);
+    this.criarLabel(`horta-${id}`, { ...h, y: p.origem === 'pomar' ? 4.4 : id === 'morango' ? 2.6 : id === 'mel' ? 3 : 2 }, OFICINAS[id]?.nome.toLocaleUpperCase('pt-BR') || (id === 'maca' ? 'MACIEIRA' : id === 'laranja' ? 'LARANJEIRA' : id === 'mel' ? 'APIÁRIO' : 'ESTUFA DE MORANGOS'), 'Pronto para colher', id);
     this.criarLabel(`loja-${id}`, { ...s, y: id === 'queijo' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   construirPadaria() {
@@ -2062,7 +2093,7 @@ export class Cena {
         continue;
       }
       const construcao = (id === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (id === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (id === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
-      const temConstrucao = ['ovos', 'leite', 'trigo'].includes(id) || (PRODUTOS[id].nivelMinimo >= 11 && PRODUTOS[id].origem !== 'importado');
+      const temConstrucao = ['ovos', 'leite', 'trigo'].includes(id) || (PRODUTOS[id].nivelMinimo >= 11 && !['importado', 'pomar'].includes(PRODUTOS[id].origem));
       objetos.grupo.visible = estacaoDesbloqueada(id, e) && (!temConstrucao || construcao > 0);
       if (temConstrucao) objetos.grupo.scale.y = Math.max(0.001, construcao);
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
@@ -2094,7 +2125,7 @@ export class Cena {
     }
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
-      const construcao = (produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (produto === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (produto === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
+      const construcao = PRODUTOS[produto]?.origem === 'pomar' || (produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (produto === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (produto === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
       if (produto && (!estacaoDesbloqueada(produto, e) || ((['ovos', 'leite', 'trigo'].includes(produto) || PRODUTOS[produto]?.nivelMinimo >= 11) && construcao < 1))) { el.hidden = true; continue; }
       const estacao = PRODUTOS[produto] && geometriaEstacao(produto, tipo === 'horta' ? 'coleta' : 'reposicao', PRODUTOS);
       const perto = estacao && distanciaEstacao(e.jogador, estacao) < CONFIG.raioInteracao + 0.3;

@@ -56,7 +56,7 @@ test('refrigerador de parede tem duas portas de vidro, três níveis e acesso fr
   assert.ok(grade.min.z > base.max.z, 'ventilação visível na frente da base');
   assert.ok(bounds.max.x < 15.1 - 0.8, 'não depende da parede removida na próxima expansão');
   for (const ponto of [PRODUTOS.leite.reposicao, ...PRODUTOS.leite.pontosCompra]) {
-    const ator = { x: -1.3, z: 4.9, andando: false };
+    const ator = { ...CONFIG.inicio, andando: false };
     let chegou = false;
     for (let i = 0; i < 2400 && !chegou; i++) {
       sim.tempo += 0.05;

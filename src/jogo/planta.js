@@ -102,7 +102,20 @@ export function selecionarCompartimentoDoces(ator, produtos) {
     && ator.x <= p.x + p.w / 2 + 1e-8)?.[0];
 }
 
-export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango'];
+export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango', 'laranja', 'maca'];
+
+// N18: pomar ao lado do apiário, com acesso livre pela frente.
+export const PLANTA_LARANJA = {
+  horta: { x: 18.6, z: -22.2 }, coleta: { x: 18.6, z: -19.9 },
+  canteiro: { w: 3.2, d: 3.2 }
+};
+
+// N19: ao lado da laranjeira, avançando pelo gramado em direção às oficinas.
+// O volume menor em profundidade preserva os corredores entre as instalações.
+export const PLANTA_MACA = {
+  horta: { x: 18.6, z: -17.3 }, coleta: { x: 16.4, z: -17.3 },
+  canteiro: { w: 3.2, d: 2.4 }
+};
 
 // As frentes acompanham o balcão da padaria; ambas terminam na mesma linha atrás.
 export const LINHA_FRONTAL_PADARIA = 0.375;
@@ -335,7 +348,8 @@ export const FOLHAS_PORTA_PRODUCAO = [-1, 1].map(lado => ({
 export function compartimentoHortifruti(id) {
   const indice = PRODUTOS_HORTIFRUTI.indexOf(id);
   if (indice < 0) return null;
-  const z = 1 - indice * 2.2;
+  // Seis seções cabem na parede, incluindo laranja e maçã.
+  const z = 3.6 - indice * 2.2;
   return {
     prateleira: { x: -2.1, z, w: 1.4, d: 2.2, movel: 'hortifruti' },
     reposicao: { x: -0.8, z },

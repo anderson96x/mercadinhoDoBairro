@@ -1,6 +1,20 @@
 # Histórico de alterações
 
-## Versão atual: 0.63.3 — 2026-10-26
+## Versão atual: 0.65.0 — 2026-10-27
+
+- Adiciona macieira no nível 19 por R$ 800, ao lado da laranjeira no gramado, com maçãs em vermelho rubi visíveis na copa e venda por R$ 7. Usa a sexta seção do hortifruti, junto às laranjas.
+- Mantém produção de uma fruta a cada 3 segundos, até oito na árvore e doze na banca. Integra colheita, repositor, pedidos após primeiro abastecimento e salvamento; saves anteriores recebem a macieira não comprada.
+- Validação: 353 testes, build de produção e rotas até N19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica as duas árvores, compra, colheita, reposição visual e recarga, sem salvar imagens.
+
+## 0.64.0 — 2026-10-27
+
+- Adiciona laranjeira no nível 18 por R$ 800, ao lado do apiário, com laranjas visíveis na copa e venda por R$ 7. Colheita, repositor, pedidos e salvamento integrados; produção de uma fruta a cada 3 segundos, até oito.
+- Remove a base quadrada sob a laranjeira e aumenta as frutas, distribuindo-as na face visível da copa.
+- Desloca o hortifruti em direção à fachada, coloca laranjas junto aos morangos e reserva espaço para mais uma fruta no próximo nível.
+- Preserva saves anteriores com a laranjeira não comprada e atualiza a planta para reposicionar personagens com segurança. Importações continuam suspensas.
+- Validação: 348 testes, build de produção e rotas até N19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica árvore, compra, colheita, reposição visual e recarga, sem salvar imagens.
+
+## 0.63.3 — 2026-10-26
 
 - Move a batedeira de doces para o antigo posto do forno. Integra o moinho sobre o forno em uma única máquina na posição original do processador de trigo, com uma única colisão.
 - Restaura o cinza claro metálico da máquina de pão e refina o forno com janela, puxador, guias e porta que sobe para carregar e descarregar a câmara.

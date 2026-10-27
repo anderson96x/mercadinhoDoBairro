@@ -102,6 +102,12 @@ A entrega de mel e ovos ocupa a seção contígua ao trigo. `CONFEITARIA.limiteE
 
 `criarBandejaRecebimento()` fornece o mesmo modelo para trigo e confeitaria. As unidades de mel e ovos são filhas da bandeja e refletem o estado dos ingredientes. `situacaoConfeiteiro()` deriva posição, ação e doces restantes do estado da simulação; a cena não mantém um relógio independente para entregas. `batedeira.js` constrói a máquina industrial com cuba e batedor. `maquinaConfeitaria()` fornece sua colisão, somente após a compra. Preserve a passagem do padeiro. O alerta reutiliza a exclamação da padaria quando alguma vitrine está vazia e falta ingrediente, sem aparecer durante entregas. `dt = 0` congela a pose e o batedor.
 
+## Pomar (níveis 18 e 19)
+
+`PLANTA_LARANJA` define a árvore ao lado do apiário e o acesso frontal. `PLANTA_MACA` acrescenta a macieira na mesma faixa de gramado, em direção às oficinas, com coleta lateral e volume que preserva os corredores. `origem: 'pomar'` usa crescimento renovável sem aplicar irrigação ou fertilizante das hortas. As compras `laranja` (N18) e `maca` (N19) custam R$ 800 cada e incluem a seção de venda; não exigem outras compras. Ambas vendem por R$ 7, produzem uma fruta a cada 3 segundos e armazenam até oito na árvore. O catálogo e a validação de estado preservam compra, crescimento e estoques, com defaults bloqueados em saves anteriores.
+
+`PRODUTOS_HORTIFRUTI` mantém laranja após morango e maçã na sexta seção. `compartimentoHortifruti()` começa em z = 3,6 e acomoda seis seções de 2,2 u dentro da parede esquerda. Modelo, placas, interações, colisões e pontos de compra compartilham essa geometria. A versão de layout 23 reposiciona atores de saves anteriores à mudança da banca; a macieira usa o espaço existente. Verifique com `node --test tests/laranja.test.js tests/maca.test.js`, `node scripts/check-store-layout.mjs` e `node scripts/verificar-laranja.mjs`; este último cobre ambas as árvores em desktop/celular e WebGL/Canvas sem salvar imagens.
+
 ## Receitas e fase artesanal (níveis 10 a 15)
 
 `ALA_ARTESANAL` define piso, paredes e câmera do anexo ao fundo. A parede traseira da ala dos ovos vira uma passagem; simulação e geometria aplicam a mesma abertura. Produtos novos têm `nivelMinimo`, modelo próprio em `Cena.construirArtesanal()` e melhoria de `tipo: 'construcao'` com o campo `produto`.
