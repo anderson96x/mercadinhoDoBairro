@@ -6,7 +6,7 @@ A loja começa com **14 × 8 u** e mantém esse tamanho até comprar a seção d
 
 A porta dos fundos tem uma única folha, na antiga metade direita, e abre automaticamente **apenas para o jogador e o repositor contratado**. Clientes não acionam a abertura nem são encaminhados por esse acesso de serviço. Fecha quando os funcionários se afastam e congela durante a pausa. A lixeira fica **fora da loja**, no espaço da antiga folha esquerda, com acesso pelo lado do gramado. Porta e lixeira acompanham a profundidade do salão.
 
-Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros históricos: seus números de nível não correspondem necessariamente à progressão atual. As importações continuam suspensas; não há novos desbloqueios ativos a partir do nível 20.
+Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros históricos: seus números de nível não correspondem necessariamente à progressão atual. A expansão volta no nível 20 para preparar a estrutura de futuras importações. As importações e suas prateleiras continuam suspensas.
 
 ## Disponíveis
 
@@ -31,6 +31,7 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 | 17 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote |
 | 18 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
 | 19 | Confeitaria: bolos, donuts e éclairs + confeiteiro | R$ 1.000 | R$ 15 por unidade |
+| 20 | Expansão dos fundos, depósito e pátio de carga (exige padaria) | R$ 10.000 | — |
 
 ## Hortifruti: níveis 1 a 9
 
@@ -99,6 +100,26 @@ O confeiteiro prepara apenas os doces com vaga e deposita cada unidade na vitrin
 
 Compras, estoques, ingredientes e produção continuam sendo salvos normalmente. A reorganização da versão **0.67.0** foi feita para partidas novas, sem migração dedicada da sequência anterior.
 
+## Expansão no nível 20
+
+No nível 20, abra **Celular → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra. O cartão de dica explica que o depósito e o pátio são essenciais para habilitar importações no futuro; as importações e suas prateleiras continuam suspensas.
+
+O salão original de **24 × 16 u**, seus expositores e a padaria mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
+
+A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de produção original. A abertura junto à cozinha fica fechada. As bancadas da queijaria e da cozinha de geleias recuam até encostar nessa parede; os pontos de entrega e coleta acompanham as bancadas. A mureta que ficava atrás delas é removida. A lateral direita permanece em uma única peça contínua. O piso novo ocupa apenas os espaços adicionais, preservando o piso já construído da cozinha.
+
+A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Quatro estantes metálicas comportam quatro caixas de papelão por classe, com duas caixas em cada um dos dois níveis, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. No nível 20, as estantes ficam vazias, reservadas para futuras importações.
+
+A expansão também acrescenta **12 u à esquerda do mapa**, ampliando o terreno para **52 × 46 u**. Nessa lateral fica o **pátio exclusivo de carga**, com asfalto, vaga demarcada em amarelo, setas de entrada/saída, placa com pictograma de caminhão e guias separando-o das vagas públicas. A rua e a calçada acompanham a nova largura, com um acesso próprio recortado para os caminhões. Um caminho pavimentado liga o pátio ao portão do depósito. Câmera, navegação e salvamento aceitam a nova área. Saves com a expansão comprada recebem tudo ao carregar, sem nova cobrança; o estacionamento de clientes não é necessário para receber entregas.
+
+Quando o estacionamento também está comprado, o asfalto aumenta até encostar na fachada inteira do depósito e na parede esquerda da loja, eliminando a faixa de grama entre eles. O meio-fio posterior é removido, deixando o acesso ao portão contínuo; as seis vagas e a entrada pela rua mantêm suas posições.
+
+Uma **passagem interna de 1,8 u de largura, sem porta**, conecta a lateral direita do depósito ao anexo dos fundos da loja. Ela fica diante da fileira de estantes e permite circulação nos dois sentidos. A abertura acompanha a compra da expansão e aparece também nos saves existentes.
+
+O portão externo acompanha o funcionamento do mercado: suas lâminas descem suavemente até a soleira quando a loja fecha e se recolhem na caixa superior quando ela abre. O movimento congela durante a pausa. Fechado, o portão bloqueia o acesso pelo estacionamento; a passagem interna continua livre.
+
+Toda a fazenda — tomate, milho, trigo, galinheiro, curral, estufa e apiário — recua 6 unidades, junto com a cerca e o caminho de coleta. O terreno cresce nos fundos para acomodar os cultivos. Estoques, ingredientes, produção e melhorias são preservados. Saves antigos recebem a expansão desmarcada; partidas com a compra mantêm a nova planta ao recarregar.
+
 ## Desativadas
 
 As melhorias abaixo não aparecem no catálogo e não podem ser compradas, inclusive pelo DEV. Os níveis e custos servem apenas como referência da configuração guardada. Os bônus de velocidade do repositor ficam inativos mesmo se uma partida antiga trouxer a compra registrada. O **Repositor normal do nível 5 continua disponível**.
@@ -111,18 +132,17 @@ As melhorias abaixo não aparecem no catálogo e não podem ser compradas, inclu
 | 5 | Repositor ligeiro: +20% de velocidade | R$ 100 |
 | 16 | Reposição ágil: +30% de velocidade do repositor | R$ 500 |
 | 17 | Prateleiras de importados | R$ 1.000 por prateleira |
-| 18 | Expansão dos fundos, depósito e pátio de carga | R$ 10.000 |
 | 19 | Importação de enlatados | R$ 270 por caixa de 9 |
 | 20 | Importação de cereais | R$ 405 por caixa de 9 |
 | 21 | Importação de mantimentos | R$ 315 por caixa de 9 |
 | 22 | Importação de biscoitos e doces | R$ 360 por caixa de 9 |
 
-A cesta de trabalho do nível 10 continua concedendo sua capacidade e seu bônus de velocidade do jogador. O aumento de profundidade incluído na compra de laranjas e a ampliação lateral da padaria no nível 13 também continuam ativos; a expansão suspensa é a construção adicional dos fundos e do pátio de carga descrita abaixo.
+A cesta de trabalho do nível 10 continua concedendo sua capacidade e seu bônus de velocidade do jogador. O aumento de profundidade incluído na compra de laranjas e a ampliação lateral da padaria no nível 13 também continuam ativos; a expansão dos fundos e do pátio de carga está disponível no nível 20.
 
 ## Conteúdo suspenso: referência da implementação anterior
 
 <details>
-<summary>Prateleiras, expansão e importações (desativadas)</summary>
+<summary>Prateleiras e importações (desativadas)</summary>
 
 Os níveis e instruções abaixo são históricos e não estão ativos no jogo. A nova etapa será reorganizada depois do nível 20, ainda sem desbloqueios definidos.
 
@@ -149,26 +169,6 @@ O depósito tem **quatro estantes, uma por classe, com quatro pacotes de nove un
 Os enlatados ocupam a face da primeira gôndola antes usada pelos cereais, voltada para a segunda gôndola. Retire os enlatados junto à primeira estante, identificada como Enlatados e leve-os à primeira gôndola, ou deixe o repositor fazer o transporte. Cada lata vale **R$ 30**, e a gôndola comporta **36 unidades**. O estoque não aparece na loja no momento da compra. O catálogo mostra unidades na gôndola e no depósito, ocupação e limite de quatro pacotes por classe e caixas a caminho. Monte o pedido com **−** e **+**, e confirme tudo de uma vez em **Finalizar pedido**; a cobrança ocorre somente se o pedido inteiro for válido.
 
 Estoque, caixas parcialmente abertas e pedidos pagos são salvos. Recarregar durante a descarga retoma a viagem com as caixas restantes, sem nova cobrança ou duplicação. Saves sem depósito preservam os enlatados que já estavam na gôndola e recebem o depósito vazio. Saves com mais de quatro caixas da mesma classe mantêm o excedente em uma reserva de migração: caixas já entregues entram automaticamente na estante conforme surge uma vaga, e pedidos pagos aguardam espaço durante a descarga. O catálogo informa a reserva; novas compras ficam bloqueadas até haver capacidade, sem perda de unidades, inclusive caixas parcialmente abertas.
-
-## Expansão no nível 18
-
-No nível 18, abra **Celular → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra.
-
-O salão original de **24 × 16 u**, seus expositores e a padaria mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
-
-A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de produção original. A abertura junto à cozinha fica fechada. As bancadas da queijaria e da cozinha de geleias recuam até encostar nessa parede; os pontos de entrega e coleta acompanham as bancadas. A mureta que ficava atrás delas é removida. A lateral direita permanece em uma única peça contínua. O piso novo ocupa apenas os espaços adicionais, preservando o piso já construído da cozinha.
-
-A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Quatro estantes metálicas comportam quatro caixas de papelão por classe, com duas caixas em cada um dos dois níveis, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. No N18, as estantes ficam vazias; no N19, recebem as importações entregues pelo caminhão.
-
-A expansão também acrescenta **12 u à esquerda do mapa**, ampliando o terreno para **52 × 46 u**. Nessa lateral fica o **pátio exclusivo de carga**, com asfalto, vaga demarcada em amarelo, setas de entrada/saída, placa com pictograma de caminhão e guias separando-o das vagas públicas. A rua e a calçada acompanham a nova largura, com um acesso próprio recortado para os caminhões. Um caminho pavimentado liga o pátio ao portão do depósito. Câmera, navegação e salvamento aceitam a nova área. Saves com a expansão comprada recebem tudo ao carregar, sem nova cobrança; o estacionamento de clientes não é necessário para receber entregas.
-
-Quando o estacionamento também está comprado, o asfalto aumenta até encostar na fachada inteira do depósito e na parede esquerda da loja, eliminando a faixa de grama entre eles. O meio-fio posterior é removido, deixando o acesso ao portão contínuo; as seis vagas e a entrada pela rua mantêm suas posições.
-
-Uma **passagem interna de 1,8 u de largura, sem porta**, conecta a lateral direita do depósito ao anexo dos fundos da loja. Ela fica diante da fileira de estantes e permite circulação nos dois sentidos. A abertura acompanha a compra da expansão e aparece também nos saves existentes.
-
-O portão externo acompanha o funcionamento do mercado: suas lâminas descem suavemente até a soleira quando a loja fecha e se recolhem na caixa superior quando ela abre. O movimento congela durante a pausa. Fechado, o portão bloqueia o acesso pelo estacionamento; a passagem interna continua livre.
-
-Toda a fazenda — tomate, milho, trigo, galinheiro, curral, estufa e apiário — recua 6 unidades, junto com a cerca e o caminho de coleta. O terreno cresce nos fundos para acomodar os cultivos. Estoques, ingredientes, produção e melhorias são preservados. Saves antigos recebem a expansão desmarcada; partidas com a compra mantêm a nova planta ao recarregar.
 
 ## Prateleiras de importados no nível 17
 

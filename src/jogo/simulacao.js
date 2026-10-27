@@ -560,9 +560,9 @@ export class Simulacao {
     const recorrente = MISSOES.find(m => m.intervalo);
     if (recorrente) {
       const valor = this.estado.estatisticas[recorrente.chave] ?? 0;
-      if (MELHORIAS.find(m => m.id === 'expansao').ativa !== false && this.nivel >= 18 && !this.estado.melhorias.expansao) {
+      if (MELHORIAS.find(m => m.id === 'expansao').ativa !== false && this.nivel >= MELHORIAS.find(m => m.id === 'expansao').nivelMinimo && !this.estado.melhorias.expansao) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
-          titulo: 'Amplie os fundos da loja', texto: 'No celular, compre Expansão por R$ 10.000 para construir um anexo atrás da loja e da cozinha e recuar a fazenda. Exige a padaria.',
+          titulo: 'Amplie os fundos da loja', texto: 'No celular, compre Expansão por R$ 10.000 para construir um anexo atrás da loja e da cozinha e recuar a fazenda. O depósito e o pátio de carga são essenciais para habilitar importações no futuro.',
           destino: 'celular', exibir: true };
       }
       if (MELHORIAS.find(m => m.id === 'importarProdutos').ativa !== false && this.nivel >= 19 && !this.estado.produtos.enlatado.liberado) {

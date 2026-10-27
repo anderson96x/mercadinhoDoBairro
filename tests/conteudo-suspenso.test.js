@@ -3,8 +3,27 @@ import assert from 'node:assert/strict';
 import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 
-const SUSPENSOS = ['prateleirasImportados', 'expansao', 'importarProdutos', 'importarCereais', 'importarMantimentos', 'importarDoces'];
+const SUSPENSOS = ['prateleirasImportados', 'importarProdutos', 'importarCereais', 'importarMantimentos', 'importarDoces'];
 const importados = Object.keys(PRODUTOS).filter(id => PRODUTOS[id].origem === 'importado');
+
+test('expansão volta no nível 20 e prepara futuras importações sem liberá-las', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
+  sim.estado.dinheiro = 10000;
+  sim.estado.melhorias.alaPadaria = 1;
+  assert.equal(sim.comprarMelhoria('expansao').sucesso, false);
+  assert.doesNotMatch(sim.missao().titulo, /fundos da loja/);
+  sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
+  assert.match(sim.missao().titulo, /fundos da loja/);
+  assert.match(sim.missao().texto, /habilitar importações no futuro/);
+  assert.equal(sim.comprarMelhoria('expansao').sucesso, true);
+  assert.equal(sim.estado.dinheiro, 0);
+  assert.doesNotMatch(sim.missao().titulo, /fundos da loja/);
+  const restaurado = new Simulacao(sim.estado);
+  assert.equal(restaurado.estado.melhorias.expansao, 1);
+  for (const id of importados) assert.equal(restaurado.estado.produtos[id].liberado, false);
+  assert.equal(restaurado.encomendarImportacoes({ importarProdutos: 1 }).sucesso, false);
+});
 
 test('conteúdo dos antigos níveis 17 a 22 fica inativo inclusive depois do nível 20 e no DEV', () => {
   for (const nivel of [17, 18, 19, 20, 21, 22, 30]) {

@@ -13,7 +13,7 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function loja(comEstacionamento = true) {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
+  sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
   prepararLojaCompleta(sim);
   for (const id of ['milho', 'alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', ...(comEstacionamento ? ['estacionamento'] : [])]) {

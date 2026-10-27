@@ -1,6 +1,13 @@
 # Histórico de alterações
 
-## Versão atual: 0.68.3 — 2026-10-27
+## Versão atual: 0.69.0 — 2026-10-27
+
+- Reativa a compra da expansão no nível 20 por R$ 10.000, exigindo padaria. A dica explica que o depósito e o pátio de carga preparam a loja para futuras importações, que continuam suspensas.
+- Encurta a dica da expansão, removendo as frases sobre importações suspensas e exigência da padaria.
+- Preserva compras e estoques salvos; atualiza documentação e cenários de regressão para o novo nível.
+- Validação: 373 testes, build de produção e rotas N1–N20 aprovados. Edge em desktop/celular com WebGL e Canvas confirma compra, dica, expansão visível e recarga no N20, mantendo importações suspensas, sem salvar imagens.
+
+## 0.68.3 — 2026-10-27
 
 - Fecha o vão visual acima da porta dos fundos, prolongando a folha até a verga sem alterar a dobradiça, o vidro ou a animação de abertura.
 - Validação: teste do modelo da porta, suíte completa e build de produção aprovados.

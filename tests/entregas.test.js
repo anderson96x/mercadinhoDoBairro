@@ -16,7 +16,7 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function loja() {
   const sim = new Simulacao(); sim.estado.dinheiro = 100000; sim.proximoCliente = Infinity;
-  sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
+  sim.estado.estatisticas.clientes = 19 * CONFIG.clientesPorNivel;
   prepararLojaCompleta(sim);
   for (const id of ['alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', 'expansao', 'estacionamento', 'prateleirasImportados']) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   sim.assaltosAtivos = false;

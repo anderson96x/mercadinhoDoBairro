@@ -166,8 +166,9 @@ try {
       }
       for (const [nivel, id] of [[8, 'cestasExtras'], [9, 'alaArtesanal'], [10, 'logistica'], [11, 'alaProducao'],
         [12, 'alaLeite'], [13, 'alaPadaria'], [14, 'apiario'], [15, 'queijaria'], [16, 'irrigacao'],
-        [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria']]) {
+        [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria'], [20, 'expansao']]) {
         sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+        if (nivel === 20) verificar(sim.missao().texto.includes('habilitar importações no futuro'), 'Dica de futuras importacoes');
         verificar(sim.comprarMelhoria(id).sucesso, 'Compra N' + nivel + ': ' + id);
         cena.atualizar(0); cena.atualizar(10);
         verificar(cena.cena.getObjectByName('ampliacao-padaria').visible === (nivel >= 13), 'Padaria amplia somente no N13');
@@ -176,9 +177,12 @@ try {
           verificar(!cena.produtos.ovos.grupo.visible && !cena.produtos.leite.grupo.visible, 'Animais ainda bloqueados');
         }
       }
+      verificar(cena.cena.getObjectByName('expansao-fundos').visible, 'Expansao visivel no N20');
+      verificar(new Simulacao(structuredClone(sim.estado)).estado.melhorias.expansao === 1, 'Expansao persiste');
+      verificar(!sim.estado.produtos.enlatado.liberado, 'Importacoes suspensas');
       cena.renderer.render(cena.cena, cena.camera);
       cena.renderer.dispose?.(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, portaUnicaAnimada: true, lixeiraExterna: true, progressaoAteN19: true, trigoCompactoN4: true, expansaoAoComprarLaranja: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, portaUnicaAnimada: true, lixeiraExterna: true, progressaoAteN20: true, trigoCompactoN4: true, expansaoAoComprarLaranja: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }
