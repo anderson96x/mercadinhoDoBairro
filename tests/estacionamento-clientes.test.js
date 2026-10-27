@@ -11,7 +11,7 @@ import { criarCarro, MODELOS_CARROS, dimensoesCarro, Trafego } from '../src/jogo
 
 function preparar() {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 15 * CONFIG.clientesPorNivel;
+  sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 10000; sim.comprarMelhoria('estacionamento');
   sim.estado.lojaAberta = true; sim.estado.melhorias.caixa = 1;
   sim.proximoCliente = Infinity; sim.definirAssaltosAtivos(false);
@@ -230,7 +230,7 @@ test('lotação reserva seis vagas únicas, impede sobreposição e libera as va
   sim.estado.melhorias.caixa = 1;
   ate(sim, () => sim.clientes.length === 0, 12000);
   assert.equal(sim.estacionamento.carros.length, 0);
-  assert.equal(sim.estado.estatisticas.clientes, 15 * CONFIG.clientesPorNivel + 7);
+  assert.equal(sim.estado.estatisticas.clientes, 17 * CONFIG.clientesPorNivel + 7);
   assert.equal(sim.criarCliente(), true);
 });
 
@@ -238,7 +238,7 @@ test('loja fechada durante a chegada devolve o cliente ao carro sem venda', () =
   const sim = preparar(); sim.criarCliente();
   const cliente = sim.clientes[0]; sim.estado.lojaAberta = false;
   ate(sim, () => cliente.fase === 'fim');
-  assert.equal(sim.estado.estatisticas.clientes, 15 * CONFIG.clientesPorNivel);
+  assert.equal(sim.estado.estatisticas.clientes, 17 * CONFIG.clientesPorNivel);
   assert.equal(sim.estacionamento.carros.length, 0);
   assert.equal(sim.cestasEmUso, 0);
 });

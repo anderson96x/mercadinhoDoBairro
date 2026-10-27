@@ -1,5 +1,5 @@
 // Nova planta: 2 unidades por cm anotado; x para a direita, z para a rua.
-// O salão amplia no N9; N11 acrescenta apenas equipamentos.
+// A profundidade dobra no N6; a padaria amplia à direita no N13.
 export const PLANTA_INICIAL = {
   escala: 2,
   terreno: { x: 4, z: -5.5, w: 40, d: 40 },
@@ -32,7 +32,7 @@ export const OBSTACULOS_ESTACIONAMENTO = [
 ];
 
 // Painel N3: milho alinhado ao tomate, mais ao fundo (z menor).
-// A coluna inteira fica atrás da loja; trigo reserva o próximo canteiro no N7.
+// A coluna inteira fica atrás da loja; trigo reserva o próximo canteiro no N4.
 export const FAZENDAS_HORTIFRUTI = Object.fromEntries(['tomate', 'milho', 'trigo'].map((id, indice) => {
   const tomate = PLANTA_INICIAL.fazendaTomate;
   return [id, {
@@ -42,14 +42,14 @@ export const FAZENDAS_HORTIFRUTI = Object.fromEntries(['tomate', 'milho', 'trigo
   }];
 }));
 
-// Painel N11: estufa à direita do curral, na mesma faixa posterior.
+// N9: estufa à direita do curral, na mesma faixa posterior.
 export const PLANTA_MORANGO = {
   horta: { x: 8, z: -22.2 }, coleta: { x: 8, z: -20.4 },
   canteiro: { ...PLANTA_INICIAL.fazendaTomate.canteiro }
 };
 
-// N12: apiário à direita da estufa por ajuste solicitado; venda na frente direita.
-// O conjunto de venda receberá a seção de geleia no N15.
+// N14: apiário à direita da estufa por ajuste solicitado; venda na frente direita.
+// O conjunto de venda receberá a seção de geleia no N17.
 export const PLANTA_MEL = {
   horta: { x: 13.2, z: -22.2 }, coleta: { x: 13.2, z: -19.8 },
   prateleira: { x: 17.6, z: 5.8, w: 3.2, d: 1.4, movel: 'doces' },
@@ -69,7 +69,7 @@ export const PLANTA_OFICINAS = {
 
 export const oficinasConstruidas = produtos => !!(produtos.queijo?.liberado || produtos.geleia?.liberado);
 
-// N13: produção na sala dos fundos; refrigerador à direita do leite.
+// N15: produção na sala dos fundos; refrigerador à direita do leite.
 export const PLANTA_QUEIJO = {
   horta: { x: 14.1, z: -13.2 }, coleta: { x: 14.1, z: -11.75 },
   curral: { w: 2.65, d: 1.75 },
@@ -78,7 +78,7 @@ export const PLANTA_QUEIJO = {
   pontosCompra: [-0.65, 0, 0.65].map(dx => ({ x: 11.8 + dx, z: -7.15 }))
 };
 
-// N15: cozinha ao lado da queijaria; geleia prolonga a banca de mel para a esquerda.
+// N17: cozinha ao lado da queijaria; geleia prolonga a banca de mel para a esquerda.
 export const PLANTA_GELEIA = {
   horta: { x: 18.8, z: -13.2 }, coleta: { x: 18.8, z: -11.75 },
   curral: { w: 2.65, d: 1.75 },
@@ -102,15 +102,15 @@ export function selecionarCompartimentoDoces(ator, produtos) {
     && ator.x <= p.x + p.w / 2 + 1e-8)?.[0];
 }
 
-export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango', 'laranja', 'maca'];
+export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'laranja', 'maca', 'morango'];
 
-// N18: pomar ao lado do apiário, com acesso livre pela frente.
+// N6: pomar ao lado do apiário, com acesso livre pela frente.
 export const PLANTA_LARANJA = {
   horta: { x: 18.6, z: -22.2 }, coleta: { x: 18.6, z: -19.9 },
   canteiro: { w: 3.2, d: 3.2 }
 };
 
-// N19: ao lado da laranjeira, avançando pelo gramado em direção às oficinas.
+// N7: ao lado da laranjeira, avançando pelo gramado em direção às oficinas.
 // O volume menor em profundidade preserva os corredores entre as instalações.
 export const PLANTA_MACA = {
   horta: { x: 18.6, z: -17.3 }, coleta: { x: 16.4, z: -17.3 },
@@ -178,7 +178,7 @@ export const PLANTA_PADARIA = {
   pontosCompra: [7.6, 6.7, 8.5].map(x => pontoPadaria({ x, z: -0.95 }))
 };
 
-// Painel N4: galinheiro acima e à direita do milho; ovos na parede posterior,
+// N11: galinheiro acima e à direita do milho; ovos na parede posterior,
 // à direita da porta de produção. A compra mantém o salão inicial.
 export const PLANTA_OVOS = {
   horta: { x: -2.4, z: -21.7 }, coleta: { x: -2.4, z: -20.05 },
@@ -188,7 +188,7 @@ export const PLANTA_OVOS = {
   pontosCompra: [-0.8, 0, 0.8].map(dx => ({ x: 7.1 + dx, z: -7.15 }))
 };
 
-// Painel N5–6: curral ao lado do galinheiro, ambos na mesma faixa posterior.
+// N12: curral ao lado do galinheiro, ambos na mesma faixa posterior.
 export const PLANTA_LEITE = {
   horta: { x: 2.6, z: -21.7 }, coleta: { x: 2.6, z: -19.45 },
   curral: { w: 3.4, d: 3.2 },
@@ -366,11 +366,11 @@ export function compartimentoHortifruti(id) {
 }
 
 // Mescla apenas seções contíguas compradas, sem ocupar lacunas bloqueadas.
-export function volumesHortifruti(produtos) {
+export function volumesHortifruti(produtos, catalogo) {
   const volumes = [];
   for (const id of PRODUTOS_HORTIFRUTI) {
     if (!produtos[id]?.liberado) continue;
-    const secao = compartimentoHortifruti(id).prateleira;
+    const secao = catalogo?.[id].prateleira ?? compartimentoHortifruti(id).prateleira;
     const anterior = volumes.at(-1);
     if (anterior && Math.abs(anterior.z - anterior.d / 2 - (secao.z + secao.d / 2)) < 1e-6) {
       anterior.z -= secao.d / 2;
@@ -380,11 +380,11 @@ export function volumesHortifruti(produtos) {
   return volumes;
 }
 
-export function selecionarCompartimentoHortifruti(ator, produtos) {
+export function selecionarCompartimentoHortifruti(ator, produtos, catalogo) {
   // Ordem da frente para o fundo resolve a borda comum sem depender de floats.
   return PRODUTOS_HORTIFRUTI.find(id => {
     if (!produtos[id]?.liberado) return false;
-    const p = compartimentoHortifruti(id).prateleira;
+    const p = catalogo?.[id].prateleira ?? compartimentoHortifruti(id).prateleira;
     return ator.x >= p.x + p.w / 2 && ator.z >= p.z - p.d / 2 - 1e-8 && ator.z <= p.z + p.d / 2 + 1e-8;
   });
 }

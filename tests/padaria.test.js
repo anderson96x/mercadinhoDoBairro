@@ -20,10 +20,10 @@ function abrirPadaria() {
   return sim;
 }
 
-test('padaria exige nível 9, trigo e R$ 1.400; trigo entregue vira farinha e três pães', () => {
+test('padaria exige nível 13, trigo e R$ 1.400; trigo entregue vira farinha e três pães', () => {
   const bloqueado = new Simulacao();
   bloqueado.estado.dinheiro = ALA_PADARIA.custo;
-  assert.match(bloqueado.comprarMelhoria('alaPadaria').motivo, /nível 9/);
+  assert.match(bloqueado.comprarMelhoria('alaPadaria').motivo, /nível 13/);
   const sim = abrirPadaria();
   assert.equal(sim.estado.dinheiro, 0);
   assert.equal(sim.estado.estagioLoja, ALA_PADARIA.indice);
@@ -73,8 +73,8 @@ test('pão entra na demanda normal e clientes que o pedem levam pelo menos três
   const cliente = sim.clientes[0];
   assert.equal(cliente.compras[0].produto, 'pao');
   assert.equal(cliente.compras[0].desejado, 3);
-  for (let i = 0; i < 6000 && sim.estado.estatisticas.clientes === CONFIG.clientesPorNivel * 8; i++) sim.atualizar(1 / 60);
-  assert.ok(sim.estado.estatisticas.clientes > CONFIG.clientesPorNivel * 8);
+  for (let i = 0; i < 6000 && sim.estado.estatisticas.clientes === CONFIG.clientesPorNivel * 12; i++) sim.atualizar(1 / 60);
+  assert.ok(sim.estado.estatisticas.clientes > CONFIG.clientesPorNivel * 12);
   assert.ok(sim.estado.estatisticas.faturamento >= 30);
   assert.equal(sim.estado.produtos.pao.prateleira, 15);
 });

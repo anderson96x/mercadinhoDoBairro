@@ -90,11 +90,8 @@ export function validarEstado(dados) {
     if ([m.requisitoMelhoria, ...(m.requisitos || [])].filter(Boolean).some(id => !base.melhorias[id])) base.melhorias[m.id] = 0;
   }
   base.confeitaria = validarConfeitaria(dados.confeitaria, base.melhorias.confeitaria);
-  base.estagioLoja = base.melhorias[ALA_ARTESANAL.id] ? ALA_ARTESANAL.indice
-    : base.melhorias[ALA_PADARIA.id] ? ALA_PADARIA.indice
-    : base.melhorias[ALA_TRIGO.id] ? ALA_TRIGO.indice
-    : base.melhorias[ALA_LEITE.id] ? ALA_LEITE.indice
-    : base.melhorias[ALA_PRODUCAO.id] ? ALA_PRODUCAO.indice : 0;
+  base.estagioLoja = Math.max(0, ...[ALA_TRIGO, ALA_ARTESANAL, ALA_PRODUCAO, ALA_LEITE, ALA_PADARIA]
+    .filter(ala => base.melhorias[ala.id]).map(ala => ala.indice));
   if (base.melhorias[ALA_PRODUCAO.id]) {
     base.producao.progressoOvo = Number.isFinite(dados.producao?.progressoOvo) ? limitar(dados.producao.progressoOvo, 0, ALA_PRODUCAO.tempoOvo) : 0;
     base.producao.ovosProduzidos = numero(dados.producao?.ovosProduzidos);
@@ -581,7 +578,7 @@ export class Simulacao {
           titulo: 'Prepare as prateleiras de importados', texto: 'No celular, compre as duas prateleiras por R$ 1.000 cada. A primeira recebe enlatados importados a partir do nível 19.',
           destino: 'celular', exibir: true };
       }
-      if (this.nivel >= 16 && !this.estado.melhorias.estacionamento) {
+      if (this.nivel >= MELHORIAS.find(m => m.id === 'estacionamento').nivelMinimo && !this.estado.melhorias.estacionamento) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: 'Um lugar para estacionar', texto: 'No celular, construa o estacionamento por R$ 10.000. Ele ocupa o terreno ao lado esquerdo da loja.',
           destino: 'celular', exibir: true };
@@ -601,7 +598,7 @@ export class Simulacao {
       const orientacaoTrigo = !this.estado.melhorias.alaTrigo
         ? { titulo: 'Abra a plantação de trigo', texto: 'Compre a ala do trigo pelo celular por R$ 400.', destino: 'celular' }
         : this.estado.produtos.trigo.prateleira < 1
-          ? { titulo: 'Abasteça a prateleira de trigo', texto: 'Colha o trigo entre o galinheiro e o curral e leve-o à nova prateleira.', destino: this.estado.jogador.inventario.includes('trigo') ? 'prateleiraTrigo' : 'trigo' }
+          ? { titulo: 'Abasteça a prateleira de trigo', texto: 'Colha o trigo atrás do milho e leve-o à seção de trigo do hortifruti.', destino: this.estado.jogador.inventario.includes('trigo') ? 'prateleiraTrigo' : 'trigo' }
           : { titulo: 'Atenda o bairro', texto: 'O trigo já está à venda por R$ 5. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacaoPadaria = !this.estado.melhorias.alaPadaria
         ? { titulo: 'Abra a padaria', texto: 'Compre a padaria pelo celular por R$ 1.400. Cada trigo rende 3 pães de R$ 10.', destino: 'celular' }
@@ -619,19 +616,20 @@ export class Simulacao {
           texto: 'Abra o celular para liberar a horta e a prateleira de milho.',
           exibir: !this.estado.melhorias.milho
         },
-        4: orientacaoOvos,
-        5: orientacaoLeite,
-        6: this.ajudanteContratado
+        4: orientacaoTrigo,
+        5: this.ajudanteContratado
           ? { titulo: 'Atenda o bairro', texto: 'O Repositor cuida das prateleiras. Continue atendendo seus clientes.', destino: 'caixa', exibir: false }
           : { titulo: 'Contrate o Repositor', texto: 'Abra o celular e contrate o Repositor por R$ 900 para abastecer as prateleiras.', destino: 'celular' },
-        7: orientacaoTrigo,
-        9: orientacaoPadaria,
+        11: orientacaoOvos,
+        12: orientacaoLeite,
+        13: orientacaoPadaria,
       };
-      let orientacaoNivel = orientacoesNivel[this.nivel] || (this.nivel > 9 ? orientacaoPadaria : this.nivel > 7 ? orientacaoTrigo : {});
-      if (this.nivel >= 10) {
-        const proxima = MELHORIAS.filter(m => m.ativa !== false && m.nivelMinimo >= 10 && m.nivelMinimo <= this.nivel && !this.estado.melhorias[m.id])
+      let orientacaoNivel = orientacoesNivel[this.nivel] || {};
+      if (this.nivel >= 6 && ![11, 12, 13].includes(this.nivel)) {
+        const proxima = MELHORIAS.filter(m => m.ativa !== false && m.nivelMinimo >= 6 && m.nivelMinimo <= this.nivel && !this.estado.melhorias[m.id])
           .sort((a, b) => a.nivelMinimo - b.nivelMinimo)[0];
-        const novoProduto = Object.entries(this.produtos).find(([id, p]) => p.nivelMinimo >= 11 && this.estado.produtos[id].liberado && !this.estado.produtos[id].apresentado && !this.estado.produtos[id].prateleira);
+        const novoProduto = Object.entries(this.produtos).filter(([id, p]) => p.nivelMinimo >= 6 && this.estado.produtos[id].liberado && !this.estado.produtos[id].apresentado && !this.estado.produtos[id].prateleira)
+          .sort(([, a], [, b]) => a.nivelMinimo - b.nivelMinimo)[0];
         orientacaoNivel = proxima
           ? { titulo: proxima.titulo, texto: `${proxima.descricao} Compre pelo celular por R$ ${proxima.custo.toLocaleString('pt-BR')}.`, destino: 'celular' }
           : { titulo: 'O sabor do bairro', texto: 'Cuide das colheitas, prepare receitas e mantenha as bancas abastecidas. Seu mercadinho chegou à fase artesanal!', destino: 'caixa', exibir: false };
@@ -717,7 +715,7 @@ export class Simulacao {
       if (id !== 'pao' && p.origem !== 'importado') caixas.push(geometriaEstacao(id, 'coleta', this.produtos));
     }
     if (this.estado.melhorias.confeitaria) caixas.push(maquinaConfeitaria());
-    caixas.push(...volumesHortifruti(this.estado.produtos), ...volumesDoces(this.estado.produtos));
+    caixas.push(...volumesHortifruti(this.estado.produtos, this.produtos), ...volumesDoces(this.estado.produtos));
     caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
       ...this.estacionamento.carros.filter(c => c.fase !== 'aguardando').map(volumeCarro));
@@ -918,7 +916,7 @@ export class Simulacao {
     const candidatos = [];
     const obstaculos = this.obstaculos();
     const doce = selecionarCompartimentoDoces(jogador, this.estado.produtos);
-    const compartimento = selecionarCompartimentoHortifruti(jogador, this.estado.produtos);
+    const compartimento = selecionarCompartimentoHortifruti(jogador, this.estado.produtos, this.produtos);
     const expositorPosterior = selecionarExpositorPosterior(jogador, this.estado.produtos, this.produtos);
     for (const [id, p] of Object.entries(this.produtos)) {
       if (!this.estado.produtos[id].liberado || p.origem === 'confeitaria') continue;

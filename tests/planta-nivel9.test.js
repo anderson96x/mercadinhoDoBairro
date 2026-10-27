@@ -10,14 +10,14 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function abrir() {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 200; sim.estado.dinheiro = 2300;
+  sim.estado.estatisticas.clientes = 300; sim.estado.dinheiro = 2300;
   assert.ok(sim.comprarMelhoria('alaProducao').sucesso);
   sim.comprarMelhoria('alaTrigo'); assert.ok(sim.comprarMelhoria('alaPadaria').sucesso);
   sim.proximoCliente = Infinity;
   return sim;
 }
 
-test('N9 segue o SVG: ampliação à direita e padaria longitudinal na parede direita', () => {
+test('N13 segue o SVG: ampliação à direita e padaria longitudinal na parede direita', () => {
   const svg = readFileSync(new URL('../docs/mercadinhoDoBairro.drawio.svg', import.meta.url), 'utf8');
   const modelo = svg.match(/\bcontent="([^"]*)"/)[1].replaceAll('&quot;', '"').replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&');
   assert.match(modelo, /Level 9 - 10/);

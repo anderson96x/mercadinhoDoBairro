@@ -1,14 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { CONFIG, PRODUTOS, MELHORIAS, OFICINAS, ALA_ARTESANAL } from '../src/jogo/configuracao.js';
+import { CONFIG, PRODUTOS, MELHORIAS, OFICINAS, ALA_ARTESANAL, ALA_PADARIA } from '../src/jogo/configuracao.js';
 import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { Cena, criarProduto } from '../src/jogo/cena.js';
 import { PLANTA_OFICINAS, volumesDoces, selecionarCompartimentoDoces } from '../src/jogo/planta.js';
 import { construirBairro } from '../src/jogo/bairro.js';
 
 const novos = ['morango', 'mel', 'queijo', 'geleia'];
-function abrir(nivel = 15) {
+function abrir(nivel = 17) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 30000;
@@ -26,8 +26,8 @@ function interagir(sim, ponto) {
   sim.interagir();
 }
 
-test('cada nível de 10 a 15 tem compras com custo, pré-requisitos e limite', () => {
-  for (let nivel = 10; nivel <= 15; nivel++) {
+test('cada nível de 10 a 17 tem compras com custo, pré-requisitos e limite', () => {
+  for (let nivel = 10; nivel <= 17; nivel++) {
     const melhorias = MELHORIAS.filter(m => m.nivelMinimo === nivel && m.ativa !== false);
     assert.ok(melhorias.length);
     for (const m of melhorias) {
@@ -43,7 +43,7 @@ test('cada nível de 10 a 15 tem compras com custo, pré-requisitos e limite', (
     }
   }
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 350; sim.estado.dinheiro = 30000;
+  sim.estado.estatisticas.clientes = 0; sim.estado.dinheiro = 30000;
   for (const id of ['alaArtesanal', 'apiario', 'queijaria', 'cozinhaGeleia', 'equipeAgil']) assert.equal(sim.comprarMelhoria(id).sucesso, false, id);
 });
 
@@ -58,7 +58,7 @@ test('cesta de trabalho amplia viagens e mantém oito produtos ao recarregar', (
 });
 
 test('morango e mel renovam estoque limitado e podem ser colhidos e repostos', () => {
-  const sim = abrir(12);
+  const sim = abrir(14);
   sim.estado.melhorias.ajudante = 0;
   for (const id of ['morango', 'mel']) {
     const estoque = sim.estado.produtos[id], p = PRODUTOS[id];
@@ -76,7 +76,7 @@ test('morango e mel renovam estoque limitado e podem ser colhidos e repostos', (
 });
 
 test('objetivos guiam ingredientes, coleta do lote pronto e primeiro abastecimento', () => {
-  const sim = abrir(13);
+  const sim = abrir(15);
   sim.estado.produtos.morango.apresentado = true;
   sim.estado.produtos.mel.apresentado = true;
   assert.equal(sim.missao().destino, 'coleta-leite');
@@ -88,7 +88,7 @@ test('objetivos guiam ingredientes, coleta do lote pronto e primeiro abastecimen
   interagir(sim, PRODUTOS.queijo.coleta);
   assert.equal(sim.missao().destino, 'prateleira-queijo');
   interagir(sim, PRODUTOS.queijo.reposicao);
-  assert.equal(sim.missao().exibir, false);
+  assert.equal(sim.missao().titulo, 'Laranjeira');
 });
 
 test('clientes simultâneos circulam no anexo e devolvem todas as cestas', () => {
@@ -105,13 +105,13 @@ test('clientes simultâneos circulam no anexo e devolvem todas as cestas', () =>
   }
   assert.equal(clientes.length, 10);
   assert.equal(sim.clientes.length, 0);
-  assert.equal(sim.estado.estatisticas.clientes, 360);
+  assert.equal(sim.estado.estatisticas.clientes, 410);
   assert.equal(sim.cestasDisponiveis, 10);
   assert.ok(clientes.some(c => c.itens.some(id => novos.includes(id))));
 });
 
 test('queijaria transforma leite em lote coletável, sem abastecimento mágico', () => {
-  const sim = abrir(13), estoque = sim.estado.produtos.queijo;
+  const sim = abrir(15), estoque = sim.estado.produtos.queijo;
   sim.estado.jogador.inventario = ['leite'];
   interagir(sim, PRODUTOS.queijo.coleta);
   assert.deepEqual(sim.estado.jogador.inventario, []);
@@ -206,7 +206,7 @@ test('repositor coleta e abastece todos os novos produtos', () => {
 });
 
 test('irrigação acelera hortas e reposição ágil reduz o tempo das viagens', () => {
-  const sim = abrir(14); sim.estado.melhorias.ajudante = 0;
+  const sim = abrir(16); sim.estado.melhorias.ajudante = 0;
   assert.equal(sim.velocidadeAjudante, 2.8 * 1.3);
   for (const [id, p] of Object.entries(PRODUTOS).filter(([, p]) => p.origem === 'horta')) {
     const estoque = sim.estado.produtos[id]; estoque.horta = 0; estoque.crescimento = 0;
@@ -224,7 +224,7 @@ test('save anterior ganha campos padrão; save novo preserva oficinas e valida v
   sim.estado.oficinas.geleia = { ingredientes: { morango: Infinity, mel: 999 }, progresso: NaN, produzidos: -3 };
   const salvo = validarEstado(sim.estado);
   assert.deepEqual(salvo.oficinas.geleia, { ingredientes: { morango: 0, mel: 8 }, progresso: 0, produzidos: 0 });
-  assert.equal(salvo.estagioLoja, ALA_ARTESANAL.indice);
+  assert.equal(salvo.estagioLoja, ALA_PADARIA.indice);
   for (const id of novos) assert.equal(salvo.produtos[id].liberado, true);
 });
 
@@ -242,7 +242,7 @@ test('estufa, colmeia, oficinas e produtos têm modelos próprios', () => {
   assert.ok(visual.produtos.morango.irrigador);
 });
 
-test('N11 preserva o salão N9 e sua parede posterior, sem anexo', () => {
+test('N9 preserva o salão N9 e sua parede posterior, sem anexo', () => {
   const cena = new THREE.Scene();
   const mesh = (g, w, h, d, cor, x, y, z) => { const m = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicMaterial()); g.add(m); m.position.set(x || 0, y || 0, z || 0); return m; };
   const bairro = construirBairro(cena, { caixa: mesh, cilindro: mesh, esfera: mesh });
@@ -263,11 +263,11 @@ test('sala das oficinas abre com qualquer fábrica e permite entrar e sair sem p
   const bairro = construirBairro(cena, { caixa: mesh, cilindro: mesh, esfera: mesh });
   const sala = cena.getObjectByName('sala-oficinas');
   for (const melhoria of ['queijaria', 'cozinhaGeleia']) {
-    const sim = abrir(12);
+    const sim = abrir(14);
     bairro.atualizarOficinas(sim.estado.produtos);
     assert.equal(sala.visible, false);
     assert.ok(PLANTA_OFICINAS.paredes.every(p => !sim.obstaculos().includes(p)));
-    sim.estado.estatisticas.clientes = 350;
+    sim.estado.estatisticas.clientes = 400;
     assert.equal(sim.comprarMelhoria(melhoria).sucesso, true);
     bairro.atualizarOficinas(sim.estado.produtos);
     assert.equal(sala.visible, true);
@@ -282,14 +282,14 @@ test('sala das oficinas abre com qualquer fábrica e permite entrar e sair sem p
   }
 });
 
-test('N11 posiciona estufa ao lado do curral com canteiro padronizado e conserva saves V12', () => {
+test('N9 posiciona estufa ao lado do curral com canteiro padronizado e conserva saves V12', () => {
   const p = PRODUTOS.morango;
   assert.deepEqual(p.canteiro, PRODUTOS.tomate.canteiro);
   assert.ok(Math.abs(p.horta.z - PRODUTOS.leite.horta.z) <= 0.5);
   assert.ok(p.horta.x - p.canteiro.w / 2 > PRODUTOS.leite.horta.x + PRODUTOS.leite.curral.w / 2);
   assert.equal(p.prateleira.x, PRODUTOS.trigo.prateleira.x);
-  assert.ok(Math.abs(p.prateleira.z - PRODUTOS.trigo.prateleira.z) - p.prateleira.d < 1e-9);
-  const sim = abrir(11);
+  assert.ok(Math.abs(p.prateleira.z - PRODUTOS.maca.prateleira.z) - p.prateleira.d < 1e-9);
+  const sim = abrir(9);
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
   Cena.prototype.construirArtesanal.call(visual, 'morango', p);
   for (const fruto of visual.produtos.morango.frutos) {
@@ -306,8 +306,8 @@ test('N11 posiciona estufa ao lado do curral com canteiro padronizado e conserva
   assert.equal(migrado.estado.melhorias.alaArtesanal, 1);
 });
 
-test('N12 instala mel na frente direita e mantém os estoques ao migrar saves V14', () => {
-  const sim = abrir(11), p = PRODUTOS.mel;
+test('N14 instala mel na frente direita e mantém os estoques ao migrar saves V14', () => {
+  const sim = abrir(13), p = PRODUTOS.mel;
   assert.equal(sim.estado.produtos.mel.liberado, false);
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
   Cena.prototype.construirArtesanal.call(visual, 'mel', p);
@@ -336,8 +336,8 @@ test('N12 instala mel na frente direita e mantém os estoques ao migrar saves V1
   assert.deepEqual(migrado.estado.jogador.inventario, ['mel']);
 });
 
-test('N13 instala queijaria na sala dos fundos, refrigerador ao lado do leite e migra produção V15', () => {
-  const sim = abrir(12), p = PRODUTOS.queijo;
+test('N15 instala queijaria na sala dos fundos, refrigerador ao lado do leite e migra produção V15', () => {
+  const sim = abrir(14), p = PRODUTOS.queijo;
   assert.equal(sim.estado.produtos.queijo.liberado, false);
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };
   Cena.prototype.construirArtesanal.call(visual, 'queijo', p);
@@ -387,11 +387,11 @@ test('N13 instala queijaria na sala dos fundos, refrigerador ao lado do leite e 
   assert.deepEqual(migrado.estado.jogador.inventario, ['queijo']);
 });
 
-test('N15 prolonga o mel sem misturar estoques ou repor a seção vizinha na divisória', () => {
-  const sim = abrir(12);
+test('N17 prolonga o mel sem misturar estoques ou repor a seção vizinha na divisória', () => {
+  const sim = abrir(14);
   assert.ok(Math.abs(volumesDoces(sim.estado.produtos)[0].w - PRODUTOS.mel.prateleira.w) < 1e-8);
   assert.equal(selecionarCompartimentoDoces(PRODUTOS.geleia.reposicao, sim.estado.produtos), undefined);
-  sim.estado.estatisticas.clientes = 350;
+  sim.estado.estatisticas.clientes = 400;
   assert.equal(sim.comprarMelhoria('cozinhaGeleia').sucesso, true);
   assert.equal(sim.estado.melhorias.queijaria, 0); // Compra adiada continua permitida.
   const volumes = sim.obstaculos().filter(o => o.movel === 'doces');
@@ -415,8 +415,8 @@ test('N15 prolonga o mel sem misturar estoques ou repor a seção vizinha na div
   assert.deepEqual(sim.estado.jogador.inventario, ['geleia']);
 });
 
-test('N15 mantém a cozinha externa, potes dentro da seção e produção de saves V16', () => {
-  const sim = abrir(15), p = PRODUTOS.geleia;
+test('N17 mantém a cozinha externa, potes dentro da seção e produção de saves V16', () => {
+  const sim = abrir(17), p = PRODUTOS.geleia;
   assert.ok(Math.abs(p.horta.x - PLANTA_OFICINAS.piso.x) + p.curral.w / 2 < PLANTA_OFICINAS.piso.w / 2);
   assert.ok(p.horta.z + p.curral.d / 2 < -9.3);
   const visual = { cena: new THREE.Scene(), sim, produtos: {}, criarLabel() {} };

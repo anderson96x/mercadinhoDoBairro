@@ -11,7 +11,7 @@ function nivel5() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 4 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 5000;
-  for (const id of ['milho', 'alaProducao', 'alaLeite']) assert.ok(sim.comprarMelhoria(id).sucesso);
+  for (const id of ['milho', 'alaTrigo']) assert.ok(sim.comprarMelhoria(id).sucesso);
   sim.sincronizarProfundidade();
   return sim;
 }
@@ -31,12 +31,12 @@ test('N1 a N5 têm metade da profundidade, fachada fixa e porta posterior acess�
 
 test('N6 restaura automaticamente a profundidade sem cobrança e mantém estoques e compras', () => {
   const sim = nivel5();
-  sim.estado.produtos.ovos.prateleira = 5;
-  sim.estado.produtos.leite.prateleira = 3;
+  sim.estado.produtos.trigo.prateleira = 5;
+  sim.estado.produtos.milho.prateleira = 3;
   const produtos = structuredClone(sim.estado.produtos), melhorias = { ...sim.estado.melhorias };
   const dinheiro = sim.estado.dinheiro;
-  Object.assign(sim.estado.jogador, PRODUTOS.ovos.prateleira);
-  assert.equal(sim.produtos.ovos.prateleira.z, PRODUTOS.ovos.prateleira.z + 8);
+  Object.assign(sim.estado.jogador, PRODUTOS.trigo.prateleira);
+  assert.equal(sim.produtos.trigo.prateleira.z, PRODUTOS.trigo.prateleira.z + 0.6);
   assert.equal(sim.aumentarNivelDev(), 6);
   assert.equal(sim.compacta, false);
   assert.equal(sim.estado.dinheiro, dinheiro + CONFIG.bonusNivel);
@@ -66,16 +66,16 @@ test('saves anteriores preservam produção, saldo e carga na loja compacta ou c
     const sim = nivel5();
     sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
     sim.estado.versaoLayout = 23;
-    sim.estado.produtos.ovos.prateleira = 5;
-    sim.estado.produtos.ovos.apresentado = true;
-    sim.estado.producao.progressoOvo = 1.2;
-    Object.assign(sim.estado.jogador, { x: 7.1, z: -1.3, inventario: ['ovos'] });
+    sim.estado.produtos.trigo.prateleira = 5;
+    sim.estado.produtos.trigo.apresentado = true;
+    sim.estado.produtos.trigo.crescimento = 1.2;
+    Object.assign(sim.estado.jogador, { x: 7.1, z: -1.3, inventario: ['trigo'] });
     const retomado = new Simulacao(structuredClone(sim.estado));
     assert.equal(retomado.compacta, nivel < 6);
     assert.equal(retomado.estado.dinheiro, sim.estado.dinheiro);
     assert.deepEqual(retomado.estado.produtos, sim.estado.produtos);
-    assert.equal(retomado.estado.producao.progressoOvo, 1.2);
-    assert.deepEqual(retomado.estado.jogador.inventario, ['ovos']);
+    assert.equal(retomado.estado.produtos.trigo.crescimento, 1.2);
+    assert.deepEqual(retomado.estado.jogador.inventario, ['trigo']);
     assert.ok(segmentoLivre(retomado.estado.jogador, retomado.estado.jogador, retomado.obstaculos(), 0.32));
   }
 });

@@ -1,7 +1,7 @@
 import { MODELO_PADARIA, pontoPadaria, volumePadaria } from './planta.js';
 
 export const CONFEITARIA = {
-  nivel: 17, custo: 1000, segundos: 6, capacidadeIngredientes: 8,
+  nivel: 19, custo: 1000, segundos: 6, capacidadeIngredientes: 8,
   ingredientes: { mel: 1, ovos: 1 },
   entrada: volumePadaria(MODELO_PADARIA.fechamento[1]),
   entrega: pontoPadaria({ x: 3.85, z: -3.375 }),

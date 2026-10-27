@@ -8,16 +8,16 @@ import { ajudanteUsaCaixaMadeira } from '../src/jogo/cena.js';
 
 function abrirTrigo() {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 6;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
   sim.estado.dinheiro = 400;
   assert.equal(sim.comprarMelhoria('alaTrigo').sucesso, true);
   return sim;
 }
 
-test('trigo custa R$ 400 no nível 7, já pode ser colhido e abastece a prateleira', () => {
+test('trigo custa R$ 400 no nível 4, já pode ser colhido e abastece a prateleira', () => {
   const sim = new Simulacao();
   sim.estado.dinheiro = 400;
-  assert.match(sim.comprarMelhoria('alaTrigo').motivo, /nível 7/);
+  assert.match(sim.comprarMelhoria('alaTrigo').motivo, /nível 4/);
   const aberto = abrirTrigo();
   assert.equal(aberto.estado.dinheiro, 0);
   assert.equal(aberto.estado.estagioLoja, ALA_TRIGO.indice);
@@ -29,7 +29,7 @@ test('trigo custa R$ 400 no nível 7, já pode ser colhido e abastece a pratelei
   assert.deepEqual(aberto.estado.jogador.inventario, ['trigo']);
   assert.equal(aberto.missao().destino, 'prateleiraTrigo');
   aberto.tempo = 11;
-  Object.assign(aberto.estado.jogador, PRODUTOS.trigo.reposicao);
+  Object.assign(aberto.estado.jogador, aberto.produtos.trigo.reposicao);
   aberto.interagir();
   assert.equal(aberto.estado.produtos.trigo.prateleira, 1);
   const salvo = validarEstado(structuredClone(aberto.estado));
@@ -71,7 +71,7 @@ test('cliente alcança a nova prateleira e paga R$ 5 pelo trigo', () => {
   sim.aleatorio = () => 0;
   assert.equal(sim.criarCliente(), true);
   assert.equal(sim.clientes[0].produto, 'trigo');
-  for (let i = 0; i < 6000 && sim.estado.estatisticas.clientes === CONFIG.clientesPorNivel * 6; i++) sim.atualizar(1 / 60);
+  for (let i = 0; i < 6000 && sim.estado.estatisticas.clientes === CONFIG.clientesPorNivel * 3; i++) sim.atualizar(1 / 60);
   assert.equal(sim.estado.estatisticas.faturamento, 5);
   assert.equal(sim.estado.dinheiro, 5);
   assert.equal(sim.estado.produtos.trigo.prateleira, 0);
@@ -90,5 +90,5 @@ test('o repositor usa caixa de madeira e consegue levar trigo da fazenda à loja
     if (sim.ajudante.inventario.includes('trigo')) assert.equal(ajudanteUsaCaixaMadeira(sim.ajudante), true);
   }
   assert.equal(sim.estado.produtos.trigo.prateleira, 2);
-  assert.ok(distancia(sim.ajudante, PRODUTOS.trigo.reposicao) < 1);
+  assert.ok(distancia(sim.ajudante, sim.produtos.trigo.reposicao) < 1);
 });

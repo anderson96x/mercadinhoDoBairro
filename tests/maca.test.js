@@ -5,7 +5,7 @@ import { Simulacao } from '../src/jogo/simulacao.js';
 
 function abrir() {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
+  sim.estado.estatisticas.clientes = 6 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 10000;
   sim.proximoCliente = Infinity;
   assert.ok(sim.comprarMelhoria('laranja').sucesso);
@@ -13,9 +13,9 @@ function abrir() {
   return sim;
 }
 
-test('macieira exige nível 19 e R$ 800, com compra única', () => {
+test('macieira exige nível 7 e R$ 800, com compra única', () => {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
+  sim.estado.estatisticas.clientes = 5 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 800;
   assert.equal(sim.comprarMelhoria('maca').sucesso, false);
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;

@@ -80,10 +80,10 @@ try {
       verificar(cena.cena.getObjectByName('piso-inicial').scale.z === 0.5, 'Piso com metade da profundidade');
       verificar(cena.cena.getObjectByName('entrada-producao').position.z === 8, 'Porta compacta');
       cena.renderer.render(cena.cena, cena.camera);
-      sim.estado.estatisticas.clientes = 4 * CONFIG.clientesPorNivel;
-      for (const id of ['milho', 'alaProducao', 'alaLeite']) verificar(sim.comprarMelhoria(id).sucesso, id);
+      sim.estado.estatisticas.clientes = 3 * CONFIG.clientesPorNivel;
+      for (const id of ['caixa', 'milho', 'alaTrigo']) verificar(sim.comprarMelhoria(id).sucesso, id);
       cena.atualizar(0); cena.atualizar(10);
-      for (const id of ['ovos', 'leite']) {
+      for (const id of ['trigo', 'milho']) {
         sim.estado.produtos[id].horta = 1;
         Object.assign(sim.estado.jogador, sim.produtos[id].coleta);
         sim.tempo++; sim.interagir();
@@ -95,19 +95,19 @@ try {
         verificar(Math.abs(cena.produtos[id].frutas[0].position.z - sim.produtos[id].prateleira.z) < 1, 'Expositor acompanha parede');
       }
       cena.renderer.render(cena.cena, cena.camera);
+      sim.estado.estatisticas.clientes = 4 * CONFIG.clientesPorNivel;
+      verificar(sim.comprarMelhoria('ajudante').sucesso, 'Repositor no N5');
       const saldo = sim.estado.dinheiro;
       sim.aumentarNivelDev(); cena.atualizar(0);
       verificar(!sim.compacta && cena.cena.getObjectByName('piso-inicial').scale.z === 1, 'Expansao automatica N6');
       verificar(sim.estado.dinheiro === saldo + CONFIG.bonusNivel, 'Expansao sem custo');
       verificar(cena.cena.getObjectByName('entrada-producao').position.z === 0, 'Porta restaurada');
-      verificar(cena.produtos.ovos.frutas.filter(f => f.visible).length === 1, 'Estoque preservado na expansao');
+      verificar(cena.produtos.trigo.frutas.filter(f => f.visible).length === 1, 'Estoque preservado na expansao');
       const retomadoN6 = new Simulacao(structuredClone(sim.estado));
-      verificar(!retomadoN6.compacta && retomadoN6.estado.produtos.leite.prateleira === 1, 'Recarga N6');
+      verificar(!retomadoN6.compacta && retomadoN6.estado.produtos.milho.prateleira === 1, 'Recarga N6');
       cena.renderer.render(cena.cena, cena.camera);
-      sim.estado.estatisticas.clientes = 18 * CONFIG.clientesPorNivel;
-      for (const id of ['alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario']) verificar(sim.comprarMelhoria(id).sucesso, id);
-      cena.atualizar(0);
-      for (const [produto, modelo] of [['laranja', 'laranjeira'], ['maca', 'macieira']]) {
+      for (const [nivel, produto, modelo] of [[6, 'laranja', 'laranjeira'], [7, 'maca', 'macieira']]) {
+        sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
         sim.estado.jogador.inventario = [];
         verificar(!cena.produtos[produto].grupo.visible, 'Arvore antes da compra');
         verificar(sim.comprarMelhoria(produto).sucesso, 'Compra');
@@ -129,9 +129,21 @@ try {
         const retomado = new Simulacao(structuredClone(sim.estado));
         verificar(retomado.estado.produtos[produto].prateleira === 1, 'Recarga');
       }
+      for (const [nivel, id] of [[8, 'cestasExtras'], [9, 'alaArtesanal'], [10, 'logistica'], [11, 'alaProducao'],
+        [12, 'alaLeite'], [13, 'alaPadaria'], [14, 'apiario'], [15, 'queijaria'], [16, 'irrigacao'],
+        [16, 'equipeAgil'], [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria']]) {
+        sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+        verificar(sim.comprarMelhoria(id).sucesso, 'Compra N' + nivel + ': ' + id);
+        cena.atualizar(0); cena.atualizar(10);
+        verificar(cena.cena.getObjectByName('ampliacao-padaria').visible === (nivel >= 13), 'Padaria amplia somente no N13');
+        if (nivel === 9) {
+          verificar(cena.produtos.morango.grupo.visible, 'Morango visivel sem padaria');
+          verificar(!cena.produtos.ovos.grupo.visible && !cena.produtos.leite.grupo.visible, 'Animais ainda bloqueados');
+        }
+      }
       cena.renderer.render(cena.cena, cena.camera);
       cena.renderer.dispose?.(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, arvoresBairro: true, gramaRecebeSombras: true, lojaCompacta: true, expansaoN6: true, produtos: ['laranja', 'maca'], compra: true, arvore: true, colheita: true, reposicao: true, recarga: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, progressaoAteN19: true, trigoCompactoN4: true, expansaoN6: true, pomarN6N7: true, morangoN9: true, padariaN13: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }

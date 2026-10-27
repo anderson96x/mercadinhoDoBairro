@@ -10,7 +10,7 @@ import { resumoProducao } from '../src/interface/producao.js';
 
 const ids = Object.keys(CONFEITARIA.produtos);
 const TEMPO_LOTE = CONFEITARIA.segundos + ROTEIRO_CONFEITARIA.reduce((total, etapa) => total + etapa.duracao, 0);
-function preparar(nivel = 17) {
+function preparar(nivel = 19) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
@@ -24,9 +24,9 @@ function abrir() {
   return sim;
 }
 
-test('confeitaria exige nível 17, padaria, apiário, ovos e R$ 1.000; compra única libera os três doces a R$ 15', () => {
-  const sim = preparar(16);
-  assert.match(sim.comprarMelhoria('confeitaria').motivo, /nível 17/);
+test('confeitaria exige nível 19, padaria, apiário, ovos e R$ 1.000; compra única libera os três doces a R$ 15', () => {
+  const sim = preparar(18);
+  assert.match(sim.comprarMelhoria('confeitaria').motivo, /nível 19/);
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
   for (const id of ['alaPadaria', 'apiario', 'alaProducao']) {
     sim.estado.melhorias[id] = 0;

@@ -44,7 +44,7 @@ const vidroMel = new THREE.MeshStandardMaterial({ color: 0xffe3a0, transparent: 
 const verdeLeiteVitrine = new THREE.MeshBasicMaterial({ color: 0x087e64 });
 function estacaoDesbloqueada(id, estado) {
   if (PRODUTOS[id]?.origem === 'pomar') return !!estado.produtos[id]?.liberado;
-  const estagioNecessario = PRODUTOS[id]?.origem === 'confeitaria' ? ALA_PADARIA.indice : PRODUTOS[id]?.origem === 'importado' ? 0 : PRODUTOS[id]?.nivelMinimo >= 11 ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
+  const estagioNecessario = PRODUTOS[id]?.origem === 'confeitaria' ? ALA_PADARIA.indice : id === 'morango' ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
   return !!estado.produtos[id]?.liberado && estado.estagioLoja >= estagioNecessario;
 }
 function material(cor) {
@@ -958,7 +958,7 @@ export class Cena {
     }
   }
   construirEstacao(id, p) {
-    if (p.nivelMinimo >= 11) return Cena.prototype.construirArtesanal.call(this, id, p);
+    if (['morango', 'mel', 'queijo', 'geleia'].includes(id) || ['pomar', 'importado', 'confeitaria'].includes(p.origem)) return Cena.prototype.construirArtesanal.call(this, id, p);
     const grupo = new THREE.Group(); this.cena.add(grupo);
     grupo.visible = estacaoDesbloqueada(id, this.sim.estado);
     const h = p.horta;
@@ -1564,7 +1564,7 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const altura = this.mobile ? 18.8 : Math.max(camera.alturaDesktop, 37 / proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
@@ -1598,7 +1598,7 @@ export class Cena {
     this.alvoCamera.set(x, 0, z);
   }
   baseCamera() {
-    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const jogador = this.sim.estado.jogador;
     const acompanhamento = this.mobile ? 1 : THREE.MathUtils.clamp((this.camera.zoom - 1) / (ZOOM_MAXIMO - 1), 0, 1);
     return { x: THREE.MathUtils.lerp(camera.x, jogador.x, acompanhamento), z: THREE.MathUtils.lerp(camera.z, jogador.z, acompanhamento) };
@@ -2087,8 +2087,9 @@ export class Cena {
         }
         continue;
       }
-      const construcao = (id === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (id === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (id === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
-      const temConstrucao = ['ovos', 'leite', 'trigo'].includes(id) || (PRODUTOS[id].nivelMinimo >= 11 && !['importado', 'pomar'].includes(PRODUTOS[id].origem));
+      const estagioProduto = { ovos: ALA_PRODUCAO.indice, leite: ALA_LEITE.indice, trigo: ALA_TRIGO.indice, morango: ALA_ARTESANAL.indice }[id];
+      const construcao = e.estagioLoja > estagioProduto ? 1 : equipamentoAla;
+      const temConstrucao = estagioProduto !== undefined || ['apiario', 'oficina'].includes(PRODUTOS[id].origem);
       objetos.grupo.visible = estacaoDesbloqueada(id, e) && (!temConstrucao || construcao > 0);
       if (temConstrucao) objetos.grupo.scale.y = Math.max(0.001, construcao);
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
@@ -2120,8 +2121,9 @@ export class Cena {
     }
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
-      const construcao = PRODUTOS[produto]?.origem === 'pomar' || (produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (produto === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (produto === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
-      if (produto && (!estacaoDesbloqueada(produto, e) || ((['ovos', 'leite', 'trigo'].includes(produto) || PRODUTOS[produto]?.nivelMinimo >= 11) && construcao < 1))) { el.hidden = true; continue; }
+      const estagioProduto = { ovos: ALA_PRODUCAO.indice, leite: ALA_LEITE.indice, trigo: ALA_TRIGO.indice, morango: ALA_ARTESANAL.indice }[produto];
+      const construcao = PRODUTOS[produto]?.origem === 'pomar' || e.estagioLoja > estagioProduto ? 1 : equipamentoAla;
+      if (produto && (!estacaoDesbloqueada(produto, e) || ((estagioProduto !== undefined || ['apiario', 'oficina'].includes(PRODUTOS[produto]?.origem)) && construcao < 1))) { el.hidden = true; continue; }
       const estacao = PRODUTOS[produto] && geometriaEstacao(produto, tipo === 'horta' ? 'coleta' : 'reposicao', PRODUTOS);
       const perto = estacao && distanciaEstacao(e.jogador, estacao) < CONFIG.raioInteracao + 0.3;
       if (!perto) { el.hidden = true; continue; }

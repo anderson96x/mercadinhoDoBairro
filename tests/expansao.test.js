@@ -184,23 +184,23 @@ test('controles de desenvolvimento elevam nível e reputação e persistem no sa
   assert.equal(retomado.aumentarReputacaoDev(), 100);
 });
 
-test('galinheiro exige nível 4 sem depender de milho e preserva o terreno', () => {
+test('galinheiro exige nível 11 sem depender de milho e preserva o terreno', () => {
   const sim = new Simulacao();
   sim.estado.dinheiro = 2000;
-  assert.match(sim.comprarMelhoria('alaProducao').motivo, /nível 4/);
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
+  assert.match(sim.comprarMelhoria('alaProducao').motivo, /nível 11/);
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 10;
 
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, true);
-  assert.equal(sim.estado.estagioLoja, 1);
+  assert.equal(sim.estado.estagioLoja, ALA_PRODUCAO.indice);
   assert.equal(sim.estado.produtos.ovos.liberado, true);
   assert.equal(sim.estado.produtos.ovos.horta, 0);
   assert.equal(sim.limitesMundo.minZ, CONFIG.limiteMundo.minZ);
   assert.equal(sim.limitesMundo.maxX, ALA_PRODUCAO.limites.maxX);
   assert.deepEqual(sim.limitesMundo, CONFIG.limiteMundo);
-  assert.equal(sim.comprarMelhoria('ajudante').sucesso, false);
+  assert.equal(sim.disponibilidadeMelhoria('ajudante').disponivel, true);
   assert.equal(sim.estado.dinheiro, 1500);
   const salvo = validarEstado(structuredClone(sim.estado));
-  assert.equal(salvo.estagioLoja, 1);
+  assert.equal(salvo.estagioLoja, ALA_PRODUCAO.indice);
   assert.equal(salvo.produtos.ovos.liberado, true);
   assert.equal(salvo.melhorias.ajudante, 0);
 });
@@ -225,9 +225,9 @@ test('galinhas produzem ovos sem insumos, que podem ser coletados e vendidos', (
   assert.equal(sim.estado.produtos.ovos.prateleira, 1);
   assert.deepEqual(sim.estado.jogador.inventario, []);
   assert.equal(sim.missao().titulo, 'Atenda o bairro');
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 5;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 10;
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
-  assert.equal(sim.missao().titulo, 'Atenda o bairro');
+  assert.equal(sim.missao().titulo, 'Mantenha a ala funcionando');
   const retomado = new Simulacao(structuredClone(sim.estado));
   assert.equal(retomado.estado.produtos.ovos.prateleira, 1);
   assert.equal(retomado.estado.producao.ovosProduzidos, 1);
@@ -285,7 +285,7 @@ test('ajudante leva os ovos do galinheiro à prateleira sem precisar de insumos'
 test('salvar durante a viagem preserva a carga e o destino do ajudante', () => {
   const sim = new Simulacao();
   abrirAla(sim);
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 5;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 10;
   sim.estado.dinheiro = 900;
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
   Object.assign(sim.ajudante, { ...PRODUTOS.ovos.coleta, produto: 'ovos', destino: 'prateleira', inventario: ['ovos', 'ovos'] });

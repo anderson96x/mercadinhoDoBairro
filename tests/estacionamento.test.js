@@ -15,9 +15,9 @@ function nivel(n) {
   return sim;
 }
 
-test('estacionamento exige nível 16 e R$ 10.000, cobra uma vez e não libera produtos', () => {
-  const sim = nivel(15);
-  assert.match(sim.comprarMelhoria('estacionamento').motivo, /nível 16/);
+test('estacionamento exige nível 18 e R$ 10.000, cobra uma vez e não libera produtos', () => {
+  const sim = nivel(17);
+  assert.match(sim.comprarMelhoria('estacionamento').motivo, /nível 18/);
   assert.equal(sim.estado.dinheiro, 10000);
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 9999;
@@ -35,19 +35,19 @@ test('estacionamento exige nível 16 e R$ 10.000, cobra uma vez e não libera pr
 });
 
 test('compra persiste e partidas antigas recebem estacionamento bloqueado sem perder saldo', () => {
-  const sim = nivel(16); sim.comprarMelhoria('estacionamento');
+  const sim = nivel(18); sim.comprarMelhoria('estacionamento');
   const salvo = structuredClone(sim.estado);
   assert.equal(new Simulacao(salvo).estado.melhorias.estacionamento, 1);
   delete salvo.melhorias.estacionamento; salvo.dinheiro = 12345;
   const migrado = new Simulacao(salvo);
   assert.equal(migrado.estado.melhorias.estacionamento, 0);
   assert.equal(migrado.estado.dinheiro, 12345);
-  const adulterado = nivel(15).estado; adulterado.melhorias.estacionamento = 1;
+  const adulterado = nivel(17).estado; adulterado.melhorias.estacionamento = 1;
   assert.equal(new Simulacao(adulterado).estado.melhorias.estacionamento, 0);
 });
 
-test('objetivo do nível 16 aponta para a compra no celular', () => {
-  const sim = nivel(16);
+test('objetivo do nível 18 aponta para a compra no celular', () => {
+  const sim = nivel(18);
   assert.equal(sim.missao().destino, 'celular');
   assert.match(sim.missao().texto, /10\.000/);
   sim.comprarMelhoria('estacionamento');
@@ -71,7 +71,7 @@ test('seis vagas vazias ocupam o terreno lateral sem ocupar hortas ou loja', () 
 });
 
 test('colisões só existem após a compra e deixam acesso ao estacionamento e à horta', () => {
-  const sim = nivel(16);
+  const sim = nivel(18);
   assert.ok(OBSTACULOS_ESTACIONAMENTO.every(o => !sim.obstaculos().includes(o)));
   sim.comprarMelhoria('estacionamento');
   assert.ok(OBSTACULOS_ESTACIONAMENTO.every(o => sim.obstaculos().includes(o)));
@@ -105,7 +105,7 @@ test('asfalto chega à borda e o acesso contínuo fica centrado nas faixas de en
   }
   const setas = [];
   estacionamento.grupo.traverse(o => { if (o.name === 'seta-estacionamento') setas.push(o); });
-  const sim = nivel(16); sim.comprarMelhoria('estacionamento');
+  const sim = nivel(18); sim.comprarMelhoria('estacionamento');
   for (const [indice, faixa] of P.faixas.entries()) {
     assert.ok(faixa.x > P.acesso.x - P.acesso.w / 2 && faixa.x < P.acesso.x + P.acesso.w / 2);
     const marcas = setas.filter(s => s.position.x === faixa.x);

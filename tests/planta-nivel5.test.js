@@ -12,11 +12,11 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function nivel5() {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 100; sim.estado.dinheiro = 800; sim.proximoCliente = Infinity;
+  sim.estado.estatisticas.clientes = 275; sim.estado.dinheiro = 800; sim.proximoCliente = Infinity;
   return sim;
 }
 
-test('N5 segue o SVG: curral ao lado do galinheiro, refrigerador ao lado dos ovos, salão inicial', () => {
+test('N12 segue o SVG: curral ao lado do galinheiro, refrigerador ao lado dos ovos, salão inicial', () => {
   const svg = readFileSync(new URL('../docs/mercadinhoDoBairro.drawio.svg', import.meta.url), 'utf8');
   const modelo = svg.match(/\bcontent="([^"]*)"/)[1].replaceAll('&quot;', '"').replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&');
   function geometria(numero) {
@@ -61,17 +61,17 @@ test('N5 segue o SVG: curral ao lado do galinheiro, refrigerador ao lado dos ovo
   }
 });
 
-test('N5 exige nível e R$ 800, conserva piso e paredes mesmo sem comprar milho ou ovos', () => {
-  const sim = nivel5(); sim.estado.estatisticas.clientes = 75;
+test('N12 exige nível e R$ 800, conserva piso e paredes mesmo sem comprar milho ou ovos', () => {
+  const sim = nivel5(); sim.estado.estatisticas.clientes = 250;
   assert.equal(sim.comprarMelhoria('alaLeite').sucesso, false);
-  sim.estado.estatisticas.clientes = 100;
+  sim.estado.estatisticas.clientes = 275;
   assert.equal(sim.estado.produtos.leite.liberado, false);
   sim.estado.dinheiro = 799; assert.equal(sim.comprarMelhoria('alaLeite').sucesso, false);
   sim.estado.dinheiro = 800; assert.ok(sim.comprarMelhoria('alaLeite').sucesso);
   assert.equal(sim.estado.dinheiro, 0); assert.equal(sim.estado.estagioLoja, ALA_LEITE.indice);
   assert.equal(sim.estado.produtos.leite.horta, 0);
   assert.equal(sim.estado.produtos.ovos.liberado, false); assert.equal(sim.estado.produtos.milho.liberado, false);
-  for (const p of paredesPlantaInicial(ALTURA_PAREDE_BAIXA, PLANTA_COMPACTA)) assert.ok(sim.obstaculos().some(o => o.x === p.x && o.z === p.z && o.w === p.w && o.d === p.d));
+  for (const p of PAREDES_LOJA) assert.ok(sim.obstaculos().some(o => o.x === p.x && o.z === p.z && o.w === p.w && o.d === p.d));
   const cena = new THREE.Scene(), geometria = new THREE.BoxGeometry(1, 1, 1), material = new THREE.MeshBasicMaterial();
   const mesh = (grupo, ...args) => { const m = new THREE.Mesh(geometria, material); grupo.add(m); return m; };
   const bairro = construirBairro(cena, { caixa: mesh, esfera: mesh, cilindro: mesh });
@@ -97,7 +97,7 @@ test('divisória entre ovos e leite seleciona um expositor, mesmo com inventári
   }
 });
 
-test('N5 completa produção, coleta posterior, reposição e venda de leite por R$ 20', () => {
+test('N12 completa produção, coleta posterior, reposição e venda de leite por R$ 20', () => {
   const sim = nivel5(); sim.comprarMelhoria('alaLeite');
   function ir(alvo) {
     let chegou = false;
@@ -123,9 +123,9 @@ test('N5 completa produção, coleta posterior, reposição e venda de leite por
   assert.equal(sim.clientes.length, 0); assert.equal(sim.cestasDisponiveis, 5);
 });
 
-test('save V7 mantém leite, dinheiro, produção parcial e cargas após remover a antiga extensão N5', () => {
+test('save V7 mantém leite, dinheiro, produção parcial e cargas após remover a antiga extensão N12', () => {
   const sim = nivel5(); sim.comprarMelhoria('alaLeite');
-  sim.estado.estatisticas.clientes = 125; sim.estado.dinheiro = 900; sim.comprarMelhoria('ajudante');
+  sim.estado.estatisticas.clientes = 275; sim.estado.dinheiro = 900; sim.comprarMelhoria('ajudante');
   sim.estado.versaoLayout = 7; sim.estado.dinheiro = 123;
   Object.assign(sim.estado.produtos.leite, { horta: 3, prateleira: 5, apresentado: true });
   sim.estado.producao.progressoLeite = 1.2; sim.estado.producao.leitesProduzidos = 8;

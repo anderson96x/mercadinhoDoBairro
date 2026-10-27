@@ -1,97 +1,103 @@
 # Desbloqueios por nível
 
-A loja começa com **14 × 8 u** do nível 1 ao 5, mantendo a fachada na posição atual. Ao alcançar o **nível 6**, o salão volta automaticamente a **14 × 16 u**, sem custo ou compra, independentemente das melhorias adquiridas. Parede posterior, porta de produção, lixeira e expositores de ovos e leite acompanham a profundidade; hortas e animais mantêm suas posições. Saves anteriores preservam saldo, compras e estoques, com reposicionamento seguro dos personagens. Os níveis, custos e receitas abaixo permanecem iguais; a reorganização dos produtos será feita em outra etapa. Os registros das plantas N1–N5 descrevem a geometria anterior. No [nível 3](PLANTA-LOJA-N3.md), comprar milho acrescenta um canteiro alinhado atrás dos tomates e uma seção à mesma banca, mantendo o salão inicial. As duas hortas ficam inteiramente atrás da loja, com acesso pela porta dos fundos. Tomate, milho, trigo e morango compartilham uma banca de madeira que ganha seções após as compras. Abasteça a seção desejada pela face do corredor. As oficinas compartilham uma sala com piso e paredes baixas nos fundos direitos, com entrada lateral aberta. A sala aparece com a primeira compra de uma dessas oficinas.
+A progressão avança a cada **25 clientes atendidos**, com bônus de **R$ 100 por nível**. Atingir um nível libera a compra; produtos, funcionários e construções continuam exigindo o saldo e os pré-requisitos indicados abaixo.
 
-No [nível 7](PLANTA-LOJA-N7.md), comprar trigo por R$ 400 acrescenta o canteiro atrás do milho e a terceira seção do hortifruti, sem ampliar o salão. Todos os canteiros de cultivos medem 3,6 × 2,5 u.
+A loja começa com **14 × 8 u** nos níveis 1–5. Ao alcançar o **nível 6**, volta automaticamente a **14 × 16 u**, mantendo a fachada no lugar e sem custo. No **nível 13**, comprar a padaria amplia o salão à direita para **24 × 16 u**.
 
-No [nível 9](PLANTA-LOJA-N9.md), a padaria amplia o salão para 24 × 16 u à direita. O balcão fica junto à parede direita, de frente para o hortifruti. Entregue trigo na caixa ao fundo do conjunto: moinho e forno mantêm a receita de três pães por trigo.
+Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros históricos: seus números de nível não correspondem necessariamente à progressão atual. As importações continuam suspensas; não há novos desbloqueios ativos a partir do nível 20.
 
 ## Disponíveis
 
-A progressão ativa inclui o estacionamento no nível 16, a confeitaria no nível 17, a laranjeira no nível 18 e a macieira no nível 19. Prateleiras de importados, expansão e as quatro classes importadas dos antigos níveis 17 a 22 continuam desativadas, inclusive no DEV. Os níveis continuam avançando, mas ainda não há novos desbloqueios a partir do 20. O conjunto de importações será reorganizado depois do nível 20, sem níveis novos definidos por enquanto. A referência da implementação anterior está ao final deste documento.
-
-No [nível 4](PLANTA-LOJA-N4.md), a compra de ovos instala o galinheiro atrás da loja e uma estante alta de três níveis junto à parede posterior, à direita da porta de produção. O salão mantém 14 × 8 u até alcançar o nível 6. As galinhas produzem um ovo a cada 3,5 segundos, sem insumos; coleta e reposição continuam manuais ou pelo repositor contratado posteriormente.
-
-No [nível 5](PLANTA-LOJA-N5.md), o curral fica atrás da loja ao lado do galinheiro, e o refrigerador vertical de duas portas de vidro fica à direita dos ovos na parede posterior. O salão continua com 14 × 8 u até alcançar o nível 6. O curral produz uma garrafa a cada 4,5 segundos, sem insumos. Abasteça ovos e leite pela frente do expositor correspondente; os estoques são separados, inclusive na divisória.
-
 | Nível | Melhoria ou produto | Custo | Preço de venda por unidade |
 | --- | --- | --- | --- |
-| 1 | Tomate (disponível desde o início) | — | R$ 5 |
+| 1 | Tomate, disponível desde o início | — | R$ 5 |
 | 2 | Caixa | R$ 250 | — |
 | 3 | Milho | R$ 350 | R$ 10 |
-| 4 | Ala dos ovos | R$ 500 | R$ 15 por ovo |
-| 5 | Ala do leite | R$ 800 | R$ 20 por garrafa |
-| 6 | Salão volta a 14 × 16 u automaticamente | Grátis | — |
-| 6 | Repositor | R$ 900 | — |
-| 7 | Ala do trigo | R$ 400 | R$ 5 por trigo |
-| 8 | Mais 5 cestas (até 10 clientes na loja) | R$ 100 | — |
-| 9 | Padaria | R$ 1.400 | R$ 10 por pão |
+| 4 | Ala do trigo | R$ 400 | R$ 5 |
+| 5 | Repositor | R$ 900 | — |
+| 6 | Laranjeira e seção de laranjas | R$ 800 | R$ 7 |
+| 6 | Salão volta automaticamente a 14 × 16 u | Grátis | — |
+| 7 | Macieira e seção de maçãs | R$ 800 | R$ 7 |
+| 8 | Mais 5 cestas, até 10 clientes com cesta | R$ 100 | — |
+| 9 | Estufa de morangos | R$ 1.200 | R$ 16 |
 | 10 | Cesta de trabalho: 8 produtos e +15% de velocidade | R$ 400 | — |
-| 11 | Estufa de morangos | R$ 1.200 | R$ 16 por morango |
-| 12 | Apiário do bairro | R$ 850 | R$ 24 por pote de mel |
-| 13 | Queijaria | R$ 1.600 | R$ 18 por queijo |
-| 14 | Irrigação: tempo de crescimento das hortas reduzido em 25% | R$ 650 | — |
-| 14 | Reposição ágil: repositor anda 30% mais rápido | R$ 500 | — |
-| 15 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote de geleia |
-| 16 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
-| 17 | Confeitaria da padaria: bolos, donuts e éclairs + confeiteiro | R$ 1.000 | R$ 15 por unidade |
-| 18 | Laranjeira e seção de laranjas no hortifruti | R$ 800 | R$ 7 por laranja |
-| 19 | Macieira e seção de maçãs no hortifruti | R$ 800 | R$ 7 por maçã |
+| 11 | Ala dos ovos e galinheiro | R$ 500 | R$ 15 por ovo |
+| 12 | Ala do leite e curral | R$ 800 | R$ 20 por garrafa |
+| 13 | Padaria | R$ 1.400 | R$ 10 por pão |
+| 14 | Apiário do bairro | R$ 850 | R$ 24 por pote de mel |
+| 15 | Queijaria | R$ 1.600 | R$ 18 por queijo |
+| 16 | Irrigação: hortas crescem 25% mais rápido | R$ 650 | — |
+| 16 | Reposição ágil: repositor anda 30% mais rápido | R$ 500 | — |
+| 17 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote |
+| 18 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
+| 19 | Confeitaria: bolos, donuts e éclairs + confeiteiro | R$ 1.000 | R$ 15 por unidade |
 
-## Laranjeira no nível 18
+## Hortifruti: níveis 1 a 9
 
-Em **Celular → Melhorias → Mercado**, compre **Laranjeira** por **R$ 800**, uma única vez. A árvore fica à direita do apiário, com copa arredondada e tronco ramificado. Produz uma laranja a cada **3 segundos**, até **8 frutas** na copa; cada laranja é vendida por **R$ 7**. A irrigação das hortas não altera o pomar.
+A banca cresce na ordem **tomate → milho → trigo → laranja → maçã → morango**, com estoques e pontos de reposição separados. Só aparecem as seções compradas. Na loja compacta, tomate, milho e trigo usam seções de **1,9 u de profundidade**, com pontos de compra ajustados para preservar a entrada e a parede posterior. No nível 6, passam às seções de **2,2 u** da banca completa. Abasteça pelo corredor interno.
 
-Colha pela frente da árvore e abasteça a seção junto aos morangos na banca de hortifruti. O repositor também pode colher e abastecer. A banca inteira foi deslocada 2,6 u em direção à fachada, reservando a sexta seção para as maçãs do nível 19, sem criar um expositor vazio antes da compra. Laranjas entram nos pedidos após o primeiro abastecimento.
+Tomate, milho e trigo ficam alinhados na faixa posterior esquerda, com milho atrás dos tomates e trigo atrás do milho. Os canteiros medem **3,6 × 2,5 u**. A estufa de morangos fica na faixa posterior direita, com o mesmo tamanho de canteiro. **Morangos não exigem padaria, ovos nem leite.**
 
-Compra, estoques e crescimento são salvos. Saves anteriores recebem a laranjeira ainda não comprada e preservam saldo e progresso; a atualização da planta reposiciona os personagens em locais seguros.
+A laranjeira é comprada no nível 6 e a macieira no nível 7, em **Celular → Melhorias → Mercado**. Cada árvore custa **R$ 800**, produz uma fruta a cada **3 segundos**, guarda até **8 frutas** na copa e abastece uma seção com capacidade de **12 unidades**. Ambas vendem por **R$ 7** e não dependem de outras compras. As frutas visíveis desaparecem conforme são colhidas.
 
-## Macieira no nível 19
+A laranjeira fica no pomar nos fundos direitos, na posição à direita do futuro apiário, com coleta frontal. A macieira fica ao lado, em direção às oficinas, com coleta pela lateral esquerda. O repositor pode colher e abastecer ambas. Irrigação e fertilizante das hortas não afetam o pomar.
 
-Em **Celular → Melhorias → Mercado**, compre **Macieira** por **R$ 800**, uma única vez. A árvore fica no gramado ao lado da laranjeira, em direção às oficinas, sem base quadrada. A copa arredondada exibe maçãs vermelhas grandes, que desaparecem conforme são colhidas. Acesso de coleta pela lateral esquerda, preservando os corredores entre árvores e oficinas.
+Laranja, maçã e morango entram nos pedidos **após o primeiro abastecimento**. Depois disso, os clientes podem continuar pedindo o produto mesmo quando sua seção estiver vazia.
 
-Produz uma maçã a cada **3 segundos**, até **8 frutas** na árvore. Venda cada maçã por **R$ 7** na sexta seção do hortifruti, junto às laranjas, com capacidade para **12 maçãs**. O repositor também colhe e abastece. Maçãs entram nos pedidos após o primeiro abastecimento. Irrigação e fertilizante das hortas não afetam o pomar.
+## Funcionários e cestas
 
-A compra não exige outras melhorias. Compra, estoques e crescimento são salvos; saves anteriores recebem a macieira ainda não comprada, preservando saldo, laranjeira e demais progressos.
+O caixa do nível 2 atende a fila enquanto o jogador cuida da loja. O repositor do nível 5 colhe e abastece os produtos liberados, incluindo trigo e frutas; não exige ovos.
 
-## Confeitaria no nível 17
+No nível 8, mais cinco cestas aumentam a capacidade para **dez clientes com cesta**. Sem uma cesta disponível, os novos pedestres passam pela calçada. A cesta de trabalho do nível 10 permite carregar **oito produtos** e aumenta a velocidade do jogador em **15%**. No nível 16, Reposição ágil exige o repositor e aumenta sua velocidade em **30%**.
 
-Em **Celular → Melhorias → Mercado**, compre **Confeitaria da padaria** por **R$ 1.000**, uma única vez. Exige padaria, apiário e ala dos ovos. A compra libera bolos, donuts e éclairs, todos vendidos a **R$ 15 por unidade**, e inclui um terceiro funcionário dedicado à confeitaria.
+## Ovos no nível 11 e leite no nível 12
 
-Antes da compra, os três balcões secundários da padaria têm apenas tampos planos de trabalho; a vitrine de pães permanece funcionando. A compra instala as três vitrines curvas, inicialmente vazias. São seis lugares para bolos, doze para donuts e seis para éclairs. Os doces exibidos representam o estoque real e desaparecem conforme os clientes compram.
+Comprar ovos instala o galinheiro atrás da loja e uma estante alta de três níveis na parede posterior, à direita da porta de produção. As galinhas produzem um ovo a cada **3,5 segundos**, sem insumos.
 
-Leve **mel e ovos ao balcão lateral da padaria**, na seção ao lado da entrega de trigo. Cada ingrediente tem capacidade de oito unidades; trigo continua na seção própria. O painel de produção mostra a receita e o progresso. **1 mel + 1 ovo → 1 bolo + 1 donut + 1 éclair**, com **6 segundos de preparo na batedeira industrial ao lado do moinho**, seguidos do percurso de entrega. O confeiteiro mistura os ingredientes, leva a bandeja até as três vitrines e coloca cada doce no expositor correspondente. O estoque aumenta durante cada entrega; o retorno à batedeira é feito com a bandeja vazia. Não é preciso recolher os doces nem pedir ao repositor para transportá-los.
+Comprar leite instala o curral ao lado do galinheiro e um refrigerador vertical de duas portas de vidro à direita dos ovos. O curral produz uma garrafa a cada **4,5 segundos**, sem insumos. Ovos e leite têm estoques independentes; abasteça pela frente de cada expositor. O jogador e o repositor podem coletar e repor.
 
-Cada lote prepara até um doce de cada tipo, somente para as vitrines com vagas: bolos cheios não impedem produzir donuts e éclairs. O preparo aguarda sem consumir insumos somente quando faltam mel ou ovos, ou quando todas as vitrines estão completas. Uma exclamação aparece sobre o confeiteiro quando há alguma vitrine vazia e falta mel ou ovos, exceto durante entregas. A pausa congela preparo, batedeira e percurso. Cada produto entra nos pedidos após sua primeira entrega. Clientes seguem as reações normais de falta de estoque. Compra, ingredientes, seleção dos doces do lote, progresso, percurso pendente e estoque são salvos; partidas anteriores recebem a confeitaria ainda não comprada.
+Essas compras mantêm o salão de **14 × 16 u** e não exigem comprar as colheitas ou o pomar.
 
-Um único padeiro opera o processador no topo e o forno industrial na base, busca trigo e abastece a vitrine. Pães assados ficam pendentes até ele retirar a bandeja e colocá-los no expositor; somente então aparecem e ficam disponíveis para compra. Ele também completa qualquer vaga disponível: 16 / 18 ou 17 / 18 não impedem o trabalho. Cada trigo continua rendendo três pães. Se o lote não couber inteiro, os pães restantes ficam reservados e são entregues nas próximas vagas sem consumir outro trigo. Tanto a reserva quanto a entrega em andamento são salvas. O confeiteiro continua dedicado aos doces.
+## Padaria no nível 13
 
-## Estacionamento no nível 16
+A padaria custa **R$ 1.400**, exige a ala do trigo e o galinheiro e amplia o salão à direita para **24 × 16 u**. Seu balcão fica junto à parede direita, de frente para o hortifruti. Entregue trigo na caixa ao fundo do conjunto.
 
-Ao alcançar o nível 16, abra **Celular → Melhorias → Mercado → Estacionamento**. A construção custa **R$ 10.000**, pode ser comprada uma única vez e ocupa o terreno à esquerda da loja, entre o salão e a borda lateral do terreno, com acesso pela rua.
+Cada trigo rende **três pães**. Um padeiro opera o processador sobre o forno, busca trigo e entrega os pães na vitrine. Pães assados só ficam disponíveis para venda depois da entrega. Uma única vaga já permite trabalhar: o excedente de um lote fica reservado e ocupa as próximas vagas sem consumir outro trigo. Pão é vendido por **R$ 10**.
 
-O estacionamento tem seis vagas demarcadas que começam vazias, setas de circulação, passagem pela calçada, canteiro central com arbustos, iluminação e placa de estacionamento. Parte dos compradores usa os carros que j? circulam na rua, preservando modelo, cor e tamanho. Cada motorista reserva uma vaga, estaciona com uma curva suave, abre a porta e caminha até a loja. Após comprar, volta ao mesmo carro, embarca, sai de ré e segue pela rua. A vaga só fica livre quando o carro vai embora; novas chegadas esperam quando o estacionamento está cheio. Rodas, direção, portas, piscas e luzes de freio e ré são animados. Os carros cedem passagem aos pedestres e coordenam o uso da rua com o trânsito e os veículos do banco.
+## Mel, queijo, irrigação e geleia: níveis 14 a 17
 
-Ocupa o terreno até perto da borda esquerda. O acesso usa o mesmo asfalto do estacionamento e fica centralizado nas duas faixas de entrada e saída. A vegetação que ocupava essa área é substituída durante a construção; a calçada e o meio-fio são recortados no acesso e o poste é movido para fora dele. O acesso à horta e a circulação pela calçada permanecem livres. Os carros presentes e o canteiro têm colisão. Viagens de clientes são transitórias, como as demais visitas à loja; ao recarregar, novas visitas começam com o estacionamento vazio.
+O apiário do nível 14 exige a estufa de morangos e a padaria. Produz mel sem insumos; recolha os potes na bandeja da colmeia e abasteça o expositor na frente direita da loja.
 
-Clientes que chegam de carro sempre pedem a capacidade máxima da cesta: **5 unidades**, independentemente da reputação da loja. O pedido pode repetir produtos e também fica completo quando inclui pão. Com estoque suficiente, compram as cinco unidades; se faltar mercadoria, seguem o tempo de espera e as reações normais do jogo, pagando somente o que encontraram. Pedestres mantêm seus pedidos variáveis por reputação.
+A queijaria do nível 15 exige a estufa de morangos, a ala do leite e a padaria. A padaria garante o salão ampliado para os expositores de mel e queijo; antes, essa dependência vinha indiretamente da estufa. A cozinha de geleias do nível 17 exige o apiário. As duas oficinas compartilham uma sala nos fundos direitos, com piso, paredes baixas e entrada lateral aberta. A sala aparece com a primeira oficina comprada.
 
-A compra exige apenas o nível e o saldo; não depende da cozinha de geleias nem libera produtos adicionais. É salva com as demais melhorias. Partidas antigas recebem o estacionamento ainda não comprado, preservando saldo e progresso.
+| Oficina | Receita | Tempo | Saída aguardando coleta |
+| --- | --- | --- | --- |
+| Queijaria | 1 leite → 2 queijos | 5 segundos | Até 8 queijos |
+| Cozinha de geleias | 2 morangos + 1 mel → 3 geleias | 6 segundos | Até 9 geleias |
 
-## Como jogar a fase artesanal
+Leve ingredientes ao se aproximar da bancada carregando-os. Cada ingrediente tem capacidade de entrada de **8 unidades**. Uma oficina cheia pausa sem consumir ingredientes. Recolha os produtos prontos e leve-os ao expositor; o repositor também coleta e abastece os produtos prontos, enquanto o jogador fornece os ingredientes. Cada banca comporta **12 unidades**.
 
-- A progressão continua a cada **25 clientes atendidos**, com bônus de R$ 100 por nível. O nível 16 acrescenta o estacionamento após a fase artesanal; a loja pode continuar funcionando e subindo de nível depois dele.
-- A cesta de trabalho prepara o jogador para viagens maiores sem mudar o começo do jogo.
-- A estufa de morangos exige a padaria. No nível 11, acrescenta um canteiro de 3,6 × 2,5 u à direita do curral e a quarta seção do hortifruti na parede esquerda. O salão ampliado no nível 9 permanece igual, sem anexo posterior. O identificador salvo continua sendo `alaArtesanal`.
-- Morangos crescem a cada 3,4 segundos; a colmeia produz uma garrafa de mel a cada 5 segundos. Recolha o mel na bandeja inferior da colmeia. Cada origem guarda até 8 unidades. Abasteça morangos na seção de hortifruti à esquerda e mel na banca do anexo.
-- A queijaria exige a estufa de morangos e a ala do leite. A queijaria fica na sala dos fundos direitos; o expositor refrigerado permanece ao lado do leite. Entregue **1 leite → 2 queijos**, em 5 segundos. O lote vale R$ 36, contra R$ 20 pela garrafa de leite vendida diretamente.
-- O apiário do N12 fica à direita da estufa, alinhado com ela. O expositor de mel fica na frente direita do salão, sem nova ampliação. No N15, a geleia prolonga esse balcão para a esquerda, com estoque e reposição próprios.
-- A cozinha de geleias exige o apiário. Fica ao lado da queijaria, na mesma sala dos fundos. O acesso para entrega e coleta fica aberto na lateral esquerda, sem porta. Os potes são vendidos na seção esquerda do balcão de mel e geleia, na frente direita. Entregue **2 morangos + 1 mel → 3 geleias**, em 6 segundos. O lote vale R$ 90, contra R$ 56 pelos ingredientes vendidos diretamente.
-- Para entregar ingredientes, aproxime-se da oficina carregando-os. Cada ingrediente tem estoque de entrada de até 8 unidades. A etiqueta mostra ingredientes disponíveis, receita, progresso e produtos prontos. Depois, recolha o lote e leve-o à banca. O repositor também coleta e abastece produtos prontos; o jogador fornece os ingredientes das receitas.
-- Uma oficina cheia pausa a produção sem consumir ingredientes: até 8 queijos ou 9 geleias aguardam coleta. As bancas comportam 12 unidades de cada produto.
-- Os quatro novos produtos entram nos pedidos **após o primeiro abastecimento**. Depois disso, continue repondo para atender à demanda.
-- A irrigação atende tomate, milho, trigo e morango. As oficinas, a colmeia, o galinheiro e o curral mantêm seus tempos próprios.
-- Compras, estoques, ingredientes e progresso das receitas são salvos. Partidas anteriores recebem as novas construções bloqueadas, preservando o progresso existente.
+A irrigação do nível 16 exige a estufa e reduz em **25%** os tempos de crescimento de tomate, milho, trigo e morango. Animais, apiário, pomar e oficinas mantêm seus tempos próprios. Mel, queijo e geleia entram nos pedidos após o primeiro abastecimento.
+
+## Estacionamento no nível 18
+
+Em **Celular → Melhorias → Mercado**, compre o estacionamento por **R$ 10.000**. Exige apenas nível e saldo, pode ser comprado uma única vez e ocupa o terreno à esquerda da loja, com seis vagas, canteiro, iluminação e acesso pela rua. A vegetação dessa área é removida durante a construção; o acesso à fazenda e a circulação pela calçada permanecem livres.
+
+Parte dos compradores usa os carros que circulam na rua, mantendo modelo, cor e tamanho. Cada motorista reserva uma vaga, estaciona, desembarca e vai à loja. Após a compra, volta ao mesmo carro e sai de ré. A vaga só fica livre depois da saída; novas chegadas aguardam quando todas estiverem ocupadas. Manobras respeitam pedestres, tráfego e serviços bancários. Rodas, portas, piscas e luzes são animados; pausar congela os movimentos.
+
+Motoristas sempre pedem **cinco unidades**, independentemente da reputação, inclusive com repetição de produtos e pão. Com estoque suficiente, compram as cinco; se faltar mercadoria, aguardam pelo fluxo normal e pagam apenas o que encontraram. Pedestres mantêm os pedidos variáveis por reputação.
+
+## Confeitaria no nível 19
+
+A confeitaria custa **R$ 1.000**, exige **padaria, apiário e galinheiro** e inclui um confeiteiro dedicado. Instala três vitrines curvas: **6 bolos, 12 donuts e 6 éclairs**, todos vendidos por **R$ 15**. Antes da compra, os balcões secundários têm apenas tampos de trabalho; a vitrine de pães permanece independente.
+
+Entregue mel e ovos no balcão lateral da padaria, ao lado da entrega de trigo, com capacidade para **8 unidades de cada ingrediente**. **1 mel + 1 ovo → 1 bolo + 1 donut + 1 éclair**, com **6 segundos** na batedeira e o percurso de entrega nas vitrines.
+
+O confeiteiro prepara apenas os doces com vaga e deposita cada unidade na vitrine correspondente. Uma vitrine cheia não impede completar as outras; se todas estiverem cheias, o preparo aguarda sem gastar ingredientes. A exclamação indica falta de mel ou ovos quando alguma vitrine está vazia, exceto durante as entregas. O jogador não precisa recolher os doces. Cada doce entra nos pedidos após sua primeira entrega.
+
+## Partidas
+
+Compras, estoques, ingredientes e produção continuam sendo salvos normalmente. A reorganização da versão **0.67.0** foi feita para partidas novas, sem migração dedicada da sequência anterior.
 
 ## Desativadas
 

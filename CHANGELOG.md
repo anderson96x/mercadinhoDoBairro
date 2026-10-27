@@ -1,6 +1,14 @@
 # Histórico de alterações
 
-## Versão atual: 0.66.3 — 2026-10-27
+## Versão atual: 0.67.0 — 2026-10-27
+
+- Reorganiza os desbloqueios dos níveis 1 a 19: trigo N4, repositor N5, laranja N6, maçã N7, morangos N9, ovos N11, leite N12, padaria N13, mel N14, queijo N15, irrigação e reposição ágil N16, geleias N17, estacionamento N18 e confeitaria N19. Caixa N2, milho N3, cestas N8 e logística N10 mantêm seus marcos.
+- Remove a exigência de padaria para os morangos. Reordena as seções do hortifruti e acomoda tomate, milho e trigo na loja compacta. A profundidade completa continua automática no N6; a ampliação lateral acompanha a padaria no N13.
+- Explicita a dependência de padaria do apiário e da queijaria, antes herdada da estufa, para preservar o espaço dos expositores no salão ampliado.
+- Atualiza objetivos, modelos e estágios de construção para a nova sequência. Mantém preços, receitas e importações suspensas. A progressão foi validada a partir de partidas novas, sem migração dedicada dos desbloqueios antigos.
+- Validação: 363 testes, build de produção e rotas de todos os níveis 1–19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica trigo compacto N4, expansão N6, pomar N6–7, morango N9, padaria N13 e compras até N19, sem salvar imagens.
+
+## 0.66.3 — 2026-10-27
 
 - Desloca todo o conjunto do caixa e o suporte de cestas 2 u para a direita, incluindo cadeira, funcionário, interações, pagamentos e coleta de cestas.
 - Ajusta a curva da fila para manter dez posições dentro do salão. Atualiza a migração de layout para liberar personagens de móveis reposicionados, preservando saldo e estoques.

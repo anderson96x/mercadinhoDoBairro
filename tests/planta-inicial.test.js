@@ -68,11 +68,11 @@ test('banca cresce por compra, preserva tomates e não cria seção de produto b
   sim.estado.estatisticas.clientes = 350;
   assert.equal(volumesHortifruti(sim.estado.produtos)[0].d, 2.2, 'nível sozinho não constrói');
   sim.estado.dinheiro = 40000; sim.estado.produtos.tomate.prateleira = 5;
-  for (const id of ['milho', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
+  for (const id of ['milho', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'laranja', 'maca']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
   const volumes = volumesHortifruti(sim.estado.produtos);
   assert.equal(volumes.length, 1);
-  assert.equal(volumes[0].d, 8.8);
-  assert.ok(Math.abs(volumes[0].z - 0.3) < 1e-9, 'banca deslocada para reservar espaço às duas novas frutas');
+  assert.ok(Math.abs(volumes[0].d - 13.2) < 1e-8);
+  assert.ok(Math.abs(volumes[0].z + 1.9) < 1e-9, 'as seis seções acompanham a ordem de desbloqueio');
   assert.equal(sim.estado.produtos.tomate.prateleira, 5);
   assert.equal(sim.obstaculos().filter(o => o.movel === 'hortifruti').length, 1);
   const visual = { cena: new THREE.Scene(), sim: new Simulacao(), produtos: {}, alvosHorta: [], criarLabel() {} };
