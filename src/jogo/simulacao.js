@@ -30,7 +30,6 @@ const capacidadeExtraAtiva = MELHORIAS.find(m => m.id === 'mochila')?.ativa !== 
 const fertilizanteAtivo = MELHORIAS.find(m => m.id === 'fertilizante')?.ativa !== false;
 const velocidadeJogadorAtiva = MELHORIAS.find(m => m.id === 'velocidade')?.ativa !== false;
 const ajudanteAtivo = MELHORIAS.find(m => m.id === 'ajudante')?.ativa !== false;
-const velocidadeAjudanteAtiva = MELHORIAS.find(m => m.id === 'velocidadeAjudante')?.ativa !== false;
 const estadoAjudanteInicial = () => ({
   x: 0.2, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false, angulo: 0
 });
@@ -252,7 +251,7 @@ export class Simulacao {
   get capacidade() { return CONFIG.capacidadeInicial + 4 * this.estado.melhorias.logistica + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + 0.15 * this.estado.melhorias.logistica + (velocidadeJogadorAtiva ? this.estado.melhorias.velocidade * 0.2 : 0)); }
   get ajudanteContratado() { return ajudanteAtivo && !!this.estado.melhorias.ajudante; }
-  get velocidadeAjudante() { return 2.8 * (1 + 0.3 * this.estado.melhorias.equipeAgil) * (velocidadeAjudanteAtiva && this.estado.melhorias.velocidadeAjudante ? CONFIG.multiplicadorVelocidadeAjudante : 1); }
+  get velocidadeAjudante() { return this.velocidade; }
   get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / CONFIG.clientesPorNivel); }
   get progressoClientes() { return this.estado.estatisticas.clientes % CONFIG.clientesPorNivel; }
   get reputacao() {

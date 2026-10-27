@@ -1,6 +1,18 @@
 # Histórico de alterações
 
-## Versão atual: 0.67.0 — 2026-10-27
+## Versão atual: 0.67.2 — 2026-10-27
+
+- Iguala a velocidade de movimento do repositor à velocidade atual do jogador, incluindo o bônus da cesta de trabalho. Reposição ágil e Repositor ligeiro continuam desativados e sem bônus adicionais.
+- Atualiza a documentação e verifica a distância percorrida pelos dois personagens com e sem a cesta de trabalho.
+- Validação: 364 testes e build de produção aprovados. O teste de movimento confirma a mesma distância percorrida por jogador e repositor com e sem a cesta de trabalho.
+
+## 0.67.1 — 2026-10-27
+
+- Desativa Reposição ágil: remove a melhoria do catálogo, bloqueia sua compra e ignora seu bônus de velocidade mesmo em partidas que já a tinham. O repositor normal do nível 5 continua disponível.
+- Atualiza a ajuda e a documentação de desbloqueios, reunindo todas as melhorias e importações desativadas na lista de conteúdo suspenso. O nível 16 mantém apenas a irrigação.
+- Validação: 363 testes e build de produção aprovados, incluindo bloqueio de compra em níveis altos e ausência de bônus em partidas com compras antigas registradas.
+
+## 0.67.0 — 2026-10-27
 
 - Reorganiza os desbloqueios dos níveis 1 a 19: trigo N4, repositor N5, laranja N6, maçã N7, morangos N9, ovos N11, leite N12, padaria N13, mel N14, queijo N15, irrigação e reposição ágil N16, geleias N17, estacionamento N18 e confeitaria N19. Caixa N2, milho N3, cestas N8 e logística N10 mantêm seus marcos.
 - Remove a exigência de padaria para os morangos. Reordena as seções do hortifruti e acomoda tomate, milho e trigo na loja compacta. A profundidade completa continua automática no N6; a ampliação lateral acompanha a padaria no N13.

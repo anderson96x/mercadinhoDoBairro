@@ -27,7 +27,6 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 | 14 | Apiário do bairro | R$ 850 | R$ 24 por pote de mel |
 | 15 | Queijaria | R$ 1.600 | R$ 18 por queijo |
 | 16 | Irrigação: hortas crescem 25% mais rápido | R$ 650 | — |
-| 16 | Reposição ágil: repositor anda 30% mais rápido | R$ 500 | — |
 | 17 | Cozinha de geleias | R$ 2.200 | R$ 30 por pote |
 | 18 | Estacionamento lateral com seis vagas | R$ 10.000 | — |
 | 19 | Confeitaria: bolos, donuts e éclairs + confeiteiro | R$ 1.000 | R$ 15 por unidade |
@@ -46,9 +45,9 @@ Laranja, maçã e morango entram nos pedidos **após o primeiro abastecimento**.
 
 ## Funcionários e cestas
 
-O caixa do nível 2 atende a fila enquanto o jogador cuida da loja. O repositor do nível 5 colhe e abastece os produtos liberados, incluindo trigo e frutas; não exige ovos.
+O caixa do nível 2 atende a fila enquanto o jogador cuida da loja. O repositor do nível 5 colhe e abastece os produtos liberados, incluindo trigo e frutas; não exige ovos. Ele anda na **mesma velocidade atual do jogador**, inclusive com o bônus de 15% da cesta de trabalho.
 
-No nível 8, mais cinco cestas aumentam a capacidade para **dez clientes com cesta**. Sem uma cesta disponível, os novos pedestres passam pela calçada. A cesta de trabalho do nível 10 permite carregar **oito produtos** e aumenta a velocidade do jogador em **15%**. No nível 16, Reposição ágil exige o repositor e aumenta sua velocidade em **30%**.
+No nível 8, mais cinco cestas aumentam a capacidade para **dez clientes com cesta**. Sem uma cesta disponível, os novos pedestres passam pela calçada. A cesta de trabalho do nível 10 permite carregar **oito produtos** e aumenta a velocidade do jogador em **15%**, acompanhada pelo repositor. As melhorias avulsas Reposição ágil e Repositor ligeiro continuam desativadas.
 
 ## Ovos no nível 11 e leite no nível 12
 
@@ -101,12 +100,23 @@ Compras, estoques, ingredientes e produção continuam sendo salvos normalmente.
 
 ## Desativadas
 
-| Nível | Melhoria | Custo |
+As melhorias abaixo não aparecem no catálogo e não podem ser compradas, inclusive pelo DEV. Os níveis e custos servem apenas como referência da configuração guardada. Os bônus de velocidade do repositor ficam inativos mesmo se uma partida antiga trouxer a compra registrada. O **Repositor normal do nível 5 continua disponível**.
+
+| Nível de referência | Melhoria | Custo |
 | --- | --- | --- |
 | 1 | Mais capacidade | R$ 25 |
 | 4 | Fertilizante | R$ 250 por aplicação |
-| 5 | Velocidade do jogador | R$ 100 |
-| 6 | Velocidade do repositor | R$ 100 |
+| 5 | Passo ligeiro: melhoria avulsa de velocidade do jogador | R$ 100 |
+| 5 | Repositor ligeiro: +20% de velocidade | R$ 100 |
+| 16 | Reposição ágil: +30% de velocidade do repositor | R$ 500 |
+| 17 | Prateleiras de importados | R$ 1.000 por prateleira |
+| 18 | Expansão dos fundos, depósito e pátio de carga | R$ 10.000 |
+| 19 | Importação de enlatados | R$ 270 por caixa de 9 |
+| 20 | Importação de cereais | R$ 405 por caixa de 9 |
+| 21 | Importação de mantimentos | R$ 315 por caixa de 9 |
+| 22 | Importação de biscoitos e doces | R$ 360 por caixa de 9 |
+
+A cesta de trabalho do nível 10 continua concedendo sua capacidade e seu bônus de velocidade do jogador. A expansão gratuita de profundidade no nível 6 e a ampliação lateral da padaria no nível 13 também continuam ativas; a expansão suspensa é a construção adicional dos fundos e do pátio de carga descrita abaixo.
 
 ## Conteúdo suspenso: referência da implementação anterior
 

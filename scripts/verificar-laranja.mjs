@@ -131,7 +131,7 @@ try {
       }
       for (const [nivel, id] of [[8, 'cestasExtras'], [9, 'alaArtesanal'], [10, 'logistica'], [11, 'alaProducao'],
         [12, 'alaLeite'], [13, 'alaPadaria'], [14, 'apiario'], [15, 'queijaria'], [16, 'irrigacao'],
-        [16, 'equipeAgil'], [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria']]) {
+        [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria']]) {
         sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
         verificar(sim.comprarMelhoria(id).sucesso, 'Compra N' + nivel + ': ' + id);
         cena.atualizar(0); cena.atualizar(10);

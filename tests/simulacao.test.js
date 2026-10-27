@@ -574,7 +574,7 @@ test('repositor aparece no nível 5, custa R$ 900 e pode ser contratado sem ovos
   assert.equal(new Simulacao(structuredClone(sim.estado)).ajudanteContratado, true);
 });
 
-test('reposição ágil exige repositor no nível 16', () => {
+test('reposição ágil fica desativada inclusive em níveis altos e não aplica bônus antigos', () => {
   const sim = new Simulacao(); sim.estado.dinheiro = 10000;
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
   assert.match(sim.comprarMelhoria('ajudante').motivo, /nível 5/);
@@ -582,12 +582,38 @@ test('reposição ágil exige repositor no nível 16', () => {
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
   assert.equal(sim.estado.produtos.ovos.liberado, false);
   assert.equal(sim.comprarMelhoria('equipeAgil').sucesso, false);
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 15;
-  sim.estado.melhorias.ajudante = 0;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 29;
+  const saldo = sim.estado.dinheiro;
+  assert.equal(sim.disponibilidadeMelhoria('equipeAgil').disponivel, false);
   assert.equal(sim.comprarMelhoria('equipeAgil').sucesso, false);
-  sim.estado.melhorias.ajudante = 1;
-  assert.equal(sim.comprarMelhoria('equipeAgil').sucesso, true);
-  assert.equal(sim.velocidadeAjudante, 2.8 * 1.3);
+  assert.equal(sim.estado.dinheiro, saldo);
+  sim.estado.melhorias.equipeAgil = 1;
+  sim.estado.melhorias.velocidadeAjudante = 1;
+  assert.equal(sim.velocidadeAjudante, sim.velocidade);
+  const retomado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(retomado.estado.melhorias.equipeAgil, 0);
+  assert.equal(retomado.velocidadeAjudante, retomado.velocidade);
+});
+
+test('repositor percorre a mesma distância que o jogador com e sem a cesta de trabalho', () => {
+  for (const logistica of [false, true]) {
+    const sim = new Simulacao();
+    sim.estado.estatisticas.clientes = (logistica ? 9 : 4) * CONFIG.clientesPorNivel;
+    sim.estado.dinheiro = 10000;
+    assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
+    if (logistica) assert.equal(sim.comprarMelhoria('logistica').sucesso, true);
+    const jogador = sim.estado.jogador, repositor = sim.ajudante;
+    const inicio = { x: -6, z: -15 }, destino = { x: 0, z: -15 };
+    Object.assign(jogador, inicio); Object.assign(repositor, inicio);
+    for (let i = 0; i < 60; i++) {
+      sim.tempo += 1 / 60;
+      sim.mover(jogador, 1, 0, 1 / 60, sim.velocidade);
+      sim.caminharProducao(repositor, destino, 1 / 60);
+    }
+    const esperado = CONFIG.velocidadeInicial * (logistica ? 1.15 : 1);
+    assert.ok(Math.abs(distancia(inicio, jogador) - esperado) < 1e-8);
+    assert.ok(Math.abs(distancia(inicio, repositor) - esperado) < 1e-8);
+  }
 });
 
 test('fertilizante reduz para 40% o tempo de crescimento somente na horta escolhida', () => {

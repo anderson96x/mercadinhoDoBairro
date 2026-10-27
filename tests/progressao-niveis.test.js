@@ -11,7 +11,7 @@ const DESBLOQUEIOS = [
   [2, 'caixa'], [3, 'milho'], [4, 'alaTrigo'], [5, 'ajudante'],
   [6, 'laranja'], [7, 'maca'], [8, 'cestasExtras'], [9, 'alaArtesanal'],
   [10, 'logistica'], [11, 'alaProducao'], [12, 'alaLeite'], [13, 'alaPadaria'],
-  [14, 'apiario'], [15, 'queijaria'], [16, 'irrigacao'], [16, 'equipeAgil'],
+  [14, 'apiario'], [15, 'queijaria'], [16, 'irrigacao'],
   [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria']
 ];
 
@@ -39,7 +39,7 @@ test('cada melhoria bloqueia um nível antes e pode ser comprada no próprio ní
   assert.equal(sim.totalCestas, 10);
   assert.equal(sim.capacidade, 8);
   assert.equal(sim.velocidade, CONFIG.velocidadeInicial * 1.15);
-  assert.equal(sim.velocidadeAjudante, 2.8 * 1.3);
+  assert.equal(sim.velocidadeAjudante, sim.velocidade);
 });
 
 test('trigo cabe na loja compacta do N4 e as três seções têm pontos acessíveis pelo corredor', () => {

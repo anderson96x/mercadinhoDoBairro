@@ -13,7 +13,7 @@ function abrir(nivel = 17) {
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 30000;
   for (const id of ['caixa', 'milho', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
-    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia']) {
+    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'cozinhaGeleia']) {
     if (MELHORIAS.find(m => m.id === id).nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }
   sim.proximoCliente = Infinity;
@@ -205,9 +205,9 @@ test('repositor coleta e abastece todos os novos produtos', () => {
   }
 });
 
-test('irrigação acelera hortas e reposição ágil reduz o tempo das viagens', () => {
+test('irrigação acelera hortas sem alterar a velocidade do repositor', () => {
   const sim = abrir(16); sim.estado.melhorias.ajudante = 0;
-  assert.equal(sim.velocidadeAjudante, 2.8 * 1.3);
+  assert.equal(sim.velocidadeAjudante, sim.velocidade);
   for (const [id, p] of Object.entries(PRODUTOS).filter(([, p]) => p.origem === 'horta')) {
     const estoque = sim.estado.produtos[id]; estoque.horta = 0; estoque.crescimento = 0;
     for (let i = 0; i < 100; i++) sim.atualizar(p.tempoCrescimento * 0.75 / 100 + 1e-8);
