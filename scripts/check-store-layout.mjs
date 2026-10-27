@@ -9,8 +9,8 @@ export function abrirLoja(nivel = 15) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 40000;
-  for (const id of ['caixa', 'milho', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
-    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'confeitaria', 'laranja', 'maca', 'prateleirasImportados', 'expansao', 'importarProdutos']) {
+  for (const id of ['caixa', 'milho', 'laranja', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
+    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'confeitaria', 'maca', 'prateleirasImportados', 'expansao', 'importarProdutos']) {
     const melhoria = MELHORIAS.find(m => m.id === id);
     if (melhoria.ativa !== false && melhoria.nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }
@@ -19,13 +19,13 @@ export function abrirLoja(nivel = 15) {
   return sim;
 }
 
-for (const nivel of [1, 3, 4, 5, 7, 8, 9, 11, 12, 13, 15, 17, 18, 19]) {
+for (let nivel = 1; nivel <= 19; nivel++) {
   const sim = abrirLoja(nivel);
   for (const [id, produto] of Object.entries(sim.produtos)) {
     if (!sim.estado.produtos[id].liberado) continue;
     const pontos = produto.origem === 'importado' ? produto.pontosCompra : [produto.coleta, produto.reposicao, ...produto.pontosCompra];
     for (const ponto of pontos) {
-      const ator = { ...CONFIG.inicio };
+      const ator = Object.assign(sim.estado.jogador, CONFIG.inicio);
       let chegou = false;
       for (let tick = 0; tick < 3000 && !chegou; tick++) {
         sim.tempo += 0.05;

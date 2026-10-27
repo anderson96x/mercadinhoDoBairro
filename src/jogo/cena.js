@@ -22,6 +22,7 @@ import { ALTURA_BANDEJA_MEL, construirColmeia, animarAbelhas } from './colmeia.j
 import { atualizarMarcha, animarPernas } from './marcha.js';
 import { icone } from '../interface/icones.js';
 import { criarSol } from './iluminacao.js';
+import { criarArvore } from './arvores.js';
 import { criarPlacaProduto } from './placas-produtos.js';
 import { construirEstacionamento } from './estacionamento.js';
 import { construirPrateleirasImportados, alturaPrateleiraImportados } from './prateleiras-importados.js';
@@ -43,7 +44,7 @@ const vidroMel = new THREE.MeshStandardMaterial({ color: 0xffe3a0, transparent: 
 const verdeLeiteVitrine = new THREE.MeshBasicMaterial({ color: 0x087e64 });
 function estacaoDesbloqueada(id, estado) {
   if (PRODUTOS[id]?.origem === 'pomar') return !!estado.produtos[id]?.liberado;
-  const estagioNecessario = PRODUTOS[id]?.origem === 'confeitaria' ? ALA_PADARIA.indice : PRODUTOS[id]?.origem === 'importado' ? 0 : PRODUTOS[id]?.nivelMinimo >= 11 ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
+  const estagioNecessario = PRODUTOS[id]?.origem === 'confeitaria' ? ALA_PADARIA.indice : id === 'morango' ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
   return !!estado.produtos[id]?.liberado && estado.estagioLoja >= estagioNecessario;
 }
 function material(cor) {
@@ -841,6 +842,7 @@ export class Cena {
     this.raycaster = new THREE.Raycaster(); this.ponteiroRaycast = new THREE.Vector2();
     const PRODUTOS = produtosDaLoja(this.sim.estado);
     this.expansaoConstruida = !!this.sim.estado.melhorias.expansao;
+    this.lojaCompactaConstruida = this.sim.compacta;
     this.produtos = {};
     for (const [id, p] of Object.entries(PRODUTOS)) {
       if (id === 'pao') this.construirPadaria();
@@ -864,6 +866,7 @@ export class Cena {
     const c = new THREE.Group(); c.position.set(-5.5, 0, -4.1); suporte.add(c);
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera });
     this.bairro.atualizarEstagio(this.sim.estado.estagioLoja);
+    this.bairro.atualizarProfundidade(this.sim.compacta);
     this.bairro.atualizarExpansao(this.sim.estado.melhorias.expansao);
     this.estacionamento = construirEstacionamento(); this.cena.add(this.estacionamento.grupo);
     this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento, 0, [], 0, !!this.sim.estado.melhorias.expansao);
@@ -955,7 +958,7 @@ export class Cena {
     }
   }
   construirEstacao(id, p) {
-    if (p.nivelMinimo >= 11) return Cena.prototype.construirArtesanal.call(this, id, p);
+    if (['morango', 'mel', 'queijo', 'geleia'].includes(id) || ['pomar', 'importado', 'confeitaria'].includes(p.origem)) return Cena.prototype.construirArtesanal.call(this, id, p);
     const grupo = new THREE.Group(); this.cena.add(grupo);
     grupo.visible = estacaoDesbloqueada(id, this.sim.estado);
     const h = p.horta;
@@ -1072,17 +1075,7 @@ export class Cena {
         esfera(grupo, 0.3, 0x429852, x, 0.67, z, 1.2, 0.6, 1);
       }
     } else if (p.origem === 'pomar') {
-      const arvore = new THREE.Group(); arvore.name = id === 'maca' ? 'macieira' : 'laranjeira'; grupo.add(arvore);
-      cilindro(arvore, 0.18, 0.28, 2, 0x87603a, h.x, 1.1, h.z, 7);
-      for (const lado of [-1, 1]) {
-        const galho = cilindro(arvore, 0.08, 0.12, 1.1, 0x87603a, h.x + lado * 0.3, 1.8, h.z, 6);
-        galho.rotation.z = -lado * 0.55;
-      }
-      for (const [x, y, z, raio, cor] of [
-        [0, 3.35, 0, 1, 0x8fc92d], [-0.7, 2.7, 0, 0.95, 0x78b52b],
-        [0.7, 2.75, -0.15, 0.95, 0x92cc31], [0, 2.65, 0.65, 1, 0x6eac29],
-        [0, 2.8, -0.65, 0.85, 0x83be2d], [-0.5, 3.15, 0.5, 0.75, 0x9bd43a]
-      ]) esfera(arvore, raio, cor, h.x + x, y, h.z + z, 1, 0.85, 1);
+      criarArvore(grupo, { x: h.x, z: h.z, nome: id === 'maca' ? 'macieira' : 'laranjeira' }, { cilindro, esfera });
     } else if (id === 'mel') {
       abelhas.push(...construirColmeia(grupo, h, { caixa, esfera, cilindro }));
     } else {
@@ -1571,7 +1564,7 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const altura = this.mobile ? 18.8 : Math.max(camera.alturaDesktop, 37 / proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
@@ -1605,7 +1598,7 @@ export class Cena {
     this.alvoCamera.set(x, 0, z);
   }
   baseCamera() {
-    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_ARTESANAL.indice ? ALA_ARTESANAL.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const jogador = this.sim.estado.jogador;
     const acompanhamento = this.mobile ? 1 : THREE.MathUtils.clamp((this.camera.zoom - 1) / (ZOOM_MAXIMO - 1), 0, 1);
     return { x: THREE.MathUtils.lerp(camera.x, jogador.x, acompanhamento), z: THREE.MathUtils.lerp(camera.z, jogador.z, acompanhamento) };
@@ -1913,16 +1906,18 @@ export class Cena {
       });
     }
     this.bairro.atualizarExpansao(e.melhorias.expansao);
+    this.bairro.atualizarProfundidade(sim.compacta);
     this.bairro.atualizarOficinas(e.produtos);
-    if (this.expansaoConstruida !== !!e.melhorias.expansao) {
+    if (this.expansaoConstruida !== !!e.melhorias.expansao || this.lojaCompactaConstruida !== sim.compacta) {
       this.expansaoConstruida = !!e.melhorias.expansao;
+      this.lojaCompactaConstruida = sim.compacta;
       this.alvosHorta = [];
       this.labels = this.labels.filter(label => {
-        if (label.id.endsWith('-pao')) return true;
+        if (['pao', ...Object.keys(CONFEITARIA.produtos)].some(id => label.id.endsWith(`-${id}`))) return true;
         label.el.remove(); return false;
       });
       for (const [id, p] of Object.entries(PRODUTOS)) {
-        if (id === 'pao') continue;
+        if (id === 'pao' || p.origem === 'confeitaria') continue;
         const anterior = this.produtos[id].grupo;
         this.cena.remove(anterior); liberarGeometrias(anterior);
         if (p.origem === 'importado') this.construirImportado(id, p);
@@ -1935,6 +1930,7 @@ export class Cena {
     this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo, !!e.melhorias.expansao);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
+    this.bairro.animarPortasProducao(sim.aberturasPortasProducao);
     this.bairro.animarDeposito(e.lojaAberta, dt);
     if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
     const base = this.baseCamera(), limites = e.melhorias.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
@@ -2092,8 +2088,9 @@ export class Cena {
         }
         continue;
       }
-      const construcao = (id === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (id === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (id === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
-      const temConstrucao = ['ovos', 'leite', 'trigo'].includes(id) || (PRODUTOS[id].nivelMinimo >= 11 && !['importado', 'pomar'].includes(PRODUTOS[id].origem));
+      const estagioProduto = { ovos: ALA_PRODUCAO.indice, leite: ALA_LEITE.indice, trigo: ALA_TRIGO.indice, morango: ALA_ARTESANAL.indice }[id];
+      const construcao = e.estagioLoja > estagioProduto ? 1 : equipamentoAla;
+      const temConstrucao = estagioProduto !== undefined || ['apiario', 'oficina'].includes(PRODUTOS[id].origem);
       objetos.grupo.visible = estacaoDesbloqueada(id, e) && (!temConstrucao || construcao > 0);
       if (temConstrucao) objetos.grupo.scale.y = Math.max(0.001, construcao);
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
@@ -2125,8 +2122,9 @@ export class Cena {
     }
     for (const { id, el, ponto } of this.labels) {
       const [tipo, produto] = id.split('-');
-      const construcao = PRODUTOS[produto]?.origem === 'pomar' || (produto === 'ovos' && e.estagioLoja >= ALA_LEITE.indice) || (produto === 'leite' && e.estagioLoja >= ALA_TRIGO.indice) || (produto === 'trigo' && e.estagioLoja >= ALA_PADARIA.indice) ? 1 : equipamentoAla;
-      if (produto && (!estacaoDesbloqueada(produto, e) || ((['ovos', 'leite', 'trigo'].includes(produto) || PRODUTOS[produto]?.nivelMinimo >= 11) && construcao < 1))) { el.hidden = true; continue; }
+      const estagioProduto = { ovos: ALA_PRODUCAO.indice, leite: ALA_LEITE.indice, trigo: ALA_TRIGO.indice, morango: ALA_ARTESANAL.indice }[produto];
+      const construcao = PRODUTOS[produto]?.origem === 'pomar' || e.estagioLoja > estagioProduto ? 1 : equipamentoAla;
+      if (produto && (!estacaoDesbloqueada(produto, e) || ((estagioProduto !== undefined || ['apiario', 'oficina'].includes(PRODUTOS[produto]?.origem)) && construcao < 1))) { el.hidden = true; continue; }
       const estacao = PRODUTOS[produto] && geometriaEstacao(produto, tipo === 'horta' ? 'coleta' : 'reposicao', PRODUTOS);
       const perto = estacao && distanciaEstacao(e.jogador, estacao) < CONFIG.raioInteracao + 0.3;
       if (!perto) { el.hidden = true; continue; }

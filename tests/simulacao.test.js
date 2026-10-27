@@ -150,17 +150,17 @@ test('ao chegar ao nível 3, o próximo passo libera a horta de milho', () => {
   assert.match(missao.texto, /horta e a prateleira de milho/);
 });
 
-test('ao chegar ao nível 4, o próximo passo apresenta o galinheiro', () => {
+test('ao chegar ao nível 11, o próximo passo apresenta o galinheiro', () => {
   const sim = new Simulacao();
   sim.estado.melhorias.mochila = 1;
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 10;
   const missao = sim.missao();
   assert.equal(missao.titulo, 'Construa o galinheiro');
 });
 
-test('ao chegar ao nível 5, o próximo passo apresenta o curral', () => {
+test('ao chegar ao nível 12, o próximo passo apresenta o curral', () => {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 11;
   assert.equal(sim.missao().titulo, 'Construa o curral');
   assert.match(sim.missao().texto, /R\$ 800/);
   assert.equal(sim.missao().destino, 'celular');
@@ -395,7 +395,7 @@ test('clientes desviam dos objetos da calçada', () => {
 
 test('clientes pegam produtos ao mesmo tempo e fazem fila apenas no caixa', () => {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
-  const produto = PRODUTOS.tomate;
+  const produto = sim.produtos.tomate;
   sim.estado.produtos.tomate.prateleira = CONFIG.maxClientes;
   sim.clientes = produto.pontosCompra.map((ponto, indice) => ({
     id: indice + 1,
@@ -517,7 +517,7 @@ test('a cesta tem limite, e uma prateleira cheia não consome produtos', () => {
 });
 
 test('melhorias ativas respeitam níveis, preços e limites; melhorias antigas estão desativadas', () => {
-  for (const [id,nivel,custo] of [['caixa',2,250],['milho',3,350],['ajudante',6,900],['logistica',10,400]]) {
+  for (const [id,nivel,custo] of [['caixa',2,250],['milho',3,350],['ajudante',5,900],['logistica',10,400]]) {
     const sim = new Simulacao(); sim.estado.dinheiro = custo;
     sim.estado.estatisticas.clientes = (nivel - 2) * CONFIG.clientesPorNivel;
     assert.equal(sim.comprarMelhoria(id).sucesso, false, id);
@@ -548,7 +548,7 @@ test('salvamentos antigos mantêm ajudantes já contratados', () => {
   assert.equal(validarEstado(salvo).melhorias.ajudante, 0, 'nível 2 não podia comprar o ajudante');
 });
 
-test('repositor aparece no nível 6, custa R$ 900 e pode ser contratado sem ovos', () => {
+test('repositor aparece no nível 5, custa R$ 900 e pode ser contratado sem ovos', () => {
   const melhoria = MELHORIAS.find(m => m.id === 'ajudante');
   const sim = new Simulacao();
   assert.equal(melhoria.titulo, 'Repositor');
@@ -556,7 +556,7 @@ test('repositor aparece no nível 6, custa R$ 900 e pode ser contratado sem ovos
   assert.equal(sim.custoMelhoria('ajudante'), 900);
   sim.estado.dinheiro = 900;
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * (NIVEL_AJUDANTE - 2);
-  assert.match(sim.comprarMelhoria('ajudante').motivo, /nível 6/);
+  assert.match(sim.comprarMelhoria('ajudante').motivo, /nível 5/);
   assert.equal(sim.estado.dinheiro, 900);
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 899;
@@ -574,20 +574,46 @@ test('repositor aparece no nível 6, custa R$ 900 e pode ser contratado sem ovos
   assert.equal(new Simulacao(structuredClone(sim.estado)).ajudanteContratado, true);
 });
 
-test('reposição ágil exige repositor no nível 14', () => {
+test('reposição ágil fica desativada inclusive em níveis altos e não aplica bônus antigos', () => {
   const sim = new Simulacao(); sim.estado.dinheiro = 10000;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
+  assert.match(sim.comprarMelhoria('ajudante').motivo, /nível 5/);
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 4;
-  assert.match(sim.comprarMelhoria('ajudante').motivo, /nível 6/);
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 5;
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
   assert.equal(sim.estado.produtos.ovos.liberado, false);
   assert.equal(sim.comprarMelhoria('equipeAgil').sucesso, false);
-  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 13;
-  sim.estado.melhorias.ajudante = 0;
+  sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 29;
+  const saldo = sim.estado.dinheiro;
+  assert.equal(sim.disponibilidadeMelhoria('equipeAgil').disponivel, false);
   assert.equal(sim.comprarMelhoria('equipeAgil').sucesso, false);
-  sim.estado.melhorias.ajudante = 1;
-  assert.equal(sim.comprarMelhoria('equipeAgil').sucesso, true);
-  assert.equal(sim.velocidadeAjudante, 2.8 * 1.3);
+  assert.equal(sim.estado.dinheiro, saldo);
+  sim.estado.melhorias.equipeAgil = 1;
+  sim.estado.melhorias.velocidadeAjudante = 1;
+  assert.equal(sim.velocidadeAjudante, sim.velocidade);
+  const retomado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(retomado.estado.melhorias.equipeAgil, 0);
+  assert.equal(retomado.velocidadeAjudante, retomado.velocidade);
+});
+
+test('repositor percorre a mesma distância que o jogador com e sem a cesta de trabalho', () => {
+  for (const logistica of [false, true]) {
+    const sim = new Simulacao();
+    sim.estado.estatisticas.clientes = (logistica ? 9 : 4) * CONFIG.clientesPorNivel;
+    sim.estado.dinheiro = 10000;
+    assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
+    if (logistica) assert.equal(sim.comprarMelhoria('logistica').sucesso, true);
+    const jogador = sim.estado.jogador, repositor = sim.ajudante;
+    const inicio = { x: -6, z: -15 }, destino = { x: 0, z: -15 };
+    Object.assign(jogador, inicio); Object.assign(repositor, inicio);
+    for (let i = 0; i < 60; i++) {
+      sim.tempo += 1 / 60;
+      sim.mover(jogador, 1, 0, 1 / 60, sim.velocidade);
+      sim.caminharProducao(repositor, destino, 1 / 60);
+    }
+    const esperado = CONFIG.velocidadeInicial * (logistica ? 1.15 : 1);
+    assert.ok(Math.abs(distancia(inicio, jogador) - esperado) < 1e-8);
+    assert.ok(Math.abs(distancia(inicio, repositor) - esperado) < 1e-8);
+  }
 });
 
 test('fertilizante reduz para 40% o tempo de crescimento somente na horta escolhida', () => {
@@ -642,7 +668,7 @@ test('movimento respeita obstáculos e limites do mapa; pausa congela o mundo', 
   const sim = new Simulacao();
   aproximar(sim, { x: PRODUTOS.tomate.prateleira.x, z: PRODUTOS.tomate.prateleira.z + 2.3 });
   for (let i=0;i<120;i++) sim.mover(sim.estado.jogador,0,-1,1/60,4);
-  assert.ok(sim.estado.jogador.z >= PRODUTOS.tomate.prateleira.z + PRODUTOS.tomate.prateleira.d / 2 + 0.27);
+  assert.ok(sim.estado.jogador.z >= sim.produtos.tomate.prateleira.z + sim.produtos.tomate.prateleira.d / 2 + 0.27);
   aproximar(sim, { x: -10, z: 8 });
   for (let i=0;i<100;i++) sim.mover(sim.estado.jogador,-1,0,1/60,4);
   assert.ok(sim.estado.jogador.x >= CONFIG.limiteMundo.minX);

@@ -8,18 +8,18 @@ import { PLANTA_INICIAL, compartimentoHortifruti } from '../src/jogo/planta.js';
 
 function abrir() {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
+  sim.estado.estatisticas.clientes = 5 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 10000;
   sim.proximoCliente = Infinity;
   assert.ok(sim.comprarMelhoria('laranja').sucesso);
   return sim;
 }
 
-test('laranjeira exige nível 18 e R$ 800, com compra única', () => {
+test('laranjeira exige nível 6 e R$ 800, com compra única', () => {
   const sim = new Simulacao();
   sim.estado.dinheiro = 800;
   assert.equal(sim.comprarMelhoria('laranja').sucesso, false);
-  sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
+  sim.estado.estatisticas.clientes = 5 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 799;
   assert.equal(sim.comprarMelhoria('laranja').sucesso, false);
   sim.estado.dinheiro = 800;
@@ -93,8 +93,8 @@ test('save antigo recebe laranja bloqueada e save novo preserva compra e estoque
 });
 
 test('hortifruti reserva uma seção inteira após a laranja dentro do salão', () => {
-  const laranja = PRODUTOS.laranja.prateleira, morango = PRODUTOS.morango.prateleira;
-  assert.ok(Math.abs(morango.z - laranja.z - laranja.d) < 1e-8);
+  const laranja = PRODUTOS.laranja.prateleira, maca = PRODUTOS.maca.prateleira;
+  assert.ok(Math.abs(laranja.z - maca.z - laranja.d) < 1e-8);
   const fundoFuturo = laranja.z - laranja.d * 1.5;
   assert.ok(fundoFuturo > PLANTA_INICIAL.limites.minZ + 0.3);
   assert.ok(compartimentoHortifruti('tomate').prateleira.z + laranja.d / 2 < PLANTA_INICIAL.limites.maxZ - 1);

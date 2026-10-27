@@ -1,9 +1,11 @@
 import * as THREE from 'three';
 import { construirDeposito } from './deposito.js';
 import { construirPatioCarga } from './patio-carga.js';
+import { criarArvore } from './arvores.js';
+import { PLANTA_COMPACTA, anguloPortaProducao } from './planta.js';
 import { PLANTA_DEPOSITO, PLANTA_CARGA, PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_OFICINAS, oficinasConstruidas, PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
-import { CONFIG, PRODUTOS, ALTURA_PAREDE_BAIXA, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
+import { CONFIG, ALTURA_PAREDE_BAIXA, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
 
 // As mesmas paredes orientam a geometria e as colisões. A fachada é cortada para revelar a loja.
 export const PAREDES_LOJA = paredesPlantaInicial(ALTURA_PAREDE_BAIXA);
@@ -126,6 +128,22 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     p.d + (p.w >= p.d ? 0.035 : 0),
     0x286750, p.x, 0.34, p.z, 'principal'
   );
+  const folhasProducao = [];
+  const criarPortaProducao = (pai, porta, nome) => {
+    const entrada = new THREE.Group(); entrada.name = nome; pai.add(entrada); destino = entrada;
+    for (const lado of [-1, 1]) bloco(0.12, 2.9, 0.2, 0x286750,
+      porta.x + lado * porta.w / 2, 1.68, porta.z, 'principal');
+    bloco(porta.w + 0.2, 0.22, 0.2, 0x286750, porta.x, 3.02, porta.z, 'principal');
+    const folha = new THREE.Group(); folha.name = 'porta-producao-1'; entrada.add(folha);
+    folha.position.set(porta.x + porta.w / 2, 0.23, porta.z); destino = folha;
+    const painelPorta = bloco(porta.w - 0.12, 2.68, 0.08, 0x286750,
+      -porta.w / 2, 1.34, 0, 'principal');
+    painelPorta.name = 'painel-porta-producao';
+    bloco(porta.w - 0.34, 1.3, 0.09, 0xa8c7c9, -porta.w / 2, 1.45, 0);
+    for (const lado of [-1, 1]) bloco(0.055, 0.4, 0.07, 0xf5eddc, -porta.w + 0.22, 1.16, lado * 0.08);
+    folhasProducao.push(folha); destino = grupo;
+    return entrada;
+  };
   chao(0, 120, 0.3, 120, 0x78c85a, 0, -0.5, 0);
   // O terreno inteiro existe desde o início; as construções ocupam espaço nele depois.
   const terreno = PLANTA_INICIAL.terreno;
@@ -140,10 +158,12 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     [-5.5, -13.5, 1.4, 0.7, 0x69bd4f], [10.4, -13.2, 1.5, 0.65, 0x67b94d]
   ]) {
     const mancha = new THREE.Mesh(new THREE.CircleGeometry(1, 9), new THREE.MeshStandardMaterial({ color: cor, roughness: 1, side: THREE.DoubleSide }));
+    mancha.name = 'mancha-grama';
     mancha.rotation.x = -Math.PI / 2;
     mancha.rotation.z = x * 0.2;
     mancha.scale.set(rx, rz, 1);
     mancha.position.set(x, -0.046, z);
+    mancha.receiveShadow = true;
     mancha.userData.fundo = 2;
     grupo.add(mancha);
   }
@@ -186,6 +206,8 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     }
   };
   // O salão inicial vem da mesma planta usada pela navegação e documentação.
+  const pisoInicial = new THREE.Group(); grupo.add(pisoInicial); destino = pisoInicial;
+  pisoInicial.name = 'piso-inicial';
   const salao = PLANTA_INICIAL.salao;
   chao(3, salao.w, 0.2, salao.d, 0xc4b9a5, salao.x, 0.06, salao.z);
   chao(4, salao.w, 0.07, salao.d - 0.3, 0xe3dcc8, salao.x, 0.19, salao.z, 'piso');
@@ -262,21 +284,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   bloco(passagem.w + 0.04, 0.1, passagem.d + 0.04, 0x286750,
     passagem.x, 3.03, passagem.z, 'principal');
   destino = expansaoFundos;
-  for (const porta of PLANTA_EXPANSAO.portas) {
-    for (const lado of [-1, 1]) {
-      const x = porta.x + lado * porta.w / 2;
-      bloco(0.12, 2.9, 0.2, 0x286750, x, 1.68, porta.z, 'principal');
-      bloco(0.08, 2.3, 1.38, 0x286750, x, 1.43, porta.z - 0.72, 'principal');
-      bloco(0.09, 1.3, 1.16, 0xa8c7c9, x, 1.68, porta.z - 0.72);
-    }
-    bloco(porta.w + 0.2, 0.22, 0.2, 0x286750, porta.x, 3.02, porta.z, 'principal');
-  }
+  for (const porta of PLANTA_EXPANSAO.portas) criarPortaProducao(expansaoFundos, porta, 'entrada-producao-fundos');
   const deposito = construirDeposito(expansaoFundos, { caixa, vincular(mesh, papel) {
     mesh.material = mesh.material.clone(); materiais.push({ material: mesh.material, papel });
   } });
   const fundosAntigos = new THREE.Group(); grupo.add(fundosAntigos);
   fundosAntigos.name = 'parede-fundos-antiga';
   const lateral = new THREE.Group(); grupo.add(lateral);
+  const lateralEsquerda = new THREE.Group(); grupo.add(lateralEsquerda);
+  lateralEsquerda.name = 'parede-lateral-esquerda';
   const andaime = new THREE.Group(); grupo.add(andaime); destino = andaime;
   andaime.name = 'andaime';
   andaime.visible = false;
@@ -291,7 +307,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   andaimeTrigo.name = 'andaime-padaria'; andaimeTrigo.position.x = 9; andaimeTrigo.visible = false;
   destino = grupo;
   for (const p of PAREDES_LOJA) {
-    destino = p.lateral ? lateral : p.z === -9.3 && PAREDES_LOJA.includes(p) ? fundosAntigos : grupo;
+    destino = p.lateral ? lateral : p.z === -9.3 ? fundosAntigos : p.x === PLANTA_INICIAL.limites.minX ? lateralEsquerda : grupo;
     bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     if (p.z !== 6.7) rodape(p);
@@ -300,31 +316,13 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   // Um único rodapé acompanha a fachada durante a expansão, sem emenda em x = 9.1.
   const rodapeFrontal = rodape(PAREDES_LOJA.find(p => p.fachada));
   rodapeFrontal.name = 'rodape-frontal';
-  // Porta dupla de produção: folhas recolhidas para fora, com vão real livre.
-  const portaProducao = new THREE.Group(); grupo.add(portaProducao); destino = portaProducao;
-  portaProducao.name = 'entrada-producao';
-  const servico = CONFIG.portaProducao;
-  for (const lado of [-1, 1]) {
-    const x = servico.x + lado * servico.w / 2;
-    bloco(0.12, 2.9, 0.2, 0x286750, x, 1.68, servico.z, 'principal');
-    const folha = new THREE.Group(); portaProducao.add(folha);
-    folha.name = `porta-producao-${lado}`;
-    folha.position.set(x, 0.23, servico.z);
-    folha.rotation.y = -lado * Math.PI / 2;
-    destino = folha;
-    bloco(1.38, 2.3, 0.08, 0x286750, -lado * 0.72, 1.2, 0, 'principal');
-    bloco(1.16, 1.3, 0.09, 0xa8c7c9, -lado * 0.72, 1.45, 0);
-    destino = portaProducao;
-  }
-  bloco(servico.w + 0.2, 0.22, 0.2, 0x286750, servico.x, 3.02, servico.z, 'principal');
-  const caminhoHorta = new THREE.Group(); grupo.add(caminhoHorta); destino = caminhoHorta;
-  // A horta está atrás da loja; o caminho permanece inteiro na faixa posterior.
-  const coletaTomate = PRODUTOS.tomate.coleta;
-  for (let x = coletaTomate.x; x <= servico.x; x += 0.65) chao(3, 0.5, 0.06, 0.65, 0xd6c7ac, x, 0.08, coletaTomate.z);
-  destino = grupo;
+  // Mantém apenas a folha direita, com dobradiça no mesmo lugar da porta antiga.
+  const portaProducao = criarPortaProducao(grupo, CONFIG.portaProducao, 'entrada-producao');
+  const folhaPrincipal = folhasProducao.pop(); folhasProducao.unshift(folhaPrincipal);
   // Contentor verde com tampa, pega e duas rodas junto à parede do fundo.
   const lixeira = new THREE.Group(); lixeira.name = 'lixeira';
-  lixeira.position.set(CONFIG.lixeira.x, 0.23, CONFIG.lixeira.z); grupo.add(lixeira);
+  lixeira.position.set(CONFIG.lixeira.x, -0.045, CONFIG.lixeira.z); grupo.add(lixeira);
+  lixeira.rotation.y = Math.PI;
   const corpoLixeira = new THREE.BoxGeometry(0.7, 1.02, 0.68);
   const verticesLixeira = corpoLixeira.attributes.position;
   for (let i = 0; i < verticesLixeira.count; i++) {
@@ -409,23 +407,9 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   const arvoreLateral = new THREE.Group(); grupo.add(arvoreLateral);
   for (const [indice, [x,z]] of [[-12.4,-6.2],[-12.4,4.7],[13.8,-5.4]].entries()) {
     const arvores = x > 0 ? arvoreLateral : vegetacaoEstacionamento;
-    const arvore = new THREE.Group(); arvore.position.set(x, 0, z); arvores.add(arvore);
-    const escala = [1, 0.91, 1.06][indice]; arvore.scale.setScalar(escala);
-    cilindro(arvore, 0.16, 0.27, 1.76, 0x865834, 0, 0.84, 0, 9);
-    cilindro(arvore, 0.12, 0.17, 1.1, 0xa37143, -0.055, 0.99, 0.13, 8);
-    for (const [lado, frente] of [[-1, 0.2], [1, -0.16]]) {
-      const galho = cilindro(arvore, 0.07, 0.12, 1.05, 0x865834, lado * 0.31, 1.55, frente, 7);
-      galho.rotation.z = lado * 0.72;
-    }
-    esfera(arvore, 0.98, 0x2f8840, 0, 2.06, 0, 1.22, 0.78, 1.08);
-    for (const [px, py, pz, raio, cor] of [
-      [-0.61, 2.24, 0.04, 0.73, 0x389b49],
-      [0.57, 2.22, -0.12, 0.78, 0x43a64d],
-      [-0.13, 2.59, -0.37, 0.79, 0x51b456],
-      [0.15, 2.56, 0.37, 0.75, 0x49a94b],
-      [-0.43, 2.78, 0.27, 0.49, 0x6fc762],
-      [0.45, 2.78, 0.03, 0.46, 0x79ca65]
-    ]) esfera(arvore, raio, cor, px, py, pz, 1, 0.82, 0.92);
+    const arvore = criarArvore(arvores, { x, z, nome: `arvore-bairro-${indice + 1}` }, { cilindro, esfera });
+    arvore.scale.setScalar([0.84, 0.77, 0.9][indice]);
+    arvore.rotation.y = [0.2, -0.65, 0.9][indice];
   }
   const postesCalcada = new THREE.Group(); postesCalcada.name = 'poste-calcada-estacionamento'; grupo.add(postesCalcada);
   for (const x of [-7.8, 10.8]) {
@@ -436,9 +420,21 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
   }
   destino = grupo;
   let expandida = false;
+  let compactaAtual = false;
   let anterior;
   let estagioAnterior, progresso = 1;
   return {
+    atualizarProfundidade(compacta) {
+      compactaAtual = compacta;
+      const deslocamento = compacta ? PLANTA_COMPACTA.deslocamentoFundos : 0;
+      for (const parte of [pisoInicial, lateral, lateralEsquerda]) {
+        parte.scale.z = compacta ? 0.5 : 1;
+        parte.position.z = compacta ? PLANTA_INICIAL.limites.maxZ / 2 : 0;
+      }
+      fundosAntigos.position.z = deslocamento;
+      portaProducao.position.z = deslocamento;
+      lixeira.position.z = CONFIG.lixeira.z + deslocamento - (expandida ? PLANTA_EXPANSAO.profundidade : 0);
+    },
     atualizarExpansao(comprada) {
       expandida = !!comprada;
       expansaoFundos.visible = expandida;
@@ -446,7 +442,7 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       paredesCozinha[0].visible = !expandida;
       paredesCozinha[1].visible = expandida;
       const recuo = expandida ? -PLANTA_EXPANSAO.profundidade : 0;
-      caminhoHorta.position.z = recuo;
+      lixeira.position.z = CONFIG.lixeira.z + (compactaAtual ? PLANTA_COMPACTA.deslocamentoFundos : 0) + recuo;
       cercaFazenda.position.z = recuo;
       pisoTerreno.scale.z = expandida ? PLANTA_EXPANSAO.terreno.d / terreno.d : 1;
       pisoTerreno.position.z = expandida ? PLANTA_EXPANSAO.terreno.z : terreno.z;
@@ -490,6 +486,9 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       const angulos = angulosPortasEntrada(abertura);
       portaEntradaEsquerda.rotation.y = angulos.esquerda;
       portaEntradaDireita.rotation.y = angulos.direita;
+    },
+    animarPortasProducao(aberturas) {
+      folhasProducao.forEach((folha, i) => { folha.rotation.y = anguloPortaProducao(aberturas[i] ?? 0); });
     },
     animarDeposito(lojaAberta, dt) {
       deposito.atualizar(lojaAberta, dt);

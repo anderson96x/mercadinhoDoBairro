@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
@@ -34,6 +35,7 @@ test('no nível 8, compra de R$ 100 amplia de cinco para dez clientes com cesta 
   sim.estado.dinheiro = 100;
   assert.equal(sim.comprarMelhoria('cestasExtras').sucesso, false);
   sim.estado.estatisticas.clientes = 7 * CONFIG.clientesPorNivel;
+  prepararLojaCompleta(sim);
   assert.equal(sim.nivel, 8);
   assert.equal(sim.comprarMelhoria('cestasExtras').sucesso, true);
   assert.equal(sim.estado.dinheiro, 0);

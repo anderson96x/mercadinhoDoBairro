@@ -1,11 +1,11 @@
 // Nova planta: 2 unidades por cm anotado; x para a direita, z para a rua.
-// O salão amplia no N9; N11 acrescenta apenas equipamentos.
+// A compra de laranja dobra a profundidade; a padaria amplia à direita no N13.
 export const PLANTA_INICIAL = {
   escala: 2,
   terreno: { x: 4, z: -5.5, w: 40, d: 40 },
   salao: { x: 3.9, z: -1.3, w: 14, d: 16 },
   limites: { minX: -3.1, maxX: 10.9, minZ: -9.3, maxZ: 6.7 },
-  portaProducao: { x: 3.6, z: -9.3, w: 3, d: 0.12 },
+  portaProducao: { x: 4.35, z: -9.3, w: 1.5, d: 0.12 },
   cercaFundos: { minX: -10.3, maxX: 3.6, z: -25 },
   // Painel N1: tomate na faixa posterior esquerda, acima da parede do fundo.
   // Referência visual: canteiro compacto, com oito plantas, atrás da loja.
@@ -32,7 +32,7 @@ export const OBSTACULOS_ESTACIONAMENTO = [
 ];
 
 // Painel N3: milho alinhado ao tomate, mais ao fundo (z menor).
-// A coluna inteira fica atrás da loja; trigo reserva o próximo canteiro no N7.
+// A coluna inteira fica atrás da loja; trigo reserva o próximo canteiro no N4.
 export const FAZENDAS_HORTIFRUTI = Object.fromEntries(['tomate', 'milho', 'trigo'].map((id, indice) => {
   const tomate = PLANTA_INICIAL.fazendaTomate;
   return [id, {
@@ -42,14 +42,14 @@ export const FAZENDAS_HORTIFRUTI = Object.fromEntries(['tomate', 'milho', 'trigo
   }];
 }));
 
-// Painel N11: estufa à direita do curral, na mesma faixa posterior.
+// N9: estufa à direita do curral, na mesma faixa posterior.
 export const PLANTA_MORANGO = {
   horta: { x: 8, z: -22.2 }, coleta: { x: 8, z: -20.4 },
   canteiro: { ...PLANTA_INICIAL.fazendaTomate.canteiro }
 };
 
-// N12: apiário à direita da estufa por ajuste solicitado; venda na frente direita.
-// O conjunto de venda receberá a seção de geleia no N15.
+// N14: apiário à direita da estufa por ajuste solicitado; venda na frente direita.
+// O conjunto de venda receberá a seção de geleia no N17.
 export const PLANTA_MEL = {
   horta: { x: 13.2, z: -22.2 }, coleta: { x: 13.2, z: -19.8 },
   prateleira: { x: 17.6, z: 5.8, w: 3.2, d: 1.4, movel: 'doces' },
@@ -69,7 +69,7 @@ export const PLANTA_OFICINAS = {
 
 export const oficinasConstruidas = produtos => !!(produtos.queijo?.liberado || produtos.geleia?.liberado);
 
-// N13: produção na sala dos fundos; refrigerador à direita do leite.
+// N15: produção na sala dos fundos; refrigerador à direita do leite.
 export const PLANTA_QUEIJO = {
   horta: { x: 14.1, z: -13.2 }, coleta: { x: 14.1, z: -11.75 },
   curral: { w: 2.65, d: 1.75 },
@@ -78,7 +78,7 @@ export const PLANTA_QUEIJO = {
   pontosCompra: [-0.65, 0, 0.65].map(dx => ({ x: 11.8 + dx, z: -7.15 }))
 };
 
-// N15: cozinha ao lado da queijaria; geleia prolonga a banca de mel para a esquerda.
+// N17: cozinha ao lado da queijaria; geleia prolonga a banca de mel para a esquerda.
 export const PLANTA_GELEIA = {
   horta: { x: 18.8, z: -13.2 }, coleta: { x: 18.8, z: -11.75 },
   curral: { w: 2.65, d: 1.75 },
@@ -102,15 +102,15 @@ export function selecionarCompartimentoDoces(ator, produtos) {
     && ator.x <= p.x + p.w / 2 + 1e-8)?.[0];
 }
 
-export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'morango', 'laranja', 'maca'];
+export const PRODUTOS_HORTIFRUTI = ['tomate', 'milho', 'trigo', 'laranja', 'maca', 'morango'];
 
-// N18: pomar ao lado do apiário, com acesso livre pela frente.
+// N6: pomar ao lado do apiário, com acesso livre pela frente.
 export const PLANTA_LARANJA = {
   horta: { x: 18.6, z: -22.2 }, coleta: { x: 18.6, z: -19.9 },
   canteiro: { w: 3.2, d: 3.2 }
 };
 
-// N19: ao lado da laranjeira, avançando pelo gramado em direção às oficinas.
+// N7: ao lado da laranjeira, avançando pelo gramado em direção às oficinas.
 // O volume menor em profundidade preserva os corredores entre as instalações.
 export const PLANTA_MACA = {
   horta: { x: 18.6, z: -17.3 }, coleta: { x: 16.4, z: -17.3 },
@@ -178,7 +178,7 @@ export const PLANTA_PADARIA = {
   pontosCompra: [7.6, 6.7, 8.5].map(x => pontoPadaria({ x, z: -0.95 }))
 };
 
-// Painel N4: galinheiro acima e à direita do milho; ovos na parede posterior,
+// N11: galinheiro acima e à direita do milho; ovos na parede posterior,
 // à direita da porta de produção. A compra mantém o salão inicial.
 export const PLANTA_OVOS = {
   horta: { x: -2.4, z: -21.7 }, coleta: { x: -2.4, z: -20.05 },
@@ -188,7 +188,7 @@ export const PLANTA_OVOS = {
   pontosCompra: [-0.8, 0, 0.8].map(dx => ({ x: 7.1 + dx, z: -7.15 }))
 };
 
-// Painel N5–6: curral ao lado do galinheiro, ambos na mesma faixa posterior.
+// N12: curral ao lado do galinheiro, ambos na mesma faixa posterior.
 export const PLANTA_LEITE = {
   horta: { x: 2.6, z: -21.7 }, coleta: { x: 2.6, z: -19.45 },
   curral: { w: 3.4, d: 3.2 },
@@ -322,28 +322,42 @@ export function volumePortaoDeposito() {
 }
 
 export function folhasPortasExpansao() {
-  return PLANTA_EXPANSAO.portas.flatMap(porta => [-1, 1].map(lado => ({
-    x: porta.x + lado * porta.w / 2, z: porta.z - 0.72, w: 0.12, d: 1.44
-  })));
+  return PLANTA_EXPANSAO.portas.map(porta => volumePortaProducao(1, porta));
 }
 
-export function paredesPlantaInicial(alturaBaixa) {
-  const l = PLANTA_INICIAL.limites, porta = PLANTA_INICIAL.portaProducao;
+export const PLANTA_COMPACTA = {
+  salao: { ...PLANTA_INICIAL.salao, z: 2.7, d: 8 },
+  limites: { ...PLANTA_INICIAL.limites, minZ: -1.3 },
+  portaProducao: { ...PLANTA_INICIAL.portaProducao, z: -1.3 },
+  deslocamentoFundos: 8
+};
+
+export function paredesPlantaInicial(alturaBaixa, planta = PLANTA_INICIAL) {
+  const l = planta.limites, porta = planta.portaProducao;
   const esquerdaPorta = porta.x - porta.w / 2, direitaPorta = porta.x + porta.w / 2;
   return [
     { x: (l.minX + esquerdaPorta) / 2, z: l.minZ, w: esquerdaPorta - l.minX, d: 0.28, h: 2.8 },
     { x: (direitaPorta + l.maxX) / 2, z: l.minZ, w: l.maxX - direitaPorta, d: 0.28, h: 2.8 },
-    { x: l.maxX, z: PLANTA_INICIAL.salao.z, w: 0.28, d: PLANTA_INICIAL.salao.d, h: alturaBaixa, lateral: true },
-    { x: l.minX, z: PLANTA_INICIAL.salao.z, w: 0.28, d: PLANTA_INICIAL.salao.d, h: 2.8 },
+    { x: l.maxX, z: planta.salao.z, w: 0.28, d: planta.salao.d, h: alturaBaixa, lateral: true },
+    { x: l.minX, z: planta.salao.z, w: 0.28, d: planta.salao.d, h: 2.8 },
     { x: (l.minX - 2.8) / 2, z: l.maxZ, w: -2.8 - l.minX, d: 0.28, h: alturaBaixa },
     { x: (0.2 + l.maxX) / 2, z: l.maxZ, w: l.maxX - 0.2, d: 0.28, h: alturaBaixa, fachada: true }
   ];
 }
 
-export const FOLHAS_PORTA_PRODUCAO = [-1, 1].map(lado => ({
-  x: PLANTA_INICIAL.portaProducao.x + lado * PLANTA_INICIAL.portaProducao.w / 2,
-  z: PLANTA_INICIAL.portaProducao.z - 0.72, w: 0.12, d: 1.44
-}));
+export function anguloPortaProducao(abertura) {
+  const t = Math.max(0, Math.min(1, abertura));
+  return -Math.PI / 2 * t * t * (3 - 2 * t);
+}
+
+export function volumePortaProducao(abertura, porta = PLANTA_INICIAL.portaProducao) {
+  const angulo = anguloPortaProducao(abertura), centro = -porta.w / 2;
+  return { x: porta.x + porta.w / 2 + centro * Math.cos(angulo),
+    z: porta.z - centro * Math.sin(angulo), w: porta.w - 0.06, d: 0.12,
+    angulo, portaProducao: true };
+}
+
+export const FOLHAS_PORTA_PRODUCAO = [volumePortaProducao(1)];
 
 export function compartimentoHortifruti(id) {
   const indice = PRODUTOS_HORTIFRUTI.indexOf(id);
@@ -359,11 +373,11 @@ export function compartimentoHortifruti(id) {
 }
 
 // Mescla apenas seções contíguas compradas, sem ocupar lacunas bloqueadas.
-export function volumesHortifruti(produtos) {
+export function volumesHortifruti(produtos, catalogo) {
   const volumes = [];
   for (const id of PRODUTOS_HORTIFRUTI) {
     if (!produtos[id]?.liberado) continue;
-    const secao = compartimentoHortifruti(id).prateleira;
+    const secao = catalogo?.[id].prateleira ?? compartimentoHortifruti(id).prateleira;
     const anterior = volumes.at(-1);
     if (anterior && Math.abs(anterior.z - anterior.d / 2 - (secao.z + secao.d / 2)) < 1e-6) {
       anterior.z -= secao.d / 2;
@@ -373,11 +387,11 @@ export function volumesHortifruti(produtos) {
   return volumes;
 }
 
-export function selecionarCompartimentoHortifruti(ator, produtos) {
+export function selecionarCompartimentoHortifruti(ator, produtos, catalogo) {
   // Ordem da frente para o fundo resolve a borda comum sem depender de floats.
   return PRODUTOS_HORTIFRUTI.find(id => {
     if (!produtos[id]?.liberado) return false;
-    const p = compartimentoHortifruti(id).prateleira;
+    const p = catalogo?.[id].prateleira ?? compartimentoHortifruti(id).prateleira;
     return ator.x >= p.x + p.w / 2 && ator.z >= p.z - p.d / 2 - 1e-8 && ator.z <= p.z + p.d / 2 + 1e-8;
   });
 }

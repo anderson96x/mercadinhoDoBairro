@@ -1,11 +1,13 @@
 import { CONFEITARIA, estadoConfeitaria, validarConfeitaria, produzirConfeitaria, maquinaConfeitaria } from './confeitaria.js';
 import { trabalhoPadaria, estadoEntregaPadaria, validarEntregaPadaria, atualizarEntregaPadaria } from './producao-padaria.js';
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
-import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, folhasPortasExpansao, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, FOLHAS_PORTA_PRODUCAO, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
-import { PAREDES_LOJA, MOBILIARIO_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
+import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
+import { PAREDES_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
 import { produtosDaLoja, extremosCalcadaDaLoja, CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
+import { PLANTA_COMPACTA, paredesPlantaInicial, volumePortaProducao } from './planta.js';
+import { lojaCompacta, ALTURA_PAREDE_BAIXA } from './configuracao.js';
 import { APARENCIAS_CLIENTES } from './aparencias-clientes.js';
 import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
@@ -14,10 +16,13 @@ import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, classeProduto
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE } from './classes-produtos.js';
 import { PLANTA_CARGA, obstaculosCarga } from './planta.js';
 
-// A fila vira para o fundo após sete lugares, cabendo no salão anterior ao N9.
+const LIXEIRA_COMPACTA = { ...CONFIG.lixeira, z: CONFIG.lixeira.z + PLANTA_COMPACTA.deslocamentoFundos };
+const LIXEIRA_EXPANDIDA = { ...CONFIG.lixeira, z: CONFIG.lixeira.z - PLANTA_EXPANSAO.profundidade };
+
+// A fila vira após cinco lugares, preservando a parede e o corredor dos importados.
 export function pontoFila(indice) {
-  return { x: CONFIG.clienteCaixa.x + Math.min(indice, 6) * CONFIG.espacoClientes,
-    z: CONFIG.clienteCaixa.z - Math.max(0, indice - 6) * CONFIG.espacoClientes };
+  return { x: CONFIG.clienteCaixa.x + Math.min(indice, 4) * CONFIG.espacoClientes,
+    z: CONFIG.clienteCaixa.z - Math.max(0, indice - 4) * CONFIG.espacoClientes };
 }
 
 export const distancia = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
@@ -26,7 +31,6 @@ const capacidadeExtraAtiva = MELHORIAS.find(m => m.id === 'mochila')?.ativa !== 
 const fertilizanteAtivo = MELHORIAS.find(m => m.id === 'fertilizante')?.ativa !== false;
 const velocidadeJogadorAtiva = MELHORIAS.find(m => m.id === 'velocidade')?.ativa !== false;
 const ajudanteAtivo = MELHORIAS.find(m => m.id === 'ajudante')?.ativa !== false;
-const velocidadeAjudanteAtiva = MELHORIAS.find(m => m.id === 'velocidadeAjudante')?.ativa !== false;
 const estadoAjudanteInicial = () => ({
   x: 0.2, z: 1, inventario: [], destino: 'horta', produto: 'tomate', temporizador: 0, andando: false, angulo: 0
 });
@@ -86,11 +90,8 @@ export function validarEstado(dados) {
     if ([m.requisitoMelhoria, ...(m.requisitos || [])].filter(Boolean).some(id => !base.melhorias[id])) base.melhorias[m.id] = 0;
   }
   base.confeitaria = validarConfeitaria(dados.confeitaria, base.melhorias.confeitaria);
-  base.estagioLoja = base.melhorias[ALA_ARTESANAL.id] ? ALA_ARTESANAL.indice
-    : base.melhorias[ALA_PADARIA.id] ? ALA_PADARIA.indice
-    : base.melhorias[ALA_TRIGO.id] ? ALA_TRIGO.indice
-    : base.melhorias[ALA_LEITE.id] ? ALA_LEITE.indice
-    : base.melhorias[ALA_PRODUCAO.id] ? ALA_PRODUCAO.indice : 0;
+  base.estagioLoja = Math.max(0, ...[ALA_TRIGO, ALA_ARTESANAL, ALA_PRODUCAO, ALA_LEITE, ALA_PADARIA]
+    .filter(ala => base.melhorias[ala.id]).map(ala => ala.indice));
   if (base.melhorias[ALA_PRODUCAO.id]) {
     base.producao.progressoOvo = Number.isFinite(dados.producao?.progressoOvo) ? limitar(dados.producao.progressoOvo, 0, ALA_PRODUCAO.tempoOvo) : 0;
     base.producao.ovosProduzidos = numero(dados.producao?.ovosProduzidos);
@@ -194,6 +195,7 @@ export class Simulacao {
     this.reposicoes = new WeakMap();
     this.caminhosClientes = new WeakMap();
     this.trajetosProducao = new WeakMap();
+    this.ultimaPlantaCompacta = this.compacta;
     this.tempo = 0;
     this.proximoCliente = 2;
     this.proximaInteracao = 0;
@@ -202,6 +204,7 @@ export class Simulacao {
     this.proximoLadoEntrada = Math.random() < 0.5 ? 0 : 1;
     this.proximoLadoSaida = Math.random() < 0.5 ? 0 : 1;
     this.aberturaPortaEntrada = 0;
+    this.aberturasPortasProducao = [0, 0];
     this.progressoCaixa = 0;
     this.atividade = '';
     this.pausado = false;
@@ -233,14 +236,26 @@ export class Simulacao {
     }
     this.missaoAnterior = this.missao().indice;
   }
+  sincronizarProfundidade() {
+    if (this.ultimaPlantaCompacta === this.compacta) return;
+    this.ultimaPlantaCompacta = this.compacta;
+    this.caminhosClientes = new WeakMap();
+    this.trajetosProducao = new WeakMap();
+    this.reposicoes = new WeakMap();
+    for (const ator of [this.estado.jogador, this.ajudante, ...this.clientes]) this.liberarPosicao(ator);
+  }
   get produtos() { return produtosDaLoja(this.estado); }
   get extremosCalcada() { return extremosCalcadaDaLoja(this.estado); }
-  get portaProducao() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.portaProducao : CONFIG.portaProducao; }
+  get compacta() { return lojaCompacta(this.estado); }
+  get lixeira() { return this.estado.melhorias.expansao ? LIXEIRA_EXPANDIDA : this.compacta ? LIXEIRA_COMPACTA : CONFIG.lixeira; }
+  get portasProducao() { return [this.compacta ? PLANTA_COMPACTA.portaProducao : CONFIG.portaProducao,
+    ...(this.estado.melhorias.expansao ? PLANTA_EXPANSAO.portas : [])]; }
+  get portaProducao() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.portaProducao : this.compacta ? PLANTA_COMPACTA.portaProducao : CONFIG.portaProducao; }
   get limitesMundo() { return this.estado.melhorias.expansao ? PLANTA_EXPANSAO.limites : this.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.limites : this.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.limites : this.estado.estagioLoja ? ALA_PRODUCAO.limites : CONFIG.limiteMundo; }
   get capacidade() { return CONFIG.capacidadeInicial + 4 * this.estado.melhorias.logistica + (capacidadeExtraAtiva ? this.estado.melhorias.mochila * 4 : 0); }
   get velocidade() { return CONFIG.velocidadeInicial * (1 + 0.15 * this.estado.melhorias.logistica + (velocidadeJogadorAtiva ? this.estado.melhorias.velocidade * 0.2 : 0)); }
   get ajudanteContratado() { return ajudanteAtivo && !!this.estado.melhorias.ajudante; }
-  get velocidadeAjudante() { return 2.8 * (1 + 0.3 * this.estado.melhorias.equipeAgil) * (velocidadeAjudanteAtiva && this.estado.melhorias.velocidadeAjudante ? CONFIG.multiplicadorVelocidadeAjudante : 1); }
+  get velocidadeAjudante() { return this.velocidade; }
   get nivel() { return 1 + Math.floor(this.estado.estatisticas.clientes / CONFIG.clientesPorNivel); }
   get progressoClientes() { return this.estado.estatisticas.clientes % CONFIG.clientesPorNivel; }
   get reputacao() {
@@ -251,6 +266,7 @@ export class Simulacao {
   get faixaReputacao() { return this.reputacao <= 40 ? 'ruim' : this.reputacao <= 60 ? 'media' : 'boa'; }
   aumentarNivelDev() {
     this.estado.estatisticas.clientes = this.nivel * CONFIG.clientesPorNivel;
+    this.sincronizarProfundidade();
     this.estado.dinheiro += CONFIG.bonusNivel;
     this.emitir('nivel', { nivel: this.nivel });
     return this.nivel;
@@ -511,6 +527,7 @@ export class Simulacao {
     if (m.tipo === 'confeitaria') {
       for (const produto of Object.keys(CONFEITARIA.produtos)) this.estado.produtos[produto].liberado = true;
     }
+    if (id === 'laranja') this.sincronizarProfundidade();
     this.emitir('melhoria', { id, texto: id === ALA_PADARIA.id
       ? `Padaria: cada trigo rende ${ALA_PADARIA.paesPorTrigo} pães de R$ ${this.produtos.pao.preco}.`
       : id === 'milho'
@@ -565,7 +582,7 @@ export class Simulacao {
           titulo: 'Prepare as prateleiras de importados', texto: 'No celular, compre as duas prateleiras por R$ 1.000 cada. A primeira recebe enlatados importados a partir do nível 19.',
           destino: 'celular', exibir: true };
       }
-      if (this.nivel >= 16 && !this.estado.melhorias.estacionamento) {
+      if (this.nivel >= MELHORIAS.find(m => m.id === 'estacionamento').nivelMinimo && !this.estado.melhorias.estacionamento) {
         return { ...recorrente, indice: 4, valor, alvo: this.nivel * recorrente.intervalo,
           titulo: 'Um lugar para estacionar', texto: 'No celular, construa o estacionamento por R$ 10.000. Ele ocupa o terreno ao lado esquerdo da loja.',
           destino: 'celular', exibir: true };
@@ -585,7 +602,7 @@ export class Simulacao {
       const orientacaoTrigo = !this.estado.melhorias.alaTrigo
         ? { titulo: 'Abra a plantação de trigo', texto: 'Compre a ala do trigo pelo celular por R$ 400.', destino: 'celular' }
         : this.estado.produtos.trigo.prateleira < 1
-          ? { titulo: 'Abasteça a prateleira de trigo', texto: 'Colha o trigo entre o galinheiro e o curral e leve-o à nova prateleira.', destino: this.estado.jogador.inventario.includes('trigo') ? 'prateleiraTrigo' : 'trigo' }
+          ? { titulo: 'Abasteça a prateleira de trigo', texto: 'Colha o trigo atrás do milho e leve-o à seção de trigo do hortifruti.', destino: this.estado.jogador.inventario.includes('trigo') ? 'prateleiraTrigo' : 'trigo' }
           : { titulo: 'Atenda o bairro', texto: 'O trigo já está à venda por R$ 5. Cuide das prateleiras e atenda seus clientes.', destino: 'caixa', exibir: false };
       const orientacaoPadaria = !this.estado.melhorias.alaPadaria
         ? { titulo: 'Abra a padaria', texto: 'Compre a padaria pelo celular por R$ 1.400. Cada trigo rende 3 pães de R$ 10.', destino: 'celular' }
@@ -603,19 +620,20 @@ export class Simulacao {
           texto: 'Abra o celular para liberar a horta e a prateleira de milho.',
           exibir: !this.estado.melhorias.milho
         },
-        4: orientacaoOvos,
-        5: orientacaoLeite,
-        6: this.ajudanteContratado
+        4: orientacaoTrigo,
+        5: this.ajudanteContratado
           ? { titulo: 'Atenda o bairro', texto: 'O Repositor cuida das prateleiras. Continue atendendo seus clientes.', destino: 'caixa', exibir: false }
           : { titulo: 'Contrate o Repositor', texto: 'Abra o celular e contrate o Repositor por R$ 900 para abastecer as prateleiras.', destino: 'celular' },
-        7: orientacaoTrigo,
-        9: orientacaoPadaria,
+        11: orientacaoOvos,
+        12: orientacaoLeite,
+        13: orientacaoPadaria,
       };
-      let orientacaoNivel = orientacoesNivel[this.nivel] || (this.nivel > 9 ? orientacaoPadaria : this.nivel > 7 ? orientacaoTrigo : {});
-      if (this.nivel >= 10) {
-        const proxima = MELHORIAS.filter(m => m.ativa !== false && m.nivelMinimo >= 10 && m.nivelMinimo <= this.nivel && !this.estado.melhorias[m.id])
+      let orientacaoNivel = orientacoesNivel[this.nivel] || {};
+      if (this.nivel >= 6 && ![11, 12, 13].includes(this.nivel)) {
+        const proxima = MELHORIAS.filter(m => m.ativa !== false && m.nivelMinimo >= 6 && m.nivelMinimo <= this.nivel && !this.estado.melhorias[m.id])
           .sort((a, b) => a.nivelMinimo - b.nivelMinimo)[0];
-        const novoProduto = Object.entries(this.produtos).find(([id, p]) => p.nivelMinimo >= 11 && this.estado.produtos[id].liberado && !this.estado.produtos[id].apresentado && !this.estado.produtos[id].prateleira);
+        const novoProduto = Object.entries(this.produtos).filter(([id, p]) => p.nivelMinimo >= 6 && this.estado.produtos[id].liberado && !this.estado.produtos[id].apresentado && !this.estado.produtos[id].prateleira)
+          .sort(([, a], [, b]) => a.nivelMinimo - b.nivelMinimo)[0];
         orientacaoNivel = proxima
           ? { titulo: proxima.titulo, texto: `${proxima.descricao} Compre pelo celular por R$ ${proxima.custo.toLocaleString('pt-BR')}.`, destino: 'celular' }
           : { titulo: 'O sabor do bairro', texto: 'Cuide das colheitas, prepare receitas e mantenha as bancas abastecidas. Seu mercadinho chegou à fase artesanal!', destino: 'caixa', exibir: false };
@@ -681,9 +699,12 @@ export class Simulacao {
       { ...CONFIG.balcao, w: 2.9, d: 1.53 },
       { ...CONFIG.cestas, w: 0.9, d: 1.25 },
       ...volumesPortasEntrada(this.aberturaPortaEntrada),
-      ...PAREDES_LOJA.filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice), ...MOBILIARIO_LOJA, ...FOLHAS_PORTA_PRODUCAO
+      ...(this.compacta ? paredesPlantaInicial(ALTURA_PAREDE_BAIXA, PLANTA_COMPACTA) : PAREDES_LOJA)
+        .filter(p => !p.lateral || this.estado.estagioLoja < ALA_PADARIA.indice),
+      this.lixeira,
+      ...this.portasProducao.map((porta, i) => volumePortaProducao(this.aberturasPortasProducao[i], porta))
     ];
-    if (this.estado.melhorias.expansao) caixas.push(...paredesExpansao(), ...folhasPortasExpansao(), ...obstaculosDeposito(), ...obstaculosCarga());
+    if (this.estado.melhorias.expansao) caixas.push(...paredesExpansao(), ...obstaculosDeposito(), ...obstaculosCarga());
     if (this.estado.melhorias.expansao && !this.estado.lojaAberta) caixas.push(volumePortaoDeposito());
     if (this.estado.melhorias.expansao || oficinasConstruidas(this.estado.produtos)) caixas.push(...paredesOficinas(!!this.estado.melhorias.expansao));
     if (this.estado.melhorias.alaPadaria) caixas.push(...ALA_PADARIA.paredes.filter(p => !this.estado.melhorias.expansao || p.x !== 20.9));
@@ -698,7 +719,7 @@ export class Simulacao {
       if (id !== 'pao' && p.origem !== 'importado') caixas.push(geometriaEstacao(id, 'coleta', this.produtos));
     }
     if (this.estado.melhorias.confeitaria) caixas.push(maquinaConfeitaria());
-    caixas.push(...volumesHortifruti(this.estado.produtos), ...volumesDoces(this.estado.produtos));
+    caixas.push(...volumesHortifruti(this.estado.produtos, this.produtos), ...volumesDoces(this.estado.produtos));
     caixas.push(...PRATELEIRAS_IMPORTADOS.slice(0, this.estado.melhorias.prateleirasImportados));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,
       ...this.estacionamento.carros.filter(c => c.fase !== 'aguardando').map(volumeCarro));
@@ -736,9 +757,10 @@ export class Simulacao {
     return caixas;
   }
   mover(ator, dx, dz, dt, velocidade, colisao = true) {
+    if (!this.atualizandoPasso) this.atualizarPortasProducao(dt, ator);
     const limites = this.limitesMundo;
     const obstaculos = colisao ? this.obstaculos() : [];
-    const portas = obstaculos.filter(o => o.portaEntrada);
+    const portas = obstaculos.filter(o => o.portaEntrada || o.portaProducao);
     const testar = (x, z) => !colisao || (segmentoLivre({ x, z }, { x, z }, obstaculos, 0.27)
       && segmentoLivre(ator, { x, z }, portas, 0.27));
     const nx = limitar(ator.x + dx * dt * velocidade, limites.minX, limites.maxX);
@@ -774,6 +796,7 @@ export class Simulacao {
     return this.caminharCliente(ator, ponto, dt);
   }
   caminharCliente(ator, ponto, dt, velocidade = 2.4, limites = this.limitesClientes) {
+    if (!this.atualizandoPasso) this.atualizarPortasProducao(dt, ator);
     ator.andando = false;
     if (distancia(ator, ponto) < 0.025) { ator.x = ponto.x; ator.z = ponto.z; return true; }
     if (!dt) return false;
@@ -787,7 +810,8 @@ export class Simulacao {
     // Se já está no espaço que a folha aberta ocuparia, permita sair dele
     // respeitando a geometria real, em vez de prender a origem numa colisão virtual.
     const preverAbertura = segmentoLivre(ator, ator, folhasAbertas, 0.32);
-    const obstaculosRota = [...obstaculos.filter(o => !o.portaEntrada),
+    const obstaculosRota = [...obstaculos.filter(o => !o.portaEntrada && !o.portaProducao),
+      ...this.portasProducao.map(porta => volumePortaProducao(this.podeAbrirPortaProducao(ator) ? 1 : 0, porta)),
       ...(preverAbertura ? folhasAbertas : []),
       ...(pelaCalcada || !preverAbertura ? obstaculos.filter(o => o.portaEntrada) : [])];
     const livre = (inicio, fim, planejar = false) => {
@@ -806,7 +830,7 @@ export class Simulacao {
       return segmentoLivre(inicio, fim, planejar ? obstaculosRota : obstaculos, 0.32);
     };
     const livreRota = (inicio, fim) => livre(inicio, fim, true);
-    let alvo = ponto;
+    let alvo = ponto, percorrido = 0;
     if (!livreRota(ator, ponto)) {
       let rota = this.caminhosClientes.get(ator);
       if (!rota || distancia(rota.destino, ponto) > 0.1 || this.tempo >= rota.recalcular) {
@@ -814,12 +838,15 @@ export class Simulacao {
         this.caminhosClientes.set(ator, rota);
       }
       while (rota.pontos.length && distancia(ator, rota.pontos[0]) < 0.025) {
+        const trecho = distancia(ator, rota.pontos[0]);
+        if (percorrido + trecho > velocidade * dt) break;
+        percorrido += trecho;
         Object.assign(ator, rota.pontos.shift());
       }
       if (!rota.pontos.length) return false;
       alvo = rota.pontos[0];
     } else this.caminhosClientes.delete(ator);
-    const d = distancia(ator, alvo), passo = Math.min(d, velocidade * dt);
+    const d = distancia(ator, alvo), passo = Math.min(d, Math.max(0, velocidade * dt - percorrido));
     const proximo = { x: ator.x + (alvo.x - ator.x) / d * passo, z: ator.z + (alvo.z - ator.z) / d * passo };
     if (!livre(ator, proximo)) return false;
     ator.angulo = Math.atan2(proximo.x - ator.x, proximo.z - ator.z);
@@ -828,7 +855,10 @@ export class Simulacao {
   }
   atualizar(dt, entrada = { x: 0, y: 0 }) {
     if (this.pausado) return;
+    this.sincronizarProfundidade();
     dt = limitar(dt, 0, 0.05);
+    this.atualizandoPasso = true;
+    this.atualizarPortasProducao(dt);
     this.tempo += dt;
     const deposito = atualizarBanco(this.estado.banco, dt);
     if (deposito !== null) this.emitir('depositoConcluido', { valor: deposito });
@@ -858,9 +888,25 @@ export class Simulacao {
     if (this.ajudanteContratado) this.atualizarAjudante(dt);
     const missao = this.missao();
     if (missao.indice > this.missaoAnterior) { this.emitir('missao', { texto: `Próximo passo: ${missao.titulo}` }); this.missaoAnterior = missao.indice; }
+    this.atualizandoPasso = false;
+  }
+  podeAbrirPortaProducao(ator) {
+    return ator === this.estado.jogador || (this.ajudanteContratado && ator === this.ajudante);
+  }
+  atualizarPortasProducao(dt, atorExtra) {
+    if (this.pausado || dt <= 0) return;
+    const funcionarios = [this.estado.jogador, ...(this.ajudanteContratado ? [this.ajudante] : [])];
+    const atores = [...funcionarios, ...this.clientes,
+      ...(atorExtra ? [atorExtra] : [])];
+    this.portasProducao.forEach((porta, i) => {
+      const perto = funcionarios.some(ator => Math.abs(ator.x - porta.x) < 2.4 && Math.abs(ator.z - porta.z) < 4.5);
+      const abertura = limitar(this.aberturasPortasProducao[i] + (perto ? 1 : -1) * Math.min(dt, 0.05) * 1.8, 0, 1);
+      const folha = volumePortaProducao(abertura, porta);
+      if (atores.every(ator => segmentoLivre(ator, ator, [folha], 0.32))) this.aberturasPortasProducao[i] = abertura;
+    });
   }
   pertoDaLixeira() {
-    const jogador = this.estado.jogador, objeto = CONFIG.lixeira;
+    const jogador = this.estado.jogador, objeto = this.lixeira;
     return distanciaEstacao(jogador, objeto) < CONFIG.raioInteracao &&
       segmentoLivre(jogador, pontoMaisProximo(jogador, objeto), this.obstaculos().filter(o => o !== objeto));
   }
@@ -895,7 +941,7 @@ export class Simulacao {
     const candidatos = [];
     const obstaculos = this.obstaculos();
     const doce = selecionarCompartimentoDoces(jogador, this.estado.produtos);
-    const compartimento = selecionarCompartimentoHortifruti(jogador, this.estado.produtos);
+    const compartimento = selecionarCompartimentoHortifruti(jogador, this.estado.produtos, this.produtos);
     const expositorPosterior = selecionarExpositorPosterior(jogador, this.estado.produtos, this.produtos);
     for (const [id, p] of Object.entries(this.produtos)) {
       if (!this.estado.produtos[id].liberado || p.origem === 'confeitaria') continue;
@@ -919,7 +965,7 @@ export class Simulacao {
     }
     candidatos.sort((a, b) => a.distancia - b.distancia);
     const alvo = candidatos[0];
-    if (pertoLixeira && (!alvo || distanciaEstacao(jogador, CONFIG.lixeira) < alvo.distancia)) {
+    if (pertoLixeira && (!alvo || distanciaEstacao(jogador, this.lixeira) < alvo.distancia)) {
       this.atividade = jogador.inventario.length ? 'Lixeira · pare para descartar produtos' : 'Lixeira · inventário vazio';
       if (!jogador.andando && jogador.inventario.length && !this.lixeiraVisitada) {
         this.lixeiraVisitada = true;
@@ -1285,6 +1331,7 @@ export class Simulacao {
         this.progressoCaixa = 0;
         this.emitir('venda', { valor, ponto: CONFIG.caixa });
         if (this.nivel > nivelAnterior) {
+          this.sincronizarProfundidade();
           this.estado.dinheiro += CONFIG.bonusNivel;
           this.emitir('nivel', { nivel: this.nivel });
         }
@@ -1334,7 +1381,7 @@ export class Simulacao {
     if (!trajeto || distancia(trajeto.destino, destino) > 0.1) {
       const dentro = p => p.x > PLANTA_INICIAL.limites.minX && p.z > this.portaProducao.z && p.z < CONFIG.portaEntrada.z;
       const interior = { x: this.portaProducao.x, z: this.portaProducao.z + 0.8 };
-      const exterior = { x: this.portaProducao.x + this.portaProducao.w / 4, z: this.portaProducao.z - 1 };
+      const exterior = { x: this.portaProducao.x, z: this.portaProducao.z - 2 };
       const pontos = dentro(ator) === dentro(destino) ? [destino]
         : dentro(ator) ? [interior, exterior, destino] : [exterior, interior, destino];
       trajeto = { destino: { ...destino }, pontos };
@@ -1342,6 +1389,10 @@ export class Simulacao {
     }
     if (this.caminharCliente(ator, trajeto.pontos[0], dt, this.velocidadeAjudante)) {
       if (trajeto.pontos.length === 1) return true;
+      // Aguarda fora do arco da folha antes de atravessar, sem prender o funcionário.
+      const proximo = trajeto.pontos[1];
+      if (this.portasProducao.some((porta, i) => (ator.z - porta.z) * (proximo.z - porta.z) < 0
+        && Math.abs(ator.z - porta.z) < 2.1 && this.aberturasPortasProducao[i] < 1)) return false;
       trajeto.pontos.shift();
     }
     return false;

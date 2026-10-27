@@ -1,6 +1,76 @@
 # Histórico de alterações
 
-## Versão atual: 0.65.0 — 2026-10-27
+## Versão atual: 0.68.3 — 2026-10-27
+
+- Fecha o vão visual acima da porta dos fundos, prolongando a folha até a verga sem alterar a dobradiça, o vidro ou a animação de abertura.
+- Validação: teste do modelo da porta, suíte completa e build de produção aprovados.
+
+## 0.68.2 — 2026-10-27
+
+- Mantém a loja compacta de 14 × 8 u ao atingir o nível 6. A compra da seção de laranjas inclui o aumento para 14 × 16 u, preservando estoques e reposicionando os personagens com segurança.
+- Remove o aumento do salão como desbloqueio separado. Maçãs, morangos, ovos, leite e cestas extras exigem laranjas para acomodar seus expositores e a fila na planta completa.
+- Atualiza a documentação, os cenários de teste e a verificação de navegador para distinguir subir de nível de comprar a seção.
+- Validação: 372 testes, build de produção e rotas N1–N19 aprovados. Edge em desktop/celular com WebGL e Canvas confirma a loja compacta no N6, o aumento somente após a compra de laranjas, a recarga e a preservação dos estoques, sem salvar imagens.
+
+## 0.68.1 — 2026-10-27
+
+- Restringe a abertura automática da porta dos fundos ao jogador e ao repositor contratado. Clientes não acionam nem mantêm a abertura por proximidade; suas rotas deixam de planejar a porta de serviço aberta.
+- Mantém a proteção da folha contra sobreposição com pessoas e atualiza as verificações de rotas de coleta para usar um funcionário autorizado.
+- Validação: 371 testes, build de produção e rotas N1–N19 aprovados. Regressões verificam clientes parados e navegando, fechamento após a saída do jogador e abertura pelo repositor contratado.
+
+## 0.68.0 — 2026-10-27
+
+- Substitui a porta dupla dos fundos por uma única folha na metade direita, preservando a dobradiça original e fechando a metade esquerda com parede. A porta abre e fecha por proximidade, respeita a pausa e compartilha o giro entre modelo e colisão.
+- Move a lixeira para fora da loja, no espaço da antiga folha esquerda, apoiada no gramado e virada para o acesso externo. Porta e lixeira acompanham a loja compacta, a profundidade completa e a expansão guardada.
+- Ajusta a navegação para planejar o vão aberto e respeitar a folha em movimento. O repositor aguarda fora do arco antes de atravessar. Atualiza o layout para reposicionar personagens com segurança.
+- Validação: 369 testes, build de produção e rotas N1–N19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica a folha única, abertura e fechamento, pausa e lixeira externa nas duas profundidades, sem salvar imagens.
+
+## 0.67.2 — 2026-10-27
+
+- Iguala a velocidade de movimento do repositor à velocidade atual do jogador, incluindo o bônus da cesta de trabalho. Reposição ágil e Repositor ligeiro continuam desativados e sem bônus adicionais.
+- Atualiza a documentação e verifica a distância percorrida pelos dois personagens com e sem a cesta de trabalho.
+- Validação: 364 testes e build de produção aprovados. O teste de movimento confirma a mesma distância percorrida por jogador e repositor com e sem a cesta de trabalho.
+
+## 0.67.1 — 2026-10-27
+
+- Desativa Reposição ágil: remove a melhoria do catálogo, bloqueia sua compra e ignora seu bônus de velocidade mesmo em partidas que já a tinham. O repositor normal do nível 5 continua disponível.
+- Atualiza a ajuda e a documentação de desbloqueios, reunindo todas as melhorias e importações desativadas na lista de conteúdo suspenso. O nível 16 mantém apenas a irrigação.
+- Validação: 363 testes e build de produção aprovados, incluindo bloqueio de compra em níveis altos e ausência de bônus em partidas com compras antigas registradas.
+
+## 0.67.0 — 2026-10-27
+
+- Reorganiza os desbloqueios dos níveis 1 a 19: trigo N4, repositor N5, laranja N6, maçã N7, morangos N9, ovos N11, leite N12, padaria N13, mel N14, queijo N15, irrigação e reposição ágil N16, geleias N17, estacionamento N18 e confeitaria N19. Caixa N2, milho N3, cestas N8 e logística N10 mantêm seus marcos.
+- Remove a exigência de padaria para os morangos. Reordena as seções do hortifruti e acomoda tomate, milho e trigo na loja compacta. A profundidade completa continua automática no N6; a ampliação lateral acompanha a padaria no N13.
+- Explicita a dependência de padaria do apiário e da queijaria, antes herdada da estufa, para preservar o espaço dos expositores no salão ampliado.
+- Atualiza objetivos, modelos e estágios de construção para a nova sequência. Mantém preços, receitas e importações suspensas. A progressão foi validada a partir de partidas novas, sem migração dedicada dos desbloqueios antigos.
+- Validação: 363 testes, build de produção e rotas de todos os níveis 1–19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica trigo compacto N4, expansão N6, pomar N6–7, morango N9, padaria N13 e compras até N19, sem salvar imagens.
+
+## 0.66.3 — 2026-10-27
+
+- Desloca todo o conjunto do caixa e o suporte de cestas 2 u para a direita, incluindo cadeira, funcionário, interações, pagamentos e coleta de cestas.
+- Ajusta a curva da fila para manter dez posições dentro do salão. Atualiza a migração de layout para liberar personagens de móveis reposicionados, preservando saldo e estoques.
+- Desconta pequenos ajustes nos cantos da rota do passo de movimento, evitando um salto ao contornar a entrada no trajeto até as cestas.
+- Validação: 358 testes, build e rotas até N19 aprovados. Edge em desktop/celular com WebGL e Canvas verifica alinhamento do caixa, funcionário e cestas, sem salvar imagens.
+
+## 0.66.2 — 2026-10-27
+
+- Substitui as árvores decorativas pelo mesmo modelo do pomar, com copa arredondada em seis volumes, tronco ramificado e variações de escala e rotação. Compartilha o modelo entre bairro, laranjeira e macieira.
+- Corrige as manchas de grama que não recebiam sombras e criavam círculos claros recortando a sombra das árvores.
+- Validação: 358 testes e build de produção aprovados. Edge em desktop/celular com WebGL e Canvas verifica modelos, configuração de sombras da grama, colheita e reposição do pomar, sem salvar imagens.
+
+## 0.66.1 — 2026-10-27
+
+- Remove completamente o caminho decorativo de pedras brancas entre a porta dos fundos e a horta, em todas as plantas e expansões.
+- Validação: 358 testes e build de produção aprovados. Edge em desktop/celular com WebGL e Canvas verificado sem salvar imagens.
+
+## 0.66.0 — 2026-10-27
+
+- Reduz a profundidade inicial da loja à metade: salão de 14 × 8 u até o nível 5, com fachada fixa. No nível 6, restaura automaticamente os 14 × 16 u, sem compra ou cobrança.
+- Ajusta piso, paredes, porta posterior, lixeira e expositores de ovos e leite à planta compacta, preservando a produção externa e a ordem atual dos desbloqueios.
+- Preserva dinheiro, compras, estoques e cargas dos saves; a migração de layout reposiciona personagens com segurança e a expansão limpa percursos antigos.
+- Validação: 358 testes, build de produção e verificação de rotas incluindo N6 aprovados. Edge em desktop/celular com WebGL e Canvas verifica planta compacta, reposição de ovos e leite, expansão automática, recarga e pomar, sem salvar imagens.
+
+## 0.65.0 — 2026-10-27
 
 - Adiciona macieira no nível 19 por R$ 800, ao lado da laranjeira no gramado, com maçãs em vermelho rubi visíveis na copa e venda por R$ 7. Usa a sexta seção do hortifruti, junto às laranjas.
 - Mantém produção de uma fruta a cada 3 segundos, até oito na árvore e doze na banca. Integra colheita, repositor, pedidos após primeiro abastecimento e salvamento; saves anteriores recebem a macieira não comprada.

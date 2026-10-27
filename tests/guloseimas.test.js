@@ -1,3 +1,4 @@
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import { reativarImportadosParaTeste } from './helpers/importados-suspensos.js';
 reativarImportadosParaTeste();
 
@@ -29,6 +30,7 @@ test('rótulos SVG de guloseimas têm dimensões explícitas para upload no WebG
 function loja(nivel = 22) {
   const sim = new Simulacao(); sim.estado.dinheiro = 100000; sim.proximoCliente = Infinity;
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+  prepararLojaCompleta(sim);
   for (const id of ['alaProducao', 'alaLeite', 'alaTrigo', 'alaPadaria', 'expansao', 'prateleirasImportados']) {
     assert.equal(sim.comprarMelhoria(id).sucesso, true);
   }
@@ -116,7 +118,7 @@ test('quatro variedades ficam apoiadas na face da primeira gôndola voltada ao h
 test('corredor das guloseimas tem rotas de compra, coleta, reposição e saída livres', () => {
   const sim = loja(); sim.comprarMelhoria('prateleirasImportados');
   for (const destino of [sim.produtos.guloseima.coleta, sim.produtos.guloseima.reposicao, ...sim.produtos.guloseima.pontosCompra, CONFIG.clienteCaixa]) {
-    const ator = { ...CONFIG.inicio }; let chegou = false;
+    const ator = Object.assign(sim.estado.jogador, CONFIG.inicio); let chegou = false;
     for (let i = 0; i < 3000 && !chegou; i++) chegou = sim.caminharCliente(ator, destino, 0.05);
     assert.ok(chegou, JSON.stringify(destino));
   }

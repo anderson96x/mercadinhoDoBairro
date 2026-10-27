@@ -2,6 +2,7 @@ import { reativarImportadosParaTeste } from './helpers/importados-suspensos.js';
 reativarImportadosParaTeste();
 
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG } from '../src/jogo/configuracao.js';
@@ -14,6 +15,7 @@ function nivel(n = 17) {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
   sim.estado.estatisticas.clientes = (n - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 5000;
+  prepararLojaCompleta(sim);
   return sim;
 }
 
@@ -92,6 +94,7 @@ test('corredores das prateleiras preservam os dez lugares da fila e acesso ao fu
   sim.comprarMelhoria('prateleirasImportados');
   for (let i = 0; i < 10; i++) assert.ok(segmentoLivre(pontoFila(i), pontoFila(i), sim.obstaculos(), 0.32));
   const livre = (a, b) => segmentoLivre(a, b, sim.obstaculosCliente({}), 0.32);
+  sim.aberturasPortasProducao.fill(1);
   for (const p of PRATELEIRAS_IMPORTADOS) for (const lado of [-1, 1]) {
     const destino = { x: p.x + lado * (p.w / 2 + 0.6), z: p.z };
     assert.ok(buscarCaminho(CONFIG.inicio, destino, livre, sim.limitesClientes).length);

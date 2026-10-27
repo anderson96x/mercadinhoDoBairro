@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
@@ -10,10 +11,11 @@ import { resumoProducao } from '../src/interface/producao.js';
 
 const ids = Object.keys(CONFEITARIA.produtos);
 const TEMPO_LOTE = CONFEITARIA.segundos + ROTEIRO_CONFEITARIA.reduce((total, etapa) => total + etapa.duracao, 0);
-function preparar(nivel = 17) {
+function preparar(nivel = 19) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
+  prepararLojaCompleta(sim);
   for (const id of ['alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario', 'caixa']) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   sim.proximoCliente = Infinity; sim.definirAssaltosAtivos(false);
   return sim;
@@ -24,9 +26,9 @@ function abrir() {
   return sim;
 }
 
-test('confeitaria exige nível 17, padaria, apiário, ovos e R$ 1.000; compra única libera os três doces a R$ 15', () => {
-  const sim = preparar(16);
-  assert.match(sim.comprarMelhoria('confeitaria').motivo, /nível 17/);
+test('confeitaria exige nível 19, padaria, apiário, ovos e R$ 1.000; compra única libera os três doces a R$ 15', () => {
+  const sim = preparar(18);
+  assert.match(sim.comprarMelhoria('confeitaria').motivo, /nível 19/);
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
   for (const id of ['alaPadaria', 'apiario', 'alaProducao']) {
     sim.estado.melhorias[id] = 0;

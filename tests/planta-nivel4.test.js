@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
@@ -12,12 +13,13 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 
 function nivel4() {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 75; sim.estado.dinheiro = 500;
+  sim.estado.estatisticas.clientes = 250; sim.estado.dinheiro = 500;
+  prepararLojaCompleta(sim);
   sim.proximoCliente = Infinity;
   return sim;
 }
 
-test('N4 segue o SVG: galinheiro atrás e à direita do milho, ovos na parede posterior após a porta', () => {
+test('N11 segue o SVG: galinheiro atrás e à direita do milho, ovos na parede posterior após a porta', () => {
   const svg = readFileSync(new URL('../docs/mercadinhoDoBairro.drawio.svg', import.meta.url), 'utf8');
   const modelo = svg.match(/\bcontent="([^"]*)"/)[1]
     .replaceAll('&quot;', '"').replaceAll('&lt;', '<').replaceAll('&gt;', '>').replaceAll('&amp;', '&');
@@ -76,10 +78,10 @@ test('N4 segue o SVG: galinheiro atrás e à direita do milho, ovos na parede po
   }
 });
 
-test('N4 exige R$ 500 e mantém paredes, fachada e hortifruti existentes, inclusive comprando fora de ordem', () => {
-  const sim = nivel4(); sim.estado.estatisticas.clientes = 50;
+test('N11 exige R$ 500 e mantém paredes, fachada e hortifruti existentes, inclusive comprando fora de ordem', () => {
+  const sim = nivel4(); sim.estado.estatisticas.clientes = 225;
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, false);
-  sim.estado.estatisticas.clientes = 75;
+  sim.estado.estatisticas.clientes = 250;
   assert.equal(sim.estado.produtos.ovos.liberado, false);
   sim.estado.dinheiro = 499;
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, false);
@@ -98,7 +100,7 @@ test('N4 exige R$ 500 e mantém paredes, fachada e hortifruti existentes, inclus
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, false);
 });
 
-test('N4 produz, coleta pela porta dos fundos, abastece e vende um ovo por R$ 15 com devolução da cesta', () => {
+test('N11 produz, coleta pela porta dos fundos, abastece e vende um ovo por R$ 15 com devolução da cesta', () => {
   const sim = nivel4(); sim.comprarMelhoria('alaProducao');
   function ir(alvo) {
     let chegou = false;
@@ -112,12 +114,12 @@ test('N4 produz, coleta pela porta dos fundos, abastece e vende um ovo por R$ 15
   assert.equal(sim.estado.produtos.ovos.horta, 0);
   sim.atualizar(0.05);
   assert.equal(sim.estado.produtos.ovos.horta, 1);
-  ir({ x: CONFIG.portaProducao.x, z: CONFIG.portaProducao.z - 1.1 });
+  ir({ x: CONFIG.portaProducao.x, z: sim.portaProducao.z - 1.1 });
   ir(PRODUTOS.ovos.coleta);
   for (let i = 0; i < 300 && sim.estado.jogador.inventario.length < 4; i++) sim.atualizar(0.05);
   assert.deepEqual(sim.estado.jogador.inventario, Array(4).fill('ovos'));
-  ir({ x: CONFIG.portaProducao.x, z: CONFIG.portaProducao.z - 1.1 });
-  ir(PRODUTOS.ovos.reposicao);
+  ir({ x: CONFIG.portaProducao.x, z: sim.portaProducao.z - 1.1 });
+  ir(sim.produtos.ovos.reposicao);
   for (let i = 0; i < 30; i++) sim.atualizar(0.05);
   assert.equal(sim.estado.produtos.ovos.prateleira, 4);
   assert.equal(sim.estado.jogador.inventario.length, 0);
@@ -132,9 +134,9 @@ test('N4 produz, coleta pela porta dos fundos, abastece e vende um ovo por R$ 15
   assert.equal(sim.clientes.length, 0); assert.equal(sim.cestasDisponiveis, 5);
 });
 
-test('V6 migra ovos, progresso de produção e cargas para N4 sem cobrar nem criar extensão lateral', () => {
+test('V6 migra ovos, progresso de produção e cargas para N11 sem cobrar nem criar extensão lateral', () => {
   const sim = nivel4(); sim.comprarMelhoria('alaProducao');
-  sim.estado.estatisticas.clientes = 125; sim.estado.dinheiro = 900;
+  sim.estado.estatisticas.clientes = 250; sim.estado.dinheiro = 900;
   assert.ok(sim.comprarMelhoria('ajudante').sucesso);
   sim.estado.versaoLayout = 6; sim.estado.dinheiro = 123;
   sim.estado.produtos.ovos.horta = 3; sim.estado.produtos.ovos.prateleira = 5; sim.estado.produtos.ovos.apresentado = true;

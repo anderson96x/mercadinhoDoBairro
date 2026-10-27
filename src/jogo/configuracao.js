@@ -11,7 +11,7 @@ export const ALTURA_PAREDE_BAIXA = 0.75;
 export const CONFIG = {
   chaveSalvamento: 'mercadinho-do-bairro-v1',
   versaoSalvamento: 1,
-  versaoLayout: 23,
+  versaoLayout: 26,
   dinheiroInicial: 0,
   capacidadeInicial: 4,
   velocidadeInicial: 4.3,
@@ -49,19 +49,19 @@ export const CONFIG = {
   limiteCamera: { minX: -16, maxX: 24, minZ: -25.5, maxZ: 14.5 },
   inicio: { x: 0.2, z: 3.4 },
   portaProducao: PLANTA_INICIAL.portaProducao,
-  caixa: { x: 3.45, z: 6.05 },
-  balcao: { x: 3.45, z: 4.65 },
-  acessoCaixa: { x: 1.55, z: 4.65 },
-  clienteCaixa: { x: 2.2, z: 3.5 },
-  cadeiraCaixa: { x: 3.45, z: 6.05 },
-  // Encostada na face interna da parede do fundo.
-  lixeira: { x: 1.61, z: -8.75, w: 0.84, d: 0.82 },
-  areaFuncionarioCaixa: { x: 3.45, z: 6.05, w: 0.8, d: 0.9 },
+  caixa: { x: 5.45, z: 6.05 },
+  balcao: { x: 5.45, z: 4.65 },
+  acessoCaixa: { x: 3.55, z: 4.65 },
+  clienteCaixa: { x: 4.2, z: 3.5 },
+  cadeiraCaixa: { x: 5.45, z: 6.05 },
+  // Fora da loja, no espaço da antiga folha esquerda da porta de produção.
+  lixeira: { x: 2.85, z: -10, w: 0.84, d: 0.82 },
+  areaFuncionarioCaixa: { x: 5.45, z: 6.05, w: 0.8, d: 0.9 },
   anguloCaixa: Math.PI,
   entrada: { x: -1.3, z: 8.4 },
   portaEntrada: { x: -1.3, z: 6.7 },
-  cestas: { x: 0.8, z: 5.2 },
-  pontoCestasCliente: { x: -0.05, z: 5.2 },
+  cestas: { x: 2.8, z: 5.2 },
+  pontoCestasCliente: { x: 1.95, z: 5.2 },
   // Mantém o corpo dentro da calçada, junto às extremidades visíveis da rua.
   extremosCalcada: [
     { x: PLANTA_INICIAL.terreno.x - PLANTA_INICIAL.terreno.w / 2 + 0.5, z: 8.4 },
@@ -107,35 +107,35 @@ export const PRODUTOS = {
     ...compartimentoHortifruti('trigo'), liberado: false
   },
   morango: {
-    nome: 'Morango', plural: 'Morangos', cor: 0xe74769, preco: 16, origem: 'horta', nivelMinimo: 11,
+    nome: 'Morango', plural: 'Morangos', cor: 0xe74769, preco: 16, origem: 'horta', nivelMinimo: 9,
     tempoCrescimento: 3.4, capacidadeHorta: 8, capacidadePrateleira: 12,
     ...PLANTA_MORANGO,
     ...compartimentoHortifruti('morango'), liberado: false
   },
   laranja: {
-    nome: 'Laranja', plural: 'Laranjas', cor: 0xf79520, preco: 7, origem: 'pomar', nivelMinimo: 18,
+    nome: 'Laranja', plural: 'Laranjas', cor: 0xf79520, preco: 7, origem: 'pomar', nivelMinimo: 6,
     tempoCrescimento: 3, capacidadeHorta: 8, capacidadePrateleira: 12,
     ...PLANTA_LARANJA,
     ...compartimentoHortifruti('laranja'), liberado: false
   },
   maca: {
-    nome: 'Maçã', plural: 'Maçãs', cor: 0xc33242, preco: 7, origem: 'pomar', nivelMinimo: 19,
+    nome: 'Maçã', plural: 'Maçãs', cor: 0xc33242, preco: 7, origem: 'pomar', nivelMinimo: 7,
     tempoCrescimento: 3, capacidadeHorta: 8, capacidadePrateleira: 12,
     ...PLANTA_MACA,
     ...compartimentoHortifruti('maca'), liberado: false
   },
   mel: {
-    nome: 'Mel', plural: 'Garrafas de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 12,
+    nome: 'Mel', plural: 'Garrafas de mel', cor: 0xe7a92b, preco: 24, origem: 'apiario', nivelMinimo: 14,
     tempoCrescimento: 5, capacidadeHorta: 8, capacidadePrateleira: 12,
     ...PLANTA_MEL, liberado: false
   },
   queijo: {
-    nome: 'Queijo', plural: 'Queijos', cor: 0xf5cd61, preco: 18, origem: 'oficina', nivelMinimo: 13,
+    nome: 'Queijo', plural: 'Queijos', cor: 0xf5cd61, preco: 18, origem: 'oficina', nivelMinimo: 15,
     capacidadeHorta: 8, capacidadePrateleira: 12,
     ...PLANTA_QUEIJO, liberado: false
   },
   geleia: {
-    nome: 'Geleia', plural: 'Potes de geleia', cor: 0xb94470, preco: 30, origem: 'oficina', nivelMinimo: 15,
+    nome: 'Geleia', plural: 'Potes de geleia', cor: 0xb94470, preco: 30, origem: 'oficina', nivelMinimo: 17,
     capacidadeHorta: 9, capacidadePrateleira: 12,
     ...PLANTA_GELEIA, liberado: false
   },
@@ -201,16 +201,26 @@ const PRODUTOS_EXPANSAO = Object.fromEntries(Object.entries(PRODUTOS).map(([id, 
   return [id, p];
 }));
 
-export const produtosDaLoja = estado => estado?.melhorias?.expansao ? PRODUTOS_EXPANSAO : PRODUTOS;
+export const lojaCompacta = estado => !estado?.melhorias?.expansao && !estado?.melhorias?.laranja;
+const PRODUTOS_COMPACTOS = Object.fromEntries(Object.entries(PRODUTOS).map(([id, p]) => {
+  if (!['tomate', 'milho', 'trigo'].includes(id)) return [id, p];
+  const deslocamento = ['tomate', 'milho', 'trigo'].indexOf(id) * 0.3;
+  const deslocar = ponto => ({ ...ponto, z: ponto.z + deslocamento });
+  return [id, { ...p, prateleira: { ...deslocar(p.prateleira), d: 1.9 }, reposicao: deslocar(p.reposicao),
+    cliente: deslocar(p.cliente), pontosCompra: p.pontosCompra.map(ponto => ({ ...ponto,
+      z: p.reposicao.z + deslocamento + (ponto.z - p.reposicao.z) * 0.75 })) }];
+}));
+export const produtosDaLoja = estado => estado?.melhorias?.expansao ? PRODUTOS_EXPANSAO
+  : estado && lojaCompacta(estado) ? PRODUTOS_COMPACTOS : PRODUTOS;
 
 // As alas dos ovos, do leite e do trigo e o ajudante entram em marcos separados da progressão.
-export const NIVEL_OVOS = 4;
-export const NIVEL_LEITE = 5;
-export const NIVEL_AJUDANTE = 6;
-export const NIVEL_TRIGO = 7;
-export const NIVEL_PADARIA = 9;
+export const NIVEL_OVOS = 11;
+export const NIVEL_LEITE = 12;
+export const NIVEL_AJUDANTE = 5;
+export const NIVEL_TRIGO = 4;
+export const NIVEL_PADARIA = 13;
 export const ALA_PRODUCAO = {
-  id: 'alaProducao', indice: 1, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
+  id: 'alaProducao', indice: 3, nivelMinimo: NIVEL_OVOS, custo: 500, produtos: ['ovos'],
   limites: { ...CONFIG.limiteMundo },
   // Geometria histórica das faixas antigas, sem renderização ou colisão.
   piso: { x: 11.5, z: -1.3, w: 1.2, d: 16 },
@@ -225,7 +235,7 @@ export const ALA_PRODUCAO = {
   tempoOvo: 3.5
 };
 export const ALA_LEITE = {
-  id: 'alaLeite', indice: 2, nivelMinimo: NIVEL_LEITE, custo: 800, produtos: ['leite'],
+  id: 'alaLeite', indice: 4, nivelMinimo: NIVEL_LEITE, custo: 800, produtos: ['leite'],
   limites: { ...CONFIG.limiteMundo },
   piso: { x: 13.6, z: -1.3, w: 3, d: 16 },
   camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
@@ -238,7 +248,7 @@ export const ALA_LEITE = {
   tempoLeite: 4.5
 };
 export const ALA_TRIGO = {
-  id: 'alaTrigo', indice: 3, nivelMinimo: NIVEL_TRIGO, custo: 400, produtos: ['trigo'],
+  id: 'alaTrigo', indice: 1, nivelMinimo: NIVEL_TRIGO, custo: 400, produtos: ['trigo'],
   limites: { ...CONFIG.limiteMundo },
   piso: { x: 18.1, z: -1.3, w: 6, d: 16 },
   camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
@@ -252,7 +262,7 @@ export const ALA_TRIGO = {
   ]
 };
 export const ALA_PADARIA = {
-  id: 'alaPadaria', indice: 4, nivelMinimo: NIVEL_PADARIA, custo: 1400, produtos: ['pao'],
+  id: 'alaPadaria', indice: 5, nivelMinimo: NIVEL_PADARIA, custo: 1400, produtos: ['pao'],
   piso: PLANTA_AMPLIADA.piso, camera: PLANTA_AMPLIADA.camera,
   duracaoConstrucao: 4, paredes: paredesAmpliacao(ALTURA_PAREDE_BAIXA),
   entrada: volumePadaria(MODELO_PADARIA.entrada),
@@ -264,7 +274,7 @@ export const ALA_PADARIA = {
 
 // Identificador preservado para compatibilidade com saves; não amplia o salão.
 export const ALA_ARTESANAL = {
-  id: 'alaArtesanal', indice: 5, nivelMinimo: 11, custo: 1200, produtos: ['morango'],
+  id: 'alaArtesanal', indice: 2, nivelMinimo: 9, custo: 1200, produtos: ['morango'],
   paredes: [],
   camera: PLANTA_AMPLIADA.camera, duracaoConstrucao: 4
 };
@@ -277,8 +287,8 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
-  { id: 'maca', titulo: 'Macieira', descricao: 'Plante uma macieira ao lado da laranjeira e abra a seção de maçãs junto às laranjas. Colha e venda cada maçã por R$ 7.', custo: 800, icone: 'maca', produto: 'maca', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 19 },
-  { id: 'laranja', titulo: 'Laranjeira', descricao: 'Plante uma laranjeira ao lado do apiário e abra a seção de laranjas junto aos morangos. Colha e venda cada laranja por R$ 7.', custo: 800, icone: 'laranja', produto: 'laranja', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 18 },
+  { id: 'maca', titulo: 'Macieira', descricao: 'Plante uma macieira ao lado da laranjeira e abra a seção de maçãs junto às laranjas. Colha e venda cada maçã por R$ 7.', custo: 800, icone: 'maca', produto: 'maca', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 7, requisitoMelhoria: 'laranja' },
+  { id: 'laranja', titulo: 'Laranjeira', descricao: 'Plante uma laranjeira no pomar e abra a seção de laranjas junto ao trigo. A compra amplia a profundidade da loja para 14 × 16 u. Colha e venda cada laranja por R$ 7.', custo: 800, icone: 'laranja', produto: 'laranja', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 6 },
   { id: 'confeitaria', titulo: 'Confeitaria da padaria', descricao: 'Instale vitrines, uma batedeira e um confeiteiro. Entregue mel e ovos: 1 mel + 1 ovo rendem um bolo, um donut e um éclair, com preparo de 6 segundos e entrega nas vitrines. Venda por R$ 15 cada.', custo: CONFEITARIA.custo, icone: 'bolo', max: 1, tipo: 'confeitaria', categoria: 'mercado', nivelMinimo: CONFEITARIA.nivel, requisitoMelhoria: 'alaPadaria', requisitos: ['apiario', 'alaProducao'] },
   { id: 'importarProdutos', titulo: 'Enlatados', descricao: 'Enlatados variados, como feijão, milho, ervilha e sardinha.', custo: 270, icone: 'enlatado', max: 1000000000, tipo: 'importacao', produto: 'enlatado', categoria: 'importados', nivelMinimo: 19, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
   { id: 'importarCereais', titulo: 'Cereais', descricao: 'Caixas de cereais em quatro variedades.', custo: 405, icone: 'cereal', max: 1000000000, tipo: 'importacao', produto: 'cereal', categoria: 'importados', nivelMinimo: 20, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
@@ -286,20 +296,20 @@ export const MELHORIAS = [
   { id: 'importarDoces', titulo: 'Biscoitos e doces', descricao: 'Cookies de chocolate, biscoitos amanteigados, balas de frutas e bombons.', custo: 360, icone: 'guloseima', max: 1000000000, tipo: 'importacao', produto: 'guloseima', categoria: 'importados', nivelMinimo: 22, requisitoMelhoria: 'prateleirasImportados', recorrente: true, ativa: false },
   { id: 'expansao', titulo: 'Expansão', descricao: 'Amplie os fundos e o terreno à esquerda. Inclui depósito de 27 caixas e pátio de caminhões com acesso exclusivo pela rua. A fazenda recua e as bancadas da cozinha acompanham a nova parede dos fundos.', custo: 10000, icone: 'prateleira', max: 1, tipo: 'expansaoFundos', categoria: 'mercado', nivelMinimo: 18, requisitoMelhoria: 'alaPadaria', ativa: false },
   { id: 'prateleirasImportados', titulo: 'Prateleiras de importados', descricao: 'Instale até duas prateleiras metálicas de dois lados no centro da loja. No nível 19, a primeira recebe produtos importados.', custo: 1000, icone: 'prateleira', max: 2, tipo: 'mobiliario', categoria: 'mercado', nivelMinimo: 17, ativa: false },
-  { id: 'estacionamento', titulo: 'Estacionamento', descricao: 'Construa seis vagas ao lado da loja. Clientes que chegam de carro sempre pedem uma cesta cheia de 5 produtos. Mantenha as prateleiras abastecidas para atender ao pedido.', custo: 10000, icone: 'estacionamento', max: 1, tipo: 'construcaoExterna', categoria: 'mercado', nivelMinimo: 16 },
+  { id: 'estacionamento', titulo: 'Estacionamento', descricao: 'Construa seis vagas ao lado da loja. Clientes que chegam de carro sempre pedem uma cesta cheia de 5 produtos. Mantenha as prateleiras abastecidas para atender ao pedido.', custo: 10000, icone: 'estacionamento', max: 1, tipo: 'construcaoExterna', categoria: 'mercado', nivelMinimo: 18 },
   { id: 'logistica', titulo: 'Cesta de trabalho', descricao: 'Carregue 8 produtos e ande 15% mais rápido para cuidar de uma loja maior.', custo: 400, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 10 },
-  { id: 'alaArtesanal', titulo: 'Estufa de morangos', descricao: 'Construa uma estufa à direita do curral. Abasteça a nova seção do hortifruti junto à parede esquerda.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: 11, requisitoMelhoria: 'alaPadaria' },
-  { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa uma colmeia à direita da estufa. Recolha as garrafas de mel na bandeja e abasteça o expositor na frente direita da loja.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 12, requisitoMelhoria: 'alaArtesanal' },
-  { id: 'queijaria', titulo: 'Queijaria', descricao: 'Entregue leite à queijaria na sala dos fundos, pela entrada lateral aberta. Cada garrafa rende 2 queijos. Recolha os queijos e abasteça o refrigerador à direita do leite.', custo: 1600, icone: 'queijo', max: 1, tipo: 'construcao', produto: 'queijo', categoria: 'mercado', nivelMinimo: 13, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaLeite'] },
-  { id: 'irrigacao', titulo: 'Irrigação da fazenda', descricao: 'Instale irrigadores em todas as hortas: as colheitas crescem 25% mais rápido.', custo: 650, icone: 'folha', max: 1, categoria: 'mercado', nivelMinimo: 14, requisitoMelhoria: 'alaArtesanal' },
-  { id: 'equipeAgil', titulo: 'Reposição ágil', descricao: 'O repositor anda 30% mais rápido e prioriza as bancas vazias da loja ampliada.', custo: 500, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: 14, requisitoMelhoria: 'ajudante' },
-  { id: 'cozinhaGeleia', titulo: 'Cozinha de geleias', descricao: 'Na cozinha ao lado da queijaria, na sala dos fundos, combine 2 morangos e 1 mel para fazer 3 geleias. Recolha os potes e abasteça a seção de geleias junto ao mel, na frente direita.', custo: 2200, icone: 'geleia', max: 1, tipo: 'construcao', produto: 'geleia', categoria: 'mercado', nivelMinimo: 15, requisitoMelhoria: 'apiario' },
+  { id: 'alaArtesanal', titulo: 'Estufa de morangos', descricao: 'Construa uma estufa nos fundos da fazenda. Abasteça a nova seção do hortifruti junto às maçãs.', custo: ALA_ARTESANAL.custo, icone: 'morango', produto: 'morango', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: ALA_ARTESANAL.nivelMinimo, requisitoMelhoria: 'laranja' },
+  { id: 'apiario', titulo: 'Apiário do bairro', descricao: 'Construa uma colmeia à direita da estufa. Recolha as garrafas de mel na bandeja e abasteça o expositor na frente direita da loja.', custo: 850, icone: 'mel', max: 1, tipo: 'construcao', produto: 'mel', categoria: 'mercado', nivelMinimo: 14, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaPadaria'] },
+  { id: 'queijaria', titulo: 'Queijaria', descricao: 'Entregue leite à queijaria na sala dos fundos, pela entrada lateral aberta. Cada garrafa rende 2 queijos. Recolha os queijos e abasteça o refrigerador à direita do leite.', custo: 1600, icone: 'queijo', max: 1, tipo: 'construcao', produto: 'queijo', categoria: 'mercado', nivelMinimo: 15, requisitoMelhoria: 'alaArtesanal', requisitos: ['alaLeite', 'alaPadaria'] },
+  { id: 'irrigacao', titulo: 'Irrigação da fazenda', descricao: 'Instale irrigadores em todas as hortas: as colheitas crescem 25% mais rápido.', custo: 650, icone: 'folha', max: 1, categoria: 'mercado', nivelMinimo: 16, requisitoMelhoria: 'alaArtesanal' },
+  { id: 'equipeAgil', titulo: 'Reposição ágil', descricao: 'O repositor anda 30% mais rápido e prioriza as bancas vazias da loja ampliada.', custo: 500, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: 16, requisitoMelhoria: 'ajudante', ativa: false },
+  { id: 'cozinhaGeleia', titulo: 'Cozinha de geleias', descricao: 'Na cozinha ao lado da queijaria, na sala dos fundos, combine 2 morangos e 1 mel para fazer 3 geleias. Recolha os potes e abasteça a seção de geleias junto ao mel, na frente direita.', custo: 2200, icone: 'geleia', max: 1, tipo: 'construcao', produto: 'geleia', categoria: 'mercado', nivelMinimo: 17, requisitoMelhoria: 'apiario' },
   { id: 'milho', titulo: 'Uma nova colheita', descricao: 'Abra o canteiro de milho atrás dos tomates e acrescente sua seção à banca de hortifruti.', custo: 350, icone: 'milho', produto: 'milho', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 3 },
-  { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa o galinheiro atrás da loja e instale a estante de ovos na parede do fundo, à direita da porta de produção.', custo: ALA_PRODUCAO.custo, icone: 'ovos', produto: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS },
-  { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa o curral atrás da loja, ao lado do galinheiro, e instale o refrigerador de leite junto aos ovos na parede do fundo.', custo: ALA_LEITE.custo, icone: 'leite', produto: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE },
+  { id: 'alaProducao', titulo: 'Ala dos ovos', descricao: 'Construa o galinheiro atrás da loja e instale a estante de ovos na parede do fundo, à direita da porta de produção.', custo: ALA_PRODUCAO.custo, icone: 'ovos', produto: 'ovos', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_OVOS, requisitoMelhoria: 'laranja' },
+  { id: 'alaLeite', titulo: 'Ala do leite', descricao: 'Construa o curral atrás da loja, ao lado do galinheiro, e instale o refrigerador de leite junto aos ovos na parede do fundo.', custo: ALA_LEITE.custo, icone: 'leite', produto: 'leite', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_LEITE, requisitoMelhoria: 'laranja' },
   { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra o canteiro de trigo atrás do milho e acrescente sua seção ao hortifruti, mantendo o salão inicial.', custo: ALA_TRIGO.custo, icone: 'trigo', produto: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
   { id: 'alaPadaria', titulo: 'Padaria', descricao: 'Cada trigo rende 3 pães. Entregue trigo na caixa ao fundo da padaria, junto à parede direita.', custo: ALA_PADARIA.custo, icone: 'pao', produto: 'pao', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_PADARIA, requisitoMelhoria: 'alaTrigo' },
-  { id: 'cestasExtras', titulo: 'Mais cestas para clientes', descricao: 'Adicione 5 cestas para receber mais 5 clientes na loja ao mesmo tempo.', custo: 100, icone: 'cesta', max: 1, categoria: 'mercado', nivelMinimo: 8 },
+  { id: 'cestasExtras', titulo: 'Mais cestas para clientes', descricao: 'Adicione 5 cestas para receber mais 5 clientes na loja ao mesmo tempo.', custo: 100, icone: 'cesta', max: 1, categoria: 'mercado', nivelMinimo: 8, requisitoMelhoria: 'laranja' },
   { id: 'mochila', titulo: 'Mais capacidade', descricao: 'Carregue mais 4 produtos por viagem.', custo: 25, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 1, ativa: false },
   { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 100, icone: 'raio', max: 1, categoria: 'jogador', nivelMinimo: 5, ativa: false },
   { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 250, icone: 'pessoa', max: 1, categoria: 'funcionarios', nivelMinimo: 2 },
