@@ -4,13 +4,14 @@ import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
 import { geometriaEstacao, intervaloEstacoes, estacoesSeparadasPorParede } from '../src/jogo/estacoes.js';
 import { PAREDES_LOJA } from '../src/jogo/bairro.js';
 import { CONFEITARIA } from '../src/jogo/confeitaria.js';
+import { SUCOS } from '../src/jogo/sucos.js';
 
 export function abrirLoja(nivel = 15) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 40000;
   for (const id of ['caixa', 'milho', 'laranja', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
-    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'confeitaria', 'maca', 'prateleirasImportados', 'expansao', 'prateleiraBiscoitosEnlatados', 'prateleiraMantimentosCereais']) {
+    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'confeitaria', 'maca', 'prateleirasImportados', 'expansao', 'prateleiraBiscoitosEnlatados', 'prateleiraMantimentosCereais', 'sucos']) {
     const melhoria = MELHORIAS.find(m => m.id === id);
     if (melhoria.ativa !== false && melhoria.nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }
@@ -19,7 +20,7 @@ export function abrirLoja(nivel = 15) {
   return sim;
 }
 
-for (let nivel = 1; nivel <= 22; nivel++) {
+for (let nivel = 1; nivel <= 23; nivel++) {
   const sim = abrirLoja(nivel);
   for (const [id, produto] of Object.entries(sim.produtos)) {
     if (!sim.estado.produtos[id].liberado) continue;
@@ -44,9 +45,10 @@ for (let nivel = 1; nivel <= 22; nivel++) {
   console.log(`N${nivel}: purchase, collection, stocking and checkout routes pass.`);
 }
 
-const pads = Object.entries(PRODUTOS).filter(([, p]) => !['importado', 'confeitaria'].includes(p.origem)).flatMap(([id,p]) =>
+const pads = Object.entries(PRODUTOS).filter(([, p]) => !['importado', 'confeitaria', 'sucos'].includes(p.origem)).flatMap(([id,p]) =>
   (id === 'pao' ? ['reposicao'] : ['coleta','reposicao']).map(tipo => ({ id, tipo, ...geometriaEstacao(id, tipo) })));
 pads.push({ id: 'confeitaria', tipo: 'entrega', ...CONFEITARIA.entrada });
+pads.push({ id: 'sucos', tipo: 'entrega', ...SUCOS.bancada });
 for (let i=0;i<pads.length;i++) for (let j=i+1;j<pads.length;j++) {
   if ([pads[i].id, pads[j].id].includes('confeitaria') && [pads[i].id, pads[j].id].includes('pao')) {
     // Duas seções contíguas do mesmo balcão, selecionadas por lados exclusivos em interagir().

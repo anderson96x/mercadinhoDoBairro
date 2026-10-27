@@ -164,3 +164,9 @@ npm run build
 ```
 
 Confira também no navegador: colher, abastecer, vender, comprar melhoria, abrir/fechar menus e recarregar a página. No celular, confira arrastar, soltar, mudar a orientação e alternar para outra aba. A simulação pausa quando a página fica oculta.
+
+## Sucos (N23)
+
+`sucos-visual.js` constrói a máquina, garrafas e geladeira exclusiva dos sucos. `animarMaquinaSucos()` mostra líquido e redemoinho somente quando a receita ativa tem progresso maior que zero; a cuba fica vazia antes de iniciar e após engarrafar cada lote. Durante a pausa, recebe tempo zero e preserva o conteúdo do preparo interrompido. A cuba usa vidro sem escrita de profundidade, enquanto líquido e reflexos do vórtice têm geometria própria, compatível com WebGL e Canvas. `GELADEIRA_SUCOS` e `posicaoGarrafaGeladeira()` compartilham alturas e escala entre as quatro prateleiras, as fileiras de seis garrafas e o destino da animação de reposição. Não use um relógio independente da atualização da cena.
+
+`src/jogo/sucos.js` concentra receitas, produção, validação e as posições compartilhadas de máquina, balcão, geladeira e reserva futura. A borda posterior do balcão encosta na face interna da parede do anexo, como a queijaria. A simulação entrega frutas uma a uma e produz em `produtos[id].horta`; jogador e repositor recolhem garrafas e abastecem `prateleira`. Os quatro produtos usam `origem: sucos` e compartilham dois obstáculos: balcão com máquina e geladeira. A coleta compartilhada entrega frutas primeiro e recolhe o primeiro sabor pronto quando não há frutas para entregar; a reposição respeita a seleção do hortifruti vizinho. A reserva à direita não cria móvel nem colisão. Preserve o cursor de alternância, progresso por sabor e os dois estoques ao salvar. Verifique com `tests/sucos.test.js`, rotas até N23 e `scripts/verificar-sucos.mjs`, sem salvar imagens.

@@ -3,6 +3,7 @@ import { distanciaEstacao, geometriaEstacao } from '../jogo/estacoes.js';
 import { icone } from './icones.js';
 import { CONFEITARIA, podeProduzirConfeitaria, situacaoConfeiteiro } from '../jogo/confeitaria.js';
 import { trabalhoPadaria } from '../jogo/producao-padaria.js';
+import { SUCOS, receitaDisponivelSucos } from '../jogo/sucos.js';
 
 function resumoPadaria(estado) {
   const producao = estado.producao;
@@ -38,6 +39,18 @@ export function resumoProducao(estado) {
         : 'Produzindo', produzindo: !cheio && !faltantes.length };
   });
   const confeitaria = [];
+  if (estado.melhorias.sucos) {
+    const ativa = receitaDisponivelSucos(estado)?.id;
+    for (const [id, sabor] of Object.entries(SUCOS.sabores)) {
+      const ingredientes = Object.entries(sabor.ingredientes).map(([fruta, quantidade]) => ({ id: fruta, quantidade, disponivel: estado.sucos.ingredientes[fruta] }));
+      const cheio = estado.produtos[id].horta + sabor.rendimento > SUCOS.capacidadeSabor;
+      const faltando = ingredientes.some(item => item.disponivel < item.quantidade);
+      confeitaria.push({ id, nome: sabor.nome, ingredientes, prontos: estado.produtos[id].horta,
+        prontosTexto: `${estado.produtos[id].horta} no balcão · ${estado.produtos[id].prateleira} na geladeira`, progresso: Math.floor(estado.sucos.progresso[id] / SUCOS.segundos * 100),
+        produzindo: ativa === id, status: cheio ? 'Recolha as garrafas do balcão' : faltando ? 'Aguardando frutas' : ativa === id ? 'Preparando sucos' : 'Aguardando a máquina',
+        receitaTexto: `${Object.entries(sabor.ingredientes).map(([fruta, quantidade]) => `${quantidade} ${PRODUTOS[fruta].nome.toLocaleLowerCase('pt-BR')}`).join(' + ')} → ${sabor.rendimento} garrafa(s) · 5s · R$ 25 por garrafa` });
+    }
+  }
   if (estado.melhorias.confeitaria) {
     const producao = estado.confeitaria;
     const ingredientes = Object.keys(CONFEITARIA.ingredientes).map(id => ({ id, disponivel: producao[id], quantidade: CONFEITARIA.capacidadeIngredientes, faltando: producao[id] < 1 }));
@@ -58,7 +71,7 @@ export function resumoProducao(estado) {
 
 export function atualizarPainelProducao(painel, estado) {
   const oficinas = resumoProducao(estado).filter(({ id }) =>
-    (id === 'confeitaria' ? [CONFEITARIA.entrada]
+    (SUCOS.sabores[id] ? [SUCOS.bancada] : id === 'confeitaria' ? [CONFEITARIA.entrada]
       : id === 'pao' ? [ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, PRODUTOS.pao.prateleira]
       : [geometriaEstacao(id, 'coleta', produtosDaLoja(estado))]).some(estacao => distanciaEstacao(estado.jogador, estacao) < CONFIG.raioInteracao));
   painel.hidden = !oficinas.length;

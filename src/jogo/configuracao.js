@@ -1,5 +1,6 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
 import { CONFEITARIA } from './confeitaria.js';
+import { SUCOS } from './sucos.js';
 import { PLANTA_LARANJA, PLANTA_MACA } from './planta.js';
 import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, pontoPadaria, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
 import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes-produtos.js';
@@ -78,6 +79,12 @@ const EXTREMOS_CALCADA_EXPANSAO = CONFIG.extremosCalcada.map((ponto, lado) => ({
 export const extremosCalcadaDaLoja = estado => estado?.melhorias?.expansao ? EXTREMOS_CALCADA_EXPANSAO : CONFIG.extremosCalcada;
 
 export const PRODUTOS = {
+  ...Object.fromEntries(Object.entries(SUCOS.sabores).map(([id, sabor]) => [id, {
+    nome: sabor.nome, plural: sabor.nome, cor: sabor.cor, preco: 25, origem: 'sucos', nivelMinimo: 23,
+    capacidadeHorta: SUCOS.capacidadeSabor, capacidadePrateleira: SUCOS.capacidadeSabor, liberado: false,
+    horta: SUCOS.bancada, coleta: SUCOS.entrega, prateleira: SUCOS.geladeira,
+    reposicao: SUCOS.cliente, cliente: SUCOS.cliente, pontosCompra: [SUCOS.cliente]
+  }])),
   tomate: {
     nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 5, origem: 'horta',
     tempoCrescimento: 1.8, capacidadeHorta: 8, capacidadePrateleira: 12,
@@ -317,6 +324,7 @@ export const MELHORIAS = [
   { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 250, icone: 'pessoa', max: 1, categoria: 'funcionarios', nivelMinimo: 2 },
   { id: 'ajudante', titulo: 'Repositor', descricao: 'Colhe e abastece as prateleiras de todos os produtos liberados.', custo: 900, icone: 'cesta', max: 1, categoria: 'funcionarios', nivelMinimo: NIVEL_AJUDANTE, nivelMinimoLegado: 3 },
   { id: 'velocidadeAjudante', titulo: 'Repositor ligeiro', descricao: 'O repositor anda 20% mais rápido.', custo: 100, icone: 'raio', max: 1, categoria: 'funcionarios', nivelMinimo: NIVEL_AJUDANTE, nivelMinimoLegado: 5, requisitoMelhoria: 'ajudante', ativa: false },
+  { id: 'sucos', titulo: 'Geladeira de sucos', descricao: 'Entregue frutas à máquina encostada na parede, à esquerda da queijaria. Cada fruta rende uma garrafa; uma laranja, um morango e uma maçã rendem três sucos mistos em 5 segundos. Recolha as garrafas do balcão e abasteça a geladeira junto ao hortifruti; o repositor também transporta. Venda por R$ 25.', custo: 1000, icone: 'sucoLaranja', max: 1, tipo: 'sucos', categoria: 'mercado', nivelMinimo: 23, requisitoMelhoria: 'queijaria', requisitos: ['expansao', 'maca'] },
   { id: 'fertilizante', titulo: 'Crescimento acelerado', descricao: 'Escolha uma horta para reduzir a 40% o tempo de crescimento. Uma vez por produto.', custo: 250, icone: 'folha', max: Object.values(PRODUTOS).filter(p => p.origem === 'horta').length, tipo: 'selecaoProduto', categoria: 'mercado', nivelMinimo: 4, ativa: false }
 ];
 

@@ -1,4 +1,6 @@
 import { trabalhoPadaria, criarRoteirosPadaria } from './producao-padaria.js';
+import { SUCOS } from './sucos.js';
+import { criarMaquinaSucos, animarMaquinaSucos, criarGarrafaSuco, criarGeladeiraSucos, posicaoGarrafaGeladeira, GELADEIRA_SUCOS } from './sucos-visual.js';
 import { construirBatedeira } from './batedeira.js';
 import { construirBalcoesDecorados, criarVitrineCurva, criarBandejaRecebimento } from './padaria-decoracao.js';
 import { CONFEITARIA, podeProduzirConfeitaria, situacaoConfeiteiro, maquinaConfeitaria } from './confeitaria.js';
@@ -70,6 +72,9 @@ function liberarGeometrias(grupo) {
 }
 
 function posicaoProdutoPrateleira(id, p, i) {
+  if (SUCOS.sabores[id]) {
+    return posicaoGarrafaGeladeira(id, p, i);
+  }
   if (id === 'ovos') {
     const nivel = Math.floor(i / 3);
     return new THREE.Vector3(p.x - 0.65 + i % 3 * 0.65, 0.79 + nivel * 0.58, p.z + 0.49);
@@ -236,6 +241,9 @@ function criarSecaoHortifruti(pai, p) {
 }
 
 export function criarProduto(id, escala = 1, variante = 0) {
+  if (SUCOS.sabores[id]) {
+    const garrafa = criarGarrafaSuco(id); garrafa.scale.setScalar(escala); return garrafa;
+  }
   if (CONFEITARIA.produtos[id]) {
     const doce = criarDoceConfeitaria(id, variante); doce.scale.setScalar(escala); return doce;
   }
@@ -958,6 +966,7 @@ export class Cena {
     }
   }
   construirEstacao(id, p) {
+    if (p.origem === 'sucos') return Cena.prototype.construirSucos.call(this, id, p);
     if (['morango', 'mel', 'queijo', 'geleia'].includes(id) || ['pomar', 'importado', 'confeitaria'].includes(p.origem)) return Cena.prototype.construirArtesanal.call(this, id, p);
     const grupo = new THREE.Group(); this.cena.add(grupo);
     grupo.visible = estacaoDesbloqueada(id, this.sim.estado);
@@ -1052,6 +1061,33 @@ export class Cena {
     this.produtos[id] = { grupo, frutos: [], frutas, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
     this.criarLabel(`loja-${id}`, { ...p.prateleira, x: p.prateleira.x + lado * 0.7, y: 2.8 }, p.plural.toLocaleUpperCase('pt-BR'), `0 / ${p.capacidadePrateleira}`, 'loja');
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 2.9 }, CLASSES_PRODUTOS[p.classe].nome.toLocaleUpperCase('pt-BR'), `0 / ${PACOTES_POR_CLASSE} pacotes`, id);
+  }
+  construirSucos(id, p) {
+    const grupo = new THREE.Group(); grupo.name = `estacao-${id}`; this.cena.add(grupo);
+    grupo.visible = !!this.sim.estado.melhorias.sucos;
+    if (id === 'sucoLaranja') {
+      const b = SUCOS.bancada;
+      const bancada = new THREE.Group(); bancada.name = 'balcao-sucos'; grupo.add(bancada);
+      caixa(bancada, b.w, 0.85, b.d, 0x739e94, b.x, 0.66, b.z);
+      caixa(bancada, b.w, 0.1, b.d, 0xe1e6e4, b.x, 1.13, b.z);
+      criarGeladeiraSucos(grupo);
+      grupo.userData.maquinaSucos = criarMaquinaSucos(grupo);
+      this.criarLabel(`horta-${id}`, { ...b, y: 3.3 }, 'MÁQUINA DE SUCOS', 'Entregue frutas e recolha garrafas', id);
+    }
+    const sabor = Object.keys(SUCOS.sabores).indexOf(id), frutas = [], frutos = [];
+    for (let i = 0; i < p.capacidadeHorta; i++) {
+      const garrafa = criarProduto(id, 0.55);
+      garrafa.position.set(SUCOS.bancada.x + i * 0.21, 1.27, SUCOS.bancada.z - 0.6 + sabor * 0.38);
+      garrafa.userData.baseY = garrafa.position.y;
+      grupo.add(garrafa); frutos.push(garrafa);
+    }
+    for (let i = 0; i < p.capacidadePrateleira; i++) {
+      const garrafa = criarProduto(id, GELADEIRA_SUCOS.escalaGarrafa);
+      garrafa.position.copy(posicaoProdutoPrateleira(id, p.prateleira, i));
+      grupo.add(garrafa); frutas.push(garrafa);
+    }
+    this.produtos[id] = { grupo, frutos, frutas, galinhas: [], abelhas: [] };
+    if (id === 'sucoLaranja') this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 3.35 }, 'SUCOS NATURAIS', '0 / 24', 'loja');
   }
   construirArtesanal(id, p) {
     const grupo = new THREE.Group(); grupo.name = `estacao-${id}`; this.cena.add(grupo);
@@ -2092,6 +2128,7 @@ export class Cena {
       const construcao = e.estagioLoja > estagioProduto ? 1 : equipamentoAla;
       const temConstrucao = estagioProduto !== undefined || ['apiario', 'oficina'].includes(PRODUTOS[id].origem);
       objetos.grupo.visible = estacaoDesbloqueada(id, e) && (!temConstrucao || construcao > 0);
+      if (objetos.grupo.userData.maquinaSucos) animarMaquinaSucos(objetos.grupo.userData.maquinaSucos, e, sim.pausado ? 0 : dt);
       if (temConstrucao) objetos.grupo.scale.y = Math.max(0.001, construcao);
       if (objetos.grupo.visible) objetos.galinhas.forEach(galinha => animarGalinha(galinha, tempo));
       if (objetos.irrigador) {
@@ -2149,6 +2186,8 @@ export class Cena {
         detalhe.textContent = '';
       }
       else if (tipo === 'horta' && PRODUTOS[produto]?.origem === 'importado') detalhe.textContent = `${pacotesDaClasse(e.deposito, PRODUTOS[produto].classe)} / ${PACOTES_POR_CLASSE} pacotes · ${e.produtos[produto].horta} unidades`;
+      else if (tipo === 'horta' && SUCOS.sabores[produto]) detalhe.textContent = `${Object.keys(SUCOS.sabores).reduce((total, id) => total + e.produtos[id].horta, 0)} garrafas no balcão · recolha e abasteça`;
+      else if (tipo === 'loja' && SUCOS.sabores[produto]) detalhe.textContent = `${Object.keys(SUCOS.sabores).reduce((total, id) => total + e.produtos[id].prateleira, 0)} / 24 garrafas · R$ 25`;
       else if (tipo === 'horta') detalhe.textContent = `${e.produtos[produto].horta} para colher`;
       else if (tipo === 'loja') detalhe.textContent = `${e.produtos[produto].prateleira} / ${PRODUTOS[produto].capacidadePrateleira}`;
     }

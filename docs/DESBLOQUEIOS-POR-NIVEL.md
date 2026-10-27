@@ -34,6 +34,7 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 | 20 | Expansão dos fundos, depósito e pátio de carga (exige padaria) | R$ 10.000 | — |
 | 21 | Prateleira de biscoitos e enlatados | R$ 1.000 | R$ 40 / R$ 30 |
 | 22 | Prateleira de mantimentos e cereais | R$ 1.000 | R$ 35 / R$ 45 |
+| 23 | Máquina e geladeira de sucos | R$ 1.000 | R$ 25 por garrafa |
 
 ## Hortifruti: níveis 1 a 9
 
@@ -146,3 +147,11 @@ Em **Celular → Melhorias → Mercado**, compre cada gôndola separadamente por
 Cada face comporta **36 unidades**, em quatro níveis de nove. Cada caixa importada contém **9 unidades**: biscoitos e doces R$ 360 (venda R$ 40), enlatados R$ 270 (venda R$ 30), mantimentos R$ 315 (venda R$ 35) e cereais R$ 405 (venda R$ 45). A instalação não fornece estoque: encomende pelo celular, aguarde o caminhão e abasteça a gôndola com os produtos do depósito. Cada classe reserva quatro vagas, incluindo caixas a caminho. Aguarde o caminhão ir embora antes de fazer outro pedido.
 
 Compras antigas de gôndolas são convertidas nas novas melhorias, sem nova cobrança.
+
+## Sucos no nível 23
+
+A compra **Geladeira de sucos**, em **Celular → Melhorias → Mercado**, custa **R$ 1.000** e exige queijaria, expansão e macieira. A máquina fica à esquerda da queijaria, encostada na parede dos fundos do anexo, sobre um balcão de saída; a geladeira vertical de vidro fica junto à parede posterior, ao lado do hortifruti. A posição imediatamente à direita permanece livre para uma segunda geladeira idêntica no futuro.
+
+A geladeira tem **uma porta de vidro e quatro prateleiras**, uma para cada sabor, com **seis garrafas alinhadas por prateleira**. A cuba da máquina mostra líquido somente enquanto prepara um lote e fica vazia ao transferir o suco às garrafas do balcão.
+
+Leve **laranja, morango e maçã** na cesta e aproxime-se da máquina. Ela armazena até **8 frutas de cada tipo**. Cada preparo leva **5 segundos**: uma fruta rende uma garrafa do sabor correspondente; **1 laranja + 1 morango + 1 maçã → 3 garrafas de suco misto**. A máquina alterna os sabores disponíveis e coloca as garrafas no **balcão de saída**, com capacidade de **6 por sabor**. Recolha-as e leve à geladeira, que também guarda **6 por sabor**; o repositor pode fazer esse transporte. Falta de ingredientes ou espaço no balcão pausa a receita sem consumir frutas. Cada garrafa custa **R$ 25**, e o sabor entra nos pedidos após o primeiro abastecimento da geladeira. Ingredientes, progresso, garrafas no balcão e na geladeira são preservados ao recarregar; partidas antigas recebem a instalação bloqueada e vazia.
