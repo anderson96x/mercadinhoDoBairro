@@ -1,6 +1,13 @@
 # Histórico de alterações
 
-## Versão atual: 0.72.1 — 2026-10-28
+## Versão atual: 0.73.0 — 2026-10-28
+
+- Adiciona geladeira Soda no N25 por R$ 1.000, após os carrinhos: reutiliza o gabinete dos sucos ao lado dele, com arte rosa e laranja da marca Soda e 24 latas compactas em quatro prateleiras.
+- Importa até quatro caixas de 24 latas, contando pendentes, por R$ 240 a caixa (valor adotado de R$ 10 por lata). O caminhão entrega as caixas da marca no chão, no canto do depósito, sem estante; jogador e repositor abastecem a geladeira. Cada lata vende por R$ 20.
+- Mantém nove unidades nas caixas das classes anteriores, preserva caixas parciais e estoques ao salvar e inicia Soda bloqueada e vazia em partidas antigas.
+- Validação: 411 testes, build de produção, rotas N1–N25 e navegador desktop/celular em WebGL/Canvas, sem salvar imagens.
+
+## 0.72.1 — 2026-10-28
 
 - Elimina superfícies coplanares que piscavam durante o movimento: separa grade, lâminas, faixa vermelha e painéis da geladeira de sucos e faz os rodapés verdes cobrirem também as pontas das paredes.
 - Preserva a montagem de faces do renderizador Canvas; a causa foi reproduzida no WebGL como disputa de profundidade entre peças sobrepostas.

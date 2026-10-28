@@ -1,10 +1,11 @@
+import { SODA, posicaoCaixaSoda } from './soda.js';
 import { PLANTA_DEPOSITO, PLANTA_CARGA } from './planta.js';
 import { PRODUTOS } from './configuracao.js';
 import { segmentoLivre } from './navegacao.js';
-import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, UNIDADES_PACOTE } from './classes-produtos.js';
+import { CLASSES_PRODUTOS, PACOTES_POR_CLASSE, unidadesPacote } from './classes-produtos.js';
 
 export { UNIDADES_PACOTE } from './classes-produtos.js';
-export const CAPACIDADE_DEPOSITO = PLANTA_DEPOSITO.estantes.length * PACOTES_POR_CLASSE;
+export const CAPACIDADE_DEPOSITO = Object.keys(CLASSES_PRODUTOS).length * PACOTES_POR_CLASSE;
 export const TEMPO_ESPERA_ENTREGA = 60;
 export const ENTREGA = { comprimento: 5.2, largura: 2.12, velocidade: 2.6, velocidadeRe: 1.5,
   estacionamento: { x: PLANTA_CARGA.vaga.x, z: PLANTA_CARGA.vaga.z }, retirada: PLANTA_CARGA.retirada };
@@ -33,6 +34,10 @@ export function acomodarExcedentes(deposito) {
   });
 }
 export function posicaoPacote(slot) {
+  if (Math.floor(slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.soda.estante) {
+    const p = posicaoCaixaSoda(slot % PACOTES_POR_CLASSE);
+    return { ...p, y: p.y + 0.15 };
+  }
   const estante = PLANTA_DEPOSITO.estantes[Math.floor(slot / PACOTES_POR_CLASSE)];
   return { x: estante.x + (slot % 2 - 0.5) * 0.94, y: 0.23 + [0.595, 1.595][Math.floor(slot % PACOTES_POR_CLASSE / 2)], z: estante.z };
 }
@@ -44,7 +49,7 @@ export function validarDeposito(dados, produtos) {
   const lista = valor => Array.isArray(valor) ? valor.slice(0, limiteSalvo) : [];
   let restantes = limiteSalvo;
   for (const p of [...lista(dados?.pacotes), ...lista(dados?.excedentes)]) {
-    if (!restantes || !p || !valido(p.produto) || !Number.isInteger(p.unidades) || p.unidades < 1 || p.unidades > UNIDADES_PACOTE) continue;
+    if (!restantes || !p || !valido(p.produto) || !Number.isInteger(p.unidades) || p.unidades < 1 || p.unidades > unidadesPacote(classeProduto(p.produto))) continue;
     const inicio = CLASSES_PRODUTOS[classeProduto(p.produto)].estante * PACOTES_POR_CLASSE;
     const slot = Number.isInteger(p.slot) && p.slot >= inicio && p.slot < inicio + PACOTES_POR_CLASSE && !base.pacotes.some(item => item.slot === p.slot)
       ? p.slot : slotLivre(base, p.produto);
@@ -201,18 +206,20 @@ export class Entregas {
       c.fase = 'retirar'; c.tempo = 0;
     }
     if (c.fase === 'retirar') {
+      c.produto = pedido.pacotes[0];
       c.tempo += dt;
       if (c.tempo < 0.7) return;
-      c.slot = slotLivre(deposito, pedido.pacotes[0]);
+      c.slot = slotLivre(deposito, c.produto);
       // Pedidos de saves antigos podem exceder o limite novo: aguardam uma vaga da classe.
       if (c.slot === undefined) return;
       ator.carregando = true; c.fase = 'levar'; c.etapa = 0;
     }
     if (c.fase === 'levar' || c.fase === 'voltar') {
-      const estante = PLANTA_DEPOSITO.estantes[Math.floor(c.slot / PACOTES_POR_CLASSE)];
+      const soda = Math.floor(c.slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.soda.estante;
+      const estante = soda ? SODA.deposito : PLANTA_DEPOSITO.estantes[Math.floor(c.slot / PACOTES_POR_CLASSE)];
       const pontos = [
         PLANTA_CARGA.contornoCabine, { x: PLANTA_CARGA.contornoCabine.x, z: -8.45 }, { x: PLANTA_DEPOSITO.porta.x, z: -8.45 },
-        { x: PLANTA_DEPOSITO.porta.x, z: -10.3 }, { x: estante.x, z: -12.9 }
+        { x: PLANTA_DEPOSITO.porta.x, z: -10.3 }, soda ? SODA.coleta : { x: estante.x, z: -12.9 }
       ];
       const rota = c.fase === 'levar' ? pontos : [...pontos].reverse().slice(1).concat(ENTREGA.retirada);
       if (sim.caminharCliente(ator, rota[c.etapa], dt, 2.5)) {
@@ -223,8 +230,9 @@ export class Entregas {
       c.tempo += dt;
       if (c.tempo < 0.8) return;
       const produto = pedido.pacotes.shift();
-      deposito.pacotes.push({ produto, unidades: UNIDADES_PACOTE, slot: c.slot });
-      sim.estado.produtos[produto].horta += UNIDADES_PACOTE;
+      const unidades = unidadesPacote(classeProduto(produto));
+      deposito.pacotes.push({ produto, unidades, slot: c.slot });
+      sim.estado.produtos[produto].horta += unidades;
       ator.carregando = false; c.fase = 'voltar'; c.etapa = 0;
       sim.emitir('pacoteEntregue', { produto, slot: c.slot });
     } else if (c.fase === 'fecharBau') {

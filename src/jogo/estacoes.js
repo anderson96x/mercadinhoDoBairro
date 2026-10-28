@@ -10,7 +10,7 @@ export function geometriaEstacao(id, tipo, produtos = PRODUTOS) {
   if (p.origem === 'sucos' && tipo === 'coleta') return SUCOS.bancada;
   if (p.origem === 'confeitaria' && tipo === 'coleta') return CONFEITARIA.entrada;
   if (p.origem === 'importado' && tipo === 'coleta') return p.horta;
-  if (p.origem === 'importado' && tipo === 'reposicao') {
+  if (p.origem === 'importado' && tipo === 'reposicao' && p.classe !== 'soda') {
     const lado = CLASSES_PRODUTOS[p.classe].lado;
     return { ...p.prateleira, x: p.prateleira.x + lado * p.prateleira.w / 4, w: p.prateleira.w / 2 };
   }

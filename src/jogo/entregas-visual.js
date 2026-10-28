@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { criarAgente } from './coleta-banco.js';
+import { criarCaixaSoda } from './soda-visual.js';
 import { posicaoPacote } from './entregas.js';
 
 const materiais = new Map();
@@ -101,6 +102,7 @@ export class EntregasVisual {
     bloco(this.caixa, 0.1, 0.012, 0.57, 0xefcf92, 0, 1.015, 0.4);
     bloco(this.caixa, 0.1, 0.48, 0.012, 0xefcf92, 0, 0.77, 0.686);
     bloco(this.caixa, 0.16, 0.13, 0.015, 0xf1eada, 0.18, 0.77, 0.69);
+    this.caixaSoda = criarCaixaSoda(); this.caixaSoda.position.set(0, 0.61, 0.4); this.caixa.add(this.caixaSoda);
     this.grupo.visible = false; this.tempo = 0; this.animarEntregador = animarEntregador;
   }
   atualizar(entregas, dt) {
@@ -141,13 +143,14 @@ export class EntregasVisual {
     }
     const pegando = c.fase === 'retirar' && c.tempo >= 0.35;
     this.caixa.visible = a.carregando || pegando;
+    for (const o of this.caixa.children) o.visible = o === this.caixaSoda ? c.produto === 'soda' : c.produto !== 'soda';
     this.caixa.position.y = 0;
     if (pegando) {
       const t = Math.min(1, (c.tempo - 0.35) / 0.35);
       this.caixa.position.y = -0.58 * (1 - t * t * (3 - 2 * t));
     } else if (c.fase === 'guardar') {
       const altura = posicaoPacote(c.slot).y;
-      this.caixa.position.y = Math.max(0, altura - 0.77) * Math.min(1, c.tempo / 0.6);
+      this.caixa.position.y = (altura - 0.77) * Math.min(1, c.tempo / 0.6);
     }
   }
 }

@@ -321,7 +321,7 @@ export class Interface {
       const totalCaixas = importacoes.reduce((total, m) => total + this.quantidadesImportacao[m.id], 0);
       const entregaEmAndamento = !!(this.sim.estado.deposito.pedidos.length || this.sim.entregas?.caminhao);
       const motivoEspera = entregaEmAndamento ? 'Aguarde o caminhão concluir a entrega e ir embora antes de fazer outro pedido.' : '';
-      conteudo = `<p class="painel-subtitulo">Cada classe tem uma estante no depósito, com espaço para até 4 pacotes. Cada pacote contém 9 produtos.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${importacoes.map(m => {
+      conteudo = `<p class="painel-subtitulo">Até 4 caixas por classe no depósito. As caixas comuns têm 9 produtos; Soda tem 24 latas por caixa e fica no chão, no canto.</p><div class="saldo-painel">${icone('moeda')} Disponível <b>${reais(this.sim.estado.dinheiro)}</b></div><div class="lista-melhorias">${importacoes.map(m => {
         const produto = PRODUTOS[m.produto];
         const custo = this.sim.custoMelhoria(m.id), disponibilidade = this.sim.disponibilidadeMelhoria(m.id);
         const caixasPorEspaco = espacoRestante[produto.classe] + this.quantidadesImportacao[m.id];

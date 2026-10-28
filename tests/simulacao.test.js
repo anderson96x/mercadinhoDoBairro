@@ -38,7 +38,7 @@ test('ferramenta DEV enche importados disponíveis sem pedido prévio e preserva
   const deposito = structuredClone(sim.estado.deposito);
   sim.preencherPrateleirasDev();
   const restaurado = new Simulacao(sim.estado);
-  for (const [id, produto] of Object.entries(PRODUTOS).filter(([, p]) => p.origem === 'importado')) {
+  for (const [id, produto] of Object.entries(PRODUTOS).filter(([, p]) => p.origem === 'importado' && (p.nivelMinimo || 1) <= sim.nivel)) {
     assert.equal(sim.estado.produtos[id].liberado, true, id);
     assert.equal(sim.estado.produtos[id].apresentado, true, id);
     assert.equal(sim.estado.produtos[id].prateleira, produto.capacidadePrateleira, id);

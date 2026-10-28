@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { criarCaixaSoda } from './soda-visual.js';
+import { posicaoCaixaSoda } from './soda.js';
 import { PLANTA_DEPOSITO as P, paredesDeposito } from './planta.js';
 import { CLASSES_PRODUTOS } from './classes-produtos.js';
 
@@ -94,6 +96,11 @@ export function construirDeposito(pai, { caixa, vincular }) {
         pacotes.push(caixaEstoque);
       }
     }
+  }
+
+  for (let i = 0; i < 4; i++) {
+    const caixa = criarCaixaSoda(), ponto = posicaoCaixaSoda(i);
+    caixa.position.set(ponto.x, ponto.y, ponto.z); caixa.visible = false; grupo.add(caixa); pacotes.push(caixa);
   }
 
   let abertura = 1;

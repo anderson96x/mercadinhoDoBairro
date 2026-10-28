@@ -14,10 +14,10 @@ const DESBLOQUEIOS = [
   [6, 'laranja'], [7, 'maca'], [8, 'cestasExtras'], [9, 'alaArtesanal'],
   [10, 'logistica'], [11, 'alaProducao'], [12, 'alaLeite'], [13, 'alaPadaria'],
   [14, 'apiario'], [15, 'queijaria'], [16, 'irrigacao'],
-  [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria'], [20, 'expansao'], [21, 'prateleiraBiscoitosEnlatados'], [22, 'prateleiraMantimentosCereais'], [23, 'sucos'], [24, 'carrinhos']
+  [17, 'cozinhaGeleia'], [18, 'estacionamento'], [19, 'confeitaria'], [20, 'expansao'], [21, 'prateleiraBiscoitosEnlatados'], [22, 'prateleiraMantimentosCereais'], [23, 'sucos'], [24, 'carrinhos'], [25, 'geladeiraSoda']
 ];
 
-test('catálogo ativo segue exatamente os desbloqueios aprovados dos níveis 1 a 24', () => {
+test('catálogo ativo segue exatamente os desbloqueios aprovados dos níveis 1 a 25', () => {
   const ativos = MELHORIAS.filter(m => m.ativa !== false && m.tipo !== 'importacao')
     .map(m => [m.nivelMinimo, m.id]).sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1]));
   assert.deepEqual(ativos, [...DESBLOQUEIOS].sort((a, b) => a[0] - b[0] || a[1].localeCompare(b[1])));
@@ -115,7 +115,7 @@ test('seções e cestas que precisam da planta maior aguardam a compra de laranj
 
 test('cada melhoria exige a compra anterior mesmo com nível e saldo suficientes', () => {
   const sim = new Simulacao();
-  sim.estado.estatisticas.clientes = 23 * CONFIG.clientesPorNivel;
+  sim.estado.estatisticas.clientes = 24 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
   for (let i = 0; i < DESBLOQUEIOS.length; i++) {
     const [, id] = DESBLOQUEIOS[i];

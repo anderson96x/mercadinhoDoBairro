@@ -1,4 +1,5 @@
 import { trabalhoPadaria, criarRoteirosPadaria } from './producao-padaria.js';
+import { criarLataSoda, criarGeladeiraSoda, posicaoLataSoda } from './soda-visual.js';
 import { SUCOS } from './sucos.js';
 import { aplicarPaletaCarrinho, CARRINHO_CLIENTE, criarCarrinho } from './carrinhos-visual.js';
 import { criarMaquinaSucos, animarMaquinaSucos, criarGarrafaSuco, criarGeladeiraSucos, posicaoGarrafaGeladeira, GELADEIRA_SUCOS } from './sucos-visual.js';
@@ -46,6 +47,7 @@ const leiteVitrine = new THREE.MeshBasicMaterial({ color: 0xfafcf3 });
 const vidroMel = new THREE.MeshStandardMaterial({ color: 0xffe3a0, transparent: true, opacity: 0.24, roughness: 0.22, depthWrite: false });
 const verdeLeiteVitrine = new THREE.MeshBasicMaterial({ color: 0x087e64 });
 function estacaoDesbloqueada(id, estado) {
+  if (id === 'soda') return !!estado.melhorias.geladeiraSoda;
   if (PRODUTOS[id]?.origem === 'pomar') return !!estado.produtos[id]?.liberado;
   const estagioNecessario = PRODUTOS[id]?.origem === 'confeitaria' ? ALA_PADARIA.indice : id === 'morango' ? ALA_ARTESANAL.indice : id === 'ovos' ? ALA_PRODUCAO.indice : id === 'leite' ? ALA_LEITE.indice : id === 'trigo' ? ALA_TRIGO.indice : id === 'pao' ? ALA_PADARIA.indice : 0;
   return !!estado.produtos[id]?.liberado && estado.estagioLoja >= estagioNecessario;
@@ -73,6 +75,7 @@ function liberarGeometrias(grupo) {
 }
 
 function posicaoProdutoPrateleira(id, p, i) {
+  if (id === 'soda') return posicaoLataSoda(p, i);
   if (SUCOS.sabores[id]) {
     return posicaoGarrafaGeladeira(id, p, i);
   }
@@ -94,6 +97,9 @@ function posicaoProdutoPrateleira(id, p, i) {
 }
 
 function criarImportadoNaPrateleira(id, p, indice) {
+  if (id === 'soda') {
+    const lata = criarLataSoda(); lata.position.copy(posicaoLataSoda(p.prateleira, indice)); return lata;
+  }
   const nivel = Math.floor(indice / 9), coluna = indice % 9;
   const produto = criarProduto(id, 0.82, nivel * 3);
   produto.rotation.y = CLASSES_PRODUTOS[p.classe].lado * Math.PI / 2;
@@ -242,6 +248,7 @@ function criarSecaoHortifruti(pai, p) {
 }
 
 export function criarProduto(id, escala = 1, variante = 0) {
+  if (id === 'soda') { const lata = criarLataSoda(); lata.scale.setScalar(escala); return lata; }
   if (SUCOS.sabores[id]) {
     const garrafa = criarGarrafaSuco(id); garrafa.scale.setScalar(escala); return garrafa;
   }
@@ -1052,6 +1059,7 @@ export class Cena {
   construirImportado(id, p) {
     const lado = CLASSES_PRODUTOS[p.classe].lado;
     const grupo = new THREE.Group(); grupo.name = `produto-importado-${id}`; this.cena.add(grupo);
+    if (id === 'soda') criarGeladeiraSoda(grupo);
     const frutas = [];
     // As 36 unidades ocupam quatro níveis de nove, começando pelo nível inferior.
     // Cada nível representa uma das quatro variedades da classe.

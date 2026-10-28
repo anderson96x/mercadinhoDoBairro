@@ -2,9 +2,9 @@
 
 A progressão avança a cada **25 clientes atendidos**, com bônus de **R$ 100 por nível**. Atingir um nível libera a compra; produtos, funcionários e construções continuam exigindo o saldo e os pré-requisitos indicados abaixo.
 
-A partir da versão **0.72.0**, toda melhoria permanente exige a compra da melhoria anterior na tabela: **caixa → milho → trigo → repositor → laranjeira → macieira → cestas extras → morangos → cesta de trabalho → ovos → leite → padaria → apiário → queijaria → irrigação → geleias → estacionamento → confeitaria → expansão → primeira gôndola → segunda gôndola → sucos → carrinhos**. O caixa é a primeira compra e não exige outra melhoria. Os requisitos de instalação descritos abaixo continuam válidos, além dessa sequência obrigatória.
+A partir da versão **0.72.0**, toda melhoria permanente exige a compra da melhoria anterior na tabela: **caixa → milho → trigo → repositor → laranjeira → macieira → cestas extras → morangos → cesta de trabalho → ovos → leite → padaria → apiário → queijaria → irrigação → geleias → estacionamento → confeitaria → expansão → primeira gôndola → segunda gôndola → sucos → carrinhos → Soda**. O caixa é a primeira compra e não exige outra melhoria. Os requisitos de instalação descritos abaixo continuam válidos, além dessa sequência obrigatória.
 
-Níveis e bônus continuam avançando com compras pendentes. Importações são reposições recorrentes: exigem sua gôndola, sem ordem entre pedidos. Compras, dinheiro e estoques de saves anteriores fora da sequência são preservados, sem cobrar ou conceder melhorias anteriores automaticamente. A nova dependência é validada nas próximas compras, sem alterar a validação dos requisitos de instalação ao carregar.
+Níveis e bônus continuam avançando com compras pendentes. Importações são reposições recorrentes: exigem sua gôndola ou geladeira, sem ordem entre pedidos. Compras, dinheiro e estoques de saves anteriores fora da sequência são preservados, sem cobrar ou conceder melhorias anteriores automaticamente. A nova dependência é validada nas próximas compras, sem alterar a validação dos requisitos de instalação ao carregar.
 
 A loja começa com **14 × 8 u** e mantém esse tamanho até comprar a seção de laranjas, disponível no **nível 6**. Essa compra inclui o aumento para **14 × 16 u**, mantendo a fachada no lugar. Atingir o nível sozinho não altera o salão; o aumento não é um desbloqueio separado. No **nível 13**, comprar a padaria amplia o salão à direita para **24 × 16 u**.
 
@@ -40,6 +40,7 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 | 22 | Prateleira de mantimentos e cereais | R$ 1.000 | R$ 35 / R$ 45 |
 | 23 | Máquina e geladeira de sucos | R$ 1.000 | R$ 25 por garrafa |
 | 24 | Cinco carrinhos de compras, até 15 clientes com as dez cestas | R$ 500 | — |
+| 25 | Geladeira Soda | R$ 1.000 | R$ 20 por lata |
 
 ## Hortifruti: níveis 1 a 9
 
@@ -155,7 +156,7 @@ Compras antigas de gôndolas são convertidas nas novas melhorias, sem nova cobr
 
 ## Sucos no nível 23
 
-A compra **Geladeira de sucos**, em **Celular → Melhorias → Mercado**, custa **R$ 1.000** e exige queijaria, expansão e macieira. A máquina fica à esquerda da queijaria, encostada na parede dos fundos do anexo, sobre um balcão de saída; a geladeira vertical de vidro fica junto à parede posterior, ao lado do hortifruti. A posição imediatamente à direita permanece livre para uma segunda geladeira idêntica no futuro.
+A compra **Geladeira de sucos**, em **Celular → Melhorias → Mercado**, custa **R$ 1.000** e exige queijaria, expansão e macieira. A máquina fica à esquerda da queijaria, encostada na parede dos fundos do anexo, sobre um balcão de saída; a geladeira vertical de vidro fica junto à parede posterior, ao lado do hortifruti. A posição imediatamente à direita recebe a geladeira Soda no nível 25.
 
 A geladeira tem **uma porta de vidro e quatro prateleiras**, uma para cada sabor, com **seis garrafas alinhadas por prateleira**. A cuba da máquina mostra líquido somente enquanto prepara um lote e fica vazia ao transferir o suco às garrafas do balcão.
 
@@ -170,3 +171,11 @@ Cada carrinho comporta **20 itens**. As **dez cestas e os cinco carrinhos** perm
 Motoristas reservam um carrinho e tentam comprar **20 itens**, independentemente da reputação. Quando todos os carrinhos estão reservados, novas chegadas de carro aguardam; pedestres ainda podem usar cestas livres. Pedestres usam cestas primeiro e, quando estão ocupadas, pegam carrinhos e pedem **de 10 a 20 itens**, inclusive com repetição de produtos e pão. Com estoque suficiente, completam o pedido; se faltar mercadoria, seguem a espera normal e pagam apenas o que encontraram.
 
 O cliente retira o carrinho no estacionamento, empurra durante as compras e o devolve ao mesmo lugar depois de pagar ou desistir. O carrinho só fica disponível novamente após a devolução. Motoristas devolvem antes de retornar ao próprio carro. A compra persiste ao recarregar; saves anteriores recebem a melhoria desmarcada e preservam suas cestas.
+
+## Soda no nível 25
+
+A compra **Geladeira Soda**, em **Celular → Melhorias → Mercado**, custa **R$ 1.000** e segue os carrinhos na sequência obrigatória. Usa o mesmo gabinete dos sucos, à direita dele, com acabamento rosa e laranja e a marca **Soda**. As **24 latas** ficam juntas em **quatro prateleiras**, cada uma com duas fileiras de três.
+
+Em **Celular → Importar produtos**, cada caixa custa **R$ 240** e contém **24 latas**. O limite é **quatro caixas**, contando as entregues e as pendentes, totalizando até **96 latas no depósito**. O caminhão entrega as caixas com a marca Soda diretamente no chão, no canto à esquerda da entrada, sem estante. Caixas parciais continuam ocupando uma vaga até esvaziar. Jogador e repositor recolhem as latas nesse canto e abastecem a geladeira; a venda é de **R$ 20 por lata**. O preço de importação foi adotado como R$ 10 por lata; não estava especificado no pedido do recurso.
+
+A demanda começa após o primeiro abastecimento. Compras, caixas parciais e estoque da geladeira são preservados ao salvar; partidas antigas recebem Soda bloqueada e vazia.

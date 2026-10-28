@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+<rect width="512" height="512" fill="#df496c"/>
+<path d="M0 80Q160 180 512 70V0H0Z" fill="#ef7590"/>
+<ellipse cx="258" cy="300" rx="152" ry="183" fill="#f58145" transform="rotate(28 258 300)"/>
+<ellipse cx="258" cy="300" rx="122" ry="150" fill="#ffb95e" transform="rotate(28 258 300)"/>
+<g fill="#ffbd69"><ellipse cx="382" cy="116" rx="39" ry="25" transform="rotate(-25 382 116)"/><circle cx="103" cy="151" r="14"/><circle cx="413" cy="387" r="12"/><circle cx="88" cy="378" r="7"/></g>
+<text x="256" y="300" text-anchor="middle" fill="#fffbea" font-family="Arial,sans-serif" font-weight="900" font-style="italic" font-size="150" letter-spacing="-9" transform="rotate(-9 256 256)">SODA</text>
+<text x="256" y="455" text-anchor="middle" fill="#fff4df" font-family="Arial,sans-serif" font-size="22" letter-spacing="7">REFRIGERANTE</text>
+</svg>

@@ -1,5 +1,6 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
 import { CONFEITARIA } from './confeitaria.js';
+import { SODA } from './soda.js';
 import { SUCOS } from './sucos.js';
 import { PLANTA_LARANJA, PLANTA_MACA } from './planta.js';
 import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, pontoPadaria, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
@@ -79,6 +80,12 @@ const EXTREMOS_CALCADA_EXPANSAO = CONFIG.extremosCalcada.map((ponto, lado) => ({
 export const extremosCalcadaDaLoja = estado => estado?.melhorias?.expansao ? EXTREMOS_CALCADA_EXPANSAO : CONFIG.extremosCalcada;
 
 export const PRODUTOS = {
+  soda: {
+    nome: 'Soda', plural: 'Latas de Soda', cor: 0xe64e70, preco: 20, origem: 'importado', classe: 'soda', nivelMinimo: 25,
+    capacidadeHorta: 96, capacidadePrateleira: 24, liberado: false,
+    horta: SODA.deposito, coleta: SODA.coleta, prateleira: SODA.geladeira,
+    reposicao: SODA.cliente, cliente: SODA.cliente, pontosCompra: [SODA.cliente]
+  },
   ...Object.fromEntries(Object.entries(SUCOS.sabores).map(([id, sabor]) => [id, {
     nome: sabor.nome, plural: sabor.nome, cor: sabor.cor, preco: 25, origem: 'sucos', nivelMinimo: 23,
     capacidadeHorta: SUCOS.capacidadeSabor, capacidadePrateleira: SUCOS.capacidadeSabor, liberado: false,
@@ -294,6 +301,8 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
+  { id: 'geladeiraSoda', titulo: 'Geladeira Soda', descricao: 'Geladeira Soda com 24 latas em quatro prateleiras, ao lado dos sucos. Importe até quatro caixas de 24 latas e recolha no canto do depósito, no chão. Venda por R$ 20 a lata.', custo: 1000, icone: 'soda', max: 1, tipo: 'construcao', produto: 'soda', categoria: 'mercado', nivelMinimo: 25, requisitoMelhoria: 'sucos', requisitos: ['expansao'] },
+  { id: 'importarSoda', titulo: 'Soda', descricao: 'Caixa Soda com 24 latas. Até quatro caixas no canto do depósito, incluindo entregas pendentes.', custo: 240, icone: 'soda', max: 1000000000, tipo: 'importacao', produto: 'soda', categoria: 'importados', nivelMinimo: 25, requisitoMelhoria: 'geladeiraSoda', recorrente: true },
   { id: 'maca', titulo: 'Macieira', descricao: 'Plante uma macieira ao lado da laranjeira e abra a seção de maçãs junto às laranjas. Colha e venda cada maçã por R$ 7.', custo: 800, icone: 'maca', produto: 'maca', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 7, requisitoMelhoria: 'laranja' },
   { id: 'laranja', titulo: 'Laranjeira', descricao: 'Plante uma laranjeira no pomar e abra a seção de laranjas junto ao trigo. A compra amplia a profundidade da loja para 14 × 16 u. Colha e venda cada laranja por R$ 7.', custo: 800, icone: 'laranja', produto: 'laranja', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 6 },
   { id: 'confeitaria', titulo: 'Confeitaria da padaria', descricao: 'Instale vitrines, uma batedeira e um confeiteiro. Entregue mel e ovos: 1 mel + 1 ovo rendem um bolo, um donut e um éclair, com preparo de 6 segundos e entrega nas vitrines. Venda por R$ 15 cada.', custo: CONFEITARIA.custo, icone: 'bolo', max: 1, tipo: 'confeitaria', categoria: 'mercado', nivelMinimo: CONFEITARIA.nivel, requisitoMelhoria: 'alaPadaria', requisitos: ['apiario', 'alaProducao'] },
