@@ -53,14 +53,14 @@ try {
     }
     const resultado = await avaliar(`(async () => {
       const { Simulacao } = await import('/src/jogo/simulacao.js');
-      const { CONFIG } = await import('/src/jogo/configuracao.js');
+      const { CONFIG, SEQUENCIA_MELHORIAS } = await import('/src/jogo/configuracao.js');
       const { Cena } = await import('/src/jogo/cena.js');
       const { PALETAS } = await import('/src/jogo/personalizacao.js');
       const { Interface } = await import('/src/interface/interface.js');
       const verificar = (condicao, mensagem) => { if (!condicao) throw Error(mensagem); };
       const sim = new Simulacao();
-      sim.estado.estatisticas.clientes = 23 * CONFIG.clientesPorNivel; sim.estado.dinheiro = 20000;
-      for (const id of ['laranja', 'cestasExtras', 'estacionamento', 'caixa']) verificar(sim.comprarMelhoria(id).sucesso, id);
+      sim.estado.estatisticas.clientes = 23 * CONFIG.clientesPorNivel; sim.estado.dinheiro = 100000;
+      for (const id of SEQUENCIA_MELHORIAS.slice(0, SEQUENCIA_MELHORIAS.indexOf('carrinhos'))) verificar(sim.comprarMelhoria(id).sucesso, id);
       sim.proximoCliente = Infinity; sim.definirAssaltosAtivos(false); sim.tempo = 5; sim.aleatorio = () => 0;
       const ui = new Interface(sim, { pausar() {}, somAtivo: () => false });
       const original = HTMLCanvasElement.prototype.getContext;

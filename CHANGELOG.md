@@ -1,6 +1,14 @@
 # Histórico de alterações
 
-## Versão atual: 0.71.0 — 2026-10-28
+## Versão atual: 0.72.0 — 2026-10-28
+
+- Exige a compra da melhoria permanente anterior na sequência N2–N24, mantendo níveis, preços e bônus. A laranjeira exige o repositor; estacionamento exige geleias e expansão exige confeitaria.
+- Mantém os pré-requisitos de instalação e as importações recorrentes vinculadas às suas gôndolas, sem ordem entre pedidos.
+- Preserva compras, dinheiro e estoques de saves anteriores fora da sequência; aplica a nova trava somente às próximas compras.
+- Atualiza a documentação de desbloqueios e os cenários de teste para a ordem de compras.
+- Validação: 404 testes, build de produção e rotas de compra, coleta, reposição e caixa dos níveis 1 a 24 aprovados, sem salvar imagens.
+
+## 0.71.0 — 2026-10-28
 
 - Adiciona a compra de cinco carrinhos no N24 por R$ 500, exigindo estacionamento e dez cestas. Cada carrinho comporta 20 itens e aumenta o limite conjunto para 15 clientes.
 - Pedestres com carrinho pedem de 10 a 20 itens; motoristas reservam carrinhos e tentam comprar 20. Retirada e devolução acontecem junto à entrada do estacionamento, com modelos metálicos encaixados e pose de empurrar.

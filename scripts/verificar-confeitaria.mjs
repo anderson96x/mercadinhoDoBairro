@@ -52,7 +52,7 @@ try {
     }
     const resultado = await avaliar(`(async () => {
       const { Simulacao } = await import('/src/jogo/simulacao.js');
-      const { CONFIG } = await import('/src/jogo/configuracao.js');
+      const { CONFIG, SEQUENCIA_MELHORIAS } = await import('/src/jogo/configuracao.js');
       const { CONFEITARIA } = await import('/src/jogo/confeitaria.js');
       const { Cena } = await import('/src/jogo/cena.js');
       const { Interface } = await import('/src/interface/interface.js');
@@ -61,7 +61,7 @@ try {
       const sim = new Simulacao();
       sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
       sim.estado.dinheiro = 100000;
-      for (const id of ['laranja', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario', 'caixa']) verificar(sim.comprarMelhoria(id).sucesso, id);
+      for (const id of SEQUENCIA_MELHORIAS.slice(0, SEQUENCIA_MELHORIAS.indexOf('confeitaria'))) verificar(sim.comprarMelhoria(id).sucesso, id);
       const container = document.createElement('div');
       container.style.cssText = 'position:fixed;inset:0;z-index:1000'; document.body.append(container);
       const original = HTMLCanvasElement.prototype.getContext;

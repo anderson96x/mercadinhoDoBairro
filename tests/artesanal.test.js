@@ -1,8 +1,9 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { CONFIG, PRODUTOS, MELHORIAS, OFICINAS, ALA_ARTESANAL, ALA_PADARIA } from '../src/jogo/configuracao.js';
+import { CONFIG, PRODUTOS, MELHORIAS, SEQUENCIA_MELHORIAS, OFICINAS, ALA_ARTESANAL, ALA_PADARIA } from '../src/jogo/configuracao.js';
 import { Simulacao, validarEstado, distancia } from '../src/jogo/simulacao.js';
 import { Cena, criarProduto } from '../src/jogo/cena.js';
 import { PLANTA_OFICINAS, volumesDoces, selecionarCompartimentoDoces } from '../src/jogo/planta.js';
@@ -14,9 +15,8 @@ function abrir(nivel = 17) {
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 30000;
   if (nivel >= 6) prepararLojaCompleta(sim);
-  for (const id of ['caixa', 'milho', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
-    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'cozinhaGeleia']) {
-    if (MELHORIAS.find(m => m.id === id).nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
+  for (const id of SEQUENCIA_MELHORIAS) {
+    if (!sim.estado.melhorias[id] && MELHORIAS.find(m => m.id === id).nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }
   sim.proximoCliente = Infinity;
   sim.estado.lojaAberta = false;
@@ -81,6 +81,7 @@ test('objetivos guiam ingredientes, coleta do lote pronto e primeiro abastecimen
   const sim = abrir(15);
   sim.estado.produtos.morango.apresentado = true;
   sim.estado.produtos.laranja.apresentado = true;
+  sim.estado.produtos.maca.apresentado = true;
   sim.estado.produtos.mel.apresentado = true;
   assert.equal(sim.missao().destino, 'coleta-leite');
   sim.estado.jogador.inventario = ['leite'];
@@ -91,7 +92,7 @@ test('objetivos guiam ingredientes, coleta do lote pronto e primeiro abastecimen
   interagir(sim, PRODUTOS.queijo.coleta);
   assert.equal(sim.missao().destino, 'prateleira-queijo');
   interagir(sim, PRODUTOS.queijo.reposicao);
-  assert.equal(sim.missao().titulo, 'Macieira');
+  assert.notEqual(sim.missao().titulo, 'Macieira');
 });
 
 test('clientes simultâneos circulam no anexo e devolvem todas as cestas', () => {
@@ -271,6 +272,7 @@ test('sala das oficinas abre com qualquer fábrica e permite entrar e sair sem p
     assert.equal(sala.visible, false);
     assert.ok(PLANTA_OFICINAS.paredes.every(p => !sim.obstaculos().includes(p)));
     sim.estado.estatisticas.clientes = 400;
+    prepararMelhoriasAnteriores(sim, melhoria);
     assert.equal(sim.comprarMelhoria(melhoria).sucesso, true);
     bairro.atualizarOficinas(sim.estado.produtos);
     assert.equal(sala.visible, true);
@@ -395,8 +397,9 @@ test('N17 prolonga o mel sem misturar estoques ou repor a seção vizinha na div
   assert.ok(Math.abs(volumesDoces(sim.estado.produtos)[0].w - PRODUTOS.mel.prateleira.w) < 1e-8);
   assert.equal(selecionarCompartimentoDoces(PRODUTOS.geleia.reposicao, sim.estado.produtos), undefined);
   sim.estado.estatisticas.clientes = 400;
+  prepararMelhoriasAnteriores(sim, 'cozinhaGeleia');
   assert.equal(sim.comprarMelhoria('cozinhaGeleia').sucesso, true);
-  assert.equal(sim.estado.melhorias.queijaria, 0); // Compra adiada continua permitida.
+  assert.equal(sim.estado.melhorias.queijaria, 1); // A cozinha exige as compras anteriores.
   const volumes = sim.obstaculos().filter(o => o.movel === 'doces');
   assert.equal(volumes.length, 1);
   assert.ok(Math.abs(volumes[0].w - 6.4) < 1e-8);

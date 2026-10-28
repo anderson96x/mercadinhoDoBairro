@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -11,7 +12,7 @@ function nivel5() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 4 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 5000;
-  for (const id of ['milho', 'alaTrigo']) assert.ok(sim.comprarMelhoria(id).sucesso);
+  prepararMelhoriasAnteriores(sim, 'laranja');
   sim.sincronizarProfundidade();
   return sim;
 }

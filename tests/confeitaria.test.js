@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -16,7 +17,7 @@ function preparar(nivel = 19) {
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
   prepararLojaCompleta(sim);
-  for (const id of ['alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'apiario', 'caixa']) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
+  prepararMelhoriasAnteriores(sim, 'confeitaria');
   sim.proximoCliente = Infinity; sim.definirAssaltosAtivos(false);
   return sim;
 }

@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -10,9 +11,9 @@ test('N7 mantém paredes iniciais e canteiros iguais, com trigo atrás do milho'
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 150; sim.estado.dinheiro = 400;
   prepararLojaCompleta(sim);
-  assert.equal(sim.estado.produtos.trigo.liberado, false);
-  assert.ok(sim.comprarMelhoria('alaTrigo').sucesso);
-  assert.equal(sim.estado.produtos.milho.liberado, false);
+  assert.equal(sim.estado.produtos.trigo.liberado, true);
+  assert.equal(sim.estado.melhorias.alaTrigo, 1);
+  assert.equal(sim.estado.produtos.milho.liberado, true);
   for (const p of PAREDES_LOJA) assert.ok(sim.obstaculos().some(o => o.x === p.x && o.z === p.z && o.w === p.w && o.d === p.d));
   for (const id of ['milho', 'trigo', 'morango']) assert.deepEqual(PRODUTOS[id].canteiro, PRODUTOS.tomate.canteiro);
   assert.equal(PRODUTOS.trigo.horta.x, PRODUTOS.milho.horta.x);
@@ -26,7 +27,8 @@ test('N7 mantém paredes iniciais e canteiros iguais, com trigo atrás do milho'
 test('save V8 preserva trigo e cargas ao recuperar atores da antiga expansão N7', () => {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 150; sim.estado.dinheiro = 1300;
-  sim.comprarMelhoria('alaTrigo'); sim.comprarMelhoria('ajudante');
+  prepararMelhoriasAnteriores(sim, 'ajudante');
+  assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
   sim.estado.versaoLayout = 8;
   Object.assign(sim.estado.produtos.trigo, { horta: 3, prateleira: 5, apresentado: true });
   Object.assign(sim.estado.jogador, { x: 10.9, z: -1.3, inventario: ['trigo'] });

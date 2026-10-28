@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -11,6 +12,7 @@ function abrir() {
   sim.estado.estatisticas.clientes = 5 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 10000;
   sim.proximoCliente = Infinity;
+  prepararMelhoriasAnteriores(sim, 'laranja');
   assert.ok(sim.comprarMelhoria('laranja').sucesso);
   return sim;
 }
@@ -20,6 +22,7 @@ test('laranjeira exige nível 6 e R$ 800, com compra única', () => {
   sim.estado.dinheiro = 800;
   assert.equal(sim.comprarMelhoria('laranja').sucesso, false);
   sim.estado.estatisticas.clientes = 5 * CONFIG.clientesPorNivel;
+  prepararMelhoriasAnteriores(sim, 'laranja');
   sim.estado.dinheiro = 799;
   assert.equal(sim.comprarMelhoria('laranja').sucesso, false);
   sim.estado.dinheiro = 800;
@@ -47,7 +50,7 @@ test('laranjas renovam na árvore, respeitam pausa e podem ser colhidas e repost
 
 test('repositor transporta laranjas da árvore para o hortifruti', () => {
   const sim = abrir();
-  assert.ok(sim.comprarMelhoria('ajudante').sucesso);
+  assert.equal(sim.estado.melhorias.ajudante, 1);
   sim.estado.produtos.tomate.prateleira = 12;
   for (let i = 0; i < 6000 && sim.estado.produtos.laranja.prateleira < 8; i++) {
     sim.tempo += 0.05; sim.atualizarAjudante(0.05);
@@ -63,7 +66,7 @@ test('cliente pede laranja após abastecimento e paga R$ 7', () => {
     assert.ok(sim.clientes[0].compras.every(c => c.produto !== 'laranja'));
   }
   sim.estado.produtos.laranja.prateleira = 12;
-  assert.ok(sim.comprarMelhoria('caixa').sucesso);
+  assert.equal(sim.estado.melhorias.caixa, 1);
   let cliente;
   for (let i = 0; i < 30; i++) {
     sim.clientes = []; sim.criarCliente();

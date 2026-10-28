@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -9,6 +10,7 @@ function abrir() {
   sim.estado.estatisticas.clientes = 6 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 10000;
   sim.proximoCliente = Infinity;
+  prepararMelhoriasAnteriores(sim, 'laranja');
   assert.ok(sim.comprarMelhoria('laranja').sucesso);
   assert.ok(sim.comprarMelhoria('maca').sucesso);
   return sim;
@@ -50,7 +52,7 @@ test('maçãs crescem com limite, pausam e abastecem a seção sem alterar laran
 
 test('repositor colhe maçãs e abastece o hortifruti com as duas árvores abertas', () => {
   const sim = abrir();
-  assert.ok(sim.comprarMelhoria('ajudante').sucesso);
+  assert.equal(sim.estado.melhorias.ajudante, 1);
   sim.estado.produtos.tomate.prateleira = 12;
   sim.estado.produtos.laranja.prateleira = 12;
   for (let i = 0; i < 6000 && sim.estado.produtos.maca.prateleira < 8; i++) {
@@ -66,7 +68,7 @@ test('maçã entra nos pedidos após abastecimento e rende R$ 7 no caixa', () =>
     assert.ok(sim.clientes[0].compras.every(c => c.produto !== 'maca'));
   }
   sim.estado.produtos.maca.prateleira = 12;
-  assert.ok(sim.comprarMelhoria('caixa').sucesso);
+  assert.equal(sim.estado.melhorias.caixa, 1);
   let cliente;
   for (let i = 0; i < 30; i++) {
     sim.clientes = []; sim.criarCliente();

@@ -2,6 +2,10 @@
 
 A progressão avança a cada **25 clientes atendidos**, com bônus de **R$ 100 por nível**. Atingir um nível libera a compra; produtos, funcionários e construções continuam exigindo o saldo e os pré-requisitos indicados abaixo.
 
+A partir da versão **0.72.0**, toda melhoria permanente exige a compra da melhoria anterior na tabela: **caixa → milho → trigo → repositor → laranjeira → macieira → cestas extras → morangos → cesta de trabalho → ovos → leite → padaria → apiário → queijaria → irrigação → geleias → estacionamento → confeitaria → expansão → primeira gôndola → segunda gôndola → sucos → carrinhos**. O caixa é a primeira compra e não exige outra melhoria. Os requisitos de instalação descritos abaixo continuam válidos, além dessa sequência obrigatória.
+
+Níveis e bônus continuam avançando com compras pendentes. Importações são reposições recorrentes: exigem sua gôndola, sem ordem entre pedidos. Compras, dinheiro e estoques de saves anteriores fora da sequência são preservados, sem cobrar ou conceder melhorias anteriores automaticamente. A nova dependência é validada nas próximas compras, sem alterar a validação dos requisitos de instalação ao carregar.
+
 A loja começa com **14 × 8 u** e mantém esse tamanho até comprar a seção de laranjas, disponível no **nível 6**. Essa compra inclui o aumento para **14 × 16 u**, mantendo a fachada no lugar. Atingir o nível sozinho não altera o salão; o aumento não é um desbloqueio separado. No **nível 13**, comprar a padaria amplia o salão à direita para **24 × 16 u**.
 
 A porta dos fundos tem uma única folha, na antiga metade direita, e abre automaticamente **apenas para o jogador e o repositor contratado**. Clientes não acionam a abertura nem são encaminhados por esse acesso de serviço. Fecha quando os funcionários se afastam e congela durante a pausa. A lixeira fica **fora da loja**, no espaço da antiga folha esquerda, com acesso pelo lado do gramado. Porta e lixeira acompanham a profundidade do salão.
@@ -43,7 +47,7 @@ A banca cresce na ordem **tomate → milho → trigo → laranja → maçã → 
 
 Tomate, milho e trigo ficam alinhados na faixa posterior esquerda, com milho atrás dos tomates e trigo atrás do milho. Os canteiros medem **3,6 × 2,5 u**. A estufa de morangos fica na faixa posterior direita, com o mesmo tamanho de canteiro. **Morangos não exigem padaria, ovos nem leite.**
 
-A laranjeira é comprada no nível 6 e a macieira no nível 7, em **Celular → Melhorias → Mercado**. Cada árvore custa **R$ 800**, produz uma fruta a cada **3 segundos**, guarda até **8 frutas** na copa e abastece uma seção com capacidade de **12 unidades**. Ambas vendem por **R$ 7**. A laranjeira não depende de outras compras; maçãs e morangos exigem a seção de laranjas para garantir espaço no salão. As frutas visíveis desaparecem conforme são colhidas.
+A laranjeira é comprada no nível 6 e a macieira no nível 7, em **Celular → Melhorias → Mercado**. Cada árvore custa **R$ 800**, produz uma fruta a cada **3 segundos**, guarda até **8 frutas** na copa e abastece uma seção com capacidade de **12 unidades**. Ambas vendem por **R$ 7**. A laranjeira exige o repositor; maçãs exigem a laranjeira e morangos exigem as cestas extras. A seção de laranjas também garante espaço no salão. As frutas visíveis desaparecem conforme são colhidas.
 
 A laranjeira fica no pomar nos fundos direitos, na posição à direita do futuro apiário, com coleta frontal. A macieira fica ao lado, em direção às oficinas, com coleta pela lateral esquerda. O repositor pode colher e abastecer ambas. Irrigação e fertilizante das hortas não afetam o pomar.
 
@@ -61,7 +65,7 @@ Comprar ovos instala o galinheiro atrás da loja e uma estante alta de três ní
 
 Comprar leite instala o curral ao lado do galinheiro e um refrigerador vertical de duas portas de vidro à direita dos ovos. O curral produz uma garrafa a cada **4,5 segundos**, sem insumos. Ovos e leite têm estoques independentes; abasteça pela frente de cada expositor. O jogador e o repositor podem coletar e repor.
 
-Essas compras exigem a seção de laranjas e mantêm o salão de **14 × 16 u**. Não exigem milho, trigo ou maçãs.
+Essas compras exigem a seção de laranjas e mantêm o salão de **14 × 16 u**. Ovos exigem a cesta de trabalho do N10 e leite exige ovos; ambas dependem indiretamente de milho, trigo e maçãs pela sequência obrigatória.
 
 ## Padaria no nível 13
 
@@ -86,7 +90,7 @@ A irrigação do nível 16 exige a estufa e reduz em **25%** os tempos de cresci
 
 ## Estacionamento no nível 18
 
-Em **Celular → Melhorias → Mercado**, compre o estacionamento por **R$ 10.000**. Exige apenas nível e saldo, pode ser comprado uma única vez e ocupa o terreno à esquerda da loja, com seis vagas, canteiro, iluminação e acesso pela rua. A vegetação dessa área é removida durante a construção; o acesso à fazenda e a circulação pela calçada permanecem livres.
+Em **Celular → Melhorias → Mercado**, compre o estacionamento por **R$ 10.000**. Exige a cozinha de geleias do N17, nível e saldo, pode ser comprado uma única vez e ocupa o terreno à esquerda da loja, com seis vagas, canteiro, iluminação e acesso pela rua. A vegetação dessa área é removida durante a construção; o acesso à fazenda e a circulação pela calçada permanecem livres.
 
 Parte dos compradores usa os carros que circulam na rua, mantendo modelo, cor e tamanho. Cada motorista reserva uma vaga, estaciona, desembarca e vai à loja. Após a compra, volta ao mesmo carro e sai de ré. A vaga só fica livre depois da saída; novas chegadas aguardam quando todas estiverem ocupadas. Manobras respeitam pedestres, tráfego e serviços bancários. Rodas, portas, piscas e luzes são animados; pausar congela os movimentos.
 
@@ -106,7 +110,7 @@ Compras, estoques, ingredientes e produção continuam sendo salvos normalmente.
 
 ## Expansão no nível 20
 
-No nível 20, abra **Celular → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra. O cartão de dica explica que o depósito e o pátio são essenciais para habilitar importações no futuro; cada gôndola habilita suas duas categorias de importação.
+No nível 20, abra **Celular → Melhorias → Mercado → Expansão**. A compra custa **R$ 10.000**, exige a confeitaria do N19 e a padaria e pode ser feita uma única vez. Atingir o nível apenas libera a compra. O cartão de dica explica que o depósito e o pátio são essenciais para habilitar importações no futuro; cada gôndola habilita suas duas categorias de importação.
 
 O salão original de **24 × 16 u**, seus expositores e a padaria mantêm suas posições. A compra acrescenta um **anexo de 6 u de profundidade atrás da loja e da cozinha**, levando o comprimento total do prédio a 22 u, conforme a [planta N18](PLANTA-LOJA-N18.svg). A porta de produção original dá acesso ao anexo; as paredes do salão ficam como divisórias.
 
@@ -114,7 +118,7 @@ A nova parede dos fundos tem uma saída para a fazenda, alinhada à porta de pro
 
 A mesma compra constrói um **depósito de 12,4 × 6 u atrás do estacionamento**, com **uma única porta de enrolar voltada para as vagas**. Quatro estantes metálicas comportam quatro caixas de papelão por classe, com duas caixas em cada um dos dois níveis, deixando livre o piso de concreto diante delas. A entrada e os corredores são caminháveis; paredes e estantes têm colisão. As estantes recebem as entregas das categorias habilitadas pela compra das gôndolas.
 
-A expansão também acrescenta **12 u à esquerda do mapa**, ampliando o terreno para **52 × 46 u**. Nessa lateral fica o **pátio exclusivo de carga**, com asfalto, vaga demarcada em amarelo, setas de entrada/saída, placa com pictograma de caminhão e guias separando-o das vagas públicas. A rua e a calçada acompanham a nova largura, com um acesso próprio recortado para os caminhões. Um caminho pavimentado liga o pátio ao portão do depósito. Câmera, navegação e salvamento aceitam a nova área. Saves com a expansão comprada recebem tudo ao carregar, sem nova cobrança; o estacionamento de clientes não é necessário para receber entregas.
+A expansão também acrescenta **12 u à esquerda do mapa**, ampliando o terreno para **52 × 46 u**. Nessa lateral fica o **pátio exclusivo de carga**, com asfalto, vaga demarcada em amarelo, setas de entrada/saída, placa com pictograma de caminhão e guias separando-o das vagas públicas. A rua e a calçada acompanham a nova largura, com um acesso próprio recortado para os caminhões. Um caminho pavimentado liga o pátio ao portão do depósito. Câmera, navegação e salvamento aceitam a nova área. Saves com a expansão comprada recebem tudo ao carregar, sem nova cobrança; saves antigos com expansão sem estacionamento continuam recebendo entregas; nas novas compras, o estacionamento faz parte da sequência anterior à expansão.
 
 Quando o estacionamento também está comprado, o asfalto aumenta até encostar na fachada inteira do depósito e na parede esquerda da loja, eliminando a faixa de grama entre eles. O meio-fio posterior é removido, deixando o acesso ao portão contínuo; as seis vagas e a entrada pela rua mantêm suas posições.
 

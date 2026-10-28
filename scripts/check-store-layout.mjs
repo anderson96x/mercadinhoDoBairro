@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { Simulacao } from '../src/jogo/simulacao.js';
-import { CONFIG, MELHORIAS, PRODUTOS } from '../src/jogo/configuracao.js';
+import { CONFIG, MELHORIAS, PRODUTOS, SEQUENCIA_MELHORIAS } from '../src/jogo/configuracao.js';
 import { geometriaEstacao, intervaloEstacoes, estacoesSeparadasPorParede } from '../src/jogo/estacoes.js';
 import { PAREDES_LOJA } from '../src/jogo/bairro.js';
 import { CONFEITARIA } from '../src/jogo/confeitaria.js';
@@ -10,8 +10,7 @@ export function abrirLoja(nivel = 15) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 40000;
-  for (const id of ['caixa', 'milho', 'laranja', 'alaProducao', 'alaLeite', 'ajudante', 'alaTrigo', 'cestasExtras', 'alaPadaria',
-    'logistica', 'alaArtesanal', 'apiario', 'queijaria', 'irrigacao', 'equipeAgil', 'cozinhaGeleia', 'estacionamento', 'confeitaria', 'maca', 'prateleirasImportados', 'expansao', 'prateleiraBiscoitosEnlatados', 'prateleiraMantimentosCereais', 'sucos', 'carrinhos']) {
+  for (const id of SEQUENCIA_MELHORIAS) {
     const melhoria = MELHORIAS.find(m => m.id === id);
     if (melhoria.ativa !== false && melhoria.nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
   }

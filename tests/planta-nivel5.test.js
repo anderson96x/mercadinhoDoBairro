@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -15,6 +16,7 @@ function nivel5() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 275; sim.estado.dinheiro = 800; sim.proximoCliente = Infinity;
   prepararLojaCompleta(sim);
+  prepararMelhoriasAnteriores(sim, 'alaLeite');
   return sim;
 }
 
@@ -63,7 +65,7 @@ test('N12 segue o SVG: curral ao lado do galinheiro, refrigerador ao lado dos ov
   }
 });
 
-test('N12 exige nível e R$ 800, conserva piso e paredes mesmo sem comprar milho ou ovos', () => {
+test('N12 exige nível e R$ 800, conserva piso e paredes após comprar milho e ovos', () => {
   const sim = nivel5(); sim.estado.estatisticas.clientes = 250;
   assert.equal(sim.comprarMelhoria('alaLeite').sucesso, false);
   sim.estado.estatisticas.clientes = 275;
@@ -72,7 +74,7 @@ test('N12 exige nível e R$ 800, conserva piso e paredes mesmo sem comprar milho
   sim.estado.dinheiro = 800; assert.ok(sim.comprarMelhoria('alaLeite').sucesso);
   assert.equal(sim.estado.dinheiro, 0); assert.equal(sim.estado.estagioLoja, ALA_LEITE.indice);
   assert.equal(sim.estado.produtos.leite.horta, 0);
-  assert.equal(sim.estado.produtos.ovos.liberado, false); assert.equal(sim.estado.produtos.milho.liberado, false);
+  assert.equal(sim.estado.produtos.ovos.liberado, true); assert.equal(sim.estado.produtos.milho.liberado, true);
   for (const p of PAREDES_LOJA) assert.ok(sim.obstaculos().some(o => o.x === p.x && o.z === p.z && o.w === p.w && o.d === p.d));
   const cena = new THREE.Scene(), geometria = new THREE.BoxGeometry(1, 1, 1), material = new THREE.MeshBasicMaterial();
   const mesh = (grupo, ...args) => { const m = new THREE.Mesh(geometria, material); grupo.add(m); return m; };
@@ -101,6 +103,7 @@ test('divisória entre ovos e leite seleciona um expositor, mesmo com inventári
 
 test('N12 completa produção, coleta posterior, reposição e venda de leite por R$ 20', () => {
   const sim = nivel5(); sim.comprarMelhoria('alaLeite');
+  sim.estado.melhorias.ajudante = 0; // Isola a coleta e a reposição manuais.
   function ir(alvo) {
     let chegou = false;
     for (let i = 0; i < 2400 && !chegou; i++) {
@@ -115,14 +118,14 @@ test('N12 completa produção, coleta posterior, reposição e venda de leite po
   ir({ x: CONFIG.portaProducao.x, z: sim.portaProducao.z - 1.1 }); ir(sim.produtos.leite.reposicao);
   for (let i = 0; i < 30; i++) sim.atualizar(0.05);
   assert.equal(sim.estado.produtos.leite.prateleira, 4);
-  ir(CONFIG.cadeiraCaixa); assert.ok(sim.estado.jogador.sentadoCaixa);
+  ir(CONFIG.cadeiraCaixa); assert.equal(sim.estado.melhorias.caixa, 1);
   sim.proximaId = 5; sim.aleatorio = () => 0;
   assert.ok(sim.criarCliente()); assert.equal(sim.clientes[0].produto, 'leite');
   for (let i = 0; i < 2400 && sim.estado.estatisticas.leitesVendidos === 0; i++) sim.atualizar(0.05);
   assert.equal(sim.estado.estatisticas.leitesVendidos, 1); assert.equal(sim.estado.dinheiro, 20);
   assert.equal(sim.estado.produtos.leite.prateleira, 3);
   for (let i = 0; i < 600 && sim.clientes.length; i++) sim.atualizar(0.05);
-  assert.equal(sim.clientes.length, 0); assert.equal(sim.cestasDisponiveis, 5);
+  assert.equal(sim.clientes.length, 0); assert.equal(sim.cestasDisponiveis, 10);
 });
 
 test('save V7 mantém leite, dinheiro, produção parcial e cargas após remover a antiga extensão N12', () => {

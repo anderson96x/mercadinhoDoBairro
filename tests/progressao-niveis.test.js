@@ -7,6 +7,7 @@ import { Simulacao } from '../src/jogo/simulacao.js';
 import { Cena } from '../src/jogo/cena.js';
 import { PLANTA_COMPACTA, PRODUTOS_HORTIFRUTI } from '../src/jogo/planta.js';
 import { segmentoLivre } from '../src/jogo/navegacao.js';
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 
 const DESBLOQUEIOS = [
   [2, 'caixa'], [3, 'milho'], [4, 'alaTrigo'], [5, 'ajudante'],
@@ -47,6 +48,7 @@ test('trigo cabe na loja compacta do N4 e as três seções têm pontos acessív
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 3 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 1000;
+  prepararMelhoriasAnteriores(sim, 'milho');
   sim.comprarMelhoria('milho'); sim.comprarMelhoria('alaTrigo');
   assert.ok(sim.compacta);
   for (const id of ['tomate', 'milho', 'trigo']) {
@@ -66,6 +68,7 @@ test('laranja N6, maçã N7 e morango N9 aparecem e funcionam sem comprar padari
   const visual = { sim, cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
   for (const [nivel, melhoria, id] of [[6, 'laranja', 'laranja'], [7, 'maca', 'maca'], [9, 'alaArtesanal', 'morango']]) {
     sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
+    prepararMelhoriasAnteriores(sim, melhoria);
     assert.equal(sim.comprarMelhoria(melhoria).sucesso, true);
     Cena.prototype.construirEstacao.call(visual, id, sim.produtos[id]);
     assert.ok(visual.produtos[id].grupo.visible, id);
@@ -89,7 +92,8 @@ test('mel e queijo aguardam o salão da padaria mesmo quando a estufa já foi co
   sim.estado.estatisticas.clientes = 14 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 20000;
   prepararLojaCompleta(sim);
-  sim.comprarMelhoria('alaArtesanal'); sim.comprarMelhoria('alaLeite');
+  prepararMelhoriasAnteriores(sim, 'apiario');
+  sim.estado.melhorias.alaPadaria = 0;
   for (const id of ['apiario', 'queijaria']) {
     assert.equal(sim.disponibilidadeMelhoria(id).requisitoMelhoria, 'alaPadaria');
     assert.equal(sim.comprarMelhoria(id).sucesso, false);
@@ -105,6 +109,42 @@ test('seções e cestas que precisam da planta maior aguardam a compra de laranj
     assert.equal(sim.comprarMelhoria(id).sucesso, false, id);
     assert.equal(sim.compacta, true);
   }
-  assert.equal(sim.comprarMelhoria('logistica').sucesso, true);
+  assert.equal(sim.comprarMelhoria('logistica').sucesso, false);
   assert.equal(sim.compacta, true, 'outras compras não ampliam a loja');
+});
+
+test('cada melhoria exige a compra anterior mesmo com nível e saldo suficientes', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 23 * CONFIG.clientesPorNivel;
+  sim.estado.dinheiro = 100000;
+  for (let i = 0; i < DESBLOQUEIOS.length; i++) {
+    const [, id] = DESBLOQUEIOS[i];
+    if (i > 0) {
+      const anterior = DESBLOQUEIOS[i - 1][1];
+      sim.estado.melhorias[anterior] = 0;
+      const estado = structuredClone(sim.estado);
+      assert.equal(sim.disponibilidadeMelhoria(id).requisitoMelhoria, anterior, id);
+      assert.equal(sim.comprarMelhoria(id).sucesso, false, id);
+      assert.deepEqual(sim.estado, estado, 'compra bloqueada preserva saldo, estoque e melhorias');
+      sim.estado.melhorias[anterior] = 1;
+    }
+    assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
+  }
+});
+
+test('saves com compras fora da nova sequência preservam aquisições, estoques e dinheiro', () => {
+  const sim = new Simulacao();
+  sim.estado.estatisticas.clientes = 5 * CONFIG.clientesPorNivel;
+  sim.estado.dinheiro = 321;
+  sim.estado.melhorias.laranja = 1;
+  Object.assign(sim.estado.produtos.laranja, { liberado: true, horta: 4, prateleira: 3, apresentado: true });
+  const restaurado = new Simulacao(structuredClone(sim.estado));
+  assert.equal(restaurado.estado.melhorias.laranja, 1);
+  assert.equal(restaurado.estado.melhorias.ajudante, 0);
+  assert.equal(restaurado.estado.produtos.laranja.horta, 4);
+  assert.equal(restaurado.estado.produtos.laranja.prateleira, 3);
+  assert.equal(restaurado.estado.dinheiro, 321);
+  restaurado.aumentarNivelDev();
+  assert.equal(restaurado.nivel, 7, 'níveis continuam avançando sem a compra pendente');
+  assert.equal(restaurado.disponibilidadeMelhoria('maca').disponivel, true);
 });

@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -46,7 +47,7 @@ function completa() {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
   sim.estado.estatisticas.clientes = 450; sim.estado.dinheiro = 40000;
   prepararLojaCompleta(sim);
-  for (const id of ['milho', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'maca']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
+  prepararMelhoriasAnteriores(sim, 'apiario');
   return sim;
 }
 
@@ -71,7 +72,7 @@ test('banca cresce por compra, preserva tomates e não cria seção de produto b
   assert.equal(volumesHortifruti(sim.estado.produtos)[0].d, 2.2, 'nível sozinho não constrói');
   sim.estado.dinheiro = 40000; sim.estado.produtos.tomate.prateleira = 5;
   prepararLojaCompleta(sim);
-  for (const id of ['milho', 'alaProducao', 'alaTrigo', 'alaPadaria', 'alaArtesanal', 'maca']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
+  prepararMelhoriasAnteriores(sim, 'apiario');
   const volumes = volumesHortifruti(sim.estado.produtos);
   assert.equal(volumes.length, 1);
   assert.ok(Math.abs(volumes[0].d - 13.2) < 1e-8);
@@ -106,9 +107,9 @@ test('divisórias escolhem uma única seção, inclusive com inventário misto',
 
 test('compra fora de ordem deixa a seção de milho ausente e sem colisão', () => {
   const sim = new Simulacao(); sim.estado.estatisticas.clientes = 150; sim.estado.dinheiro = 400;
-  assert.ok(sim.comprarMelhoria('alaTrigo').sucesso);
+  assert.equal(sim.comprarMelhoria('alaTrigo').sucesso, false);
   assert.equal(sim.estado.produtos.milho.liberado, false);
-  assert.equal(volumesHortifruti(sim.estado.produtos).length, 2);
+  assert.equal(volumesHortifruti(sim.estado.produtos).length, 1);
   Object.assign(sim.estado.jogador, PRODUTOS.milho.reposicao, { inventario: ['tomate', 'trigo'] });
   sim.tempo = 1; sim.interagir();
   assert.deepEqual(sim.estado.jogador.inventario, ['tomate', 'trigo']);

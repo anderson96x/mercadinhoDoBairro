@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -13,8 +14,11 @@ function preparar(comprar = true) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 23 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 20000;
-  for (const id of ['laranja', 'cestasExtras', 'estacionamento', 'caixa']) assert.ok(sim.comprarMelhoria(id).sucesso, id);
+  prepararMelhoriasAnteriores(sim, 'carrinhos');
+  // Estes cenários isolam a compra de tomates; outras mercadorias ainda não foram apresentadas.
+  for (const [id, produto] of Object.entries(sim.estado.produtos)) if (id !== 'tomate') produto.liberado = false;
   if (comprar) assert.ok(sim.comprarMelhoria('carrinhos').sucesso);
+  sim.estado.melhorias.ajudante = 0; // Abastecimento controlado pelo cenário.
   sim.proximoCliente = Infinity; sim.tempo = 5; sim.aleatorio = () => 0;
   sim.definirAssaltosAtivos(false);
   return sim;
@@ -144,7 +148,7 @@ test('saves antigos recebem carrinhos bloqueados e compra nova persiste sem perd
 test('quinze compradores circulam, formam fila e liberam todas as cestas e carrinhos', () => {
   const sim = preparar(); sim.aleatorio = () => 0.9; sim.estado.melhorias.caixa = 0;
   for (const id of ['alaTrigo', 'alaProducao', 'alaLeite', 'alaPadaria', 'expansao', 'prateleiraBiscoitosEnlatados', 'prateleiraMantimentosCereais']) {
-    sim.estado.dinheiro = 20000; assert.ok(sim.comprarMelhoria(id).sucesso, id);
+    assert.equal(sim.estado.melhorias[id], 1, id);
   }
   // Isola a circulação de um grupo de quinze no salão completo.
   for (const [id, produto] of Object.entries(sim.estado.produtos)) produto.liberado = id === 'tomate';

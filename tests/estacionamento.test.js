@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -12,6 +13,7 @@ function nivel(n) {
   const sim = new Simulacao(); sim.proximoCliente = Infinity;
   sim.estado.estatisticas.clientes = (n - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 10000;
+  prepararMelhoriasAnteriores(sim, 'estacionamento');
   return sim;
 }
 
@@ -27,7 +29,7 @@ test('estacionamento exige nível 18 e R$ 10.000, cobra uma vez e não libera pr
   const produtos = structuredClone(sim.estado.produtos);
   assert.ok(sim.comprarMelhoria('estacionamento').sucesso);
   assert.equal(sim.estado.dinheiro, 0);
-  assert.equal(sim.estado.estagioLoja, 0, 'não modifica a etapa das outras construções');
+  assert.equal(sim.estado.estagioLoja, 5, 'mantém a etapa das construções anteriores');
   assert.deepEqual(sim.estado.produtos, produtos);
   sim.estado.dinheiro = 10000;
   assert.match(sim.comprarMelhoria('estacionamento').motivo, /completa/);

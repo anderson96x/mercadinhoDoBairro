@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -12,7 +13,10 @@ import { criarCarro, MODELOS_CARROS, dimensoesCarro, Trafego } from '../src/jogo
 function preparar() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 17 * CONFIG.clientesPorNivel;
+  prepararMelhoriasAnteriores(sim, 'estacionamento');
   sim.estado.dinheiro = 10000; sim.comprarMelhoria('estacionamento');
+  for (const [id, produto] of Object.entries(sim.estado.produtos)) if (id !== 'tomate') produto.liberado = false;
+  sim.estado.melhorias.ajudante = 0; // Estoques isolados, sem reposição automática.
   sim.estado.lojaAberta = true; sim.estado.melhorias.caixa = 1;
   sim.proximoCliente = Infinity; sim.definirAssaltosAtivos(false);
   sim.tempo = 5;

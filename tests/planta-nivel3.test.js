@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -13,6 +14,7 @@ function nivel3() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 2 * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 350;
+  prepararMelhoriasAnteriores(sim, 'milho');
   sim.proximoCliente = Infinity;
   return sim;
 }
@@ -105,7 +107,7 @@ test('N3 percorre a porta posterior, colhe as duas hortas, repõe e vende milho 
   ir(PRODUTOS.tomate.reposicao); esperar();
   assert.equal(sim.estado.produtos.tomate.prateleira, 4);
   ir(CONFIG.cadeiraCaixa);
-  assert.ok(sim.estado.jogador.sentadoCaixa);
+  assert.equal(sim.estado.melhorias.caixa, 1);
   sim.aleatorio = () => 0;
   for (let venda = 0; venda < 2; venda++) {
     assert.ok(sim.criarCliente());

@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -77,6 +78,7 @@ test('somente o repositor contratado pode acionar a porta junto com o jogador', 
   for (let i = 0; i < 15; i++) sim.atualizarPortasProducao(0.05, sim.ajudante);
   assert.equal(sim.aberturasPortasProducao[0], 0);
   sim.estado.dinheiro = 900;
+  prepararMelhoriasAnteriores(sim, 'ajudante');
   assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
   for (let i = 0; i < 15; i++) sim.atualizarPortasProducao(0.05);
   assert.equal(sim.aberturasPortasProducao[0], 1);

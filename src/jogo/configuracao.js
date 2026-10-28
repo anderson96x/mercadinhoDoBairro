@@ -329,6 +329,12 @@ export const MELHORIAS = [
   { id: 'fertilizante', titulo: 'Crescimento acelerado', descricao: 'Escolha uma horta para reduzir a 40% o tempo de crescimento. Uma vez por produto.', custo: 250, icone: 'folha', max: Object.values(PRODUTOS).filter(p => p.origem === 'horta').length, tipo: 'selecaoProduto', categoria: 'mercado', nivelMinimo: 4, ativa: false }
 ];
 
+// Importações são reposições recorrentes, fora da sequência de melhorias permanentes.
+export const SEQUENCIA_MELHORIAS = MELHORIAS
+  .filter(m => m.ativa !== false && !m.recorrente)
+  .sort((a, b) => a.nivelMinimo - b.nivelMinimo)
+  .map(m => m.id);
+
 export const MISSOES = [
   { titulo: 'Atenda o bairro', texto: 'Atenda 25 clientes para subir de nível.', chave: 'clientes', intervalo: CONFIG.clientesPorNivel, destino: 'caixa' }
 ];

@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG, MELHORIAS } from '../src/jogo/configuracao.js';
@@ -11,7 +12,7 @@ function loja(nivel = 22) {
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
   prepararLojaCompleta(sim);
-  for (const id of ['alaTrigo', 'alaProducao', 'alaPadaria', 'expansao']) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
+  prepararMelhoriasAnteriores(sim, 'prateleiraBiscoitosEnlatados');
   return sim;
 }
 const pares = [
@@ -24,13 +25,14 @@ for (const [indice, par] of pares.entries()) {
     assert.equal(sim.comprarMelhoria(par.id).sucesso, false);
     sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
     for (const id of par.pedidos) assert.equal(sim.disponibilidadeMelhoria(id).requisitoMelhoria, par.id);
+    prepararMelhoriasAnteriores(sim, par.id);
     sim.estado.dinheiro = 999;
     assert.equal(sim.comprarMelhoria(par.id).sucesso, false);
     sim.estado.dinheiro = 10000;
     assert.equal(sim.comprarMelhoria(par.id).sucesso, true);
     assert.equal(sim.estado.dinheiro, 9000);
     assert.equal(gondolaInstalada(sim.estado.melhorias, indice), true);
-    assert.equal(gondolaInstalada(sim.estado.melhorias, 1 - indice), false);
+    assert.equal(gondolaInstalada(sim.estado.melhorias, 1 - indice), indice === 1);
     assert.equal(sim.comprarMelhoria(par.id).sucesso, false);
     for (const id of par.pedidos) assert.equal(sim.disponibilidadeMelhoria(id).disponivel, true, id);
     for (const id of par.produtos) assert.equal(sim.estado.produtos[id].horta, 0);
@@ -38,9 +40,9 @@ for (const [indice, par] of pares.entries()) {
     assert.equal(sim.encomendarImportacoes(pedido).sucesso, true);
     const restaurado = new Simulacao(sim.estado);
     assert.equal(restaurado.estado.melhorias[par.id], 1);
-    assert.equal(gondolaInstalada(restaurado.estado.melhorias, 1 - indice), false);
+    assert.equal(gondolaInstalada(restaurado.estado.melhorias, 1 - indice), indice === 1);
     assert.equal(restaurado.obstaculos().includes(PRATELEIRAS_IMPORTADOS[indice]), true);
-    assert.equal(restaurado.obstaculos().includes(PRATELEIRAS_IMPORTADOS[1 - indice]), false);
+    assert.equal(restaurado.obstaculos().includes(PRATELEIRAS_IMPORTADOS[1 - indice]), indice === 1);
     assert.deepEqual(restaurado.estado.deposito.pedidos[0].pacotes.sort(), [...par.produtos].sort());
     for (const id of par.produtos) assert.equal(restaurado.estado.produtos[id].liberado, true);
   });

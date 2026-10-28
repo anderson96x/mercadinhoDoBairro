@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -10,6 +11,7 @@ function abrirTrigo() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 3;
   sim.estado.dinheiro = 400;
+  prepararMelhoriasAnteriores(sim, 'alaTrigo');
   assert.equal(sim.comprarMelhoria('alaTrigo').sucesso, true);
   return sim;
 }
@@ -67,7 +69,7 @@ test('cliente alcança a nova prateleira e paga R$ 5 pelo trigo', () => {
   sim.estado.melhorias.caixa = 1;
   sim.estado.produtos.trigo.prateleira = 1;
   sim.proximoCliente = Infinity;
-  sim.proximaId = 2;
+  sim.proximaId = 3;
   sim.aleatorio = () => 0;
   assert.equal(sim.criarCliente(), true);
   assert.equal(sim.clientes[0].produto, 'trigo');

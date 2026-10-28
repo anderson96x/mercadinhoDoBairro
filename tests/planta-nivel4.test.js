@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -15,6 +16,7 @@ function nivel4() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 250; sim.estado.dinheiro = 500;
   prepararLojaCompleta(sim);
+  prepararMelhoriasAnteriores(sim, 'alaProducao');
   sim.proximoCliente = Infinity;
   return sim;
 }
@@ -78,7 +80,7 @@ test('N11 segue o SVG: galinheiro atrás e à direita do milho, ovos na parede p
   }
 });
 
-test('N11 exige R$ 500 e mantém paredes, fachada e hortifruti existentes, inclusive comprando fora de ordem', () => {
+test('N11 exige R$ 500 e mantém paredes, fachada e hortifruti existentes, após as compras anteriores', () => {
   const sim = nivel4(); sim.estado.estatisticas.clientes = 225;
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, false);
   sim.estado.estatisticas.clientes = 250;
@@ -93,8 +95,8 @@ test('N11 exige R$ 500 e mantém paredes, fachada e hortifruti existentes, inclu
   assert.equal(sim.estado.estagioLoja, ALA_PRODUCAO.indice);
   assert.equal(sim.estado.produtos.ovos.horta, 0, 'produção automática começa vazia');
   assert.equal(sim.estado.produtos.tomate.prateleira, 5);
-  assert.equal(sim.estado.produtos.milho.liberado, false, 'milho não é pré-requisito nem compra concedida');
-  assert.equal(volumesHortifruti(sim.estado.produtos)[0].d, 2.2);
+  assert.equal(sim.estado.produtos.milho.liberado, true, 'milho faz parte das compras anteriores');
+  assert.equal(volumesHortifruti(sim.estado.produtos)[0].d, 13.2);
   for (const p of paredes) assert.ok(sim.obstaculos().some(o => o.x === p.x && o.z === p.z && o.w === p.w && o.d === p.d));
   assert.ok(sim.obstaculos().some(p => p.lateral && p.x === PLANTA_INICIAL.limites.maxX));
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, false);
@@ -102,6 +104,7 @@ test('N11 exige R$ 500 e mantém paredes, fachada e hortifruti existentes, inclu
 
 test('N11 produz, coleta pela porta dos fundos, abastece e vende um ovo por R$ 15 com devolução da cesta', () => {
   const sim = nivel4(); sim.comprarMelhoria('alaProducao');
+  sim.estado.melhorias.ajudante = 0; // Isola a coleta e a reposição manuais.
   function ir(alvo) {
     let chegou = false;
     for (let i = 0; i < 2400 && !chegou; i++) {
@@ -123,7 +126,7 @@ test('N11 produz, coleta pela porta dos fundos, abastece e vende um ovo por R$ 1
   for (let i = 0; i < 30; i++) sim.atualizar(0.05);
   assert.equal(sim.estado.produtos.ovos.prateleira, 4);
   assert.equal(sim.estado.jogador.inventario.length, 0);
-  ir(CONFIG.cadeiraCaixa); assert.ok(sim.estado.jogador.sentadoCaixa);
+  ir(CONFIG.cadeiraCaixa); assert.equal(sim.estado.melhorias.caixa, 1);
   sim.proximaId = 4; sim.aleatorio = () => 0;
   assert.ok(sim.criarCliente()); assert.equal(sim.clientes[0].produto, 'ovos');
   for (let i = 0; i < 2400 && sim.estado.estatisticas.ovosVendidos === 0; i++) sim.atualizar(0.05);
@@ -131,13 +134,13 @@ test('N11 produz, coleta pela porta dos fundos, abastece e vende um ovo por R$ 1
   assert.equal(sim.estado.dinheiro, 15);
   assert.equal(sim.estado.produtos.ovos.prateleira, 3);
   for (let i = 0; i < 600 && sim.clientes.length; i++) sim.atualizar(0.05);
-  assert.equal(sim.clientes.length, 0); assert.equal(sim.cestasDisponiveis, 5);
+  assert.equal(sim.clientes.length, 0); assert.equal(sim.cestasDisponiveis, 10);
 });
 
 test('V6 migra ovos, progresso de produção e cargas para N11 sem cobrar nem criar extensão lateral', () => {
   const sim = nivel4(); sim.comprarMelhoria('alaProducao');
   sim.estado.estatisticas.clientes = 250; sim.estado.dinheiro = 900;
-  assert.ok(sim.comprarMelhoria('ajudante').sucesso);
+  assert.equal(sim.estado.melhorias.ajudante, 1);
   sim.estado.versaoLayout = 6; sim.estado.dinheiro = 123;
   sim.estado.produtos.ovos.horta = 3; sim.estado.produtos.ovos.prateleira = 5; sim.estado.produtos.ovos.apresentado = true;
   sim.estado.producao.progressoOvo = 1.2; sim.estado.producao.ovosProduzidos = 8;

@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -13,7 +14,7 @@ function preparar(nivel = 23) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
   sim.estado.dinheiro = 100000;
-  for (const id of ['laranja', 'maca', 'alaArtesanal', 'alaTrigo', 'alaProducao', 'alaLeite', 'alaPadaria', 'queijaria', 'expansao']) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
+  prepararMelhoriasAnteriores(sim, 'sucos');
   return sim;
 }
 

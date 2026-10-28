@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -13,6 +14,7 @@ function abrirPadaria() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * (ALA_PADARIA.nivelMinimo - 1);
   prepararLojaCompleta(sim);
+  prepararMelhoriasAnteriores(sim, 'alaPadaria');
   sim.estado.melhorias.alaProducao = 1;
   sim.estado.melhorias.alaTrigo = 1;
   sim.estado.produtos.trigo.liberado = true;
@@ -59,7 +61,7 @@ test('pão entra na demanda normal e clientes que o pedem levam pelo menos três
   const demandas = [];
   for (let id = 1; id <= 8; id++) {
     sim.clientes = [];
-    sim.proximoId = id;
+    sim.proximaId = id;
     assert.equal(sim.criarCliente(), true);
     demandas.push(sim.clientes[0].produto);
     const pedidoPao = sim.clientes[0].compras.find(compra => compra.produto === 'pao');
@@ -70,7 +72,7 @@ test('pão entra na demanda normal e clientes que o pedem levam pelo menos três
   assert.ok(demandas.includes('pao'));
 
   sim.clientes = [];
-  sim.proximoId = demandas.indexOf('pao') + 1;
+  sim.proximaId = demandas.indexOf('pao') + 1;
   assert.equal(sim.criarCliente(), true);
   const cliente = sim.clientes[0];
   assert.equal(cliente.compras[0].produto, 'pao');

@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -13,7 +14,8 @@ function abrir() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 300; sim.estado.dinheiro = 2300;
   prepararLojaCompleta(sim);
-  assert.ok(sim.comprarMelhoria('alaProducao').sucesso);
+  prepararMelhoriasAnteriores(sim, 'alaPadaria');
+  assert.equal(sim.estado.melhorias.alaProducao, 1);
   sim.comprarMelhoria('alaTrigo'); assert.ok(sim.comprarMelhoria('alaPadaria').sucesso);
   sim.proximoCliente = Infinity;
   return sim;

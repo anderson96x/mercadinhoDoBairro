@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import { prepararLojaCompleta } from './helpers/loja-completa.js';
 import assert from 'node:assert/strict';
@@ -38,6 +39,7 @@ test('refrigerador de parede tem duas portas de vidro, três níveis e acesso fr
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 11 * CONFIG.clientesPorNivel;
   prepararLojaCompleta(sim);
+  prepararMelhoriasAnteriores(sim, 'alaProducao');
   sim.estado.estagioLoja = ALA_LEITE.indice;
   sim.estado.melhorias.alaProducao = 1;
   sim.estado.melhorias.alaLeite = 1;
@@ -167,7 +169,8 @@ function abrirAla(sim) {
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * (NIVEL_OVOS - 1);
   sim.estado.dinheiro = 2000;
   prepararLojaCompleta(sim);
-  assert.equal(sim.comprarMelhoria('milho').sucesso, true);
+  prepararMelhoriasAnteriores(sim, 'alaProducao');
+  assert.equal(sim.estado.melhorias.milho, 1);
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, true);
 }
 
@@ -194,6 +197,7 @@ test('galinheiro exige nível 11 sem depender de milho e preserva o terreno', ()
   assert.match(sim.comprarMelhoria('alaProducao').motivo, /nível 11/);
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 10;
   prepararLojaCompleta(sim);
+  prepararMelhoriasAnteriores(sim, 'alaProducao');
 
   assert.equal(sim.comprarMelhoria('alaProducao').sucesso, true);
   assert.equal(sim.estado.estagioLoja, ALA_PRODUCAO.indice);
@@ -207,7 +211,7 @@ test('galinheiro exige nível 11 sem depender de milho e preserva o terreno', ()
   const salvo = validarEstado(structuredClone(sim.estado));
   assert.equal(salvo.estagioLoja, ALA_PRODUCAO.indice);
   assert.equal(salvo.produtos.ovos.liberado, true);
-  assert.equal(salvo.melhorias.ajudante, 0);
+  assert.equal(salvo.melhorias.ajudante, 1);
 });
 
 test('galinhas produzem ovos sem insumos, que podem ser coletados e vendidos', () => {
@@ -229,9 +233,9 @@ test('galinhas produzem ovos sem insumos, que podem ser coletados e vendidos', (
   sim.interagir();
   assert.equal(sim.estado.produtos.ovos.prateleira, 1);
   assert.deepEqual(sim.estado.jogador.inventario, []);
-  assert.equal(sim.missao().titulo, 'Atenda o bairro');
+  assert.equal(sim.missao().titulo, 'Mantenha a ala funcionando');
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 10;
-  assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
+  assert.equal(sim.estado.melhorias.ajudante, 1);
   assert.equal(sim.missao().titulo, 'Mantenha a ala funcionando');
   const retomado = new Simulacao(structuredClone(sim.estado));
   assert.equal(retomado.estado.produtos.ovos.prateleira, 1);
@@ -292,7 +296,7 @@ test('salvar durante a viagem preserva a carga e o destino do ajudante', () => {
   abrirAla(sim);
   sim.estado.estatisticas.clientes = CONFIG.clientesPorNivel * 10;
   sim.estado.dinheiro = 900;
-  assert.equal(sim.comprarMelhoria('ajudante').sucesso, true);
+  assert.equal(sim.estado.melhorias.ajudante, 1);
   Object.assign(sim.ajudante, { ...PRODUTOS.ovos.coleta, produto: 'ovos', destino: 'prateleira', inventario: ['ovos', 'ovos'] });
   const retomado = new Simulacao(structuredClone(sim.estado));
   assert.deepEqual(retomado.ajudante.inventario, ['ovos', 'ovos']);

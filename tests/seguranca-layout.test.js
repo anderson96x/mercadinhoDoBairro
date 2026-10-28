@@ -1,3 +1,4 @@
+import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
@@ -9,8 +10,7 @@ import { segmentoLivre } from '../src/jogo/navegacao.js';
 function lojaCompleta() {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = 450; sim.estado.dinheiro = 40000;
-  for (const id of ['caixa','milho','laranja','alaProducao','alaLeite','ajudante','alaTrigo','cestasExtras','alaPadaria',
-    'logistica','alaArtesanal','apiario','queijaria','cozinhaGeleia','maca']) assert.equal(sim.comprarMelhoria(id).sucesso,true,id);
+  prepararMelhoriasAnteriores(sim, 'estacionamento');
   sim.proximoCliente = Infinity;
   return sim;
 }

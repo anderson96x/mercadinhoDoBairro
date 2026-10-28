@@ -5,7 +5,7 @@ import { trabalhoPadaria, estadoEntregaPadaria, validarEntregaPadaria, atualizar
 import { PERSONALIZACAO_PADRAO, validarPersonalizacao } from './personalizacao.js';
 import { PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PRATELEIRAS_IMPORTADOS, oficinasConstruidas, OBSTACULOS_ESTACIONAMENTO, volumesDoces, selecionarCompartimentoDoces, PLANTA_INICIAL, volumesHortifruti, selecionarCompartimentoHortifruti, selecionarExpositorPosterior, obstaculosDeposito, volumePortaoDeposito } from './planta.js';
 import { PAREDES_LOJA, mobiliarioCalcada, volumesPortasEntrada } from './bairro.js';
-import { produtosDaLoja, extremosCalcadaDaLoja, CONFIG, PRODUTOS, MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
+import { produtosDaLoja, extremosCalcadaDaLoja, CONFIG, PRODUTOS, MELHORIAS, SEQUENCIA_MELHORIAS, MISSOES, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA, ALA_ARTESANAL, OFICINAS } from './configuracao.js';
 import { buscarCaminho, segmentoLivre } from './navegacao.js';
 import { geometriaEstacao, pontoMaisProximo, distanciaEstacao } from './estacoes.js';
 import { PLANTA_COMPACTA, paredesPlantaInicial, volumePortaProducao } from './planta.js';
@@ -487,6 +487,11 @@ export class Simulacao {
     }
     if (id === ALA_PADARIA.id && !this.estado.melhorias.alaProducao) {
       return { disponivel: false, motivo: 'Construa a ala dos ovos antes de abrir a padaria.', requisitoMelhoria: 'alaProducao' };
+    }
+    const anterior = SEQUENCIA_MELHORIAS[SEQUENCIA_MELHORIAS.indexOf(id) - 1];
+    if (anterior && !this.estado.melhorias[anterior]) {
+      const titulo = MELHORIAS.find(item => item.id === anterior).titulo;
+      return { disponivel: false, motivo: `Compre ${titulo} antes de ${m.titulo}.`, requisitoMelhoria: anterior };
     }
     if (m.tipo === 'importacao') {
       const gondolas = CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].gondola + 1;
