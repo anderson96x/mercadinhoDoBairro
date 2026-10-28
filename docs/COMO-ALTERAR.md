@@ -178,6 +178,6 @@ Confira também no navegador: colher, abastecer, vender, comprar melhoria, abrir
 
 ## Soda (N25)
 
-`soda.js` define os pontos da geladeira, coleta e quatro caixas no chão do depósito. `soda-visual.js` reutiliza o gabinete de `criarGeladeiraSucos()` e aplica a arte de `public/produtos/soda.svg`, compartilhada com latas e caixas. Não adicione estante ao canto. `posicaoLataSoda()` mantém 24 latas em quatro níveis, com duas fileiras de três; também fornece o destino da reposição animada.
+`soda.js` define os pontos da geladeira, coleta e quatro caixas empilhadas verticalmente no chão do depósito. `soda-visual.js` reutiliza o gabinete de `criarGeladeiraSucos()` e aplica a arte de `public/produtos/soda.svg`, compartilhada com latas e caixas. Não adicione estante ao canto nem distribua as caixas lado a lado. `posicaoLataSoda()` mantém 24 latas em quatro níveis, com duas fileiras de três; também fornece o destino da reposição animada.
 
 A classe `soda` reserva slots 16–19 e não usa gôndola. `unidadesPacote(classe)` fornece 24 para Soda e mantém nove para as classes anteriores; use essa função na entrega, validação de saves e total de unidades de pedidos mistos. O limite de quatro caixas inclui pendentes e parciais. A geladeira aparece ao comprar `geladeiraSoda`; a importação recorrente `importarSoda` depende dela. Valide com `tests/soda.test.js`, rotas até N25 e `scripts/verificar-soda.mjs`, sem salvar imagens.

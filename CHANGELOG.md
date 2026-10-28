@@ -1,6 +1,11 @@
 # Histórico de alterações
 
-## Versão atual: 0.73.0 — 2026-10-28
+## Versão atual: 0.73.1 — 2026-10-28
+
+- Empilha verticalmente as quatro caixas Soda no canto do depósito, ocupando uma única posição no piso em vez de distribuí-las lado a lado.
+- Validação: testes de Soda, suíte completa e build de produção.
+
+## 0.73.0 — 2026-10-28
 
 - Adiciona geladeira Soda no N25 por R$ 1.000, após os carrinhos: reutiliza o gabinete dos sucos ao lado dele, com arte rosa e laranja da marca Soda e 24 latas compactas em quatro prateleiras.
 - Importa até quatro caixas de 24 latas, contando pendentes, por R$ 240 a caixa (valor adotado de R$ 10 por lata). O caminhão entrega as caixas da marca no chão, no canto do depósito, sem estante; jogador e repositor abastecem a geladeira. Cada lata vende por R$ 20.

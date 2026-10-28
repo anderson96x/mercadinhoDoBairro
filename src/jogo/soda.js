@@ -9,6 +9,5 @@ export const SODA = {
 };
 
 export function posicaoCaixaSoda(indice) {
-  return { x: SODA.deposito.x + (indice % 2 - 0.5) * 0.72,
-    y: 0.23, z: SODA.deposito.z + (Math.floor(indice / 2) - 0.5) * 0.72 };
+  return { x: SODA.deposito.x, y: 0.23 + indice * 0.32, z: SODA.deposito.z };
 }

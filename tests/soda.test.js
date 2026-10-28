@@ -90,7 +90,7 @@ test('Soda entra nos pedidos após abastecer e cada lata paga R$ 20 no caixa', (
   assert.equal(sim.estado.estatisticas.faturamento - antes, 20);
 });
 
-test('modelo reutiliza geladeira com quatro níveis compactos e caixas sem estante; saves antigos começam vazios', () => {
+test('modelo reutiliza geladeira com quatro níveis compactos e caixas empilhadas sem estante; saves antigos começam vazios', () => {
   const sim = preparar(); sim.comprarMelhoria('geladeiraSoda');
   const cena = { sim, cena: new THREE.Scene(), produtos: {}, criarLabel() {} };
   Cena.prototype.construirImportado.call(cena, 'soda', PRODUTOS.soda);
@@ -109,7 +109,9 @@ test('modelo reutiliza geladeira com quatro níveis compactos e caixas sem estan
   const caixas = deposito.grupo.children.filter(o => o.name === 'caixa-soda');
   assert.equal(caixas.length, 4);
   assert.equal(caixas.filter(o => o.visible).length, 1);
-  assert.ok(caixas.every(o => o.position.y === 0.23));
+  assert.equal(new Set(caixas.map(o => o.position.x)).size, 1);
+  assert.equal(new Set(caixas.map(o => o.position.z)).size, 1);
+  assert.deepEqual(caixas.map(o => o.position.y), [0.23, 0.55, 0.87, 1.19]);
   const antigo = new Simulacao().estado;
   delete antigo.melhorias.geladeiraSoda; delete antigo.produtos.soda;
   const migrado = validarEstado(antigo);
