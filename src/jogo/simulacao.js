@@ -1203,8 +1203,9 @@ export class Simulacao {
     this.proximoLadoEntrada = 1 - ladoEntrada;
     const ladoSaida = this.proximoLadoSaida;
     this.proximoLadoSaida = 1 - this.proximoLadoSaida;
+    const prateleiraCompra = this.produtos[produto].prateleira;
     const pontosOcupados = new Set(this.clientes
-      .filter(c => c.produto === produto && !['indoCaixa', 'fila', 'saindo', 'fim'].includes(c.fase))
+      .filter(c => this.produtos[c.produto]?.prateleira === prateleiraCompra && !['indoCaixa', 'fila', 'saindo', 'fim'].includes(c.fase))
       .map(c => c.pontoCompra));
     const pontoCompra = this.produtos[produto].pontosCompra.findIndex((_, indice) => !pontosOcupados.has(indice));
     if (!this.aparenciasDisponiveis.length) {
@@ -1238,8 +1239,9 @@ export class Simulacao {
     return compra;
   }
   escolherPontoCompra(c, produto) {
+    const prateleiraCompra = this.produtos[produto].prateleira;
     const ocupados = new Set(this.clientes
-      .filter(outro => outro !== c && outro.produto === produto && !['indoCaixa', 'fila', 'saindo', 'fim'].includes(outro.fase))
+      .filter(outro => outro !== c && this.produtos[outro.produto]?.prateleira === prateleiraCompra && !['indoCaixa', 'fila', 'saindo', 'fim'].includes(outro.fase))
       .map(outro => outro.pontoCompra));
     const livre = this.produtos[produto].pontosCompra.findIndex((_, indice) => !ocupados.has(indice));
     return Math.max(0, livre);
@@ -1439,11 +1441,16 @@ export class Simulacao {
   caminharProducao(ator, destino, dt) {
     let trajeto = this.trajetosProducao.get(ator);
     if (!trajeto || distancia(trajeto.destino, destino) > 0.1) {
-      const dentro = p => p.x > PLANTA_INICIAL.limites.minX && p.z > this.portaProducao.z && p.z < CONFIG.portaEntrada.z;
-      const interior = { x: this.portaProducao.x, z: this.portaProducao.z + 0.8 };
-      const exterior = { x: this.portaProducao.x, z: this.portaProducao.z - 2 };
-      const pontos = dentro(ator) === dentro(destino) ? [destino]
-        : dentro(ator) ? [interior, exterior, destino] : [exterior, interior, destino];
+      const sentido = Math.sign(destino.z - ator.z);
+      const portas = sentido ? this.portasProducao
+        .filter(porta => (porta.z - ator.z) * sentido > 0.05 && (destino.z - porta.z) * sentido > 0.05)
+        .sort((a, b) => (a.z - b.z) * sentido) : [];
+      // Cada porta recebe um ponto de espera fora do arco da folha e outro
+      // depois do vão. Isso também cobre a antiga porta interna após a expansão.
+      const pontos = portas.flatMap(porta => sentido > 0
+        ? [{ x: porta.x, z: porta.z - 2 }, { x: porta.x, z: porta.z + 0.8 }]
+        : [{ x: porta.x, z: porta.z + 0.8 }, { x: porta.x, z: porta.z - 2 }]);
+      pontos.push(destino);
       trajeto = { destino: { ...destino }, pontos };
       this.trajetosProducao.set(ator, trajeto);
     }

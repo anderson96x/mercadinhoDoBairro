@@ -83,7 +83,7 @@ export const PRODUTOS = {
     nome: sabor.nome, plural: sabor.nome, cor: sabor.cor, preco: 25, origem: 'sucos', nivelMinimo: 23,
     capacidadeHorta: SUCOS.capacidadeSabor, capacidadePrateleira: SUCOS.capacidadeSabor, liberado: false,
     horta: SUCOS.bancada, coleta: SUCOS.entrega, prateleira: SUCOS.geladeira,
-    reposicao: SUCOS.cliente, cliente: SUCOS.cliente, pontosCompra: [SUCOS.cliente]
+    reposicao: SUCOS.cliente, cliente: SUCOS.cliente, pontosCompra: SUCOS.pontosCliente
   }])),
   tomate: {
     nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 5, origem: 'horta',

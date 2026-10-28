@@ -1068,8 +1068,10 @@ export class Cena {
     if (id === 'sucoLaranja') {
       const b = SUCOS.bancada;
       const bancada = new THREE.Group(); bancada.name = 'balcao-sucos'; grupo.add(bancada);
-      caixa(bancada, b.w, 0.85, b.d, 0x739e94, b.x, 0.66, b.z);
-      caixa(bancada, b.w, 0.1, b.d, 0xe1e6e4, b.x, 1.13, b.z);
+      caixa(bancada, 2.5, 0.8, 1.6, 0x73a9a5, b.x, 0.64, b.z);
+      caixa(bancada, b.w, 0.12, b.d, 0xe5e4d8, b.x, 1.09, b.z);
+      const bandeja = new THREE.Group(); bandeja.name = 'bandeja-garrafas-sucos'; grupo.add(bandeja);
+      caixa(bandeja, 0.8, 0.08, 1.1, 0xc29463, b.x + 0.75, 1.18, b.z);
       criarGeladeiraSucos(grupo);
       grupo.userData.maquinaSucos = criarMaquinaSucos(grupo);
       this.criarLabel(`horta-${id}`, { ...b, y: 3.3 }, 'MÁQUINA DE SUCOS', 'Entregue frutas e recolha garrafas', id);
@@ -1077,7 +1079,7 @@ export class Cena {
     const sabor = Object.keys(SUCOS.sabores).indexOf(id), frutas = [], frutos = [];
     for (let i = 0; i < p.capacidadeHorta; i++) {
       const garrafa = criarProduto(id, 0.55);
-      garrafa.position.set(SUCOS.bancada.x + i * 0.21, 1.27, SUCOS.bancada.z - 0.6 + sabor * 0.38);
+      garrafa.position.set(SUCOS.bancada.x + 0.75 + (sabor - 1.5) * 0.18, 1.29, SUCOS.bancada.z + (i - 2.5) * 0.17);
       garrafa.userData.baseY = garrafa.position.y;
       grupo.add(garrafa); frutos.push(garrafa);
     }
