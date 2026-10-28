@@ -30,10 +30,12 @@ export function criarGeladeiraSucos(pai) {
     malha(grupo, new THREE.BoxGeometry(largura, altura, profundidade), cor, px, py, pz, nome);
   bloco(w, 0.18, d, 0x263b40, 0, 0.25, 0, 'rodape-geladeira-sucos');
   bloco(w, 0.36, d, 0xe5eaed, 0, 0.52, 0, 'base-geladeira-sucos');
-  bloco(w - 0.12, 2.2, 0.1, 0xbccbd1, 0, 1.76, -d / 2 + 0.05, 'fundo-geladeira-sucos');
-  for (const lado of [-1, 1]) bloco(0.09, 2.56, d, 0xe5eaed, lado * (w / 2 - 0.045), 1.62, 0, 'lateral-geladeira-sucos');
+  // O gabinete começa sobre a base e termina sob o teto, sem faces externas
+  // coplanares entre painéis de cores diferentes.
+  bloco(w - 0.18, 2.19, 0.1, 0xbccbd1, 0, 1.795, -d / 2 + 0.05, 'fundo-geladeira-sucos');
+  for (const lado of [-1, 1]) bloco(0.09, 2.19, d, 0xe5eaed, lado * (w / 2 - 0.045), 1.795, 0, 'lateral-geladeira-sucos');
   bloco(w, 0.12, d, 0xe5eaed, 0, 2.95, 0, 'teto-geladeira-sucos');
-  bloco(w, 0.23, 0.1, 0xe74735, 0, 2.815, d / 2 - 0.05, 'faixa-vermelha-sucos');
+  bloco(w - 0.18, 0.19, 0.1, 0xe74735, 0, 2.795, d / 2 - 0.04, 'faixa-vermelha-sucos');
   for (const [indice, [id, sabor]] of Object.entries(SUCOS.sabores).entries()) {
     const y = GELADEIRA_SUCOS.alturas[indice];
     const prateleira = bloco(w - 0.18, 0.07, d - 0.16, 0xa5b6bd, 0, y, 0, `prateleira-sucos-${id}`);
@@ -46,8 +48,8 @@ export function criarGeladeiraSucos(pai) {
   for (const lado of [-1, 1]) bloco(0.045, 2.08, 0.045, 0x263b40, lado * (w / 2 - 0.045), 1.685, d / 2 - 0.025, 'moldura-vertical-sucos');
   for (const y of [0.65, 2.725]) bloco(w, 0.045, 0.045, 0x263b40, 0, y, d / 2 - 0.025, 'moldura-horizontal-sucos');
   bloco(0.045, 0.42, 0.07, 0x263b40, w / 2 - 0.16, 1.65, d / 2 + 0.005, 'puxador-geladeira-sucos');
-  bloco(w - 0.12, 0.3, 0.03, 0x263b40, 0, 0.48, d / 2 - 0.015, 'grade-geladeira-sucos');
-  for (let i = 0; i < 6; i++) bloco(w - 0.18, 0.016, 0.018, 0x829394, 0, 0.36 + i * 0.045, d / 2 + 0.005, 'lamina-grade-sucos');
+  bloco(w - 0.12, 0.3, 0.03, 0x263b40, 0, 0.48, d / 2 + 0.02, 'grade-geladeira-sucos');
+  for (let i = 0; i < 6; i++) bloco(w - 0.18, 0.016, 0.018, 0x829394, 0, 0.36 + i * 0.045, d / 2 + 0.05, 'lamina-grade-sucos');
   return grupo;
 }
 

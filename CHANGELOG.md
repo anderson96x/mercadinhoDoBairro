@@ -1,6 +1,12 @@
 # Histórico de alterações
 
-## Versão atual: 0.72.0 — 2026-10-28
+## Versão atual: 0.72.1 — 2026-10-28
+
+- Elimina superfícies coplanares que piscavam durante o movimento: separa grade, lâminas, faixa vermelha e painéis da geladeira de sucos e faz os rodapés verdes cobrirem também as pontas das paredes.
+- Preserva a montagem de faces do renderizador Canvas; a causa foi reproduzida no WebGL como disputa de profundidade entre peças sobrepostas.
+- Validação: 406 testes, build de produção e navegador em desktop/celular com WebGL/Canvas; amostragem de pixels durante o movimento e snapshots de diagnóstico autorizados pelo usuário.
+
+## 0.72.0 — 2026-10-28
 
 - Exige a compra da melhoria permanente anterior na sequência N2–N24, mantendo níveis, preços e bônus. A laranjeira exige o repositor; estacionamento exige geleias e expansão exige confeitaria.
 - Mantém os pré-requisitos de instalação e as importações recorrentes vinculadas às suas gôndolas, sem ordem entre pedidos.

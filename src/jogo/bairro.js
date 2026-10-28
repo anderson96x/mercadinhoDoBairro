@@ -123,9 +123,10 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     return m;
   };
   const chao = (camada, ...args) => { const m = bloco(...args); m.userData.fundo = camada; return m; };
+  // Inclui as pontas para não disputar profundidade com as faces claras da parede.
   const rodape = p => bloco(
-    p.w + (p.d > p.w ? 0.035 : 0), 0.22,
-    p.d + (p.w >= p.d ? 0.035 : 0),
+    p.w + 0.035, 0.22,
+    p.d + 0.035,
     0x286750, p.x, 0.34, p.z, 'principal'
   );
   const folhasProducao = [];
