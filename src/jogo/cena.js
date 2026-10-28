@@ -1,5 +1,6 @@
 import { trabalhoPadaria, criarRoteirosPadaria } from './producao-padaria.js';
 import { SUCOS } from './sucos.js';
+import { aplicarPaletaCarrinho, CARRINHO_CLIENTE, criarCarrinho } from './carrinhos-visual.js';
 import { criarMaquinaSucos, animarMaquinaSucos, criarGarrafaSuco, criarGeladeiraSucos, posicaoGarrafaGeladeira, GELADEIRA_SUCOS } from './sucos-visual.js';
 import { construirBatedeira } from './batedeira.js';
 import { construirBalcoesDecorados, criarVitrineCurva, criarBandejaRecebimento } from './padaria-decoracao.js';
@@ -877,7 +878,7 @@ export class Cena {
     this.bairro.atualizarProfundidade(this.sim.compacta);
     this.bairro.atualizarExpansao(this.sim.estado.melhorias.expansao);
     this.estacionamento = construirEstacionamento(); this.cena.add(this.estacionamento.grupo);
-    this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento, 0, [], 0, !!this.sim.estado.melhorias.expansao);
+    this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento, 0, [], 0, !!this.sim.estado.melhorias.expansao, this.sim.carrinhosNoSuporte, !!this.sim.estado.melhorias.carrinhos);
     this.bairro.atualizarEstacionamento(!!this.sim.estado.melhorias.estacionamento);
     this.bairro.atualizarOficinas(this.sim.estado.produtos);
     this.prateleirasImportados = construirPrateleirasImportados(caixa);
@@ -1750,6 +1751,7 @@ export class Cena {
         d.cesta.rotation.z = 0;
       }
     }
+    if (ator.temCarrinho) d.cesta.position.copy(CARRINHO_CLIENTE[ator.fase === 'comprando' ? 'lateral' : 'frente'].carga);
     const escalaCaixa = d.jogador ? 0.58 : 1;
     const repouso = d.usandoCaixaMadeira
       ? new THREE.Vector3(0.43 * escalaCaixa, d.cesta.position.y + 0.32 * escalaCaixa, d.cesta.position.z)
@@ -1965,7 +1967,7 @@ export class Cena {
     }
     this.prateleirasImportados.atualizar(e.melhorias);
     this.bairro.aplicar(e.personalizacao);
-    this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo, !!e.melhorias.expansao);
+    this.estacionamento.atualizar(!!e.melhorias.estacionamento, dt, sim.estacionamento.carros, sim.tempo, !!e.melhorias.expansao, sim.carrinhosNoSuporte, !!e.melhorias.carrinhos);
     this.bairro.atualizarEstacionamento(!!e.melhorias.estacionamento);
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
     this.bairro.animarPortasProducao(sim.aberturasPortasProducao);
@@ -2001,6 +2003,7 @@ export class Cena {
       .add(new THREE.Vector3(0, unidadePorPixel * 18, 0).applyQuaternion(this.camera.quaternion));
     const embalagem = this.atualizarEmbalagem(sim);
     const paletaAtual = PALETAS.find(p => p.id === e.personalizacao.paleta) || PALETAS[0];
+    this.estacionamento.aplicarPaleta(paletaAtual);
     this.cestasEntrada.forEach((cesta, i) => {
       cesta.visible = i < sim.cestasNoSuporte;
       aplicarPaletaCesta(cesta, paletaAtual);
@@ -2014,6 +2017,13 @@ export class Cena {
       if (!this.clientes.has(c.id)) {
         const visual = APARENCIAS_CLIENTES[c.aparencia] ?? APARENCIAS_CLIENTES[0];
         const m = personagem(visual.corRoupa, visual.pele, false, [0x1d654b, 0x3d8a65, 0x254233], visual);
+        if (c.usaCarrinho) {
+          const pose = CARRINHO_CLIENTE.frente;
+          m.userData.carrinho = criarCarrinho();
+          m.userData.carrinho.position.set(pose.x, pose.y, pose.z);
+          m.userData.carrinho.rotation.y = pose.rotacao;
+          m.userData.carrinho.visible = false; m.add(m.userData.carrinho);
+        }
         this.criarRetratoCliente(visual, c.aparencia);
         m.userData.sacolas = new THREE.Group(); m.userData.corpo.add(m.userData.sacolas);
         const sacola = criarSacola(); sacola.position.set(0, 0.18, 0.58); sacola.visible = false; m.userData.sacolas.add(sacola);
@@ -2024,6 +2034,14 @@ export class Cena {
       const modelo = this.clientes.get(c.id);
       modelo.visible = !c.noCarro;
       const itens = c.itens ?? Array(c.quantidade).fill(c.produto);
+      if (modelo.userData.carrinho) {
+        aplicarPaletaCarrinho(modelo.userData.carrinho, paletaAtual);
+        const pose = CARRINHO_CLIENTE[c.fase === 'comprando' ? 'lateral' : 'frente'];
+        modelo.userData.carrinho.position.set(pose.x, pose.y, pose.z);
+        modelo.userData.carrinho.rotation.y = pose.rotacao;
+        modelo.userData.carrinho.visible = !!c.temCarrinho;
+      }
+      modelo.userData.visualCestaNormal.forEach(parte => { parte.visible = !c.temCarrinho; });
       if (c.temCesta && !c.levaSacolas) aplicarPaletaCesta(modelo.userData.cesta, paletaAtual);
       if (!c.assustado || !modelo.userData.congelado) this.animarPersonagem(modelo, c, c.assustado ? 0 : dt, tempo + c.id, itens, 'prateleira', 0.55);
       modelo.userData.congelado = !!c.assustado;
@@ -2041,7 +2059,7 @@ export class Cena {
         balao.hidden = pos.x < 20 || pos.x > this.w - 20 || pos.y < 20 || pos.y > this.h - 90;
         balao.style.transform = `translate(${pos.x}px,${pos.y}px) translate(-50%,-100%)`;
       } else balao.hidden = true;
-      modelo.userData.cesta.visible = !!c.temCesta && !c.levaSacolas;
+      modelo.userData.cesta.visible = (!!c.temCesta || !!c.temCarrinho) && !c.levaSacolas;
       modelo.userData.sacolas.children.forEach((sacola, i) => {
         sacola.visible = !!c.levaSacolas;
         if (c.assustado) return;
@@ -2062,16 +2080,22 @@ export class Cena {
           sacola.userData.aparicao = Math.min(1, (sacola.userData.aparicao ?? 0) + dt * 4.5);
           const entrada = THREE.MathUtils.smoothstep(sacola.userData.aparicao, 0, 1);
           ajustarSacola(sacola, itens.length, entrada);
-          sacola.position.set(0, 0.18 + Math.sin(entrada * Math.PI) * 0.07, 0.58);
-          sacola.scale.setScalar(0.86 + entrada * 0.14);
+          if (c.temCarrinho) {
+            const pose = CARRINHO_CLIENTE.frente.sacola;
+            sacola.position.set(pose.x, pose.y - modelo.userData.corpo.position.y, pose.z);
+            sacola.scale.setScalar(pose.escala);
+          } else {
+            sacola.position.set(0, 0.18 + Math.sin(entrada * Math.PI) * 0.07, 0.58);
+            sacola.scale.setScalar(0.86 + entrada * 0.14);
+          }
           sacola.userData.conteudo.children.forEach((produto, indice) => {
             const t = THREE.MathUtils.smoothstep(THREE.MathUtils.clamp(entrada * 1.35 - indice * 0.09, 0, 1), 0, 1);
             produto.position.copy(produto.userData.destinoSacola).add(new THREE.Vector3(0, (1 - t) * 0.2, 0));
             produto.rotation.z = (1 - t) * (indice % 2 ? 0.35 : -0.35);
           });
         }
-        sacola.rotation.z = c.andando ? Math.sin(tempo * 8 + i) * 0.025 : 0;
-        if (c.levaSacolas) {
+        sacola.rotation.z = c.andando && !c.temCarrinho ? Math.sin(tempo * 8 + i) * 0.025 : 0;
+        if (c.levaSacolas && !c.temCarrinho) {
           // As duas mãos apoiam a mesma sacola junto ao corpo.
           for (const [braco, lado] of [[modelo.userData.bracoE, -1], [modelo.userData.bracoD, 1]]) {
             const apoio = new THREE.Vector3(lado * 0.37, 0.25, 0.03).applyQuaternion(sacola.quaternion).add(sacola.position);
@@ -2079,6 +2103,16 @@ export class Cena {
           }
         }
       });
+      if (c.temCarrinho) {
+        const dados = modelo.userData;
+        dados.corpo.updateWorldMatrix(true, false); modelo.updateWorldMatrix(true, false);
+        for (const [braco, lado] of [[dados.bracoE, -1], [dados.bracoD, 1]]) {
+          const apoio = dados.corpo.worldToLocal(dados.carrinho.localToWorld(new THREE.Vector3(lado * 0.26, 1.12, -0.49)));
+          posicionarBraco(braco, apoio);
+        }
+        for (const roda of dados.carrinho.userData.rodas) if (c.andando && !sim.pausado && !c.assustado) roda.rotation.x += dt * 12;
+      }
+      if (c.levaSacolas) modelo.userData.carga.children.forEach(produto => { produto.visible = false; });
       if (embalagem?.cliente === c) {
         modelo.userData.carga.children.forEach((produto, i) => { if (i < embalagem.embalados) produto.visible = false; });
       }

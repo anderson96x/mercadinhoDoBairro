@@ -24,7 +24,7 @@ export class Interface {
         <div id="mundo"></div><div id="etiquetas" aria-hidden="true"><div id="dica-mundo" hidden></div></div>
         <header class="cabecalho">
           <div class="marca"><div class="marca-topo"><span class="marca-icone">${icone('loja')}</span><div><h1>Mercadinho<span>do Bairro</span></h1></div></div><div class="progresso-nivel"><progress id="nivel-progresso" value="0" max="25" aria-label="Progresso para o próximo nível"></progress><span id="nivel-contagem">0 / 25</span><span class="nivel" id="nivel" role="status" aria-live="polite">NÍVEL 1</span></div></div>
-          <div class="saldo" aria-label="Resumo do mercado"><div class="saldo-linha"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b></span><small>cestas livres</small></div></div><div class="reputacao-topo media" id="reputacao-painel" aria-label="Satisfação média, 60 de 100"><span class="satisfacao-rosto" id="satisfacao-rosto">${icone('neutro')}</span><progress id="reputacao-progresso" value="60" max="100" aria-label="Satisfação do mercadinho"></progress><small id="reputacao-meta">Média · 60 / 100</small></div></div>
+          <div class="saldo" aria-label="Resumo do mercado"><div class="saldo-linha"><span class="moeda">${icone('moeda')}</span><div><small>SEU CAIXA</small><strong id="saldo">R$ 0</strong></div><div class="vendas"><span>${icone('pessoa')}<b id="clientes">0</b></span><small>clientes atendidos</small></div><div class="vendas cestas-topo"><span>${icone('cesta')}<b id="cestas">${this.sim.cestasNoSuporte}</b><span class="contador-carrinhos-topo" id="contador-carrinhos-topo" hidden><i>/</i><b id="carrinhos-topo">0</b><span class="icone-carrinho-topo">${icone('carrinho')}</span></span></span><small>cestas livres</small></div></div><div class="reputacao-topo media" id="reputacao-painel" aria-label="Satisfação média, 60 de 100"><span class="satisfacao-rosto" id="satisfacao-rosto">${icone('neutro')}</span><progress id="reputacao-progresso" value="60" max="100" aria-label="Satisfação do mercadinho"></progress><small id="reputacao-meta">Média · 60 / 100</small></div></div>
           <nav class="ferramentas" aria-label="Opções do jogo">
             <button class="botao-icone" id="celular" title="Abrir opções" aria-label="Abrir opções">${icone('celular')}</button>
             <button class="botao-icone" id="som" title="Ativar som" aria-label="Ativar som">${icone('mudo')}</button>
@@ -146,6 +146,9 @@ export class Interface {
     this.el('saldo').textContent = reais(e.dinheiro);
     this.el('clientes').textContent = e.estatisticas.clientes;
     this.el('cestas').textContent = s.cestasNoSuporte;
+    this.el('carrinhos-topo').textContent = s.carrinhosNoSuporte;
+    this.el('contador-carrinhos-topo').hidden = !s.totalCarrinhos;
+    this.el('cestas').closest('.cestas-topo').querySelector('small').textContent = s.totalCarrinhos ? 'cestas / carrinhos livres' : 'cestas livres';
     const nomesReputacao = { ruim: 'Ruim', media: 'Média', boa: 'Boa' };
     const rostosSatisfacao = { ruim: 'irritado', media: 'neutro', boa: 'sorriso' };
     const painelReputacao = this.el('reputacao-painel');

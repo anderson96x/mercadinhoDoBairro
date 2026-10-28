@@ -1,9 +1,18 @@
 import * as THREE from 'three';
 import { PLANTA_ESTACIONAMENTO as P, pisoEstacionamento } from './planta.js';
+import { CARRINHOS } from './carrinhos.js';
+import { aplicarPaletaCarrinho, criarCarrinho } from './carrinhos-visual.js';
 
 export function construirEstacionamento() {
   const grupo = new THREE.Group(); grupo.name = 'estacionamento'; grupo.visible = false;
   const detalhes = new THREE.Group(); detalhes.name = 'equipamentos-estacionamento'; grupo.add(detalhes);
+  const suporteCarrinhos = new THREE.Group(); suporteCarrinhos.name = 'carrinhos-estacionamento';
+  suporteCarrinhos.position.set(CARRINHOS.suporte.x, 0.07, CARRINHOS.suporte.z);
+  suporteCarrinhos.visible = false; detalhes.add(suporteCarrinhos);
+  const carrinhos = Array.from({ length: CARRINHOS.quantidade }, (_, i) => {
+    const carrinho = criarCarrinho(); carrinho.rotation.y = Math.PI / 2;
+    carrinho.position.x = (i - 2) * 0.3; suporteCarrinhos.add(carrinho); return carrinho;
+  });
   const materiais = new Map();
   const caixa = (pai, nome, w, h, d, cor, x, y, z, camada) => {
     if (!materiais.has(cor)) materiais.set(cor, new THREE.MeshStandardMaterial({ color: cor, roughness: 0.9 }));
@@ -85,11 +94,15 @@ export function construirEstacionamento() {
   for (const y of [1.9, 1.7]) caixa(placa, 'letra-P', 0.29, 0.08, 0.02, 0xfff9df, 0, y, 0.055);
   caixa(placa, 'letra-P', 0.08, 0.2, 0.02, 0xfff9df, 0.12, 1.8, 0.055);
   let compradoAntes, expansaoAnterior, progresso = 1;
-  return { grupo, carros, receberCarro(id, carro) {
+  return { grupo, carros, aplicarPaleta(paleta) {
+    carrinhos.forEach(carrinho => aplicarPaletaCarrinho(carrinho, paleta));
+  }, receberCarro(id, carro) {
     carro.userData.luzes = [];
     carro.traverse(o => { if (['pisca', 'luz-freio', 'luz-re'].includes(o.name)) carro.userData.luzes.push(o); });
     carros.set(id, carro); grupo.add(carro);
-  }, atualizar(comprado, dt = 0, veiculos = [], tempo = 0, expandida = false) {
+  }, atualizar(comprado, dt = 0, veiculos = [], tempo = 0, expandida = false, carrinhosLivres = 0, carrinhosComprados = false) {
+    suporteCarrinhos.visible = comprado && carrinhosComprados;
+    carrinhos.forEach((carrinho, i) => { carrinho.visible = i < carrinhosLivres; });
     if (expandida !== expansaoAnterior) {
       expansaoAnterior = expandida;
       const piso = pisoEstacionamento(expandida), esquerda = piso.x - piso.w / 2, direita = piso.x + piso.w / 2;

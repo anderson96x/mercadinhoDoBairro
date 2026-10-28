@@ -28,6 +28,7 @@ Abra `src/jogo/configuracao.js`. Ele concentra os ajustes mais frequentes:
 | Distância das interações | `CONFIG.raioInteracao` |
 | Intervalo dos clientes por reputação | `CONFIG.intervaloClientesReputacao` |
 | Cestas iniciais e cestas adicionadas pela melhoria do nível 8 (sem cesta, cliente passa pela calçada) | `CONFIG.quantidadeCestas` e `CONFIG.cestasPorMelhoria` |
+| Carrinhos do N24, capacidade, pedido mínimo e posição no estacionamento | `CARRINHOS` em `src/jogo/carrinhos.js` |
 | Valor de venda | `PRODUTOS.tomate.preco`, por exemplo |
 | Crescimento | `PRODUTOS.tomate.tempoCrescimento` |
 | Posições da horta e da loja | `horta`, `coleta`, `prateleira` e `reposicao` de cada produto |
@@ -87,6 +88,8 @@ Mantenha os pontos de coleta e reposição fora dos objetos sólidos. A ala de p
 O navegador do celular acompanha o personagem com a câmera; em telas largas, mostra o conjunto da loja. Ajuste isso em `Cena.redimensionar()` e `Cena.atualizar()`.
 
 ## Adicionar uma melhoria
+
+Os carrinhos do N24 são uma compra única `carrinhos` por R$ 500, exigindo `estacionamento` e `cestasExtras`. `carrinhoReservado` e `temCarrinho` são transitórios, independentes das cestas; `usaCarrinho` define a capacidade e o pedido. Motoristas priorizam carrinhos após a compra e pedem 20 itens. Pedestres usam as cestas primeiro e, quando ocupadas, os carrinhos, pedindo de 10 a 20 itens. `CARRINHOS.retirada` fica atrás da alça e `CARRINHOS.manobra` mais distante no mesmo eixo. A aproximação passa primeiro pela manobra (`etapa = -2`) e depois pela retirada (`etapa = -3`), sem usar `SAIDA_PEDESTRES` para motoristas com carrinho. Na fase `retirandoCarrinho`, o cliente recua da retirada até a manobra olhando para o suporte; `devolvendoCarrinho` percorre o sentido inverso. Ao terminar, motoristas recebem `etapa = 2` e seguem direto ao carro. Mantenha os dois pontos fora de `CARRINHOS.suporte`. A reserva só é liberada no fim da devolução, inclusive após pagar, faltar estoque ou fechar a loja. `carrinhos-visual.js` fornece o modelo ao estacionamento e aos clientes; `aplicarPaletaCarrinho()` aplica `paleta.principal` às barras, igual às cestas. `CARRINHO_CLIENTE.frente` é usado na circulação e `CARRINHO_CLIENTE.lateral` somente na fase `comprando`, mantendo o comprimento paralelo à face do expositor. Após o caixa, a sacola e seu conteúdo ocupam `CARRINHO_CLIENTE.frente.sacola`; os modelos soltos da carga ficam ocultos. Quando `temCarrinho` muda para falso na devolução, a mesma sacola volta às mãos. Valide o ciclo com `tests/carrinhos.test.js` e o navegador com `node scripts/verificar-carrinhos.mjs`, sem salvar imagens.
 
 1. Declare título, descrição, custo e limite em `MELHORIAS`.
 2. Aplique o efeito em `comprarMelhoria()` ou em um atributo derivado, como `capacidade` e `velocidade`.

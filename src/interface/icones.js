@@ -1,4 +1,5 @@
 const caminhos = {
+  carrinho: '<path d="M2 3h3l3 13h11l3-10H6M8 10h12M11 6v10m5-10v10"/><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/>',
   confeitaria: '<path d="M4 12h16v9H4zM4 16c2 3 4-3 6 0s4-3 6 0 2 1 4 0M7 12V8m5 4V8m5 4V8M7 5V3m5 2V3m5 2V3"/>',
   bolo: '<path d="M4 12h16v9H4zM4 16c2 3 4-3 6 0s4-3 6 0 2 1 4 0M8 12V7m8 5V7M8 4V2m8 2V2"/>',
   donut: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="m6 9 2-1m7-2 1 2m-8 9 1-2m7 0 2 1"/>',

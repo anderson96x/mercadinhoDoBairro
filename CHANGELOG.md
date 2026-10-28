@@ -1,6 +1,19 @@
 # Histórico de alterações
 
-## Versão atual: 0.70.7 — 2026-10-28
+## Versão atual: 0.71.0 — 2026-10-28
+
+- Adiciona a compra de cinco carrinhos no N24 por R$ 500, exigindo estacionamento e dez cestas. Cada carrinho comporta 20 itens e aumenta o limite conjunto para 15 clientes.
+- Pedestres com carrinho pedem de 10 a 20 itens; motoristas reservam carrinhos e tentam comprar 20. Retirada e devolução acontecem junto à entrada do estacionamento, com modelos metálicos encaixados e pose de empurrar.
+- Mantém o carrinho à frente enquanto o cliente circula e o move para o lado somente durante a compra, alinhado à face do expositor para não entrar na prateleira.
+- Depois do caixa, coloca a sacola com os produtos dentro do carrinho; ao devolvê-lo, o cliente pega a sacola e continua a saída a pé.
+- Faz a retirada pela traseira: o cliente segura a alça e recua puxando o carrinho para fora; na devolução, percorre o movimento inverso e o empurra de volta ao encaixe.
+- Remove o desvio em direção à porta: motoristas seguem diretamente da vaga à área de manobra dos carrinhos e, após a devolução, retornam direto ao próprio carro.
+- Faz as barras dos carrinhos acompanharem a mesma cor principal das cestas, inclusive ao trocar a paleta da loja.
+- Mostra o ícone de carrinho ao lado do ícone de cesta na barra superior após a compra dos carrinhos.
+- Preserva saves anteriores e acrescenta contagem de carrinhos livres ao HUD.
+- Validação: 402 testes, build de produção, rotas até o N24 e navegador em desktop/celular com WebGL/Canvas aprovados, sem salvar imagens.
+
+## 0.70.7 — 2026-10-28
 
 - Corrige o repositor preso nas portas de produção: a rota agora aguarda fora do arco e atravessa completamente cada porta, inclusive a passagem interna preservada após a expansão.
 - Validação: suíte de testes, build de produção e rotas da loja aprovados.

@@ -35,6 +35,7 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 | 21 | Prateleira de biscoitos e enlatados | R$ 1.000 | R$ 40 / R$ 30 |
 | 22 | Prateleira de mantimentos e cereais | R$ 1.000 | R$ 35 / R$ 45 |
 | 23 | Máquina e geladeira de sucos | R$ 1.000 | R$ 25 por garrafa |
+| 24 | Cinco carrinhos de compras, até 15 clientes com as dez cestas | R$ 500 | — |
 
 ## Hortifruti: níveis 1 a 9
 
@@ -89,7 +90,7 @@ Em **Celular → Melhorias → Mercado**, compre o estacionamento por **R$ 10.00
 
 Parte dos compradores usa os carros que circulam na rua, mantendo modelo, cor e tamanho. Cada motorista reserva uma vaga, estaciona, desembarca e vai à loja. Após a compra, volta ao mesmo carro e sai de ré. A vaga só fica livre depois da saída; novas chegadas aguardam quando todas estiverem ocupadas. Manobras respeitam pedestres, tráfego e serviços bancários. Rodas, portas, piscas e luzes são animados; pausar congela os movimentos.
 
-Motoristas sempre pedem **cinco unidades**, independentemente da reputação, inclusive com repetição de produtos e pão. Com estoque suficiente, compram as cinco; se faltar mercadoria, aguardam pelo fluxo normal e pagam apenas o que encontraram. Pedestres mantêm os pedidos variáveis por reputação.
+Antes da compra dos carrinhos do N24, motoristas sempre pedem **cinco unidades**, independentemente da reputação, inclusive com repetição de produtos e pão. Com estoque suficiente, compram as cinco; se faltar mercadoria, aguardam pelo fluxo normal e pagam apenas o que encontraram. Pedestres com cesta mantêm os pedidos variáveis por reputação.
 
 ## Confeitaria no nível 19
 
@@ -155,3 +156,13 @@ A compra **Geladeira de sucos**, em **Celular → Melhorias → Mercado**, custa
 A geladeira tem **uma porta de vidro e quatro prateleiras**, uma para cada sabor, com **seis garrafas alinhadas por prateleira**. A cuba da máquina mostra líquido somente enquanto prepara um lote e fica vazia ao transferir o suco às garrafas do balcão.
 
 Leve **laranja, morango e maçã** na cesta e aproxime-se da máquina. Ela armazena até **8 frutas de cada tipo**. Cada preparo leva **5 segundos**: uma fruta rende uma garrafa do sabor correspondente; **1 laranja + 1 morango + 1 maçã → 3 garrafas de suco misto**. A máquina alterna os sabores disponíveis e coloca as garrafas no **balcão de saída**, com capacidade de **6 por sabor**. Recolha-as e leve à geladeira, que também guarda **6 por sabor**; o repositor pode fazer esse transporte. Falta de ingredientes ou espaço no balcão pausa a receita sem consumir frutas. Cada garrafa custa **R$ 25**, e o sabor entra nos pedidos após o primeiro abastecimento da geladeira. Ingredientes, progresso, garrafas no balcão e na geladeira são preservados ao recarregar; partidas antigas recebem a instalação bloqueada e vazia.
+
+## Carrinhos no nível 24
+
+Em **Celular → Melhorias → Mercado**, compre **Carrinhos de compras** por **R$ 500**. A compra é única e exige o estacionamento e as cinco cestas extras do N8. Instala **cinco carrinhos metálicos encaixados** na área frontal direita do estacionamento, junto à calçada e à loja, fora das vagas e das manobras.
+
+Cada carrinho comporta **20 itens**. As **dez cestas e os cinco carrinhos** permitem receber **15 clientes simultaneamente**, com reservas independentes. Sem cesta nem carrinho livre, novos pedestres passam pela calçada. O HUD informa as quantidades de cestas e carrinhos no suporte.
+
+Motoristas reservam um carrinho e tentam comprar **20 itens**, independentemente da reputação. Quando todos os carrinhos estão reservados, novas chegadas de carro aguardam; pedestres ainda podem usar cestas livres. Pedestres usam cestas primeiro e, quando estão ocupadas, pegam carrinhos e pedem **de 10 a 20 itens**, inclusive com repetição de produtos e pão. Com estoque suficiente, completam o pedido; se faltar mercadoria, seguem a espera normal e pagam apenas o que encontraram.
+
+O cliente retira o carrinho no estacionamento, empurra durante as compras e o devolve ao mesmo lugar depois de pagar ou desistir. O carrinho só fica disponível novamente após a devolução. Motoristas devolvem antes de retornar ao próprio carro. A compra persiste ao recarregar; saves anteriores recebem a melhoria desmarcada e preservam suas cestas.
