@@ -109,6 +109,28 @@ function esvaziarPrateleirasDev() {
   if (ui.tipoPainel === 'dev') ui.renderizarPainel();
   ui.mensagem(quantidade ? `${quantidade} produtos removidos. Clientes e repositor foram reiniciados.` : 'As prateleiras já estavam vazias. Clientes e repositor foram reiniciados.');
 }
+function preencherDepositoDev() {
+  if (!import.meta.env.DEV) return;
+  if (sim.depositoEntregaEmAndamento) {
+    ui.mensagem('Aguarde a entrega em andamento terminar.');
+    return;
+  }
+  const quantidade = sim.preencherDepositoDev();
+  gravar(); ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+  ui.mensagem(quantidade ? `${quantidade} produtos adicionados. As estantes do depósito estão cheias!` : 'As estantes do depósito já estão cheias!');
+}
+function esvaziarDepositoDev() {
+  if (!import.meta.env.DEV) return;
+  if (sim.depositoEntregaEmAndamento) {
+    ui.mensagem('Aguarde a entrega em andamento terminar.');
+    return;
+  }
+  const quantidade = sim.esvaziarDepositoDev();
+  gravar(); ui.atualizar();
+  if (ui.tipoPainel === 'dev') ui.renderizarPainel();
+  ui.mensagem(quantidade ? `${quantidade} produtos removidos do depósito.` : 'As estantes do depósito já estavam vazias.');
+}
 function aumentarReputacaoDev() {
   if (!import.meta.env.DEV) return;
   sim.aumentarReputacaoDev();
@@ -136,7 +158,7 @@ const ui = new Interface(sim, {
     if (resultado.sucesso) gravar();
     return resultado;
   },
-  pausar, comprar, encomendarImportacoes, alterarSaldo, preencherPrateleirasDev, esvaziarPrateleirasDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, alternarTemporizadorEntregaDev, aumentarReputacaoDev, iniciarSelecaoHorta,
+  pausar, comprar, encomendarImportacoes, alterarSaldo, preencherPrateleirasDev, esvaziarPrateleirasDev, preencherDepositoDev, esvaziarDepositoDev, aumentarNivelDev, definirClientesPorNivel, definirTempoAssalto, alternarAssaltosDev, alternarTemporizadorEntregaDev, aumentarReputacaoDev, iniciarSelecaoHorta,
   alternarLoja: () => {
     sim.estado.lojaAberta = !sim.estado.lojaAberta;
     gravar(); return sim.estado.lojaAberta;

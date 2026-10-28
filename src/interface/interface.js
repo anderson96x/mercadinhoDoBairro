@@ -367,6 +367,11 @@ export class Interface {
           <p>Encher reinicia o repositor. Esvaziar também reinicia clientes, cestas, carros e repositor.</p>
           <div class="dev-acoes dev-acoes-duplas"><button id="dev-esvaziar-prateleiras">Esvaziar todas</button><button id="dev-preencher-prateleiras">Encher todas</button></div>
         </section>
+        <section class="dev-cartao" aria-label="Estoque do depósito">
+          <div class="dev-cartao-topo"><span class="dev-rotulo">Estoque</span><strong>Depósito</strong></div>
+          <p>Esvazie ou complete as estantes dos produtos importados já liberados. Pedidos a caminho são preservados.</p>
+          <div class="dev-acoes dev-acoes-duplas"><button id="dev-esvaziar-deposito" ${this.sim.depositoEntregaEmAndamento ? 'disabled' : ''}>Esvaziar estantes</button><button id="dev-preencher-deposito" ${this.sim.depositoEntregaEmAndamento ? 'disabled' : ''}>Encher estantes</button></div>
+        </section>
         <section class="dev-cartao" aria-label="Tempo até o assalto">
           <div class="dev-cartao-topo"><span class="dev-rotulo">Prazo para depositar</span><strong>${this.sim.tempoEsperaAssalto}<small> s</small></strong></div>
           <p>Com R$ 1.000 ou mais no caixa, o assalto começa após esse tempo. Decorridos: ${Math.floor(this.sim.estado.banco.tempoRisco)} s. A mudança vale imediatamente.</p>
@@ -475,6 +480,8 @@ export class Interface {
       this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(1000);
       this.el('dev-preencher-prateleiras').onclick = () => this.acoes.preencherPrateleirasDev();
       this.el('dev-esvaziar-prateleiras').onclick = () => this.acoes.esvaziarPrateleirasDev();
+      this.el('dev-preencher-deposito').onclick = () => this.acoes.preencherDepositoDev();
+      this.el('dev-esvaziar-deposito').onclick = () => this.acoes.esvaziarDepositoDev();
       this.el('dev-nivel').onclick = () => this.acoes.aumentarNivelDev();
       this.el('dev-reputacao').onclick = () => this.acoes.aumentarReputacaoDev();
       this.el('dev-reset').onclick = () => this.abrir('reiniciar');

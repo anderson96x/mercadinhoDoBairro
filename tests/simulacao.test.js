@@ -86,6 +86,36 @@ test('ferramenta DEV esvazia as prateleiras e reinicia clientes e repositor', ()
   assert.equal(sim.esvaziarPrateleirasDev(), 0);
 });
 
+test('ferramenta DEV enche e esvazia as estantes do depósito e bloqueia durante entregas', () => {
+  const sim = new Simulacao();
+  sim.estado.produtos.enlatado.liberado = true;
+  sim.estado.produtos.guloseima.liberado = true;
+  sim.estado.deposito.pacotes = [{ produto: 'enlatado', unidades: 4, slot: 0 }];
+  sim.estado.deposito.pedidos = [{ id: 1, pacotes: ['enlatado'] }];
+  sim.estado.produtos.enlatado.horta = 4;
+
+  assert.equal(sim.depositoEntregaEmAndamento, true);
+  assert.equal(sim.preencherDepositoDev(), 0);
+  assert.equal(sim.esvaziarDepositoDev(), 0);
+  assert.deepEqual(sim.estado.deposito.pedidos, [{ id: 1, pacotes: ['enlatado'] }]);
+  assert.deepEqual(sim.estado.deposito.pacotes, [{ produto: 'enlatado', unidades: 4, slot: 0 }]);
+
+  sim.estado.deposito.pedidos = [];
+  assert.equal(sim.preencherDepositoDev(), 68);
+  assert.equal(sim.estado.deposito.pacotes.filter(p => p.produto === 'enlatado').length, 4);
+  assert.equal(sim.estado.deposito.pacotes.filter(p => p.produto === 'guloseima').length, 4);
+  assert.equal(sim.estado.produtos.enlatado.horta, 36);
+  assert.equal(sim.estado.produtos.guloseima.horta, 36);
+  assert.equal(sim.preencherDepositoDev(), 0);
+
+  assert.equal(sim.esvaziarDepositoDev(), 72);
+  assert.deepEqual(sim.estado.deposito.pacotes, []);
+  assert.deepEqual(sim.estado.deposito.pedidos, []);
+  assert.equal(sim.estado.produtos.enlatado.horta, 0);
+  assert.equal(sim.estado.produtos.guloseima.horta, 0);
+  assert.equal(sim.esvaziarDepositoDev(), 0);
+});
+
 test('primeiros objetivos seguem as ações reais e continuam após recarregar', () => {
   const sim = new Simulacao();
   assert.equal(sim.missao().titulo, 'Colha seus primeiros tomates');

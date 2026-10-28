@@ -1,6 +1,5 @@
 import { CONFEITARIA, estadoConfeitaria, validarConfeitaria, produzirConfeitaria, maquinaConfeitaria } from './confeitaria.js';
 import { SODA } from './soda.js';
-import { unidadesPacote } from './classes-produtos.js';
 import { SUCOS, estadoSucos, validarSucos, produzirSucos } from './sucos.js';
 import { CARRINHOS, capacidadeCompraCliente } from './carrinhos.js';
 import { trabalhoPadaria, estadoEntregaPadaria, validarEntregaPadaria, atualizarEntregaPadaria } from './producao-padaria.js';
@@ -17,7 +16,7 @@ import { BANCO, estadoBanco, validarBanco, atualizarBanco } from './banco.js';
 import { ASSALTO } from './assalto.js';
 import { EstacionamentoClientes, pontoPortaCarro, volumeCarro, SAIDA_PEDESTRES } from './estacionamento-clientes.js';
 import { Entregas, estadoDeposito, validarDeposito, vagasDeposito, classeProduto, acomodarExcedentes, obstaculoCaminhao } from './entregas.js';
-import { CLASSES_PRODUTOS, MELHORIAS_GONDOLAS, gondolaInstalada, PACOTES_POR_CLASSE } from './classes-produtos.js';
+import { CLASSES_PRODUTOS, MELHORIAS_GONDOLAS, gondolaInstalada, PACOTES_POR_CLASSE, unidadesPacote } from './classes-produtos.js';
 import { PLANTA_CARGA, obstaculosCarga } from './planta.js';
 
 const LIXEIRA_COMPACTA = { ...CONFIG.lixeira, z: CONFIG.lixeira.z + PLANTA_COMPACTA.deslocamentoFundos };
@@ -330,6 +329,7 @@ export class Simulacao {
   get carrinhosEmUso() { return this.clientes.filter(c => c.carrinhoReservado).length; }
   get carrinhosDisponiveis() { return Math.max(0, this.totalCarrinhos - this.carrinhosEmUso); }
   get carrinhosNoSuporte() { return Math.max(0, this.totalCarrinhos - this.clientes.filter(c => c.temCarrinho).length); }
+  get depositoEntregaEmAndamento() { return this.estado.deposito.pedidos.length > 0 || !!this.entregas?.caminhao; }
   get limiteClientesLoja() { return this.totalCestas + this.totalCarrinhos; }
   get clienteEmAtendimento() {
     const primeiro = this.clientes.filter(c => ['indoCaixa', 'fila'].includes(c.fase)).sort((a, b) => (a.ordemFila ?? 0) - (b.ordemFila ?? 0))[0];
@@ -388,6 +388,52 @@ export class Simulacao {
     Object.assign(this.ajudante, estadoAjudanteInicial());
     this.trajetosProducao.delete(this.ajudante);
     this.reposicoes.delete(this.ajudante);
+    return quantidade;
+  }
+  preencherDepositoDev() {
+    if (this.depositoEntregaEmAndamento) return 0;
+    let quantidade = 0;
+    for (const [id, estoque] of Object.entries(this.estado.produtos)) {
+      const produto = this.produtos[id];
+      if (!estoque.liberado || produto.origem !== 'importado') continue;
+      const pacotes = this.estado.deposito.pacotes.filter(p => p.produto === id);
+      const capacidadePacote = unidadesPacote(produto.classe);
+      for (const pacote of pacotes) {
+        quantidade += capacidadePacote - pacote.unidades;
+        pacote.unidades = capacidadePacote;
+      }
+      const pendentes = this.estado.deposito.pedidos.reduce((total, pedido) => total + pedido.pacotes.filter(produtoPedido => produtoPedido === id).length, 0);
+      const excedentes = this.estado.deposito.excedentes.filter(p => p.produto === id).length;
+      const faltantes = Math.max(0, PACOTES_POR_CLASSE - pacotes.length - pendentes - excedentes);
+      const inicio = CLASSES_PRODUTOS[produto.classe].estante * PACOTES_POR_CLASSE;
+      const slots = Array.from({ length: PACOTES_POR_CLASSE }, (_, i) => inicio + i)
+        .filter(slot => !this.estado.deposito.pacotes.some(p => p.slot === slot));
+      for (let i = 0; i < faltantes; i++) {
+        this.estado.deposito.pacotes.push({ produto: id, unidades: capacidadePacote, slot: slots[i] });
+        quantidade += capacidadePacote;
+      }
+      estoque.horta = this.estado.deposito.pacotes.filter(p => p.produto === id).reduce((total, p) => total + p.unidades, 0)
+        + this.estado.deposito.excedentes.filter(p => p.produto === id).reduce((total, p) => total + p.unidades, 0);
+    }
+    return quantidade;
+  }
+  esvaziarDepositoDev() {
+    if (this.depositoEntregaEmAndamento) return 0;
+    let quantidade = 0;
+    const importados = new Set(Object.entries(this.estado.produtos)
+      .filter(([id]) => this.produtos[id].origem === 'importado')
+      .map(([id]) => id));
+    this.estado.deposito.pacotes = this.estado.deposito.pacotes.filter(p => {
+      if (!importados.has(p.produto)) return true;
+      quantidade += p.unidades;
+      return false;
+    });
+    this.estado.deposito.excedentes = this.estado.deposito.excedentes.filter(p => {
+      if (!importados.has(p.produto)) return true;
+      quantidade += p.unidades;
+      return false;
+    });
+    for (const id of importados) this.estado.produtos[id].horta = 0;
     return quantidade;
   }
   definirAssaltosAtivos(ativo) {

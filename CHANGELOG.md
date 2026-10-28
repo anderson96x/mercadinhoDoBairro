@@ -1,6 +1,11 @@
 # Histórico de alterações
 
-## Versão atual: 0.73.2 — 2026-10-28
+## Versão atual: 0.73.3 — 2026-10-28
+
+- Adiciona ao DEV, logo abaixo das prateleiras da loja, controles para encher e esvaziar as estantes do depósito, bloqueados enquanto houver uma entrega em andamento.
+- Validação: teste de regressão da ferramenta, suíte completa e build de produção.
+
+## 0.73.2 — 2026-10-28
 
 - Faz jogador e repositor consumirem as caixas Soda do topo para a base, mantendo a pilha visual apoiada no chão enquanto o estoque diminui.
 - Validação: testes de Soda, suíte completa e build de produção.
