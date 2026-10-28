@@ -1,6 +1,54 @@
 # Histórico de alterações
 
-## Versão atual: 0.70.0 — 2026-10-27
+## Versão atual: 0.71.0 — 2026-10-28
+
+- Adiciona a compra de cinco carrinhos no N24 por R$ 500, exigindo estacionamento e dez cestas. Cada carrinho comporta 20 itens e aumenta o limite conjunto para 15 clientes.
+- Pedestres com carrinho pedem de 10 a 20 itens; motoristas reservam carrinhos e tentam comprar 20. Retirada e devolução acontecem junto à entrada do estacionamento, com modelos metálicos encaixados e pose de empurrar.
+- Mantém o carrinho à frente enquanto o cliente circula e o move para o lado somente durante a compra, alinhado à face do expositor para não entrar na prateleira.
+- Depois do caixa, coloca a sacola com os produtos dentro do carrinho; ao devolvê-lo, o cliente pega a sacola e continua a saída a pé.
+- Faz a retirada pela traseira: o cliente segura a alça e recua puxando o carrinho para fora; na devolução, percorre o movimento inverso e o empurra de volta ao encaixe.
+- Remove o desvio em direção à porta: motoristas seguem diretamente da vaga à área de manobra dos carrinhos e, após a devolução, retornam direto ao próprio carro.
+- Faz as barras dos carrinhos acompanharem a mesma cor principal das cestas, inclusive ao trocar a paleta da loja.
+- Mostra o ícone de carrinho ao lado do ícone de cesta na barra superior após a compra dos carrinhos.
+- Preserva saves anteriores e acrescenta contagem de carrinhos livres ao HUD.
+- Validação: 402 testes, build de produção, rotas até o N24 e navegador em desktop/celular com WebGL/Canvas aprovados, sem salvar imagens.
+
+## 0.70.7 — 2026-10-28
+
+- Corrige o repositor preso nas portas de produção: a rota agora aguarda fora do arco e atravessa completamente cada porta, inclusive a passagem interna preservada após a expansão.
+- Validação: suíte de testes, build de produção e rotas da loja aprovados.
+
+## 0.70.6 — 2026-10-28
+
+- Iguala a bandeja de garrafas à bandeja de saída das demais estações e reorganiza os quatro sabores em uma grade compacta de 24 posições.
+- Validação: suíte de testes e build de produção aprovados.
+
+## 0.70.5 — 2026-10-28
+
+- Padroniza a bancada de sucos com a largura, profundidade, altura e acabamento das demais estações artesanais e acrescenta uma bandeja com bordas para as garrafas prontas.
+- Validação: suíte de testes, build de produção e rotas da loja aprovados.
+
+## 0.70.4 — 2026-10-28
+
+- Move o estoque do balcão e da geladeira para o rodapé de cada cartão de sabor, liberando o cabeçalho para o nome completo do suco.
+- Validação: suíte de testes e build de produção aprovados.
+
+## 0.70.3 — 2026-10-28
+
+- Amplia o painel de produção e compacta somente os cabeçalhos dos cartões de suco para manter nomes como “Suco de morango” em uma linha no celular.
+- Validação: suíte de testes e build de produção aprovados.
+
+## 0.70.2 — 2026-10-28
+
+- Distribui clientes por posições distintas diante da geladeira de sucos e trata os quatro sabores como um único expositor ao reservar cada ponto, evitando personagens sobrepostos durante a compra.
+- Validação: suíte de testes e build de produção aprovados.
+
+## 0.70.1 — 2026-10-28
+
+- Remove a rolagem horizontal acidental do painel de produção e padroniza todas as barras de rolagem da interface com indicadores finos, arredondados e integrados à paleta do jogo.
+- Validação: suíte de testes e build de produção aprovados.
+
+## 0.70.0 — 2026-10-27
 
 - Adiciona máquina de sucos ao lado da queijaria e geladeira vertical junto ao hortifruti no N23, por R$ 1.000. Reserva espaço para outra geladeira igual.
 - Laranja, morango e maçã rendem uma garrafa por fruta; o mix usa uma de cada e rende três garrafas. Cada preparo leva 5 segundos e cada garrafa vende por R$ 25. A máquina encosta na parede dos fundos, com um balcão para seis garrafas de cada sabor. O jogador ou o repositor recolhe as garrafas e abastece a geladeira, também com seis vagas por sabor.

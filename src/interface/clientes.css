@@ -10,7 +10,7 @@
 .painel-clientes-topo h2{font-size:19px;line-height:1.15;font-weight:700}
 .painel-clientes-topo h2 span{display:inline-grid;place-items:center;min-width:23px;height:23px;padding:0 5px;border-radius:8px;background:var(--ui-suave);font-size:12px;color:var(--paleta-principal)}
 .painel-clientes-topo>.icone{width:25px;height:25px;color:var(--paleta-principal)}
-.lista-clientes{min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;scrollbar-width:thin;display:grid;gap:8px}
+.lista-clientes{min-height:0;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;display:grid;gap:8px}
 .cliente-cartao{display:flex;align-items:center;gap:9px;min-width:0;padding:8px;background:#fffdf5;border:1px solid var(--ui-borda);border-radius:12px}
 .cliente-avatar{--tempo-restante:100%;flex:0 0 47px;width:47px;height:47px;padding:3px;border-radius:50%;background:var(--ui-suave);position:relative}
 .cliente-avatar.esperando{background:conic-gradient(#d68136 var(--tempo-restante),#e9dcc6 0)}

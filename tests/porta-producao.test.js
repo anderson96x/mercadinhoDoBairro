@@ -82,6 +82,26 @@ test('somente o repositor contratado pode acionar a porta junto com o jogador', 
   assert.equal(sim.aberturasPortasProducao[0], 1);
 });
 
+test('repositor aguarda e atravessa as duas portas da loja expandida sem ficar preso', () => {
+  const sim = loja();
+  sim.estado.melhorias.expansao = 1;
+  sim.estado.melhorias.ajudante = 1;
+  const repositor = sim.ajudante;
+  const pontos = [{ x: 9.5, z: -14.285 }, { x: 0.6, z: -8.45 }, { x: 9.5, z: -14.285 }];
+  Object.assign(repositor, pontos[0]);
+  for (const destino of pontos.slice(1)) {
+    let chegou = false;
+    for (let i = 0; i < 2400 && !chegou; i++) {
+      const anterior = { x: repositor.x, z: repositor.z };
+      chegou = sim.caminharProducao(repositor, destino, 1 / 60);
+      for (const [indice, porta] of sim.portasProducao.entries()) {
+        assert.ok(segmentoLivre(anterior, repositor, [volumePortaProducao(sim.aberturasPortasProducao[indice], porta)], 0.32));
+      }
+    }
+    assert.ok(chegou, `repositor preso a caminho de ${JSON.stringify(destino)}`);
+  }
+});
+
 test('jogador atravessa automaticamente a porta nos dois sentidos sem atravessar a folha', () => {
   for (const nivel of [1, 6]) for (const direcao of [-1, 1]) {
     const sim = loja(nivel), porta = sim.portaProducao, jogador = sim.estado.jogador;

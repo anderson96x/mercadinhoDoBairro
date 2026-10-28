@@ -4,6 +4,23 @@ import { estadoInicial } from '../src/jogo/simulacao.js';
 import { ALA_PADARIA, PRODUTOS } from '../src/jogo/configuracao.js';
 import { atualizarPainelProducao, resumoProducao } from '../src/interface/producao.js';
 import { CONFEITARIA, maquinaConfeitaria } from '../src/jogo/confeitaria.js';
+import { SUCOS } from '../src/jogo/sucos.js';
+
+test('estoque dos sabores aparece no rodapé de cada cartão de suco', () => {
+  const estado = estadoInicial();
+  estado.melhorias.alaPadaria = 1;
+  estado.melhorias.sucos = 1;
+  const lista = { innerHTML: '' };
+  const painel = { hidden: true, dataset: {}, querySelector: () => lista };
+  Object.assign(estado.jogador, SUCOS.bancada);
+  atualizarPainelProducao(painel, estado);
+  const inicio = lista.innerHTML.indexOf('producao-cartao sucoMorango');
+  const fim = lista.innerHTML.indexOf('</article>', inicio);
+  const cartao = lista.innerHTML.slice(inicio, fim);
+  assert.doesNotMatch(cartao.match(/producao-cartao-topo[\s\S]*?<\/div>/)[0], /producao-prontos/);
+  assert.match(cartao, /producao-status[\s\S]*producao-prontos producao-prontos-rodape/);
+  assert.match(cartao, /0 no balcão · 0 na geladeira/);
+});
 
 test('barra e porcentagem aparecem somente durante produção ativa e o estado de espera continua visível', () => {
   const estado = estadoInicial();

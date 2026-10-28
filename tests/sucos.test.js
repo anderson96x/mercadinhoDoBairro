@@ -36,6 +36,25 @@ test('geladeira exige N23, instalações, saldo e compra única de R$ 1.000', ()
   assert.equal(semQueijo.comprarMelhoria('sucos').sucesso, false);
 });
 
+test('clientes de sabores diferentes ocupam posições separadas diante da geladeira', () => {
+  const sim = preparar(); sim.comprarMelhoria('sucos');
+  const sabores = Object.keys(SUCOS.sabores);
+  sim.clientes = sabores.map((produto, indice) => ({
+    id: indice + 1, produto, pontoCompra: indice, fase: 'comprando'
+  }));
+  for (const [indice, produto] of sabores.entries()) {
+    const cliente = sim.clientes[indice];
+    sim.clientes.splice(indice, 1);
+    assert.equal(sim.escolherPontoCompra(cliente, produto), indice);
+    sim.clientes.splice(indice, 0, cliente);
+  }
+  const posicoes = sabores.map(id => {
+    const cliente = sim.clientes.find(c => c.produto === id);
+    return PRODUTOS[id].pontosCompra[cliente.pontoCompra].x;
+  });
+  assert.equal(new Set(posicoes).size, sabores.length);
+});
+
 test('entrega aceita frutas e cada receita aguarda coleta no balcão antes de abastecer', () => {
   for (const [id, receita] of Object.entries(SUCOS.sabores)) {
     const sim = preparar(); sim.comprarMelhoria('sucos');
@@ -105,6 +124,12 @@ test('modelo compartilha máquina e geladeira, garrafas distintas e reserva livr
   assert.equal(maquinas, 1); assert.equal(geladeiras, 1);
   assert.equal(sim.obstaculos().includes(SUCOS.bancada), true);
   assert.ok(cena.cena.getObjectByName('balcao-sucos'));
+  assert.equal(SUCOS.bancada.w, 2.65);
+  assert.equal(SUCOS.bancada.d, 1.75);
+  const bandeja = cena.cena.getObjectByName('bandeja-garrafas-sucos');
+  assert.ok(bandeja);
+  const [baseBandeja] = bandeja.children.filter(o => o.geometry?.type === 'BoxGeometry');
+  assert.deepEqual(baseBandeja.geometry.parameters, { width: 0.8, height: 0.08, depth: 1.1, widthSegments: 1, heightSegments: 1, depthSegments: 1 });
   assert.equal(SUCOS.bancada.z - SUCOS.bancada.d / 2, -15.3 + 0.14);
   assert.equal(sim.obstaculos().includes(SUCOS.reservaGeladeira), false);
   assert.ok(SUCOS.reservaGeladeira.x - SUCOS.reservaGeladeira.w / 2 > SUCOS.geladeira.x + SUCOS.geladeira.w / 2);

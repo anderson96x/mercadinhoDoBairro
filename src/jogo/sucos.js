@@ -1,11 +1,12 @@
 // Regras independentes da cena e do DOM; cada sabor tem seu próprio progresso.
 export const SUCOS = {
   maquina: { x: 8.85, z: -14.285, w: 1.15, d: 1.2 },
-  bancada: { x: 9.5, z: -14.285, w: 2.6, d: 1.75 },
+  bancada: { x: 9.5, z: -14.285, w: 2.65, d: 1.75 },
   entrega: { x: 9.5, z: -12.9 },
   geladeira: { x: 0.6, z: -8.45, w: 1.4, d: 1.2 },
   reservaGeladeira: { x: 2.2, z: -8.45, w: 1.4, d: 1.2 },
   cliente: { x: 0.6, z: -7.15 },
+  pontosCliente: [-0.45, 0.25, 0.95, 1.65].map(x => ({ x, z: -7.15 })),
   capacidadeEntrada: 8, capacidadeSabor: 6, segundos: 5,
   sabores: {
     sucoLaranja: { nome: 'Suco de laranja', cor: 0xf79c22, ingredientes: { laranja: 1 }, rendimento: 1 },

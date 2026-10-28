@@ -79,11 +79,16 @@ export function atualizarPainelProducao(painel, estado) {
   const chave = JSON.stringify(oficinas);
   if (painel.dataset.estado === chave) return;
   painel.dataset.estado = chave;
-  painel.querySelector('#lista-producao').innerHTML = oficinas.map(o => `<article class="producao-cartao ${o.id}">
-    <div class="producao-cartao-topo">${icone(o.id)}<h3>${o.nome}</h3><span class="producao-prontos">${o.prontosTexto ?? `${o.prontos} prontos`}</span></div>
+  painel.querySelector('#lista-producao').innerHTML = oficinas.map(o => {
+    const ehSuco = Boolean(SUCOS.sabores[o.id]);
+    const prontos = `<span class="producao-prontos${ehSuco ? ' producao-prontos-rodape' : ''}">${o.prontosTexto ?? `${o.prontos} prontos`}</span>`;
+    return `<article class="producao-cartao ${o.id}">
+    <div class="producao-cartao-topo">${icone(o.id)}<h3>${o.nome}</h3>${ehSuco ? '' : prontos}</div>
     <div class="producao-ingredientes">${o.ingredientes.map(item => `<span class="${item.faltando ?? item.disponivel < item.quantidade ? 'faltando' : ''}">${icone(item.id)}<span>${item.nome ?? PRODUTOS[item.id].nome}</span><b>${item.disponivel} / ${item.quantidade}</b></span>`).join('')}</div>
     <p class="producao-receita">${o.receitaTexto ?? `Por lote: ${o.rendimento} ${PRODUTOS[o.id].plural.toLocaleLowerCase('pt-BR')} · ${o.segundos}s`}</p>
     <div class="producao-status"><span>${o.status}</span>${o.produzindo ? `<b>${o.progresso}%</b>` : ''}</div>
     ${o.produzindo ? `<progress max="100" value="${o.progresso}" aria-label="Progresso do lote: ${o.nome}" aria-valuetext="${o.progresso}%, ${o.status}"></progress>` : ''}
-  </article>`).join('');
+    ${ehSuco ? prontos : ''}
+  </article>`;
+  }).join('');
 }

@@ -83,7 +83,7 @@ export const PRODUTOS = {
     nome: sabor.nome, plural: sabor.nome, cor: sabor.cor, preco: 25, origem: 'sucos', nivelMinimo: 23,
     capacidadeHorta: SUCOS.capacidadeSabor, capacidadePrateleira: SUCOS.capacidadeSabor, liberado: false,
     horta: SUCOS.bancada, coleta: SUCOS.entrega, prateleira: SUCOS.geladeira,
-    reposicao: SUCOS.cliente, cliente: SUCOS.cliente, pontosCompra: [SUCOS.cliente]
+    reposicao: SUCOS.cliente, cliente: SUCOS.cliente, pontosCompra: SUCOS.pontosCliente
   }])),
   tomate: {
     nome: 'Tomate', plural: 'Tomates', cor: 0xef5a42, preco: 5, origem: 'horta',
@@ -319,6 +319,7 @@ export const MELHORIAS = [
   { id: 'alaTrigo', titulo: 'Ala do trigo', descricao: 'Abra o canteiro de trigo atrás do milho e acrescente sua seção ao hortifruti, mantendo o salão inicial.', custo: ALA_TRIGO.custo, icone: 'trigo', produto: 'trigo', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_TRIGO },
   { id: 'alaPadaria', titulo: 'Padaria', descricao: 'Cada trigo rende 3 pães. Entregue trigo na caixa ao fundo da padaria, junto à parede direita.', custo: ALA_PADARIA.custo, icone: 'pao', produto: 'pao', max: 1, tipo: 'expansao', categoria: 'mercado', nivelMinimo: NIVEL_PADARIA, requisitoMelhoria: 'alaTrigo' },
   { id: 'cestasExtras', titulo: 'Mais cestas para clientes', descricao: 'Adicione 5 cestas para receber mais 5 clientes na loja ao mesmo tempo.', custo: 100, icone: 'cesta', max: 1, categoria: 'mercado', nivelMinimo: 8, requisitoMelhoria: 'laranja' },
+  { id: 'carrinhos', titulo: 'Carrinhos de compras', descricao: 'Instale 5 carrinhos encaixados no estacionamento, com capacidade de 20 itens cada. Com as 10 cestas, receba até 15 clientes. Quem usa carrinho pede de 10 a 20 itens; motoristas tentam comprar 20.', custo: 500, icone: 'carrinho', max: 1, categoria: 'mercado', nivelMinimo: 24, requisitoMelhoria: 'estacionamento', requisitos: ['cestasExtras'] },
   { id: 'mochila', titulo: 'Mais capacidade', descricao: 'Carregue mais 4 produtos por viagem.', custo: 25, icone: 'cesta', max: 1, categoria: 'jogador', nivelMinimo: 1, ativa: false },
   { id: 'velocidade', titulo: 'Passo ligeiro', descricao: 'Ande 20% mais rápido pelo mercadinho.', custo: 100, icone: 'raio', max: 1, categoria: 'jogador', nivelMinimo: 5, ativa: false },
   { id: 'caixa', titulo: 'Uma mão no caixa', descricao: 'Contrate alguém para atender a fila enquanto você cuida da loja.', custo: 250, icone: 'pessoa', max: 1, categoria: 'funcionarios', nivelMinimo: 2 },
