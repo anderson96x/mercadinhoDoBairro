@@ -37,7 +37,7 @@ test('N25 instala Soda por R$ 1.000 uma vez e exige nível, sequência e saldo',
   assert.equal(PRODUTOS.soda.preco, 20);
 });
 
-test('quatro caixas entregam 96 latas no chão; caixa parcial mantém vaga ocupada e save preserva unidades', () => {
+test('quatro caixas entregam 96 latas no chão; coleta esvazia a pilha de cima para baixo e save preserva unidades', () => {
   const sim = preparar(); sim.comprarMelhoria('geladeiraSoda');
   assert.equal(sim.encomendarImportacoes({ importarSoda: 5 }).sucesso, false);
   const saldo = sim.estado.dinheiro;
@@ -49,10 +49,12 @@ test('quatro caixas entregam 96 latas no chão; caixa parcial mantém vaga ocupa
   assert.equal(sim.estado.produtos.soda.horta, 96);
   for (let i = 0; i < 23; i++) assert.equal(sim.retirarProdutoDeposito('soda'), true);
   assert.equal(vagasDeposito(sim.estado.deposito, 'soda'), 0);
+  assert.deepEqual(sim.estado.deposito.pacotes.map(p => p.unidades), [24, 24, 24, 1]);
   const salvo = validarEstado(sim.estado);
   assert.equal(salvo.produtos.soda.horta, 73);
-  assert.deepEqual(salvo.deposito.pacotes.map(p => p.unidades), [1, 24, 24, 24]);
+  assert.deepEqual(salvo.deposito.pacotes.map(p => p.unidades), [24, 24, 24, 1]);
   sim.retirarProdutoDeposito('soda');
+  assert.deepEqual(sim.estado.deposito.pacotes.map(p => p.slot), [16, 17, 18]);
   assert.equal(vagasDeposito(sim.estado.deposito, 'soda'), 1);
   assert.equal(sim.encomendarImportacoes({ importarSoda: 2 }).sucesso, false);
   assert.equal(sim.encomendarImportacoes({ importarSoda: 1 }).sucesso, true);

@@ -1,6 +1,11 @@
 # Histórico de alterações
 
-## Versão atual: 0.73.1 — 2026-10-28
+## Versão atual: 0.73.2 — 2026-10-28
+
+- Faz jogador e repositor consumirem as caixas Soda do topo para a base, mantendo a pilha visual apoiada no chão enquanto o estoque diminui.
+- Validação: testes de Soda, suíte completa e build de produção.
+
+## 0.73.1 — 2026-10-28
 
 - Empilha verticalmente as quatro caixas Soda no canto do depósito, ocupando uma única posição no piso em vez de distribuí-las lado a lado.
 - Validação: testes de Soda, suíte completa e build de produção.

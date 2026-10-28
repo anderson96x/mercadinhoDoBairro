@@ -726,7 +726,10 @@ export class Simulacao {
     return { sucesso: true, pedidoId: pedido.id, caixas: pacotes.length, quantidade: pacotes.reduce((total, id) => total + unidadesPacote(classeProduto(id)), 0), dinheiro: this.estado.dinheiro };
   }
   retirarProdutoDeposito(id) {
-    const pacote = this.estado.deposito.pacotes.find(p => p.produto === id);
+    const pacotes = this.estado.deposito.pacotes.filter(p => p.produto === id);
+    const pacote = PRODUTOS[id]?.classe === 'soda'
+      ? pacotes.reduce((topo, atual) => !topo || atual.slot > topo.slot ? atual : topo, null)
+      : pacotes[0];
     if (!pacote) return false;
     pacote.unidades--; this.estado.produtos[id].horta--;
     if (!pacote.unidades) this.estado.deposito.pacotes.splice(this.estado.deposito.pacotes.indexOf(pacote), 1);
