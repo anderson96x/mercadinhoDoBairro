@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { CAFETERIA } from './cafeteria.js';
 import { criarCaixaSoda } from './soda-visual.js';
 import { posicaoCaixaSoda } from './soda.js';
 import { posicaoCaixaLaticinios } from './laticinios.js';
@@ -108,6 +109,13 @@ export function construirDeposito(pai, { caixa, vincular }) {
   for (let i = 0; i < 4; i++) {
     const caixa = criarCaixaLaticinios(), ponto = posicaoCaixaLaticinios(i);
     caixa.position.set(ponto.x, ponto.y, ponto.z); caixa.visible = false; grupo.add(caixa); pacotes.push(caixa);
+  }
+
+  for (let i = 0; i < 4; i++) {
+    const p = CAFETERIA.deposito;
+    const caixaCafe = pacote(grupo, p.x, 0.23 + i * 0.52, p.z, 1.1, 0.5, 1.1, i);
+    caixaCafe.name = 'caixa-cafe'; caixaCafe.visible = false; pacotes.push(caixaCafe);
+    bloco(caixaCafe, 'selo-cafe', 0.5, 0.25, 0.02, 0x70462f, 0, 0, 0.56);
   }
 
   let abertura = 1;

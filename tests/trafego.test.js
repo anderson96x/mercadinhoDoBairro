@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { RUA } from '../src/jogo/bairro.js';
+import { RUA, limitesRua } from '../src/jogo/bairro.js';
 import { criarCarro, dimensoesCarro, MODELOS_CARROS, Trafego } from '../src/jogo/trafego.js';
 
 test('os vinte modelos têm tipos e cores variados e cabem nas faixas', () => {
@@ -74,5 +74,32 @@ test('todos os modelos permanecem inteiros no asfalto, desde o nascimento até a
     }
     assert.equal(trafego.carros.length, 0);
     assert.equal(cena.children.length, 0);
+  }
+});
+
+test('cafeteria prolonga nascimento e saída do tráfego sem deslocar carros existentes', () => {
+  const trafego = new Trafego(new THREE.Scene(), () => 0.5);
+  trafego.criarNaFaixa(0);
+  const carro = trafego.carros[0], antes = carro.grupo.position.clone(), fimAnterior = carro.maxX;
+  trafego.atualizarExpansao(true, true);
+  assert.deepEqual(carro.grupo.position, antes);
+  assert.equal(carro.maxX, fimAnterior + 12);
+  assert.deepEqual(limitesRua(true, true), { minX: -27, maxX: 35 });
+  trafego.proximos.fill(Infinity);
+  for (let i = 0; i < 300 && trafego.carros.length; i++) trafego.atualizar(0.1);
+  for (const modelo of MODELOS_CARROS) for (const faixa of [0, 1]) {
+    const rua = new Trafego(new THREE.Scene(), () => 0.5);
+    rua.atualizarExpansao(true, true); rua.proximos.fill(Infinity);
+    rua.proximoModelo = () => modelo;
+    assert.equal(rua.criarNaFaixa(faixa), true);
+    if (faixa === 0) assert.ok(rua.carros[0].grupo.position.x > 30, modelo.nome);
+    else assert.ok(rua.carros[0].grupo.position.x < -24, modelo.nome);
+    for (let i = 0; i < 300 && rua.carros.length; i++) {
+      const volume = new THREE.Box3().setFromObject(rua.carros[0].grupo);
+      assert.ok(volume.min.x >= -27 && volume.max.x <= 35, modelo.nome);
+      assert.ok(volume.min.z >= 9.1 && volume.max.z <= 13.5, modelo.nome);
+      rua.atualizar(0.1);
+    }
+    assert.equal(rua.carros.length, 0, modelo.nome);
   }
 });

@@ -324,3 +324,16 @@ test('estacionamento transfere o carro da rua com modelo, posição, escala e ro
   visual.atualizar(true, 0.05, sim.estacionamento.carros, sim.tempo);
   assert.equal(existente.parent, null);
 });
+
+test('carro recebido na extensão da cafeteria entra no estacionamento sem saltar à borda antiga', () => {
+  const sim = preparar();
+  sim.estado.melhorias.expansao = 1; sim.estado.melhorias.cafeteria = 1;
+  sim.criarCliente();
+  sim.estacionamento.receberDoTrafego = () => ({ modelo: 0, x: 32, z: 10.35, angulo: Math.PI, rodas: 0, velocidade: 3.5 });
+  sim.estacionamento.atualizar(sim, 0.05);
+  const carro = sim.estacionamento.carros[0];
+  assert.equal(carro.x, 32);
+  sim.estacionamento.atualizar(sim, 0.05);
+  assert.ok(carro.x > 31.7 && carro.x <= 32, `posição: ${carro.x}`);
+  assert.deepEqual(carro.limitesRua, { minX: -27, maxX: 35 });
+});

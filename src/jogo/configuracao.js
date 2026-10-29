@@ -1,5 +1,6 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
 import { CONFEITARIA } from './confeitaria.js';
+import { CAFETERIA } from './cafeteria.js';
 import { SODA } from './soda.js';
 import { LATICINIOS } from './laticinios.js';
 import { SUCOS } from './sucos.js';
@@ -78,9 +79,22 @@ const EXTREMOS_CALCADA_EXPANSAO = CONFIG.extremosCalcada.map((ponto, lado) => ({
   ...ponto,
   x: PLANTA_EXPANSAO.terreno.x + (lado ? 1 : -1) * (PLANTA_EXPANSAO.terreno.w / 2 - 0.5)
 }));
-export const extremosCalcadaDaLoja = estado => estado?.melhorias?.expansao ? EXTREMOS_CALCADA_EXPANSAO : CONFIG.extremosCalcada;
+const EXTREMOS_CALCADA_CAFETERIA = EXTREMOS_CALCADA_EXPANSAO.map((ponto, lado) => ({
+  ...ponto, x: ponto.x + (lado ? CAFETERIA.piso.w : 0)
+}));
+export const extremosCalcadaDaLoja = estado => estado?.melhorias?.cafeteria ? EXTREMOS_CALCADA_CAFETERIA
+  : estado?.melhorias?.expansao ? EXTREMOS_CALCADA_EXPANSAO : CONFIG.extremosCalcada;
 
 export const PRODUTOS = {
+  cafe: {
+    nome: 'Café em grãos', plural: 'Pacotes de café', cor: 0x70462f, preco: 5,
+    origem: 'importado', classe: 'cafe', nivelMinimo: 27, exclusivoCafeteria: true,
+    capacidadeHorta: 96, capacidadePrateleira: 0, liberado: false,
+    horta: CAFETERIA.deposito, coleta: CAFETERIA.coleta,
+    areaColeta: { ...CAFETERIA.coleta, w: 0.12, d: 0.12 },
+    prateleira: { ...CAFETERIA.entrega, w: 0.2, d: 0.2 },
+    reposicao: CAFETERIA.entrega, cliente: CAFETERIA.pedido, pontosCompra: [CAFETERIA.pedido]
+  },
   laticinio: {
     nome: 'Laticínio', plural: 'Laticínios', cor: 0x62a9bc, preco: 23, origem: 'importado', classe: 'laticinios', nivelMinimo: 26,
     capacidadeHorta: 36, capacidadePrateleira: 36, liberado: false,
@@ -310,6 +324,8 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
+  { id: 'cafeteria', titulo: 'Cafeteria e barista', descricao: 'Amplie o salão 50% à direita da padaria, com balcão, quatro mesas e barista. Sirva espresso R$ 5, americano R$ 6, café com leite R$ 8 e cappuccino R$ 10, combinados com pães, doces e sucos. Leve café importado, leite, ovos e sucos ao balcão de abastecimento.', custo: CAFETERIA.custo, icone: 'cafe', max: 1, tipo: 'cafeteria', produto: 'cafe', categoria: 'mercado', nivelMinimo: 27, requisitoMelhoria: 'confeitaria', requisitos: ['expansao', 'sucos'] },
+  { id: 'importarCafe', titulo: 'Café em grãos', descricao: 'Caixa com 24 doses de café por R$ 48. Até quatro caixas no depósito. Recolha os pacotes e leve ao abastecimento da cafeteria.', custo: 48, icone: 'cafe', max: 1000000000, tipo: 'importacao', produto: 'cafe', categoria: 'importados', nivelMinimo: 27, requisitoMelhoria: 'cafeteria', recorrente: true },
   { id: 'geladeiraLaticinios', titulo: 'Geladeira de laticínios', descricao: 'Instale ao lado dos queijos uma geladeira para 36 laticínios importados, com embalagens variadas de manteiga, creme de leite, iogurte e requeijão. Venda por R$ 23 cada.', custo: 1000, icone: 'laticinio', max: 1, tipo: 'construcao', produto: 'laticinio', categoria: 'mercado', nivelMinimo: 26, requisitoMelhoria: 'queijaria', requisitos: ['expansao'] },
   { id: 'importarLaticinios', titulo: 'Laticínios', descricao: 'Caixa mista com 9 laticínios em embalagens variadas. Até quatro caixas no depósito, incluindo entregas pendentes.', custo: 108, icone: 'laticinio', max: 1000000000, tipo: 'importacao', produto: 'laticinio', categoria: 'importados', nivelMinimo: 26, requisitoMelhoria: 'geladeiraLaticinios', recorrente: true },
   { id: 'geladeiraSoda', titulo: 'Geladeira Soda', descricao: 'Geladeira Soda com 24 latas em quatro prateleiras, ao lado dos sucos. Importe até quatro caixas de 24 latas e recolha no canto do depósito, no chão. Venda por R$ 20 a lata.', custo: 1000, icone: 'soda', max: 1, tipo: 'construcao', produto: 'soda', categoria: 'mercado', nivelMinimo: 25, requisitoMelhoria: 'sucos', requisitos: ['expansao'] },

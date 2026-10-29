@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { CONFIG, PRODUTOS, MELHORIAS } from '../src/jogo/configuracao.js';
-import { ROTAS_ENTREGA, ENTREGA, TEMPO_ESPERA_ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, obstaculoCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
+import { CAPACIDADE_DEPOSITO, ROTAS_ENTREGA, ENTREGA, TEMPO_ESPERA_ENTREGA, LIMITES_ROTA_ENTREGA, amostrarEntrega, volumeCaminhao, obstaculoCaminhao, vagasDeposito, pacotesPendentes, posicaoPacote } from '../src/jogo/entregas.js';
 import { criarCaminhaoEntrega, EntregasVisual, COR_ENTREGA_GERAL, ANGULO_PORTAS_BAU, ANGULO_PORTA_CABINE } from '../src/jogo/entregas-visual.js';
 import { Cena, criarEntregador } from '../src/jogo/cena.js';
 import { Trafego } from '../src/jogo/trafego.js';
@@ -519,7 +519,7 @@ test('save adulterado mantém no máximo quatro caixas na estante e limita o leg
   };
   const salvo = new Simulacao(structuredClone(sim.estado));
   assert.equal(salvo.estado.deposito.pacotes.length, 4);
-  assert.ok(salvo.estado.deposito.pacotes.length + salvo.estado.deposito.excedentes.length + pacotesPendentes(salvo.estado.deposito) <= 27);
+  assert.ok(salvo.estado.deposito.pacotes.length + salvo.estado.deposito.excedentes.length + pacotesPendentes(salvo.estado.deposito) <= Math.max(27, CAPACIDADE_DEPOSITO));
   assert.equal(new Set(salvo.estado.deposito.pacotes.map(p => p.slot)).size, salvo.estado.deposito.pacotes.length);
   assert.equal(salvo.estado.produtos.enlatado.horta, (salvo.estado.deposito.pacotes.length + salvo.estado.deposito.excedentes.length) * 9);
 });

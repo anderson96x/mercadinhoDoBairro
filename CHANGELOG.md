@@ -1,6 +1,17 @@
 # Histórico de alterações
 
-## Versão atual: 0.74.0 — 2026-10-29
+## Versão atual: 0.75.0 — 2026-10-29
+
+- Remove as prateleiras e recipientes da parede da cafeteria. Prolonga o balcão apenas 4 u a partir da borda da padaria, com espessura e emenda alinhadas. Reutiliza o mesmo modelo da padaria: madeira, portas, rodapé e tampo claro na mesma altura. Máquina de espresso, moinho, caixa e barista ficam voltados para a direita da loja. Reposiciona abastecimento e fila com retorno, preservando o serviço às mesas e a passagem dos funcionários.
+- Prolonga a área das máquinas em 12 × 6 u atrás da cafeteria, até a nova lateral, com piso, paredes e colisões compartilhadas e passagem aberta para as oficinas existentes.
+- Alinha a rua e a calçada da cafeteria às alturas, larguras, cores, guia e sinalização originais. Tráfego, transferência para o estacionamento, carro-forte, assalto, saída do caminhão e extremidades dos pedestres acompanham as novas bordas, evitando carros surgindo ou desaparecendo no meio da extensão e saltos na entrada do estacionamento.
+- Abre a cafeteria no N27 por R$ 10.000, após os laticínios, com barista incluído, quatro mesas e oito assentos. O salão cresce de 24 × 16 para 36 × 16 u à direita, com balcão em continuação à padaria, fechamento lateral, máquina de espresso e abastecimento próprio. Terreno, calçada, rua, paredes, colisões e câmera acompanham a compra.
+- Clientes exclusivos entram sem cestas/carrinhos, fazem pedidos combinados no balcão, sentam, aguardam a bandeja do barista, consomem e saem. Espresso custa R$ 5, americano R$ 6, café com leite R$ 8 e cappuccino R$ 10; pães, bolos, donuts, éclairs, ovos com pão e sucos completam os pedidos pelos preços existentes.
+- Importa café em caixas de 24 doses por R$ 48, com quatro vagas exclusivas no depósito e entrega pelo caminhão. O jogador transporta café, leite, ovos e sucos ao abastecimento; cada leite rende seis doses. Pães e doces saem das vitrines da padaria. Os painéis mostram pedidos, etapas do atendimento e estoque de insumos.
+- Preserva saves anteriores com cafeteria bloqueada/vazia. Os pedidos e preparos são transitórios; insumos e pagamento são processados juntos na entrega da bandeja, evitando perdas/duplicações ao recarregar. Pausa, falta de estoque, limite de assentos e desistência são respeitados.
+- Validação: suíte completa, testes de atendimento, pagamentos, importação, abastecimento, pausa e saves; rotas N1–N27 e todos os assentos; build; desktop/celular em WebGL e Canvas sem salvar imagens.
+
+## 0.74.0 — 2026-10-29
 
 - Adiciona geladeira de laticínios no N26 por R$ 1.000, à direita dos queijos, reutilizando o mesmo gabinete de parede, com capacidade para 36 unidades vendidas por R$ 23 cada.
 - Uma única importação de Laticínios fornece caixas mistas de nove unidades por R$ 108 (custo adotado de R$ 12 por unidade), com quatro vagas no depósito. Manteiga, creme de leite, iogurte e requeijão são apenas variedades visuais do mesmo produto. Jogador e repositor abastecem a geladeira; a demanda começa após o primeiro abastecimento.

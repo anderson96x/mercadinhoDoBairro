@@ -120,13 +120,13 @@ export function pontoRota(rota, progresso) {
 export class ColetaBancoVisual {
   constructor(cena) { this.cena = cena; this.grupo = null; }
 
-  criar() {
+  criar(limites = RUA) {
     this.grupo = new THREE.Group(); this.grupo.name = 'coleta-bancaria'; this.cena.add(this.grupo);
     this.van = criarCarroForte();
     this.van.rotation.y = Math.PI; this.grupo.add(this.van);
     const caixa = new THREE.Box3().setFromObject(this.van);
-    this.inicio = RUA.maxX - caixa.max.x - 0.08;
-    this.fim = RUA.minX - caixa.min.x + 0.08;
+    this.inicio = limites.maxX - caixa.max.x - 0.08;
+    this.fim = limites.minX - caixa.min.x + 0.08;
     this.van.position.set(this.inicio, 0.04, RUA.faixas[0].z);
     const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128;
     const ctx = canvas.getContext('2d');
@@ -149,9 +149,9 @@ export class ColetaBancoVisual {
     this.agentes.forEach(a => this.grupo.add(a));
   }
 
-  atualizar(coleta) {
+  atualizar(coleta, limites = RUA) {
     if (!coleta || coleta.tempo < 0) { if (this.grupo) this.liberar(); return; }
-    if (!this.grupo) this.criar();
+    if (!this.grupo) this.criar(limites);
     const t = coleta.tempo, estacionamento = -1.3;
     const x = t < BANCO.chegada ? this.inicio + (estacionamento - this.inicio) * suave(t / BANCO.chegada)
       : t < BANCO.partida ? estacionamento : estacionamento + (this.fim - estacionamento) * suave((t - BANCO.partida) / (BANCO.fim - BANCO.partida));

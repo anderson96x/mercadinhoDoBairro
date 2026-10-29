@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { RUA } from './bairro.js';
+import { RUA, limitesRua } from './bairro.js';
 
 // Vinte modelos com silhuetas, dimensões, cores e acabamentos próprios.
 export const MODELOS_CARROS = Object.freeze([
@@ -230,6 +230,7 @@ export class Trafego {
   constructor(cena, aleatorio = Math.random) {
     this.cena = cena;
     this.minX = RUA.minX;
+    this.maxX = RUA.maxX;
     this.aleatorio = aleatorio;
     this.carros = [];
     this.faixasReservadas = new Set();
@@ -248,18 +249,22 @@ export class Trafego {
     return MODELOS_CARROS[this.sacola.pop()];
   }
 
-  atualizarExpansao(expandida) {
-    const minX = expandida ? RUA.minX - 12 : RUA.minX;
-    if (minX === this.minX) return;
-    for (const carro of this.carros) carro.minX += minX - this.minX;
+  atualizarExpansao(expandida, cafeteria = false) {
+    const { minX, maxX } = limitesRua(expandida, cafeteria);
+    if (minX === this.minX && maxX === this.maxX) return;
+    for (const carro of this.carros) {
+      carro.minX += minX - this.minX;
+      carro.maxX += maxX - this.maxX;
+    }
     this.minX = minX;
+    this.maxX = maxX;
   }
 
   criarNaFaixa(indice) {
     if (this.faixasReservadas.has(indice)) return false;
     if (this.carros.length >= 3) return false;
     const faixa = RUA.faixas[indice];
-    const borda = faixa.direcao > 0 ? this.minX : RUA.maxX;
+    const borda = faixa.direcao > 0 ? this.minX : this.maxX;
     if (this.carros.some(c => c.faixa === indice && Math.abs(c.grupo.position.x - borda) < 6)) return false;
     const modelo = this.proximoModelo();
     const grupo = criarCarro(modelo, true);
@@ -267,7 +272,7 @@ export class Trafego {
     // Inclui para-choques, escala e orientação: nenhuma parte sai do asfalto.
     const tamanho = new THREE.Box3().setFromObject(grupo);
     const minX = this.minX - tamanho.min.x + 0.06;
-    const maxX = RUA.maxX - tamanho.max.x - 0.06;
+    const maxX = this.maxX - tamanho.max.x - 0.06;
     grupo.position.set(faixa.direcao > 0 ? minX : maxX, 0.04, faixa.z);
     this.cena.add(grupo);
     this.carros.push({ grupo, faixa: indice, direcao: faixa.direcao, velocidade: indice === 0 ? 3.5 : 3.8, modelo, minX, maxX });

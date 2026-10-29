@@ -1,5 +1,6 @@
 import { CONFIG, PRODUTOS } from '../jogo/configuracao.js';
 import { icone } from './icones.js';
+import { CAFETERIA } from '../jogo/cafeteria.js';
 
 export function atualizarPainelClientes(painel, clientes, produtos, retratos) {
   const lista = painel.querySelector('#lista-clientes');
@@ -25,10 +26,10 @@ export function atualizarPainelClientes(painel, clientes, produtos, retratos) {
     const compra = c.compras?.[c.compraAtual ?? 0] ?? { produto: c.produto, desejado: c.desejado ?? 1, quantidade: c.quantidade ?? 0 };
     const finalizado = ['indoCaixa', 'fila', 'saindo'].includes(c.fase);
     const pedido = cartao.querySelector('.cliente-pedido');
-    const pedidoChave = finalizado ? c.fase : `${compra.produto}:${compra.desejado}:${compra.quantidade}`;
+    const pedidoChave = c.cafeteria ? `${c.fase}:${c.pedidoCafe.join(',')}` : finalizado ? c.fase : `${compra.produto}:${compra.desejado}:${compra.quantidade}`;
     if (pedido.dataset.chave !== pedidoChave) {
       pedido.dataset.chave = pedidoChave;
-      pedido.innerHTML = finalizado ? `${icone('cesta')} <span>${c.fase === 'saindo' ? 'Saindo da loja' : 'Aguardando atendimento'}</span>`
+      pedido.innerHTML = c.cafeteria ? `${icone('cafe')} <span>${c.pedidoCafe.map(id => CAFETERIA.cafes[id]?.nome ?? PRODUTOS[id]?.nome).join(' + ')}<br><b>${({ chegando: 'Indo à cafeteria', cafeFila: 'Pedindo no balcão', cafeMesa: 'Indo à mesa', cafeEspera: 'Aguardando o barista', cafeConsumindo: 'Consumindo na mesa', saindo: 'Saindo da loja' })[c.fase] ?? 'Cafeteria'}</b></span>` : finalizado ? `${icone('cesta')} <span>${c.fase === 'saindo' ? 'Saindo da loja' : 'Aguardando atendimento'}</span>`
         : `${icone(compra.produto)} <span>${PRODUTOS[compra.produto]?.nome ?? 'Produto'} <b>${compra.quantidade ?? 0}/${compra.desejado}</b></span>`;
     }
     const esperando = c.fase === 'comprando' && produtos[compra.produto]?.prateleira === 0 && compra.quantidade < compra.desejado;

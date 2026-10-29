@@ -1,4 +1,5 @@
 import { SODA, posicaoCaixaSoda } from './soda.js';
+import { CAFETERIA } from './cafeteria.js';
 import { LATICINIOS, posicaoCaixaLaticinios } from './laticinios.js';
 import { PLANTA_DEPOSITO, PLANTA_CARGA } from './planta.js';
 import { PRODUTOS } from './configuracao.js';
@@ -35,6 +36,9 @@ export function acomodarExcedentes(deposito) {
   });
 }
 export function posicaoPacote(slot) {
+  if (Math.floor(slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.cafe.estante) {
+    return { x: CAFETERIA.deposito.x, y: 0.48 + slot % PACOTES_POR_CLASSE * 0.52, z: CAFETERIA.deposito.z };
+  }
   if (Math.floor(slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.laticinios.estante) {
     const p = posicaoCaixaLaticinios(slot % PACOTES_POR_CLASSE);
     return { ...p, y: p.y + LATICINIOS.alturaCaixa / 2 };
@@ -69,9 +73,9 @@ export function validarDeposito(dados, produtos) {
   }
   // O arranjo anterior dos laticínios no chão podia deixar slots intermediários
   // vazios. Ao empilhar, preserve as unidades e apoie todas as caixas na base.
-  base.pacotes.filter(p => classeProduto(p.produto) === 'laticinios')
+  for (const classe of ['laticinios', 'cafe']) base.pacotes.filter(p => classeProduto(p.produto) === classe)
     .sort((a, b) => a.slot - b.slot)
-    .forEach((p, i) => { p.slot = CLASSES_PRODUTOS.laticinios.estante * PACOTES_POR_CLASSE + i; });
+    .forEach((p, i) => { p.slot = CLASSES_PRODUTOS[classe].estante * PACOTES_POR_CLASSE + i; });
   return base;
 }
 
@@ -112,6 +116,13 @@ export const ROTAS_ENTREGA = {
     { pontos: [[xFaixa + 22.6, 12.2], [10, 12.2], [16, 12.2], [LIMITES_ROTA_ENTREGA.maxX, LIMITES_ROTA_ENTREGA.z]] }
   ])
 };
+// A manobra no pátio permanece fixa; somente a saída acompanha a borda nova.
+const PARTIDA_CAFETERIA = trajeto([
+  { pontos: [[xFaixa, ENTREGA.estacionamento.z], [xFaixa, -2], [xFaixa, 3], [xFaixa, 7.7]] },
+  { pontos: [[xFaixa, 7.7], [xFaixa, 9.909], [xFaixa + 1.791, 11.7], [xFaixa + 4, 11.7]] },
+  { pontos: [[xFaixa + 4, 11.7], [xFaixa + 10.6, 11.7], [xFaixa + 16.6, 12.2], [xFaixa + 22.6, 12.2]] },
+  { pontos: [[xFaixa + 22.6, 12.2], [10, 12.2], [16, 12.2], [LIMITES_ROTA_ENTREGA.maxX + CAFETERIA.piso.w, LIMITES_ROTA_ENTREGA.z]] }
+]);
 export function amostrarEntrega(rota, distancia) {
   const indice = rota.pontos.findIndex(p => p.distancia >= distancia);
   const i = indice < 0 ? rota.pontos.length - 1 : Math.max(1, indice);
@@ -155,7 +166,7 @@ export class Entregas {
       return;
     }
     if (c.fase === 'chegando' || c.fase === 'partindo') {
-      const rota = ROTAS_ENTREGA[c.fase];
+      const rota = c.fase === 'partindo' && sim.estado.melhorias.cafeteria ? PARTIDA_CAFETERIA : ROTAS_ENTREGA[c.fase];
       if (c.fase === 'partindo' && c.distancia === 0) {
         // Serviços já em espera terminam primeiro. Depois, impeça novos carros
         // de nascer enquanto o tráfego existente esvazia as duas faixas.
@@ -227,10 +238,11 @@ export class Entregas {
     if (c.fase === 'levar' || c.fase === 'voltar') {
       const soda = Math.floor(c.slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.soda.estante;
       const laticinios = Math.floor(c.slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.laticinios.estante;
-      const estante = soda ? SODA.deposito : laticinios ? LATICINIOS.deposito : PLANTA_DEPOSITO.estantes[Math.floor(c.slot / PACOTES_POR_CLASSE)];
+      const cafe = Math.floor(c.slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.cafe.estante;
+      const estante = cafe ? CAFETERIA.deposito : soda ? SODA.deposito : laticinios ? LATICINIOS.deposito : PLANTA_DEPOSITO.estantes[Math.floor(c.slot / PACOTES_POR_CLASSE)];
       const pontos = [
         PLANTA_CARGA.contornoCabine, { x: PLANTA_CARGA.contornoCabine.x, z: -8.45 }, { x: PLANTA_DEPOSITO.porta.x, z: -8.45 },
-        { x: PLANTA_DEPOSITO.porta.x, z: -10.3 }, soda ? SODA.coleta : laticinios ? LATICINIOS.coleta : { x: estante.x, z: -12.9 }
+        { x: PLANTA_DEPOSITO.porta.x, z: -10.3 }, cafe ? CAFETERIA.coleta : soda ? SODA.coleta : laticinios ? LATICINIOS.coleta : { x: estante.x, z: -12.9 }
       ];
       const rota = c.fase === 'levar' ? pontos : [...pontos].reverse().slice(1).concat(ENTREGA.retirada);
       if (sim.caminharCliente(ator, rota[c.etapa], dt, 2.5)) {

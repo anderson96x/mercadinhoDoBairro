@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { construirDeposito } from './deposito.js';
 import { construirPatioCarga } from './patio-carga.js';
 import { criarArvore } from './arvores.js';
-import { PLANTA_COMPACTA, anguloPortaProducao } from './planta.js';
+import { PLANTA_CAFETERIA, PLANTA_COMPACTA, anguloPortaProducao } from './planta.js';
 import { PLANTA_DEPOSITO, PLANTA_CARGA, PLANTA_EXPANSAO, paredesExpansao, paredesOficinas, PLANTA_OFICINAS, oficinasConstruidas, PLANTA_INICIAL, PLANTA_ESTACIONAMENTO, paredesPlantaInicial } from './planta.js';
 import { PALETAS } from './personalizacao.js';
 import { CONFIG, ALTURA_PAREDE_BAIXA, ALA_PRODUCAO, ALA_LEITE, ALA_TRIGO, ALA_PADARIA } from './configuracao.js';
@@ -58,6 +58,10 @@ export const RUA = Object.freeze({
     Object.freeze({ z: 12.55, direcao: 1 })
   ])
 });
+
+export function limitesRua(expandida = false, cafeteria = false) {
+  return { minX: RUA.minX - (expandida ? 12 : 0), maxX: RUA.maxX + (cafeteria ? PLANTA_CAFETERIA.piso.w : 0) };
+}
 
 function criarDetalhesGrama(grupo, vegetacaoEstacionamento) {
   // Posicoes fixas deixam a paisagem igual em cada carregamento.
@@ -270,12 +274,15 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
     for (let x = piso.x - piso.w / 2 + 0.3; x < piso.x + piso.w / 2; x += 1.2) chao(5, 0.018, 0.008, piso.d, 0xc8bfae, x, 0.23, piso.z);
     for (let z = piso.z - piso.d / 2 + 0.2; z < piso.z + piso.d / 2; z += 1.2) chao(5, piso.w, 0.008, 0.018, 0xc8bfae, piso.x, 0.23, z);
   }
+  const lateralExpansao = new THREE.Group(); expansaoFundos.add(lateralExpansao);
   for (const p of paredesExpansao()) {
+    destino = p.lateralContinua ? lateralExpansao : expansaoFundos;
     const parede = bloco(p.w, p.h, p.d, 0xf1ead7, p.x, 0.23 + p.h / 2, p.z, 'parede');
     if (p.lateralContinua) parede.name = 'parede-lateral-continua';
     bloco(p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z, 'principal');
     rodape(p);
   }
+  destino = expansaoFundos;
   // A verga fica acima da passagem e não entra nas colisões do piso.
   const passagemDeposito = new THREE.Group(); expansaoFundos.add(passagemDeposito); destino = passagemDeposito;
   passagemDeposito.name = 'passagem-deposito';
@@ -436,10 +443,11 @@ export function construirBairro(cena, { caixa, cilindro, esfera }) {
       portaProducao.position.z = deslocamento;
       lixeira.position.z = CONFIG.lixeira.z + deslocamento - (expandida ? PLANTA_EXPANSAO.profundidade : 0);
     },
-    atualizarExpansao(comprada) {
+    atualizarExpansao(comprada, cafeteria = false) {
       expandida = !!comprada;
       expansaoFundos.visible = expandida;
       lateralPadaria.visible = !expandida;
+      lateralExpansao.visible = !cafeteria;
       paredesCozinha[0].visible = !expandida;
       paredesCozinha[1].visible = expandida;
       const recuo = expandida ? -PLANTA_EXPANSAO.profundidade : 0;

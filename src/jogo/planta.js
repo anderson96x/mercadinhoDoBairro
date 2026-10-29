@@ -134,6 +134,43 @@ export const PLANTA_AMPLIADA = {
   camera: { x: 5, z: -1.3, alturaDesktop: 37 }
 };
 
+// N27: 12 × 16 u adicionais, metade do salão de 24 × 16 u da padaria.
+export const PLANTA_CAFETERIA = {
+  piso: { x: 26.9, z: -1.3, w: 12, d: 16 },
+  oficinas: { x: 26.9, z: -12.3, w: 12, d: 6 },
+  externo: {
+    rua: { x: 30, z: 11.3, w: 12, d: 4.4, h: 0.08, y: 0, cor: 0x48525e },
+    calcada: { x: 30, z: 7.95, w: 12, d: 2.5, h: 0.18, y: 0.04, cor: 0xe0bc8c },
+    guia: { x: 30, z: 9.18, w: 12, d: 0.16, h: 0.22, y: 0.07, cor: 0xf3e5ce }
+  },
+  // Fecha junto à abertura da padaria, com atendimento voltado para +x.
+  balcao: { x: 22.4, z: 0.05, w: 4, d: 0.65 },
+  fechamento: { x: 24.075, z: -2.7375, w: 0.65, d: 4.925 },
+  pedido: { x: 25.425, z: -1.3 }, fila: { x: 1.15, z: 1.15, porLinha: 6 },
+  entrega: { x: 22.275, z: -2.8 },
+  abastecimento: { x: 22.275, z: -1.6, w: 0.7, d: 0.65 },
+  equipamento: { x: 24.075, y: -0.06, z: -2.9, angulo: Math.PI / 2 },
+  barista: { x: 22.675, z: -2.9, angulo: Math.PI / 2 },
+  deposito: { x: -11.9, z: -10.25, w: 1.1, d: 1.1 },
+  coleta: { x: -11.9, z: -11.6 },
+  camera: { x: 6, z: -4.3, alturaDesktop: 54 },
+  limites: { ...PLANTA_INICIAL.limites, maxX: 32.9 },
+  mesas: [
+    { x: 23.4, z: 4.1 }, { x: 29.5, z: 4.1 },
+    { x: 30.1, z: -2.8 }, { x: 24, z: -6.8 }
+  ]
+};
+
+export function paredesCafeteria() {
+  return [
+    { x: 26.9, z: -9.3, w: 12, d: 0.28, h: 2.8 },
+    { x: 26.9, z: 6.7, w: 12, d: 0.28, h: 0.75 },
+    { x: 32.9, z: -1.3, w: 0.28, d: 16, h: 0.75 },
+    { x: 26.9, z: -15.3, w: 12, d: 0.28, h: 2.8 },
+    { x: 32.9, z: -12.3, w: 0.28, d: 6, h: 0.75 }
+  ];
+}
+
 export function paredesAmpliacao(alturaBaixa) {
   return [
     { x: 15.9, z: -9.3, w: 10, d: 0.28, h: 2.8, passagemArtesanal: true },

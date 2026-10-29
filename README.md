@@ -1,6 +1,8 @@
 # Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.74.0**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.75.0**.
+
+No nível 27, abra a cafeteria por R$ 10.000: o salão cresce 50% à direita da padaria, com balcão, barista, quatro mesas e oito assentos. Clientes exclusivos pedem cafés de R$ 5 a R$ 10, pães, doces e sucos, sentam, recebem a bandeja e consomem antes de sair, sem cestas ou carrinhos. Importe caixas de 24 doses de café por R$ 48 e leve café, leite, ovos e sucos ao abastecimento; uma garrafa de leite rende seis doses. Pães e doces usam as vitrines existentes. Saves anteriores continuam compatíveis.
 
 No nível 26, a geladeira de laticínios custa R$ 1.000, fica ao lado dos queijos e comporta 36 unidades. Importe a categoria Laticínios em caixas mistas de nove por R$ 108; venda cada unidade por R$ 23. Manteiga, creme de leite, iogurte e requeijão são variações visuais do mesmo produto, com quatro vagas no depósito.
 

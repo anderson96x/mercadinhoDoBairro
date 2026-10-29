@@ -4,6 +4,7 @@ import { icone } from './icones.js';
 import { CONFEITARIA, podeProduzirConfeitaria, situacaoConfeiteiro } from '../jogo/confeitaria.js';
 import { trabalhoPadaria } from '../jogo/producao-padaria.js';
 import { SUCOS, receitaDisponivelSucos } from '../jogo/sucos.js';
+import { CAFETERIA, INSUMOS_CAFETERIA } from '../jogo/cafeteria.js';
 
 function resumoPadaria(estado) {
   const producao = estado.producao;
@@ -39,6 +40,12 @@ export function resumoProducao(estado) {
         : 'Produzindo', produzindo: !cheio && !faltantes.length };
   });
   const confeitaria = [];
+  if (estado.melhorias.cafeteria) confeitaria.push({
+    id: 'cafeteria', nome: 'Cafeteria', prontosTexto: `${estado.cafeteria.atendidos} pedidos servidos`,
+    ingredientes: INSUMOS_CAFETERIA.map(id => ({ id, nome: id === 'leite' ? 'Leite (doses)' : PRODUTOS[id].nome, disponivel: estado.cafeteria.ingredientes[id], quantidade: CAFETERIA.capacidade, faltando: !estado.cafeteria.ingredientes[id] })),
+    receitaTexto: 'Espresso R$ 5 · Americano R$ 6 · Café com leite R$ 8 · Cappuccino R$ 10. Uma garrafa de leite rende seis doses. Pães e doces saem das vitrines da padaria; ovos acompanham o pão.',
+    status: 'Leve café importado, leite, ovos e sucos ao abastecimento. O barista entrega nas mesas.', progresso: 0, produzindo: false
+  });
   if (estado.melhorias.sucos) {
     const ativa = receitaDisponivelSucos(estado)?.id;
     for (const [id, sabor] of Object.entries(SUCOS.sabores)) {
@@ -71,7 +78,7 @@ export function resumoProducao(estado) {
 
 export function atualizarPainelProducao(painel, estado) {
   const oficinas = resumoProducao(estado).filter(({ id }) =>
-    (SUCOS.sabores[id] ? [SUCOS.bancada] : id === 'confeitaria' ? [CONFEITARIA.entrada]
+    (id === 'cafeteria' ? [{ ...CAFETERIA.entrega, w: 0.2, d: 0.2 }, CAFETERIA.balcao] : SUCOS.sabores[id] ? [SUCOS.bancada] : id === 'confeitaria' ? [CONFEITARIA.entrada]
       : id === 'pao' ? [ALA_PADARIA.entrada, ALA_PADARIA.moinho, ALA_PADARIA.forno, PRODUTOS.pao.prateleira]
       : [geometriaEstacao(id, 'coleta', produtosDaLoja(estado))]).some(estacao => distanciaEstacao(estado.jogador, estacao) < CONFIG.raioInteracao));
   painel.hidden = !oficinas.length;

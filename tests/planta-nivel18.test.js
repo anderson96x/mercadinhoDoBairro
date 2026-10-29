@@ -211,7 +211,7 @@ test('visual mantém o salão e a porta originais e remove a mureta da cozinha a
   const labels = [];
   const visual = { cena, sim, produtos: {}, alvosHorta: [], criarLabel(id, ponto) { labels.push({ id, ponto }); } };
   for (const [id, p] of Object.entries(sim.produtos)) {
-    if (id === 'pao' || ['confeitaria', 'sucos'].includes(p.origem)) continue;
+    if (p.exclusivoCafeteria || id === 'pao' || ['confeitaria', 'sucos'].includes(p.origem)) continue;
     Cena.prototype.construirEstacao.call(visual, id, p);
     assert.equal(labels.find(label => label.id === `horta-${id}`).ponto.z, p.horta.z);
     assert.equal(visual.produtos[id].frutas[0].position.z >= p.prateleira.z - p.prateleira.d / 2, true, id);

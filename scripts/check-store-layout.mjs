@@ -5,11 +5,12 @@ import { geometriaEstacao, intervaloEstacoes, estacoesSeparadasPorParede } from 
 import { PAREDES_LOJA } from '../src/jogo/bairro.js';
 import { CONFEITARIA } from '../src/jogo/confeitaria.js';
 import { SUCOS } from '../src/jogo/sucos.js';
+import { CAFETERIA } from '../src/jogo/cafeteria.js';
 
 export function abrirLoja(nivel = 15) {
   const sim = new Simulacao();
   sim.estado.estatisticas.clientes = (nivel - 1) * CONFIG.clientesPorNivel;
-  sim.estado.dinheiro = 40000;
+  sim.estado.dinheiro = 100000;
   for (const id of SEQUENCIA_MELHORIAS) {
     const melhoria = MELHORIAS.find(m => m.id === id);
     if (melhoria.ativa !== false && melhoria.nivelMinimo <= nivel) assert.equal(sim.comprarMelhoria(id).sucesso, true, id);
@@ -19,11 +20,12 @@ export function abrirLoja(nivel = 15) {
   return sim;
 }
 
-for (let nivel = 1; nivel <= 26; nivel++) {
+for (let nivel = 1; nivel <= 27; nivel++) {
   const sim = abrirLoja(nivel);
   for (const [id, produto] of Object.entries(sim.produtos)) {
     if (!sim.estado.produtos[id].liberado) continue;
-    const pontos = produto.origem === 'importado' ? produto.pontosCompra : [produto.coleta, produto.reposicao, ...produto.pontosCompra];
+    const pontos = produto.exclusivoCafeteria ? [CAFETERIA.coleta, CAFETERIA.entrega, CAFETERIA.pedido]
+      : produto.origem === 'importado' ? produto.pontosCompra : [produto.coleta, produto.reposicao, ...produto.pontosCompra];
     for (const ponto of pontos) {
       const ator = Object.assign(sim.estado.jogador, CONFIG.inicio);
       let chegou = false;

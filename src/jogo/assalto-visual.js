@@ -72,13 +72,13 @@ function criarAssaltante(pele) {
 
 export class AssaltoVisual {
   constructor(cena) { this.cena = cena; this.grupo = null; }
-  criar() {
+  criar(limitesRua = RUA) {
     this.grupo = new THREE.Group(); this.grupo.name = 'assalto'; this.cena.add(this.grupo);
     this.carro = criarCarro({ tipo: 'seda', cor: 0x16191d, escala: 1.12, detalhe: 'escuro' });
     this.carro.rotation.y = Math.PI; this.grupo.add(this.carro);
     const limites = new THREE.Box3().setFromObject(this.carro);
-    this.inicio = RUA.maxX - limites.max.x - 0.08;
-    this.fim = RUA.minX - limites.min.x + 0.08;
+    this.inicio = limitesRua.maxX - limites.max.x - 0.08;
+    this.fim = limitesRua.minX - limites.min.x + 0.08;
     this.carro.position.set(this.inicio, 0.04, RUA.faixas[0].z);
     this.porta = new THREE.Group(); this.porta.position.set(0.62, 0.77, 0.55); this.carro.add(this.porta);
     this.materialPorta = new THREE.MeshStandardMaterial({ color: 0x20242a, roughness: 0.7 });
@@ -86,9 +86,9 @@ export class AssaltoVisual {
     folha.position.x = -0.36; this.porta.add(folha);
     this.assaltante = criarAssaltante(0xd59d78); this.grupo.add(this.assaltante);
   }
-  atualizar(assalto) {
+  atualizar(assalto, limitesRua = RUA) {
     if (!assalto || assalto.tempo < 0) { if (this.grupo) this.liberar(); return; }
-    if (!this.grupo) this.criar();
+    if (!this.grupo) this.criar(limitesRua);
     const t = assalto.tempo, parada = -1.3;
     const x = t < A.chegada ? this.inicio + (parada - this.inicio) * suave(t / A.chegada)
       : t < A.partida ? parada : parada + (this.fim - parada) * suave((t - A.partida) / (A.fim - A.partida));

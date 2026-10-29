@@ -55,26 +55,28 @@ export function criarVitrineCurva(pai, { w, d, base, altura, niveis }, { caixa }
 }
 
 // Os tampos existem desde o N9; somente as vitrines e os doces dependem da confeitaria.
+export function construirBalcaoPadaria(grupo, p, { caixa }) {
+  caixa(grupo, p.w, 0.9, p.d, 0x936238, p.x, 0.68, p.z).name = 'fechamento-madeira-padaria';
+  const tampo = caixa(grupo, p.w + 0.04, 0.1, p.d + 0.04, 0xf0e6d3, p.x, 1.18, p.z);
+  tampo.name = 'tampo-balcao-padaria';
+  tampo.geometry.dispose();
+  tampo.geometry = new THREE.BoxGeometry(p.w + 0.04, 0.1, p.d + 0.04, Math.ceil(p.w / 0.3), 1, Math.ceil(p.d / 0.3));
+  caixa(grupo, p.w - 0.04, 0.08, p.d - 0.04, 0x684429, p.x, 0.27, p.z);
+  const longitudinal = p.w >= p.d, comprimento = longitudinal ? p.w : p.d;
+  const portas = Math.max(1, Math.floor(comprimento / 0.8));
+  for (let i = 0; i < portas; i++) {
+    const t = -comprimento / 2 + (i + 0.5) * comprimento / portas;
+    for (const lado of [-1, 1]) caixa(grupo, longitudinal ? comprimento / portas - 0.06 : 0.018, 0.69,
+      longitudinal ? 0.018 : comprimento / portas - 0.06, 0xa87545,
+      p.x + (longitudinal ? t : lado * (p.w / 2 + 0.01)), 0.72, p.z + (longitudinal ? lado * (p.d / 2 + 0.01) : t));
+  }
+}
+
 export function construirBalcoesDecorados(grupo, balcoes, { caixa }) {
   const vitrines = new THREE.Group(); vitrines.name = 'vitrines-confeitaria';
   vitrines.visible = false; grupo.add(vitrines);
   const produtos = {};
-  balcoes.forEach(p => {
-    caixa(grupo, p.w, 0.9, p.d, 0x936238, p.x, 0.68, p.z).name = 'fechamento-madeira-padaria';
-    const tampo = caixa(grupo, p.w + 0.04, 0.1, p.d + 0.04, 0xf0e6d3, p.x, 1.18, p.z);
-    tampo.name = 'tampo-balcao-padaria';
-    tampo.geometry.dispose();
-    tampo.geometry = new THREE.BoxGeometry(p.w + 0.04, 0.1, p.d + 0.04, Math.ceil(p.w / 0.3), 1, Math.ceil(p.d / 0.3));
-    caixa(grupo, p.w - 0.04, 0.08, p.d - 0.04, 0x684429, p.x, 0.27, p.z);
-    const longitudinal = p.w >= p.d, comprimento = longitudinal ? p.w : p.d;
-    const portas = Math.max(1, Math.floor(comprimento / 0.8));
-    for (let i = 0; i < portas; i++) {
-      const t = -comprimento / 2 + (i + 0.5) * comprimento / portas;
-      for (const lado of [-1, 1]) caixa(grupo, longitudinal ? comprimento / portas - 0.06 : 0.018, 0.69,
-        longitudinal ? 0.018 : comprimento / portas - 0.06, 0xa87545,
-        p.x + (longitudinal ? t : lado * (p.w / 2 + 0.01)), 0.72, p.z + (longitudinal ? lado * (p.d / 2 + 0.01) : t));
-    }
-  });
+  balcoes.forEach(p => construirBalcaoPadaria(grupo, p, { caixa }));
   for (const [id, produto] of Object.entries(CONFEITARIA.produtos)) {
     const p = balcoes[produto.balcao];
     const expositor = new THREE.Group(); expositor.name = 'expositor-' + id;

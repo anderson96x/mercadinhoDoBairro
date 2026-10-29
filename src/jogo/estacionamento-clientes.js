@@ -1,5 +1,5 @@
 import { PLANTA_ESTACIONAMENTO as P } from './planta.js';
-import { RUA } from './bairro.js';
+import { RUA, limitesRua } from './bairro.js';
 import { MODELOS_CARROS, dimensoesCarro } from './trafego.js';
 
 const suave = t => t * t * (3 - 2 * t);
@@ -25,13 +25,14 @@ const reta = (a, b) => [a, a, b, b];
 const volta = () => [
   [ponto(entrada, -6.3), ponto(entrada, -7.3), ponto(saida, -7.3), ponto(saida, -6.3)]
 ];
-function trajetos(indice) {
-  if (rotas.has(indice)) return rotas.get(indice);
+function trajetos(indice, limites = RUA) {
+  const chave = `${indice}:${limites.minX}:${limites.maxX}`;
+  if (rotas.has(chave)) return rotas.get(chave);
   const v = P.vagas[indice], x = v.lado ? saida : entrada, z = v.z + (v.lado ? -1.9 : 1.9);
   const curva = [ponto(x, z), ponto(x, v.z + (z - v.z) * 0.45),
     ponto(v.x + (x - v.x) * 0.55, v.z), ponto(v.x, v.z)];
   const chegada = [
-    reta(ponto(RUA.maxX, rua), ponto(entrada + 2.2, rua)),
+    reta(ponto(limites.maxX, rua), ponto(entrada + 2.2, rua)),
     [ponto(entrada + 2.2, rua), ponto(entrada, rua), ponto(entrada, 9.3), ponto(entrada, 8.1)],
     ...(v.lado ? [reta(ponto(entrada, 8.1), ponto(entrada, -6.3)), ...volta(), reta(ponto(saida, -6.3), ponto(x, z))]
       : [reta(ponto(entrada, 8.1), ponto(x, z))]), curva
@@ -40,10 +41,10 @@ function trajetos(indice) {
     ...(v.lado ? [] : [reta(ponto(x, z), ponto(entrada, -6.3)), ...volta()]),
     reta(v.lado ? ponto(x, z) : ponto(saida, -6.3), ponto(saida, 8.1)),
     [ponto(saida, 8.1), ponto(saida, rua), ponto(saida - 1, rua), ponto(saida - 2.2, rua)],
-    reta(ponto(saida - 2.2, rua), ponto(RUA.minX + 1.7, rua))
+    reta(ponto(saida - 2.2, rua), ponto(limites.minX + 1.7, rua))
   ];
   const resultado = { chegando: rota(chegada), re: rota([[...curva].reverse()]), partindo: rota(partida) };
-  rotas.set(indice, resultado); return resultado;
+  rotas.set(chave, resultado); return resultado;
 }
 function amostrar(r, distancia) {
   const i = Math.max(1, r.pontos.findIndex(p => p.distancia >= Math.min(distancia, r.comprimento)));
@@ -86,6 +87,7 @@ export class EstacionamentoClientes {
     carro.fase = 'embarcando'; carro.tempo = 0; cliente.fase = 'embarcando'; cliente.andando = false;
   }
   atualizar(sim, dt) {
+    const limites = limitesRua(!!sim.estado.melhorias.expansao, !!sim.estado.melhorias.cafeteria);
     for (const carro of this.carros) {
       const cliente = sim.clientes.find(c => c.id === carro.clienteId);
       if (!cliente) { carro.fase = 'fim'; continue; }
@@ -98,7 +100,7 @@ export class EstacionamentoClientes {
           if (servico) continue;
           const existente = this.receberDoTrafego(carro.clienteId);
           if (!existente) continue;
-          Object.assign(carro, existente, { recebido: true, distancia: RUA.maxX - existente.x });
+          Object.assign(carro, existente, { recebido: true, limitesRua: limites, distancia: limites.maxX - existente.x });
           cliente.x = carro.x; cliente.z = carro.z;
         }
         if (!this.transitoLivre || (servico && !(carro.recebido && fase === 'aguardando' && servico.tempo < 0))) continue;
@@ -108,9 +110,9 @@ export class EstacionamentoClientes {
           !['estacionado', 'esperandoSaida'].includes(outro.fase)
           && !(outro.fase === 'aguardando' && this.receberDoTrafego && !outro.recebido))) continue;
         carro.fase = fase === 'aguardando' ? 'chegando' : 're';
-        if (fase === 'esperandoSaida') { carro.distancia = 0; carro.velocidade = 0; }
+        if (fase === 'esperandoSaida') { carro.distancia = 0; carro.velocidade = 0; carro.limitesRua = limites; }
       } else if (['chegando', 're', 'partindo'].includes(fase)) {
-        const r = trajetos(carro.vaga)[fase];
+        const r = trajetos(carro.vaga, carro.limitesRua)[fase];
         const restante = r.comprimento - carro.distancia;
         let maxima = fase === 're' ? 1.1 : carro.z > 9.5 && carro.x > entrada + 3 ? 4.4
           : 1 + 1.1 * Math.min(1, Math.max(0, (carro.z + 6.8) / 1.6));

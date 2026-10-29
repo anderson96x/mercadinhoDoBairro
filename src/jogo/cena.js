@@ -1,4 +1,6 @@
 import { trabalhoPadaria, criarRoteirosPadaria } from './producao-padaria.js';
+import { CAFETERIA } from './cafeteria.js';
+import { construirCafeteria } from './cafeteria-visual.js';
 import { criarLataSoda, criarGeladeiraSoda, posicaoLataSoda } from './soda-visual.js';
 import { SUCOS } from './sucos.js';
 import { criarLaticinio, posicaoLaticinio, GELADEIRA_LATICINIOS } from './laticinios-visual.js';
@@ -10,7 +12,7 @@ import { CONFEITARIA, podeProduzirConfeitaria, situacaoConfeiteiro, maquinaConfe
 import { criarDoceConfeitaria } from './doces-confeitaria.js';
 import { criarExpositorHortifruti } from './hortifruti.js';
 import { PLANTA_EXPANSAO, MODELO_PADARIA, pontoPadaria } from './planta.js';
-import { construirBairro } from './bairro.js';
+import { construirBairro, limitesRua } from './bairro.js';
 import { geometriaEstacao, distanciaEstacao } from './estacoes.js';
 import { Trafego, MODELOS_CARROS } from './trafego.js';
 import { ColetaBancoVisual } from './coleta-banco.js';
@@ -41,6 +43,8 @@ import { criarMantimento } from './mantimentos.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
+const limitesCamera = estado => estado.melhorias?.cafeteria ? { ...PLANTA_EXPANSAO.limiteCamera, maxX: 36 }
+  : estado.melhorias?.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
 const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
 const materiais = new Map();
 const vidroLeite = new THREE.MeshPhysicalMaterial({ color: 0xd8eeed, transparent: true, opacity: 0.48, roughness: 0.08, metalness: 0, depthWrite: false, side: THREE.DoubleSide });
@@ -253,6 +257,13 @@ function criarSecaoHortifruti(pai, p) {
 }
 
 export function criarProduto(id, escala = 1, variante = 0) {
+  if (id === 'cafe') {
+    const grupo = new THREE.Group();
+    caixa(grupo, 0.32, 0.46, 0.22, 0x70462f, 0, 0.23, 0);
+    caixa(grupo, 0.22, 0.2, 0.015, 0xf0dbb3, 0, 0.24, 0.12);
+    esfera(grupo, 0.065, 0x4b2c1b, 0, 0.24, 0.135, 0.7, 1, 0.3);
+    grupo.scale.setScalar(escala); return grupo;
+  }
   if (id === 'laticinio') { const produto = criarLaticinio(variante); produto.scale.setScalar(escala); return produto; }
   if (id === 'soda') { const lata = criarLataSoda(); lata.scale.setScalar(escala); return lata; }
   if (SUCOS.sabores[id]) {
@@ -861,6 +872,9 @@ export class Cena {
     }
     this.cena.add(this.marcadorJogador);
     this.clientes = new Map(); this.retratosClientes = new Map(); this.labels = []; this.alvosHorta = []; this.efeitosCrescimento = [];
+    this.criarLabel('loja-cafeteria', { ...CAFETERIA.balcao, y: 3 }, 'CAFETERIA', 'Espresso R$ 5 · Americano R$ 6 · Com leite R$ 8 · Cappuccino R$ 10', 'loja');
+    this.criarLabel('horta-cafe', { ...CAFETERIA.deposito, y: 2.8 }, 'CAFÉ IMPORTADO', 'Recolha no depósito', 'cafe');
+    this.criarLabel('abastecimento-cafeteria', { ...CAFETERIA.abastecimento, y: 2.1 }, 'ABASTECIMENTO', 'Café · leite · ovos · sucos', 'loja');
     this.raycaster = new THREE.Raycaster(); this.ponteiroRaycast = new THREE.Vector2();
     const PRODUTOS = produtosDaLoja(this.sim.estado);
     this.expansaoConstruida = !!this.sim.estado.melhorias.expansao;
@@ -889,7 +903,9 @@ export class Cena {
     this.bairro = construirBairro(this.cena, { caixa, cilindro, esfera });
     this.bairro.atualizarEstagio(this.sim.estado.estagioLoja);
     this.bairro.atualizarProfundidade(this.sim.compacta);
-    this.bairro.atualizarExpansao(this.sim.estado.melhorias.expansao);
+    this.bairro.atualizarExpansao(this.sim.estado.melhorias.expansao, this.sim.estado.melhorias.cafeteria);
+    this.cafeteria = construirCafeteria(this.cena, { caixa, cilindro, personagem, criarProduto });
+    this.cafeteria.grupo.visible = !!this.sim.estado.melhorias.cafeteria;
     this.estacionamento = construirEstacionamento(); this.cena.add(this.estacionamento.grupo);
     this.estacionamento.atualizar(!!this.sim.estado.melhorias.estacionamento, 0, [], 0, !!this.sim.estado.melhorias.expansao, this.sim.carrinhosNoSuporte, !!this.sim.estado.melhorias.carrinhos);
     this.bairro.atualizarEstacionamento(!!this.sim.estado.melhorias.estacionamento);
@@ -1063,6 +1079,7 @@ export class Cena {
     this.criarLabel(`loja-${id}`, { ...p.prateleira, y: id === 'ovos' ? 3.1 : id === 'leite' ? 3.2 : 1.7 }, p.nome.toLocaleUpperCase('pt-BR'), '0 / 12', 'loja');
   }
   construirImportado(id, p) {
+    if (p.exclusivoCafeteria) return;
     const lado = CLASSES_PRODUTOS[p.classe].lado;
     const grupo = new THREE.Group(); grupo.name = `produto-importado-${id}`; this.cena.add(grupo);
     if (id === 'soda') criarGeladeiraSoda(grupo);
@@ -1625,7 +1642,7 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.melhorias?.cafeteria ? CAFETERIA.camera : this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const altura = this.mobile ? 18.8 : Math.max(camera.alturaDesktop, 37 / proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
@@ -1652,14 +1669,14 @@ export class Cena {
       .add(vertical.multiplyScalar(-dy * (this.camera.top - this.camera.bottom) / (this.h * this.camera.zoom)));
     deslocamento.addScaledVector(direcao, -deslocamento.y / direcao.y);
     const base = this.baseCamera();
-    const limites = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
+    const limites = limitesCamera(this.sim.estado);
     const x = THREE.MathUtils.clamp(base.x + this.deslocamentoCamera.x - deslocamento.x, limites.minX, limites.maxX);
     const z = THREE.MathUtils.clamp(base.z + this.deslocamentoCamera.z - deslocamento.z, limites.minZ, limites.maxZ);
     this.deslocamentoCamera.set(x - base.x, 0, z - base.z);
     this.alvoCamera.set(x, 0, z);
   }
   baseCamera() {
-    const camera = this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
+    const camera = this.sim.estado.melhorias?.cafeteria ? CAFETERIA.camera : this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
     const jogador = this.sim.estado.jogador;
     const acompanhamento = this.mobile ? 1 : THREE.MathUtils.clamp((this.camera.zoom - 1) / (ZOOM_MAXIMO - 1), 0, 1);
     return { x: THREE.MathUtils.lerp(camera.x, jogador.x, acompanhamento), z: THREE.MathUtils.lerp(camera.z, jogador.z, acompanhamento) };
@@ -1932,7 +1949,7 @@ export class Cena {
     // A entrega vem pela esquerda e cruza a rua para alinhar a entrada de ré.
     if (sim.entregas.reservaRua) this.trafego.faixasReservadas.add(1);
     else this.trafego.faixasReservadas.delete(1);
-    this.trafego.atualizarExpansao(!!e.melhorias.expansao);
+    this.trafego.atualizarExpansao(!!e.melhorias.expansao, !!e.melhorias.cafeteria);
     this.trafego.atualizar(dt);
     sim.estacionamento.transitoLivre = !this.trafego.carros.some(c => c.faixa === 0);
     sim.entregas.transitoLivre = this.trafego.carros.length === 0;
@@ -1947,8 +1964,9 @@ export class Cena {
     const coleta = e.banco.coleta;
     const assalto = e.banco.assalto;
     this.atualizarTrafego(dt);
-    this.coletaBanco.atualizar(coleta);
-    this.assaltoVisual.atualizar(assalto);
+    const limitesTransito = limitesRua(!!e.melhorias.expansao, !!e.melhorias.cafeteria);
+    this.coletaBanco.atualizar(coleta, limitesTransito);
+    this.assaltoVisual.atualizar(assalto, limitesTransito);
     this.entregasVisual.atualizar(sim.entregas, dt);
     this.bairro.atualizarPacotesDeposito(e.deposito.pacotes);
     const dtVisual = dt;
@@ -1967,7 +1985,8 @@ export class Cena {
         particula.scale.setScalar(1 - progresso * 0.65);
       });
     }
-    this.bairro.atualizarExpansao(e.melhorias.expansao);
+    this.bairro.atualizarExpansao(e.melhorias.expansao, e.melhorias.cafeteria);
+    this.cafeteria.atualizar(sim, sim.pausado ? 0 : dt, this.animarPersonagem.bind(this));
     this.bairro.atualizarProfundidade(sim.compacta);
     this.bairro.atualizarOficinas(e.produtos);
     if (this.expansaoConstruida !== !!e.melhorias.expansao || this.lojaCompactaConstruida !== sim.compacta) {
@@ -1975,11 +1994,12 @@ export class Cena {
       this.lojaCompactaConstruida = sim.compacta;
       this.alvosHorta = [];
       this.labels = this.labels.filter(label => {
+        if (['loja-cafeteria', 'abastecimento-cafeteria', 'horta-cafe'].includes(label.id)) return true;
         if (['pao', ...Object.keys(CONFEITARIA.produtos)].some(id => label.id.endsWith(`-${id}`))) return true;
         label.el.remove(); return false;
       });
       for (const [id, p] of Object.entries(PRODUTOS)) {
-        if (id === 'pao' || p.origem === 'confeitaria') continue;
+        if (p.exclusivoCafeteria || id === 'pao' || p.origem === 'confeitaria') continue;
         const anterior = this.produtos[id].grupo;
         this.cena.remove(anterior); liberarGeometrias(anterior);
         if (p.origem === 'importado') this.construirImportado(id, p);
@@ -1994,8 +2014,10 @@ export class Cena {
     this.bairro.animarEntrada(sim.aberturaPortaEntrada, e.lojaAberta);
     this.bairro.animarPortasProducao(sim.aberturasPortasProducao);
     this.bairro.animarDeposito(e.lojaAberta, dt);
-    if (this.ultimoEstagioCamera !== e.estagioLoja) { this.ultimoEstagioCamera = e.estagioLoja; this.redimensionar(); }
-    const base = this.baseCamera(), limites = e.melhorias.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
+    if (this.ultimoEstagioCamera !== e.estagioLoja || this.ultimaCafeteriaCamera !== !!e.melhorias.cafeteria) {
+      this.ultimoEstagioCamera = e.estagioLoja; this.ultimaCafeteriaCamera = !!e.melhorias.cafeteria; this.redimensionar();
+    }
+    const base = this.baseCamera(), limites = limitesCamera(e);
     const alvo = new THREE.Vector3(
       THREE.MathUtils.clamp(base.x + this.deslocamentoCamera.x, limites.minX, limites.maxX), 0,
       THREE.MathUtils.clamp(base.z + this.deslocamentoCamera.z, limites.minZ, limites.maxZ)
@@ -2066,6 +2088,7 @@ export class Cena {
       modelo.userData.visualCestaNormal.forEach(parte => { parte.visible = !c.temCarrinho; });
       if (c.temCesta && !c.levaSacolas) aplicarPaletaCesta(modelo.userData.cesta, paletaAtual);
       if (!c.assustado || !modelo.userData.congelado) this.animarPersonagem(modelo, c, c.assustado ? 0 : dt, tempo + c.id, itens, 'prateleira', 0.55);
+      if (c.cafeteria) modelo.userData.visualCestaNormal.forEach(parte => { parte.visible = false; });
       modelo.userData.congelado = !!c.assustado;
       const balao = modelo.userData.balao;
       const mostrarReacao = c.satisfacao && c.fase === 'saindo' && !c.recusado;
@@ -2216,6 +2239,14 @@ export class Cena {
       posicionarBraco(bracoD, new THREE.Vector3(0.16, 0.4 - ordenhaD * 0.13, 1.02 + ordenhaD * 0.04));
     }
     for (const { id, el, ponto } of this.labels) {
+      if (['loja-cafeteria', 'abastecimento-cafeteria'].includes(id)) {
+        const alvo = id === 'loja-cafeteria' ? CAFETERIA.pedido : CAFETERIA.entrega;
+        const pos = this.projetar(ponto);
+        el.hidden = !e.melhorias.cafeteria || Math.hypot(e.jogador.x - alvo.x, e.jogador.z - alvo.z) > 3
+          || pos.x < 25 || pos.x > this.w - 25 || pos.y < 120 || pos.y > this.h - 100;
+        el.style.transform = `translate(${pos.x}px,${pos.y}px) translate(-50%,-100%)`;
+        continue;
+      }
       const [tipo, produto] = id.split('-');
       const estagioProduto = { ovos: ALA_PRODUCAO.indice, leite: ALA_LEITE.indice, trigo: ALA_TRIGO.indice, morango: ALA_ARTESANAL.indice }[produto];
       const construcao = PRODUTOS[produto]?.origem === 'pomar' || e.estagioLoja > estagioProduto ? 1 : equipamentoAla;
