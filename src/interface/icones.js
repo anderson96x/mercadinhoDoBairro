@@ -36,6 +36,7 @@ const caminhos = {
   mel: '<path d="M7 3h10v4H7zM6 7h12l1 3v9a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-9zM5 12h14M5 17h14"/><path d="m12 12 2 3-2 2-2-2z"/>',
   queijo: '<path d="m3 10 12-7 6 7v10H3zM3 10h18"/><circle cx="8" cy="15" r="1"/><circle cx="16" cy="16" r="2"/>',
   soda: '<path d="M8 3h8l1 3v14l-1 1H8l-1-1V6l1-3Zm-1 4h10M7 18h10M10 3l1 2h3"/>',
+  laticinio: '<path d="M3 9h18v11H3zM2 6h20v3H2zM7 13h10v3H7z"/>',
   sucoLaranja: '<path d="M9 3h6v5l3 3v10H6V11l3-3zM9 6h6M6 14h12"/>',
   sucoMorango: '<path d="M9 3h6v5l3 3v10H6V11l3-3zM6 14h12"/>',
   sucoMaca: '<path d="M9 3h6v5l3 3v10H6V11l3-3zM6 14h12"/>',

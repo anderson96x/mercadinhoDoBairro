@@ -1,4 +1,5 @@
 import { SODA, posicaoCaixaSoda } from './soda.js';
+import { LATICINIOS, posicaoCaixaLaticinios } from './laticinios.js';
 import { PLANTA_DEPOSITO, PLANTA_CARGA } from './planta.js';
 import { PRODUTOS } from './configuracao.js';
 import { segmentoLivre } from './navegacao.js';
@@ -34,6 +35,10 @@ export function acomodarExcedentes(deposito) {
   });
 }
 export function posicaoPacote(slot) {
+  if (Math.floor(slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.laticinios.estante) {
+    const p = posicaoCaixaLaticinios(slot % PACOTES_POR_CLASSE);
+    return { ...p, y: p.y + LATICINIOS.alturaCaixa / 2 };
+  }
   if (Math.floor(slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.soda.estante) {
     const p = posicaoCaixaSoda(slot % PACOTES_POR_CLASSE);
     return { ...p, y: p.y + 0.15 };
@@ -62,6 +67,11 @@ export function validarDeposito(dados, produtos) {
     if (pacotes.length) base.pedidos.push({ id: base.proximoId++, pacotes });
     restantes -= pacotes.length;
   }
+  // O arranjo anterior dos laticínios no chão podia deixar slots intermediários
+  // vazios. Ao empilhar, preserve as unidades e apoie todas as caixas na base.
+  base.pacotes.filter(p => classeProduto(p.produto) === 'laticinios')
+    .sort((a, b) => a.slot - b.slot)
+    .forEach((p, i) => { p.slot = CLASSES_PRODUTOS.laticinios.estante * PACOTES_POR_CLASSE + i; });
   return base;
 }
 
@@ -216,10 +226,11 @@ export class Entregas {
     }
     if (c.fase === 'levar' || c.fase === 'voltar') {
       const soda = Math.floor(c.slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.soda.estante;
-      const estante = soda ? SODA.deposito : PLANTA_DEPOSITO.estantes[Math.floor(c.slot / PACOTES_POR_CLASSE)];
+      const laticinios = Math.floor(c.slot / PACOTES_POR_CLASSE) === CLASSES_PRODUTOS.laticinios.estante;
+      const estante = soda ? SODA.deposito : laticinios ? LATICINIOS.deposito : PLANTA_DEPOSITO.estantes[Math.floor(c.slot / PACOTES_POR_CLASSE)];
       const pontos = [
         PLANTA_CARGA.contornoCabine, { x: PLANTA_CARGA.contornoCabine.x, z: -8.45 }, { x: PLANTA_DEPOSITO.porta.x, z: -8.45 },
-        { x: PLANTA_DEPOSITO.porta.x, z: -10.3 }, soda ? SODA.coleta : { x: estante.x, z: -12.9 }
+        { x: PLANTA_DEPOSITO.porta.x, z: -10.3 }, soda ? SODA.coleta : laticinios ? LATICINIOS.coleta : { x: estante.x, z: -12.9 }
       ];
       const rota = c.fase === 'levar' ? pontos : [...pontos].reverse().slice(1).concat(ENTREGA.retirada);
       if (sim.caminharCliente(ator, rota[c.etapa], dt, 2.5)) {

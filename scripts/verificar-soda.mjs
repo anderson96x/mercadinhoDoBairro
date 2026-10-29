@@ -57,7 +57,7 @@ try {
       const { Cena } = await import('/src/jogo/cena.js');
       const verificar = (ok, msg) => { if (!ok) throw Error(msg); };
       const sim = new Simulacao(); sim.estado.estatisticas.clientes = 24 * CONFIG.clientesPorNivel; sim.estado.dinheiro = 100000;
-      for (const id of SEQUENCIA_MELHORIAS.slice(0, -1)) verificar(sim.comprarMelhoria(id).sucesso, id);
+      for (const id of SEQUENCIA_MELHORIAS.slice(0, SEQUENCIA_MELHORIAS.indexOf('geladeiraSoda'))) verificar(sim.comprarMelhoria(id).sucesso, id);
       const container = document.createElement('div'); container.style.cssText = 'position:fixed;inset:0'; document.body.append(container);
       const original = HTMLCanvasElement.prototype.getContext;
       if (${canvas}) HTMLCanvasElement.prototype.getContext = function(type, ...args) { return type.startsWith('webgl') ? null : original.call(this, type, ...args); };

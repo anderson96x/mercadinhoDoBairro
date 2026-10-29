@@ -1,6 +1,8 @@
 # Mercadinho do Bairro
 
-Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.73.3**.
+Jogo de gerenciamento de mercadinho em português, para navegadores de computador e celular. Versão **0.74.0**.
+
+No nível 26, a geladeira de laticínios custa R$ 1.000, fica ao lado dos queijos e comporta 36 unidades. Importe a categoria Laticínios em caixas mistas de nove por R$ 108; venda cada unidade por R$ 23. Manteiga, creme de leite, iogurte e requeijão são variações visuais do mesmo produto, com quatro vagas no depósito.
 
 Colha produtos, abasteça as prateleiras, atenda clientes e reinvista nas melhorias. Comece vendendo tomates e avance até produzir pães, queijos, geleias, bolos, donuts e éclairs, com quinze produtos ao todo.
 

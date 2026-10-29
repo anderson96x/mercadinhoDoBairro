@@ -1,6 +1,16 @@
 # Histórico de alterações
 
-## Versão atual: 0.73.3 — 2026-10-28
+## Versão atual: 0.74.0 — 2026-10-29
+
+- Adiciona geladeira de laticínios no N26 por R$ 1.000, à direita dos queijos, reutilizando o mesmo gabinete de parede, com capacidade para 36 unidades vendidas por R$ 23 cada.
+- Uma única importação de Laticínios fornece caixas mistas de nove unidades por R$ 108 (custo adotado de R$ 12 por unidade), com quatro vagas no depósito. Manteiga, creme de leite, iogurte e requeijão são apenas variedades visuais do mesmo produto. Jogador e repositor abastecem a geladeira; a demanda começa após o primeiro abastecimento.
+- Refaz as embalagens conforme a referência: manteiga em caixa baixa com tampa impressa, creme em pote alto, iogurte em copo individual e requeijão em pote largo. Adiciona cintas e tampas coloridas, rótulos em português nas frentes e nas tampas, preservando as 36 unidades no gabinete.
+- Corrige a apresentação dos laticínios: embalagens maiores em quatro prateleiras reais de nove unidades, com espaçamento sem sobreposição e material mais claro no interior do gabinete. Aplica as texturas das tampas circulares também no Canvas e verifica apoio, limites, separação e desenho das artes.
+- Empilha as quatro caixas de laticínios no ponto marcado junto à parede esquerda, atrás da Soda e antes da primeira estante. Aumenta a altura de cada caixa de 0,30 para 0,50 u e sincroniza o modelo transportado, a altura de descarga e os níveis da pilha. A coleta pela direita usa áreas separadas para evitar confusão entre laticínios e Soda. Jogador e repositor esvaziam o topo primeiro; saves anteriores compactam os slots ocupados sem perder unidades.
+- Preserva compras, pedidos, caixas parciais e estoques em saves existentes; partidas anteriores recebem a categoria bloqueada e vazia. Consolida os quatro identificadores da implementação provisória, preservando unidades e pedidos pagos.
+- Validação: testes de importação mista, capacidade, reposição, vendas e migração; suíte completa, rotas N1–N26, build e navegador desktop/celular em WebGL e Canvas sem salvar imagens.
+
+## 0.73.3 — 2026-10-28
 
 - Adiciona ao DEV, logo abaixo das prateleiras da loja, controles para encher e esvaziar as estantes do depósito, bloqueados enquanto houver uma entrega em andamento.
 - Validação: teste de regressão da ferramenta, suíte completa e build de produção.

@@ -1,6 +1,8 @@
 import * as THREE from 'three';
 import { criarAgente } from './coleta-banco.js';
 import { criarCaixaSoda } from './soda-visual.js';
+import { criarCaixaLaticinios } from './laticinios-visual.js';
+import { LATICINIOS } from './laticinios.js';
 import { posicaoPacote } from './entregas.js';
 
 const materiais = new Map();
@@ -103,6 +105,7 @@ export class EntregasVisual {
     bloco(this.caixa, 0.1, 0.48, 0.012, 0xefcf92, 0, 0.77, 0.686);
     bloco(this.caixa, 0.16, 0.13, 0.015, 0xf1eada, 0.18, 0.77, 0.69);
     this.caixaSoda = criarCaixaSoda(); this.caixaSoda.position.set(0, 0.61, 0.4); this.caixa.add(this.caixaSoda);
+    this.caixaLaticinios = criarCaixaLaticinios(); this.caixaLaticinios.position.set(0, 0.77 - LATICINIOS.alturaCaixa / 2, 0.4); this.caixa.add(this.caixaLaticinios);
     this.grupo.visible = false; this.tempo = 0; this.animarEntregador = animarEntregador;
   }
   atualizar(entregas, dt) {
@@ -143,7 +146,8 @@ export class EntregasVisual {
     }
     const pegando = c.fase === 'retirar' && c.tempo >= 0.35;
     this.caixa.visible = a.carregando || pegando;
-    for (const o of this.caixa.children) o.visible = o === this.caixaSoda ? c.produto === 'soda' : c.produto !== 'soda';
+    for (const o of this.caixa.children) o.visible = o === this.caixaSoda ? c.produto === 'soda'
+      : o === this.caixaLaticinios ? c.produto === 'laticinio' : !['soda', 'laticinio'].includes(c.produto);
     this.caixa.position.y = 0;
     if (pegando) {
       const t = Math.min(1, (c.tempo - 0.35) / 0.35);

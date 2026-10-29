@@ -1,6 +1,7 @@
 // Ajuste a economia e os pontos do mapa aqui, sem alterar os sistemas do jogo.
 import { CONFEITARIA } from './confeitaria.js';
 import { SODA } from './soda.js';
+import { LATICINIOS } from './laticinios.js';
 import { SUCOS } from './sucos.js';
 import { PLANTA_LARANJA, PLANTA_MACA } from './planta.js';
 import { PLANTA_EXPANSAO, PLANTA_GELEIA, PLANTA_QUEIJO, PLANTA_MEL, PLANTA_MORANGO, PLANTA_AMPLIADA, PLANTA_PADARIA, MODELO_PADARIA, pontoPadaria, volumePadaria, paredesAmpliacao, PLANTA_INICIAL, PLANTA_OVOS, PLANTA_LEITE, FAZENDAS_HORTIFRUTI, compartimentoHortifruti, PRATELEIRAS_IMPORTADOS, PLANTA_DEPOSITO } from './planta.js';
@@ -80,10 +81,18 @@ const EXTREMOS_CALCADA_EXPANSAO = CONFIG.extremosCalcada.map((ponto, lado) => ({
 export const extremosCalcadaDaLoja = estado => estado?.melhorias?.expansao ? EXTREMOS_CALCADA_EXPANSAO : CONFIG.extremosCalcada;
 
 export const PRODUTOS = {
+  laticinio: {
+    nome: 'Laticínio', plural: 'Laticínios', cor: 0x62a9bc, preco: 23, origem: 'importado', classe: 'laticinios', nivelMinimo: 26,
+    capacidadeHorta: 36, capacidadePrateleira: 36, liberado: false,
+    horta: LATICINIOS.deposito, coleta: LATICINIOS.coleta, prateleira: LATICINIOS.geladeira,
+    areaColeta: { ...LATICINIOS.coleta, w: 0.12, d: 0.12 },
+    reposicao: LATICINIOS.cliente, cliente: LATICINIOS.cliente, pontosCompra: [LATICINIOS.cliente]
+  },
   soda: {
     nome: 'Soda', plural: 'Latas de Soda', cor: 0xe64e70, preco: 20, origem: 'importado', classe: 'soda', nivelMinimo: 25,
     capacidadeHorta: 96, capacidadePrateleira: 24, liberado: false,
     horta: SODA.deposito, coleta: SODA.coleta, prateleira: SODA.geladeira,
+    areaColeta: { ...SODA.coleta, w: 0.12, d: 0.12 },
     reposicao: SODA.cliente, cliente: SODA.cliente, pontosCompra: [SODA.cliente]
   },
   ...Object.fromEntries(Object.entries(SUCOS.sabores).map(([id, sabor]) => [id, {
@@ -301,6 +310,8 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
+  { id: 'geladeiraLaticinios', titulo: 'Geladeira de laticínios', descricao: 'Instale ao lado dos queijos uma geladeira para 36 laticínios importados, com embalagens variadas de manteiga, creme de leite, iogurte e requeijão. Venda por R$ 23 cada.', custo: 1000, icone: 'laticinio', max: 1, tipo: 'construcao', produto: 'laticinio', categoria: 'mercado', nivelMinimo: 26, requisitoMelhoria: 'queijaria', requisitos: ['expansao'] },
+  { id: 'importarLaticinios', titulo: 'Laticínios', descricao: 'Caixa mista com 9 laticínios em embalagens variadas. Até quatro caixas no depósito, incluindo entregas pendentes.', custo: 108, icone: 'laticinio', max: 1000000000, tipo: 'importacao', produto: 'laticinio', categoria: 'importados', nivelMinimo: 26, requisitoMelhoria: 'geladeiraLaticinios', recorrente: true },
   { id: 'geladeiraSoda', titulo: 'Geladeira Soda', descricao: 'Geladeira Soda com 24 latas em quatro prateleiras, ao lado dos sucos. Importe até quatro caixas de 24 latas e recolha no canto do depósito, no chão. Venda por R$ 20 a lata.', custo: 1000, icone: 'soda', max: 1, tipo: 'construcao', produto: 'soda', categoria: 'mercado', nivelMinimo: 25, requisitoMelhoria: 'sucos', requisitos: ['expansao'] },
   { id: 'importarSoda', titulo: 'Soda', descricao: 'Caixa Soda com 24 latas. Até quatro caixas no canto do depósito, incluindo entregas pendentes.', custo: 240, icone: 'soda', max: 1000000000, tipo: 'importacao', produto: 'soda', categoria: 'importados', nivelMinimo: 25, requisitoMelhoria: 'geladeiraSoda', recorrente: true },
   { id: 'maca', titulo: 'Macieira', descricao: 'Plante uma macieira ao lado da laranjeira e abra a seção de maçãs junto às laranjas. Colha e venda cada maçã por R$ 7.', custo: 800, icone: 'maca', produto: 'maca', max: 1, tipo: 'produto', categoria: 'mercado', nivelMinimo: 7, requisitoMelhoria: 'laranja' },

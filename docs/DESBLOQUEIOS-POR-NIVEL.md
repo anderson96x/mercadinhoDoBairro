@@ -41,6 +41,7 @@ Os documentos de plantas N1–N19 anteriores à versão 0.67.0 são registros hi
 | 23 | Máquina e geladeira de sucos | R$ 1.000 | R$ 25 por garrafa |
 | 24 | Cinco carrinhos de compras, até 15 clientes com as dez cestas | R$ 500 | — |
 | 25 | Geladeira Soda | R$ 1.000 | R$ 20 por lata |
+| 26 | Geladeira de laticínios importados | R$ 1.000 | R$ 23 por unidade |
 
 ## Hortifruti: níveis 1 a 9
 
@@ -179,3 +180,11 @@ A compra **Geladeira Soda**, em **Celular → Melhorias → Mercado**, custa **R
 Em **Celular → Importar produtos**, cada caixa custa **R$ 240** e contém **24 latas**. O limite é **quatro caixas**, contando as entregues e as pendentes, totalizando até **96 latas no depósito**. O caminhão entrega as caixas com a marca Soda empilhadas verticalmente no chão, no canto à esquerda da entrada, sem estante. A coleta esvazia primeiro a caixa do topo e desce pela pilha; caixas parciais continuam ocupando uma vaga até esvaziar. Jogador e repositor recolhem as latas nesse canto e abastecem a geladeira; a venda é de **R$ 20 por lata**. O preço de importação foi adotado como R$ 10 por lata; não estava especificado no pedido do recurso.
 
 A demanda começa após o primeiro abastecimento. Compras, caixas parciais e estoque da geladeira são preservados ao salvar; partidas antigas recebem Soda bloqueada e vazia.
+
+## Laticínios no nível 26
+
+Em **Celular → Melhorias → Mercado**, compre **Geladeira de laticínios** por **R$ 1.000**, após a geladeira Soda. Exige queijaria e expansão. O gabinete segue o mesmo modelo da geladeira de queijos e fica imediatamente à direita dela, junto à parede posterior. Guarda **36 unidades** da categoria **Laticínios**, em quatro prateleiras com nove embalagens cada. **Manteiga, creme de leite, iogurte e requeijão são apenas variedades visuais**, como as embalagens de cereais. Cada unidade vende por **R$ 23**.
+
+Em **Celular → Importar produtos**, há uma única opção: **Laticínios**. Cada caixa mista contém **9 unidades**, com apresentação visual das quatro variedades, e custa **R$ 108** (custo adotado de R$ 12 por unidade, pois o pedido definiu apenas o preço de venda). A categoria tem **quatro vagas**, contando caixas entregues e pendentes, em uma pilha vertical de caixas altas no chão do depósito, junto à parede esquerda, atrás da Soda e antes da primeira estante. A coleta das duas pilhas fica pela direita, com alcances separados para evitar retirar o produto errado. A instalação começa vazia; aguarde a entrega e transporte os laticínios à geladeira, manualmente ou com o repositor. Jogador e repositor consomem primeiro a caixa do topo e descem pela pilha. Não há pedidos, preços ou estoques separados por embalagem.
+
+A categoria entra nos pedidos após seu primeiro abastecimento. A compra, caixas parciais, pedidos e estoque são preservados ao salvar. Partidas antigas recebem a geladeira bloqueada e vazia; saves da implementação provisória com quatro produtos separados consolidam suas unidades, inventários e pedidos em Laticínios.

@@ -6,7 +6,8 @@ export const CLASSES_PRODUTOS = {
   doces: { nome: 'Biscoitos e doces', estante: 1, gondola: 0, lado: -1, cor: 0xc74352 },
   mantimentos: { nome: 'Mantimentos', estante: 3, gondola: 1, lado: -1, cor: 0xe5b933 },
   cereais: { nome: 'Cereais', estante: 2, gondola: 1, lado: 1, cor: 0x69ad3c },
-  soda: { nome: 'Soda', estante: 4, gondola: null, lado: 0, cor: 0xe64e70, unidadesPacote: 24 }
+  soda: { nome: 'Soda', estante: 4, gondola: null, lado: 0, cor: 0xe64e70, unidadesPacote: 24, melhoria: 'geladeiraSoda' },
+  laticinios: { nome: 'Laticínios', estante: 5, gondola: null, lado: 0, cor: 0x62a9bc, melhoria: 'geladeiraLaticinios' }
 };
 
 export const unidadesPacote = classe => CLASSES_PRODUTOS[classe]?.unidadesPacote ?? UNIDADES_PACOTE;

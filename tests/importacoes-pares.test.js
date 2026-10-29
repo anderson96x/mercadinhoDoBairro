@@ -56,7 +56,7 @@ test('gôndolas exigem expansão e a primeira não habilita importações da seg
   for (const id of pares[1].pedidos) assert.equal(sim.comprarMelhoria(id).sucesso, false);
   sim.estado.estatisticas.clientes += CONFIG.clientesPorNivel;
   for (const id of pares[1].pedidos) assert.equal(sim.disponibilidadeMelhoria(id).requisitoMelhoria, pares[1].id);
-  assert.equal(MELHORIAS.filter(m => m.ativa !== false && m.tipo === 'mobiliario').length, 2);
+  assert.equal(MELHORIAS.filter(m => m.ativa !== false && m.tipo === 'mobiliario' && m.id.startsWith('prateleira')).length, 2);
 });
 test('compra antiga das duas gôndolas migra sem cobrar novamente', () => {
   const sim = loja(20);

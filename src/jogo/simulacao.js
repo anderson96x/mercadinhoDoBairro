@@ -1,5 +1,6 @@
 import { CONFEITARIA, estadoConfeitaria, validarConfeitaria, produzirConfeitaria, maquinaConfeitaria } from './confeitaria.js';
 import { SODA } from './soda.js';
+import { LATICINIOS, migrarLaticinios } from './laticinios.js';
 import { SUCOS, estadoSucos, validarSucos, produzirSucos } from './sucos.js';
 import { CARRINHOS, capacidadeCompraCliente } from './carrinhos.js';
 import { trabalhoPadaria, estadoEntregaPadaria, validarEntregaPadaria, atualizarEntregaPadaria } from './producao-padaria.js';
@@ -71,6 +72,7 @@ export function estadoInicial() {
 export function validarEstado(dados) {
   const base = estadoInicial();
   if (!dados || dados.versao !== CONFIG.versaoSalvamento) return base;
+  dados = migrarLaticinios(dados);
   const numero = (v, max = 1e9) => Number.isFinite(v) ? limitar(Math.floor(v), 0, max) : 0;
   base.dinheiro = numero(dados.dinheiro);
   base.banco = dados.banco ? validarBanco(dados.banco) : { ...estadoBanco(), noCaixa: base.dinheiro };
@@ -137,7 +139,7 @@ export function validarEstado(dados) {
   base.deposito = validarDeposito(dados.deposito, base.produtos);
   // Importados já adquiridos preservam o móvel necessário sem nova cobrança.
   for (const [id, p] of Object.entries(PRODUTOS)) {
-    if (p.origem === 'importado' && p.classe !== 'soda' && base.produtos[id].liberado) {
+    if (p.origem === 'importado' && CLASSES_PRODUTOS[p.classe].gondola !== null && base.produtos[id].liberado) {
       const indice = CLASSES_PRODUTOS[p.classe].gondola;
       if (MELHORIAS.find(m => m.id === 'prateleirasImportados').ativa !== false) {
         base.melhorias.prateleirasImportados = Math.max(base.melhorias.prateleirasImportados, indice + 1);
@@ -355,7 +357,7 @@ export class Simulacao {
         const importacao = MELHORIAS.find(m => m.tipo === 'importacao' && m.produto === id && m.ativa !== false);
         const gondolas = CLASSES_PRODUTOS[produto.classe].gondola + 1;
         if (importacao && this.nivel >= (importacao.nivelMinimo || 1) && this.estado.melhorias.expansao
-          && (produto.classe === 'soda' ? this.estado.melhorias.geladeiraSoda : gondolaInstalada(this.estado.melhorias, gondolas - 1))) {
+          && (CLASSES_PRODUTOS[produto.classe].melhoria ? this.estado.melhorias[CLASSES_PRODUTOS[produto.classe].melhoria] : gondolaInstalada(this.estado.melhorias, gondolas - 1))) {
           // Registra a liberação para que o estoque DEV sobreviva à validação do save.
           this.estado.melhorias[importacao.id] = Math.max(1, this.estado.melhorias[importacao.id]);
           estoque.liberado = true;
@@ -543,7 +545,7 @@ export class Simulacao {
     }
     if (m.tipo === 'importacao') {
       const gondolas = CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].gondola + 1;
-      if (PRODUTOS[m.produto].classe !== 'soda' && !gondolaInstalada(this.estado.melhorias, gondolas - 1)) return { disponivel: false, motivo: `Instale a segunda Prateleira de importados antes de importar ${CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].nome.toLocaleLowerCase('pt-BR')}.`, requisitoMelhoria: 'prateleirasImportados' };
+      if (CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].gondola !== null && !gondolaInstalada(this.estado.melhorias, gondolas - 1)) return { disponivel: false, motivo: `Instale a segunda Prateleira de importados antes de importar ${CLASSES_PRODUTOS[PRODUTOS[m.produto].classe].nome.toLocaleLowerCase('pt-BR')}.`, requisitoMelhoria: 'prateleirasImportados' };
       if (!this.estado.melhorias.expansao) return { disponivel: false, motivo: 'Compre Expansão para receber entregas no pátio exclusivo.', requisitoMelhoria: 'expansao' };
       if (this.estado.deposito.pedidos.length || this.entregas?.caminhao) return { disponivel: false, motivo: 'Aguarde o caminhão concluir a entrega e ir embora antes de fazer outro pedido.' };
       if (vagasDeposito(this.estado.deposito, classeProduto(m.produto)) < 1) return { disponivel: false, motivo: `A classe ${CLASSES_PRODUTOS[classeProduto(m.produto)]?.nome || ''} está cheia: limite de ${PACOTES_POR_CLASSE} pacotes, incluindo pedidos a caminho.` };
@@ -773,7 +775,7 @@ export class Simulacao {
   }
   retirarProdutoDeposito(id) {
     const pacotes = this.estado.deposito.pacotes.filter(p => p.produto === id);
-    const pacote = PRODUTOS[id]?.classe === 'soda'
+    const pacote = ['soda', 'laticinios'].includes(PRODUTOS[id]?.classe)
       ? pacotes.reduce((topo, atual) => !topo || atual.slot > topo.slot ? atual : topo, null)
       : pacotes[0];
     if (!pacote) return false;
@@ -810,6 +812,7 @@ export class Simulacao {
     if (this.estado.melhorias.sucos) caixas.push(SUCOS.bancada, SUCOS.geladeira);
     if (this.estado.melhorias.carrinhos) caixas.push(CARRINHOS.suporte);
     if (this.estado.melhorias.geladeiraSoda) caixas.push(SODA.deposito);
+    if (this.estado.melhorias.geladeiraLaticinios) caixas.push(LATICINIOS.deposito);
     caixas.push(...volumesHortifruti(this.estado.produtos, this.produtos), ...volumesDoces(this.estado.produtos));
     caixas.push(...PRATELEIRAS_IMPORTADOS.filter((p, i) => gondolaInstalada(this.estado.melhorias, i)));
     if (this.estado.melhorias.estacionamento) caixas.push(...OBSTACULOS_ESTACIONAMENTO,

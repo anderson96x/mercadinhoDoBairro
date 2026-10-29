@@ -1,6 +1,7 @@
 import { trabalhoPadaria, criarRoteirosPadaria } from './producao-padaria.js';
 import { criarLataSoda, criarGeladeiraSoda, posicaoLataSoda } from './soda-visual.js';
 import { SUCOS } from './sucos.js';
+import { criarLaticinio, posicaoLaticinio, GELADEIRA_LATICINIOS } from './laticinios-visual.js';
 import { aplicarPaletaCarrinho, CARRINHO_CLIENTE, criarCarrinho } from './carrinhos-visual.js';
 import { criarMaquinaSucos, animarMaquinaSucos, criarGarrafaSuco, criarGeladeiraSucos, posicaoGarrafaGeladeira, GELADEIRA_SUCOS } from './sucos-visual.js';
 import { construirBatedeira } from './batedeira.js';
@@ -75,6 +76,7 @@ function liberarGeometrias(grupo) {
 }
 
 function posicaoProdutoPrateleira(id, p, i) {
+  if (id === 'laticinio') return posicaoLaticinio(p, i);
   if (id === 'soda') return posicaoLataSoda(p, i);
   if (SUCOS.sabores[id]) {
     return posicaoGarrafaGeladeira(id, p, i);
@@ -97,6 +99,9 @@ function posicaoProdutoPrateleira(id, p, i) {
 }
 
 function criarImportadoNaPrateleira(id, p, indice) {
+  if (id === 'laticinio') {
+    const produto = criarLaticinio(indice); produto.scale.setScalar(GELADEIRA_LATICINIOS.escala); produto.position.copy(posicaoLaticinio(p.prateleira, indice)); return produto;
+  }
   if (id === 'soda') {
     const lata = criarLataSoda(); lata.position.copy(posicaoLataSoda(p.prateleira, indice)); return lata;
   }
@@ -172,7 +177,7 @@ function criarRefrigerador(pai, ponto, id = 'leite') {
   return { grupo: refrigerador };
 }
 
-function criarRefrigeradorParede(pai, p, id = 'leite') {
+function criarRefrigeradorParede(pai, p, id = 'leite', alturas = [0.79, 1.44, 2.09]) {
   const grupo = new THREE.Group(); grupo.name = `refrigerador-parede-${id}`;
   grupo.position.set(p.x, 0, p.z); pai.add(grupo);
   const { w, d } = p, frente = d / 2;
@@ -183,7 +188,7 @@ function criarRefrigeradorParede(pai, p, id = 'leite') {
     caixa(grupo, 0.12, 2.28, d, 0xeaf1f0, x, 1.74, 0);
     caixa(grupo, 0.035, 1.98, 0.035, 0xd4fff5, x * 0.91, 1.7, frente - 0.14);
   }
-  for (const y of [0.79, 1.44, 2.09]) {
+  for (const y of alturas) {
     const prateleira = caixa(grupo, w - 0.24, 0.07, d - 0.18, 0x9bbab9, 0, y, 0);
     prateleira.name = `prateleira-${id}`;
   }
@@ -248,6 +253,7 @@ function criarSecaoHortifruti(pai, p) {
 }
 
 export function criarProduto(id, escala = 1, variante = 0) {
+  if (id === 'laticinio') { const produto = criarLaticinio(variante); produto.scale.setScalar(escala); return produto; }
   if (id === 'soda') { const lata = criarLataSoda(); lata.scale.setScalar(escala); return lata; }
   if (SUCOS.sabores[id]) {
     const garrafa = criarGarrafaSuco(id); garrafa.scale.setScalar(escala); return garrafa;
@@ -1060,6 +1066,7 @@ export class Cena {
     const lado = CLASSES_PRODUTOS[p.classe].lado;
     const grupo = new THREE.Group(); grupo.name = `produto-importado-${id}`; this.cena.add(grupo);
     if (id === 'soda') criarGeladeiraSoda(grupo);
+    if (id === 'laticinio') criarRefrigeradorParede(grupo, p.prateleira, 'laticinios', GELADEIRA_LATICINIOS.alturas);
     const frutas = [];
     // As 36 unidades ocupam quatro níveis de nove, começando pelo nível inferior.
     // Cada nível representa uma das quatro variedades da classe.
@@ -1068,6 +1075,13 @@ export class Cena {
       grupo.add(produto); frutas.push(produto);
     }
     this.produtos[id] = { grupo, frutos: [], frutas, galinhas: [], abelhas: [], irrigador: null, refrigerador: null, banca: null };
+    if (p.classe === 'laticinios') {
+      if (id === 'laticinio') {
+        this.criarLabel(`loja-${id}`, { ...p.prateleira, y: 3.2 }, 'LATICÍNIOS', '0 / 36 · R$ 23 cada', 'loja');
+        this.criarLabel(`horta-${id}`, { ...p.horta, y: 2.4 }, 'LATICÍNIOS IMPORTADOS', '0 / 4 caixas', id);
+      }
+      return;
+    }
     this.criarLabel(`loja-${id}`, { ...p.prateleira, x: p.prateleira.x + lado * 0.7, y: 2.8 }, p.plural.toLocaleUpperCase('pt-BR'), `0 / ${p.capacidadePrateleira}`, 'loja');
     this.criarLabel(`horta-${id}`, { ...p.horta, y: 2.9 }, CLASSES_PRODUTOS[p.classe].nome.toLocaleUpperCase('pt-BR'), `0 / ${PACOTES_POR_CLASSE} pacotes`, id);
   }
