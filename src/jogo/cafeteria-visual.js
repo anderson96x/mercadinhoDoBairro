@@ -37,7 +37,7 @@ export function construirCafeteria(cena, { caixa, cilindro, personagem, criarPro
     bloco('acabamento-cafeteria', p.w + 0.04, 0.1, p.d + 0.04, 0x286750, p.x, p.h + 0.23, p.z);
     bloco('rodape-cafeteria', p.w, 0.18, p.d + 0.04, 0x286750, p.x, 0.32, p.z);
   }
-  for (const p of [C.balcao, C.fechamento]) {
+  for (const p of [C.balcao, C.fechamento, C.fechamentoPosterior]) {
     const balcao = new THREE.Group(); balcao.name = 'balcao-cafeteria'; grupo.add(balcao);
     construirBalcaoPadaria(balcao, p, { caixa });
   }
@@ -66,13 +66,11 @@ export function construirCafeteria(cena, { caixa, cilindro, personagem, criarPro
     cilindro(grupo, 0.34, 0.4, 0.08, 0x3c4946, mesa.x, 0.27, mesa.z);
     cilindro(grupo, 0.065, 0.065, 0.9, 0x3c4946, mesa.x, 0.7, mesa.z);
     const tampo = cilindro(grupo, 0.68, 0.68, 0.1, 0xc89860, mesa.x, 1.17, mesa.z); tampo.name = 'mesa-cafeteria';
-    cilindro(grupo, 0.1, 0.08, 0.18, 0xf0d9ab, mesa.x, 1.3, mesa.z);
-    cilindro(grupo, 0.16, 0.06, 0.25, 0x558456, mesa.x, 1.49, mesa.z);
   }
   for (const p of ASSENTOS_CAFETERIA) {
     const cadeira = new THREE.Group(); cadeira.name = 'cadeira-cafeteria'; grupo.add(cadeira);
     cadeira.position.set(p.x, 0, p.z); cadeira.rotation.y = p.angulo;
-    caixa(cadeira, 0.55, 0.1, 0.6, 0xe3b35f, 0, 0.76, 0);
+    caixa(cadeira, 0.55, C.cadeira.espessuraAssento, 0.6, 0xe3b35f, 0, C.cadeira.assentoY, 0).name = 'assento-cadeira-cafeteria';
     caixa(cadeira, 0.55, 0.65, 0.08, 0xe3b35f, 0, 1.06, -0.29);
     for (const x of [-0.22, 0.22]) for (const z of [-0.23, 0.23]) caixa(cadeira, 0.055, 0.5, 0.055, 0x485852, x, 0.48, z);
   }
@@ -80,9 +78,16 @@ export function construirCafeteria(cena, { caixa, cilindro, personagem, criarPro
   barista.name = 'barista'; grupo.add(barista);
   barista.rotation.y = C.barista.angulo;
   const avental = caixa(barista.userData.corpo, 0.6, 0.65, 0.07, 0x795337, 0, 0.65, 0.26); avental.name = 'avental-barista';
-  const bandeja = new THREE.Group(); barista.add(bandeja); bandeja.position.set(0, 1.2, 0.6);
-  caixa(bandeja, 0.85, 0.045, 0.55, 0x73533d, 0, 0, 0);
+  const criarBandeja = pai => {
+    const objeto = new THREE.Group(); pai.add(objeto);
+    caixa(objeto, 0.85, 0.045, 0.55, 0x73533d, 0, 0, 0);
+    return objeto;
+  };
+  const bandeja = criarBandeja(grupo); bandeja.name = 'pedido-retirada-cafeteria';
+  bandeja.position.set(C.bandejaRetirada.x, 1.26, C.bandejaRetirada.z); bandeja.rotation.y = Math.PI / 2;
   const itensMesas = new THREE.Group(); grupo.add(itensMesas);
+  const bandejasClientes = new THREE.Group(); grupo.add(bandejasClientes);
+  const carregando = new Map();
   let assinatura = '';
   return {
     grupo, barista, bandeja,
@@ -91,12 +96,22 @@ export function construirCafeteria(cena, { caixa, cilindro, personagem, criarPro
       if (!grupo.visible) return;
       animar(barista, sim.barista, dt, sim.tempo);
       barista.userData.cesta.visible = false;
-      bandeja.visible = sim.barista.fase === 'entregando';
-      const clientes = sim.clientes.filter(c => c.cafeteria && c.fase === 'cafeConsumindo');
-      const novaAssinatura = clientes.map(c => c.id).join(',') + ':' + (sim.barista.cliente ?? '');
+      bandeja.visible = sim.barista.fase === 'pronto';
+      const clientes = sim.clientes.filter(c => c.cafeteria && ['cafeConsumindo', 'cafeVoltando'].includes(c.fase));
+      const moverBandejas = () => {
+        for (const c of clientes) {
+          const objeto = carregando.get(c.id);
+          if (!objeto) continue;
+          objeto.position.set(c.x + Math.sin(c.angulo) * 0.5, 1.18, c.z + Math.cos(c.angulo) * 0.5);
+          objeto.rotation.y = c.angulo;
+        }
+      };
+      moverBandejas();
+      const novaAssinatura = clientes.map(c => `${c.id}:${c.fase}`).join(',') + ':' + sim.barista.fase + ':' + (sim.barista.cliente ?? '');
       if (assinatura === novaAssinatura) return;
       assinatura = novaAssinatura;
-      for (const pai of [itensMesas, bandeja]) {
+      carregando.clear();
+      for (const pai of [itensMesas, bandeja, bandejasClientes]) {
         const remover = pai === bandeja ? pai.children.slice(1) : [...pai.children];
         for (const filho of remover) { filho.traverse(o => o.geometry?.dispose()); pai.remove(filho); }
       }
@@ -109,11 +124,18 @@ export function construirCafeteria(cena, { caixa, cilindro, personagem, criarPro
         }
       });
       for (const c of clientes) {
+        if (c.fase === 'cafeVoltando') {
+          const objeto = criarBandeja(bandejasClientes); objeto.name = 'bandeja-cliente-cafeteria';
+          adicionar(objeto, c.pedidoCafe, 0, 0.04, 0); carregando.set(c.id, objeto);
+          continue;
+        }
         const p = ASSENTOS_CAFETERIA[c.assento], mesa = C.mesas[p.mesa];
-        adicionar(itensMesas, c.pedidoCafe, mesa.x + Math.sign(p.x - mesa.x) * 0.3, 1.24, mesa.z);
+        adicionar(itensMesas, c.pedidoCafe,
+          mesa.x + (p.x - mesa.x) / 1.15 * 0.3, 1.24, mesa.z + (p.z - mesa.z) / 1.15 * 0.3);
       }
       const cliente = sim.clientes.find(c => c.id === sim.barista.cliente);
-      if (cliente) adicionar(bandeja, cliente.pedidoCafe, 0, 0.04, 0);
+      if (cliente && bandeja.visible) adicionar(bandeja, cliente.pedidoCafe, 0, 0.04, 0);
+      moverBandejas();
     }
   };
 }

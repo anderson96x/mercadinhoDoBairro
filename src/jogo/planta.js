@@ -131,10 +131,11 @@ export const PLANTA_AMPLIADA = {
   salao: { x: 8.9, z: -1.3, w: 24, d: 16 },
   limites: { ...PLANTA_INICIAL.limites, maxX: 20.9 },
   piso: { x: 15.9, z: -1.3, w: 10, d: 16 },
-  camera: { x: 5, z: -1.3, alturaDesktop: 37 }
+  camera: { x: 5, z: -1.3 }
 };
 
 // N27: 12 × 16 u adicionais, metade do salão de 24 × 16 u da padaria.
+const FECHAMENTO_CAFETERIA = { x: 24.075, z: -2.8, w: 0.65, d: 5.05 };
 export const PLANTA_CAFETERIA = {
   piso: { x: 26.9, z: -1.3, w: 12, d: 16 },
   oficinas: { x: 26.9, z: -12.3, w: 12, d: 6 },
@@ -145,20 +146,21 @@ export const PLANTA_CAFETERIA = {
   },
   // Fecha junto à abertura da padaria, com atendimento voltado para +x.
   balcao: { x: 22.4, z: 0.05, w: 4, d: 0.65 },
-  fechamento: { x: 24.075, z: -2.7375, w: 0.65, d: 4.925 },
-  pedido: { x: 25.425, z: -1.3 }, fila: { x: 1.15, z: 1.15, porLinha: 6 },
-  entrega: { x: 22.275, z: -2.8 },
+  fechamento: FECHAMENTO_CAFETERIA,
+  fechamentoPosterior: { x: 22.4, z: -5.65, w: 4, d: 0.65 },
+  pedido: { x: 25.425, z: -1.3 }, fila: { x: 1.15, z: 1.15, porLinha: 1 },
+  retirada: { x: 25.425, z: -4.65 }, bandejaRetirada: { x: 24.075, z: -4.65 },
+  entrega: { x: 25.425, z: -2.9 },
   abastecimento: { x: 22.275, z: -1.6, w: 0.7, d: 0.65 },
   equipamento: { x: 24.075, y: -0.06, z: -2.9, angulo: Math.PI / 2 },
   barista: { x: 22.675, z: -2.9, angulo: Math.PI / 2 },
   deposito: { x: -11.9, z: -10.25, w: 1.1, d: 1.1 },
   coleta: { x: -11.9, z: -11.6 },
-  camera: { x: 6, z: -4.3, alturaDesktop: 54 },
+  camera: { x: 6, z: -4.3 },
+  cadeira: { assentoY: 0.76, espessuraAssento: 0.1 },
   limites: { ...PLANTA_INICIAL.limites, maxX: 32.9 },
-  mesas: [
-    { x: 23.4, z: 4.1 }, { x: 29.5, z: 4.1 },
-    { x: 30.1, z: -2.8 }, { x: 24, z: -6.8 }
-  ]
+  // Par centralizado no balcão, com margens iguais nas duas extremidades.
+  mesas: [1.25, -1.25].map(deslocamento => ({ x: 27.5, z: FECHAMENTO_CAFETERIA.z + deslocamento }))
 };
 
 export function paredesCafeteria() {
@@ -286,7 +288,7 @@ export const PLANTA_EXPANSAO = {
     // Face posterior da bancada encostada na face interna da nova parede.
     z: -15.3 + 0.28 / 2 + p.curral.d / 2
   }])),
-  camera: { x: 0, z: -4.3, alturaDesktop: 46 },
+  camera: { x: 0, z: -4.3 },
   portas: [
     { ...PLANTA_INICIAL.portaProducao, z: -15.3 }
   ]

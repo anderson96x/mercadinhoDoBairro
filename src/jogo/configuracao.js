@@ -261,7 +261,7 @@ export const ALA_PRODUCAO = {
   limites: { ...CONFIG.limiteMundo },
   // Geometria histórica das faixas antigas, sem renderização ou colisão.
   piso: { x: 11.5, z: -1.3, w: 1.2, d: 16 },
-  camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
+  camera: { x: 0.8, z: -0.5 },
   duracaoConstrucao: 4,
   paredes: [
     { x: 11.5, z: -9.3, w: 1.2, d: 0.28, h: 2.8, passagemArtesanal: true },
@@ -275,7 +275,7 @@ export const ALA_LEITE = {
   id: 'alaLeite', indice: 4, nivelMinimo: NIVEL_LEITE, custo: 800, produtos: ['leite'],
   limites: { ...CONFIG.limiteMundo },
   piso: { x: 13.6, z: -1.3, w: 3, d: 16 },
-  camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
+  camera: { x: 0.8, z: -0.5 },
   duracaoConstrucao: 4,
   paredes: [
     { x: 13.6, z: -9.3, w: 3, d: 0.28, h: 2.8, passagemArtesanal: true },
@@ -288,7 +288,7 @@ export const ALA_TRIGO = {
   id: 'alaTrigo', indice: 1, nivelMinimo: NIVEL_TRIGO, custo: 400, produtos: ['trigo'],
   limites: { ...CONFIG.limiteMundo },
   piso: { x: 18.1, z: -1.3, w: 6, d: 16 },
-  camera: { x: 0.8, z: -0.5, alturaDesktop: 28 },
+  camera: { x: 0.8, z: -0.5 },
   duracaoConstrucao: 4,
   paredes: [
     { x: 18.1, z: -9.3, w: 6, d: 0.28, h: 2.8, passagemArtesanal: true },
@@ -324,7 +324,7 @@ export const OFICINAS = {
 // Uma melhoria pode liberar um produto ou ajustar um atributo. Novas regras
 // entram em Simulacao.comprarMelhoria(), mantendo a interface desacoplada.
 export const MELHORIAS = [
-  { id: 'cafeteria', titulo: 'Cafeteria e barista', descricao: 'Amplie o salão 50% à direita da padaria, com balcão, quatro mesas e barista. Sirva espresso R$ 5, americano R$ 6, café com leite R$ 8 e cappuccino R$ 10, combinados com pães, doces e sucos. Leve café importado, leite, ovos e sucos ao balcão de abastecimento.', custo: CAFETERIA.custo, icone: 'cafe', max: 1, tipo: 'cafeteria', produto: 'cafe', categoria: 'mercado', nivelMinimo: 27, requisitoMelhoria: 'confeitaria', requisitos: ['expansao', 'sucos'] },
+  { id: 'cafeteria', titulo: 'Cafeteria e barista', descricao: 'Amplie o salão 50% à direita da padaria, com balcão, duas mesas e barista. Sirva espresso R$ 5, americano R$ 6, café com leite R$ 8 e cappuccino R$ 10, combinados com pães, doces e sucos. Leve café importado, leite, ovos e sucos ao balcão de abastecimento.', custo: CAFETERIA.custo, icone: 'cafe', max: 1, tipo: 'cafeteria', produto: 'cafe', categoria: 'mercado', nivelMinimo: 27, requisitoMelhoria: 'confeitaria', requisitos: ['expansao', 'sucos'] },
   { id: 'importarCafe', titulo: 'Café em grãos', descricao: 'Caixa com 24 doses de café por R$ 48. Até quatro caixas no depósito. Recolha os pacotes e leve ao abastecimento da cafeteria.', custo: 48, icone: 'cafe', max: 1000000000, tipo: 'importacao', produto: 'cafe', categoria: 'importados', nivelMinimo: 27, requisitoMelhoria: 'cafeteria', recorrente: true },
   { id: 'geladeiraLaticinios', titulo: 'Geladeira de laticínios', descricao: 'Instale ao lado dos queijos uma geladeira para 36 laticínios importados, com embalagens variadas de manteiga, creme de leite, iogurte e requeijão. Venda por R$ 23 cada.', custo: 1000, icone: 'laticinio', max: 1, tipo: 'construcao', produto: 'laticinio', categoria: 'mercado', nivelMinimo: 26, requisitoMelhoria: 'queijaria', requisitos: ['expansao'] },
   { id: 'importarLaticinios', titulo: 'Laticínios', descricao: 'Caixa mista com 9 laticínios em embalagens variadas. Até quatro caixas no depósito, incluindo entregas pendentes.', custo: 108, icone: 'laticinio', max: 1000000000, tipo: 'importacao', produto: 'laticinio', categoria: 'importados', nivelMinimo: 26, requisitoMelhoria: 'geladeiraLaticinios', recorrente: true },

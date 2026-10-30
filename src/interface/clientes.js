@@ -29,7 +29,7 @@ export function atualizarPainelClientes(painel, clientes, produtos, retratos) {
     const pedidoChave = c.cafeteria ? `${c.fase}:${c.pedidoCafe.join(',')}` : finalizado ? c.fase : `${compra.produto}:${compra.desejado}:${compra.quantidade}`;
     if (pedido.dataset.chave !== pedidoChave) {
       pedido.dataset.chave = pedidoChave;
-      pedido.innerHTML = c.cafeteria ? `${icone('cafe')} <span>${c.pedidoCafe.map(id => CAFETERIA.cafes[id]?.nome ?? PRODUTOS[id]?.nome).join(' + ')}<br><b>${({ chegando: 'Indo à cafeteria', cafeFila: 'Pedindo no balcão', cafeMesa: 'Indo à mesa', cafeEspera: 'Aguardando o barista', cafeConsumindo: 'Consumindo na mesa', saindo: 'Saindo da loja' })[c.fase] ?? 'Cafeteria'}</b></span>` : finalizado ? `${icone('cesta')} <span>${c.fase === 'saindo' ? 'Saindo da loja' : 'Aguardando atendimento'}</span>`
+      pedido.innerHTML = c.cafeteria ? `${icone('cafe')} <span>${c.pedidoCafe.map(id => CAFETERIA.cafes[id]?.nome ?? PRODUTOS[id]?.nome).join(' + ')}<br><b>${({ chegando: 'Indo à cafeteria', cafeFila: 'Pedindo no balcão', cafeMesa: 'Indo à mesa', cafeEspera: 'Aguardando o preparo', cafeRetirada: 'Retirando e pagando no balcão', cafeVoltando: 'Levando o pedido à mesa', cafeConsumindo: 'Consumindo na mesa', saindo: 'Saindo da loja' })[c.fase] ?? 'Cafeteria'}</b></span>` : finalizado ? `${icone('cesta')} <span>${c.fase === 'saindo' ? 'Saindo da loja' : 'Aguardando atendimento'}</span>`
         : `${icone(compra.produto)} <span>${PRODUTOS[compra.produto]?.nome ?? 'Produto'} <b>${compra.quantidade ?? 0}/${compra.desejado}</b></span>`;
     }
     const esperando = c.fase === 'comprando' && produtos[compra.produto]?.prateleira === 0 && compra.quantidade < compra.desejado;

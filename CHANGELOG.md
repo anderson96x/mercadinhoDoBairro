@@ -1,6 +1,25 @@
 # Histórico de alterações
 
-## Versão atual: 0.75.0 — 2026-10-29
+## Versão atual: 0.75.3 — 2026-10-30
+
+- Reorganiza a cafeteria com duas mesas centralizadas no balcão e quatro assentos, substituindo as posições anteriores. Sincroniza cadeiras, colisões e rotas; ajusta a fila para não cruzar as cadeiras e remove os vasos e plantas das mesas.
+- Troca a entrega nas mesas pela retirada: clientes pedem olhando para o barista, esperam sentados, retiram e pagam quando o pedido fica pronto e voltam à mesa para consumir. O barista permanece no posto preparando um pedido por vez. Bandejas prontas aparecem no balcão e acompanham o cliente até a mesa; pagamento e insumos são processados uma única vez na retirada.
+- Fecha a lateral posterior entre padaria e cafeteria com balcão contínuo de madeira, tampo claro e mesma altura, compartilhando modelo e colisões. O jogador abastece pela face externa, preservando o acesso com o balcão fechado.
+- Corrige a postura nas cadeiras: quadril e joelhos acompanham a altura real do assento, evitando o corpo atravessado, com transição ao levantar. A altura é compartilhada pelo modelo da cadeira e pela animação.
+- Mantém saves compatíveis: compras e estoques são preservados; pedidos transitórios não cobram nem consomem ingredientes antes da retirada.
+- Validação: 434 testes, incluindo centralização, orientação, postura, retirada, pagamento único, quatro clientes, pausa e recarga; rotas N1–N27, assentos, fila e abastecimento; build e desktop/celular em WebGL e Canvas, sem imagens.
+
+## 0.75.2 — 2026-10-30
+
+- Mantém a câmera próxima no desktop após a expansão e a abertura da cafeteria, sem afastar automaticamente o enquadramento para mostrar toda a planta. O acompanhamento do jogador, o zoom manual e o arrasto continuam disponíveis para percorrer as áreas ampliadas; o enquadramento móvel permanece inalterado.
+- Validação: testes de câmera, rotas N1–N27, suíte completa e build de produção.
+
+## 0.75.1 — 2026-10-30
+
+- Aumenta de R$ 1.000 para R$ 10.000 os valores dos botões de adicionar e remover dinheiro no painel DEV.
+- Validação: suíte completa e build de produção.
+
+## 0.75.0 — 2026-10-29
 
 - Remove as prateleiras e recipientes da parede da cafeteria. Prolonga o balcão apenas 4 u a partir da borda da padaria, com espessura e emenda alinhadas. Reutiliza o mesmo modelo da padaria: madeira, portas, rodapé e tampo claro na mesma altura. Máquina de espresso, moinho, caixa e barista ficam voltados para a direita da loja. Reposiciona abastecimento e fila com retorno, preservando o serviço às mesas e a passagem dos funcionários.
 - Prolonga a área das máquinas em 12 × 6 u atrás da cafeteria, até a nova lateral, com piso, paredes e colisões compartilhadas e passagem aberta para as oficinas existentes.

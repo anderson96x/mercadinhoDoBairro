@@ -6,6 +6,31 @@ import { PRODUTOS } from '../src/jogo/configuracao.js';
 import { Simulacao } from '../src/jogo/simulacao.js';
 import { APARENCIAS_CLIENTES } from '../src/jogo/aparencias-clientes.js';
 import { PALETAS } from '../src/jogo/personalizacao.js';
+import { CAFETERIA, ASSENTOS_CAFETERIA } from '../src/jogo/cafeteria.js';
+
+test('clientes sentam sobre o assento da cafeteria com pés no piso e levantam sem deslocamento residual', () => {
+  const aparencias = ['mulher', 'homem'].flatMap(genero => ['normal', 'corpulento'].map(porte =>
+    APARENCIAS_CLIENTES.find(a => a.genero === genero && (porte === 'normal' ? a.porte !== 'corpulento' : a.porte === porte))));
+  for (const visual of aparencias) for (const assento of ASSENTOS_CAFETERIA) {
+    const modelo = personagem(0xffffff, 0xf2c49c, false, [], visual);
+    const ator = { ...assento, cafeteria: true, sentado: true, andando: false };
+    Cena.prototype.animarPersonagem(modelo, ator, 0.4, 0);
+    modelo.updateMatrixWorld(true);
+    const topoAssento = CAFETERIA.cadeira.assentoY + CAFETERIA.cadeira.espessuraAssento / 2;
+    for (const coxa of modelo.userData.coxas) {
+      const limites = new THREE.Box3().setFromObject(coxa);
+      assert.ok(Math.abs(limites.min.y - topoAssento) < 1e-8, 'coxas apoiadas sobre o assento');
+    }
+    for (const pe of [modelo.userData.peE, modelo.userData.peD]) {
+      const limites = new THREE.Box3().setFromObject(pe);
+      assert.ok(limites.min.y >= 0.23 && limites.min.y < 0.3, 'pés próximos ao piso');
+    }
+    ator.sentado = false;
+    Cena.prototype.animarPersonagem(modelo, ator, 0.4, 0);
+    assert.equal(modelo.userData.corpo.position.y, 0);
+    assert.ok(modelo.userData.coxas.every(coxa => !coxa.visible));
+  }
+});
 
 test('jogador carrega importados em camadas sem embalagens atravessadas, mesmo após girar', () => {
   const modelo = personagem(0xffffff, 0xf2c49c, true);

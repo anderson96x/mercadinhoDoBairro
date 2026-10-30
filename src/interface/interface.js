@@ -360,7 +360,7 @@ export class Interface {
         <section class="dev-cartao dev-dinheiro" aria-label="Dinheiro">
           <div class="dev-cartao-topo"><span class="dev-rotulo">${icone('moeda')} Saldo disponível</span><strong>${reais(this.sim.estado.dinheiro)}</strong></div>
           <p>No caixa: ${reais(this.sim.estado.banco.noCaixa)}. Os botões ajustam os dois valores para testar depósitos.</p>
-          <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 1000 ? 'disabled' : ''}>− R$ 1.000</button><button id="dev-adicionar">+ R$ 1.000</button></div>
+          <div class="dev-acoes dev-acoes-duplas"><button id="dev-remover" ${this.sim.estado.dinheiro < 10000 ? 'disabled' : ''}>− R$ 10.000</button><button id="dev-adicionar">+ R$ 10.000</button></div>
         </section>
         <section class="dev-cartao" aria-label="Estoque das prateleiras">
           <div class="dev-cartao-topo"><span class="dev-rotulo">Estoque</span><strong>Prateleiras</strong></div>
@@ -476,8 +476,8 @@ export class Interface {
       this.el('painel-conteudo').querySelectorAll('[data-tempo-assalto]').forEach(botao => {
         botao.onclick = () => this.acoes.definirTempoAssalto(Number(botao.dataset.tempoAssalto));
       });
-      this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-1000);
-      this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(1000);
+      this.el('dev-remover').onclick = () => this.acoes.alterarSaldo(-10000);
+      this.el('dev-adicionar').onclick = () => this.acoes.alterarSaldo(10000);
       this.el('dev-preencher-prateleiras').onclick = () => this.acoes.preencherPrateleirasDev();
       this.el('dev-esvaziar-prateleiras').onclick = () => this.acoes.esvaziarPrateleirasDev();
       this.el('dev-preencher-deposito').onclick = () => this.acoes.preencherDepositoDev();

@@ -44,7 +44,7 @@ export function resumoProducao(estado) {
     id: 'cafeteria', nome: 'Cafeteria', prontosTexto: `${estado.cafeteria.atendidos} pedidos servidos`,
     ingredientes: INSUMOS_CAFETERIA.map(id => ({ id, nome: id === 'leite' ? 'Leite (doses)' : PRODUTOS[id].nome, disponivel: estado.cafeteria.ingredientes[id], quantidade: CAFETERIA.capacidade, faltando: !estado.cafeteria.ingredientes[id] })),
     receitaTexto: 'Espresso R$ 5 · Americano R$ 6 · Café com leite R$ 8 · Cappuccino R$ 10. Uma garrafa de leite rende seis doses. Pães e doces saem das vitrines da padaria; ovos acompanham o pão.',
-    status: 'Leve café importado, leite, ovos e sucos ao abastecimento. O barista entrega nas mesas.', progresso: 0, produzindo: false
+    status: 'Leve café importado, leite, ovos e sucos ao abastecimento. Clientes retiram e pagam os pedidos prontos no balcão.', progresso: 0, produzindo: false
   });
   if (estado.melhorias.sucos) {
     const ativa = receitaDisponivelSucos(estado)?.id;

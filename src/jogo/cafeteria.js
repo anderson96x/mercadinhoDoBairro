@@ -17,14 +17,21 @@ export const CAFETERIA = {
 export const INSUMOS_CAFETERIA = ['cafe', 'leite', 'ovos', 'sucoLaranja', 'sucoMorango', 'sucoMaca', 'sucoMisto'];
 export const porcoesCafeteria = id => id === 'leite' ? 6 : 1;
 export const LANCHES_CAFETERIA = ['pao', 'bolo', 'donut', 'eclair'];
-export const ASSENTOS_CAFETERIA = CAFETERIA.mesas.flatMap((mesa, indice) => [-1, 1].map(lado => ({
-  x: mesa.x + lado * 1.15, z: mesa.z, angulo: -lado * Math.PI / 2, mesa: indice
-})));
+export const ASSENTOS_CAFETERIA = CAFETERIA.mesas.flatMap((mesa, indice) => [-1, 1].map(lado => {
+  const giro = mesa.angulo || 0;
+  return {
+    x: mesa.x + lado * 1.15 * Math.cos(giro), z: mesa.z - lado * 1.15 * Math.sin(giro),
+    angulo: giro - lado * Math.PI / 2, mesa: indice
+  };
+}));
 
 export function obstaculosCafeteria() {
-  return [...paredesCafeteria(), CAFETERIA.balcao, CAFETERIA.fechamento, CAFETERIA.abastecimento, CAFETERIA.deposito,
+  return [...paredesCafeteria(), CAFETERIA.balcao, CAFETERIA.fechamento, CAFETERIA.fechamentoPosterior, CAFETERIA.abastecimento, CAFETERIA.deposito,
     ...CAFETERIA.mesas.map(p => ({ ...p, w: 1.35, d: 1.35 })),
-    ...ASSENTOS_CAFETERIA.map((p, assento) => ({ ...p, w: 0.55, d: 0.65, cadeiraCafe: true, assento }))];
+    ...ASSENTOS_CAFETERIA.map((p, assento) => ({
+      ...p, w: 0.55 * Math.abs(Math.cos(p.angulo)) + 0.65 * Math.abs(Math.sin(p.angulo)),
+      d: 0.55 * Math.abs(Math.sin(p.angulo)) + 0.65 * Math.abs(Math.cos(p.angulo)), cadeiraCafe: true, assento
+    }))];
 }
 export function estadoCafeteria() {
   return { ingredientes: Object.fromEntries(INSUMOS_CAFETERIA.map(id => [id, 0])), atendidos: 0 };
@@ -112,17 +119,36 @@ export function atualizarCafeteria(sim, dt, config) {
         x: CAFETERIA.pedido.x + Math.min(indice, CAFETERIA.fila.porLinha - 1) * CAFETERIA.fila.x,
         z: CAFETERIA.pedido.z + Math.max(0, indice - CAFETERIA.fila.porLinha + 1) * CAFETERIA.fila.z
       }, dt);
+      if (chegou) {
+        c.andando = false;
+        c.angulo = Math.atan2(barista.x - c.x, barista.z - c.z);
+      }
       if (chegou && indice === 0) {
         c.preparoCafe += dt;
         if (c.preparoCafe >= 1.5) { c.fase = 'cafeMesa'; c.preparoCafe = 0; }
       }
-    } else if (c.fase === 'cafeMesa') {
+    } else if (['cafeMesa', 'cafeVoltando'].includes(c.fase)) {
       const assento = ASSENTOS_CAFETERIA[c.assento];
       if (sim.caminharCliente(c, assento, dt)) {
-        Object.assign(c, assento); c.fase = 'cafeEspera'; c.sentado = true;
+        Object.assign(c, assento); c.fase = c.pagoCafe ? 'cafeConsumindo' : 'cafeEspera'; c.sentado = true;
       }
     } else if (c.fase === 'cafeEspera') {
       c.esperaCafe += dt;
+    } else if (c.fase === 'cafeRetirada') {
+      c.sentado = false;
+      c.esperaCafe += dt;
+      if (sim.caminharCliente(c, CAFETERIA.retirada, dt)) {
+        const nivelAnterior = sim.nivel;
+        const valor = servirPedidoCafe(sim.estado, c.pedidoCafe, sim.produtos);
+        if (valor !== null) {
+          c.pagoCafe = true; c.fase = 'cafeVoltando';
+          sim.registrarSatisfacao(c, 'feliz'); sim.emitir('venda', { valor, ponto: CAFETERIA.bandejaRetirada });
+          if (sim.nivel > nivelAnterior) { sim.estado.dinheiro += config.bonusNivel; sim.emitir('nivel', { nivel: sim.nivel }); }
+        } else {
+          c.preparoCafe = 0; c.fase = 'cafeMesa';
+        }
+        barista.cliente = null; barista.fase = 'livre';
+      }
     } else if (c.fase === 'cafeConsumindo') {
       c.consumoCafe += dt;
       if (c.consumoCafe >= CAFETERIA.consumo) sair(c);
@@ -132,20 +158,14 @@ export function atualizarCafeteria(sim, dt, config) {
         if (sim.caminharCliente(c, config.entrada, dt)) c.etapa = 1;
       } else if (sim.caminharCalcada(c, sim.extremosCalcada[c.ladoSaida], dt)) c.fase = 'fim';
     }
-    if (['cafeFila', 'cafeMesa', 'cafeEspera'].includes(c.fase) && c.esperaCafe >= CAFETERIA.espera) {
+    if (['cafeFila', 'cafeMesa', 'cafeEspera', 'cafeRetirada'].includes(c.fase) && c.esperaCafe >= CAFETERIA.espera) {
       sim.registrarSatisfacao(c, 'irritado'); sair(c);
     }
   }
-  let cliente = sim.clientes.find(c => c.id === barista.cliente && c.fase === 'cafeEspera');
-  if (['preparando', 'entregando'].includes(barista.fase) && !cliente) {
-    barista.cliente = null; barista.fase = 'voltando';
-  }
-  if (barista.fase === 'voltando') {
-    if (sim.caminharCliente(barista, CAFETERIA.barista, dt)) {
-      barista.fase = 'livre'; barista.angulo = CAFETERIA.barista.angulo;
-    }
-    return;
-  }
+  barista.andando = false;
+  barista.angulo = CAFETERIA.barista.angulo;
+  let cliente = clientes.find(c => c.id === barista.cliente && ['cafeEspera', 'cafeRetirada'].includes(c.fase));
+  if (!cliente) { barista.cliente = null; barista.fase = 'livre'; }
   if (barista.fase === 'livre') {
     barista.angulo = CAFETERIA.barista.angulo;
     cliente = clientes.find(c => c.fase === 'cafeEspera' && pedidoCafeDisponivel(sim.estado, c.pedidoCafe));
@@ -158,18 +178,8 @@ export function atualizarCafeteria(sim, dt, config) {
     barista.angulo = CAFETERIA.barista.angulo;
     if (!pedidoCafeDisponivel(sim.estado, cliente.pedidoCafe)) { barista.cliente = null; barista.fase = 'livre'; return; }
     cliente.preparoCafe += dt;
-    if (cliente.preparoCafe >= CAFETERIA.preparo) barista.fase = 'entregando';
-  } else if (barista.fase === 'entregando') {
-    const assento = ASSENTOS_CAFETERIA[cliente.assento];
-    if (sim.caminharCliente(barista, { x: assento.x, z: assento.z + 1 }, dt)) {
-      const nivelAnterior = sim.nivel;
-      const valor = servirPedidoCafe(sim.estado, cliente.pedidoCafe, sim.produtos);
-      if (valor !== null) {
-        cliente.fase = 'cafeConsumindo'; cliente.pagoCafe = true;
-        sim.registrarSatisfacao(cliente, 'feliz'); sim.emitir('venda', { valor, ponto: CAFETERIA.balcao });
-        if (sim.nivel > nivelAnterior) { sim.estado.dinheiro += config.bonusNivel; sim.emitir('nivel', { nivel: sim.nivel }); }
-      } else cliente.preparoCafe = 0;
-      barista.cliente = null; barista.fase = 'voltando';
+    if (cliente.preparoCafe >= CAFETERIA.preparo) {
+      barista.fase = 'pronto'; cliente.fase = 'cafeRetirada'; cliente.sentado = false;
     }
   }
 }

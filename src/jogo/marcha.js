@@ -24,7 +24,7 @@ function posicionarSegmento(malha, inicioY, inicioZ, fimY, fimZ, altura) {
   malha.scale.y = Math.hypot(fimY - inicioY, fimZ - inicioZ) / altura;
 }
 
-export function animarPernas(d, sentado) {
+export function animarPernas(d, sentado, elevacaoAssento = 0) {
   const intensidade = d.marcha.intensidade * (1 - sentado);
   for (const [indice, perna, pe] of [[0, d.pernaE, d.peE], [1, d.pernaD, d.peD]]) {
     const fase = (d.marcha.fase / TAU + indice * 0.5) % 1;
@@ -44,7 +44,7 @@ export function animarPernas(d, sentado) {
     const comprimento = Math.hypot(dy, dz);
     // Dois segmentos iguais: o joelho flexiona para a frente durante o retorno.
     const flexao = Math.sqrt(Math.max(0, 0.19 ** 2 - (comprimento / 2) ** 2));
-    const joelhoY = misturar((quadrilY + tornozeloY) / 2 + dz / comprimento * flexao, 0.49, sentado);
+    const joelhoY = misturar((quadrilY + tornozeloY) / 2 + dz / comprimento * flexao, 0.49 + elevacaoAssento, sentado);
     const joelhoZ = misturar(tornozeloZ / 2 - dy / comprimento * flexao, 0.3, sentado);
     posicionarSegmento(perna, joelhoY, joelhoZ, tornozeloY, tornozeloZ, 0.36);
     const coxa = d.coxasMarcha[indice];

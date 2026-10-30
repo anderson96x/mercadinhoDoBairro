@@ -53,7 +53,7 @@ try {
     const resultado = await avaliar(`(async () => {
       const { Simulacao, validarEstado } = await import('/src/jogo/simulacao.js');
       const { CONFIG, SEQUENCIA_MELHORIAS } = await import('/src/jogo/configuracao.js');
-      const { CAFETERIA, INSUMOS_CAFETERIA } = await import('/src/jogo/cafeteria.js');
+      const { CAFETERIA, ASSENTOS_CAFETERIA, INSUMOS_CAFETERIA } = await import('/src/jogo/cafeteria.js');
       const { Cena } = await import('/src/jogo/cena.js');
       const { limitesRua } = await import('/src/jogo/bairro.js');
       const { resumoProducao } = await import('/src/interface/producao.js');
@@ -75,7 +75,7 @@ try {
       verificar(Math.abs(CAFETERIA.balcao.x - CAFETERIA.balcao.w / 2 - 20.4) < 1e-8 && CAFETERIA.balcao.d === 0.65, 'Emenda alinhada à padaria');
       const tamposCafe = [];
       cena.cafeteria.grupo.traverse(o => { if (o.name === 'tampo-balcao-padaria') tamposCafe.push(o); });
-      verificar(tamposCafe.length === 2 && tamposCafe.every(o => o.position.y === 1.18 && o.material.color.getHex() === 0xf0e6d3), 'Mesmo tampo claro da padaria');
+      verificar(tamposCafe.length === 3 && tamposCafe.every(o => o.position.y === 1.18 && o.material.color.getHex() === 0xf0e6d3), 'Três balcões com o mesmo tampo claro da padaria');
       const equipamentos = cena.cafeteria.grupo.getObjectByName('equipamentos-cafeteria');
       verificar(equipamentos.rotation.y === Math.PI / 2 && sim.barista.angulo === Math.PI / 2, 'Máquina e barista virados à direita');
       const painelMaquina = equipamentos.getObjectByName('painel-espresso'), corpoMaquina = equipamentos.getObjectByName('maquina-espresso');
@@ -96,7 +96,22 @@ try {
       cena.assaltoVisual.atualizar({ tempo: 0 }, limitesRua(true, true));
       verificar(cena.assaltoVisual.carro.position.x > 30, 'Carro do assalto na borda ampliada'); cena.assaltoVisual.atualizar(null);
       const contar = nome => { let total = 0; cena.cafeteria.grupo.traverse(o => { if (o.name === nome) total++; }); return total; };
-      verificar(contar('mesa-cafeteria') === 4 && contar('cadeira-cafeteria') === 8, 'Mesas e cadeiras');
+      verificar(contar('mesa-cafeteria') === 2 && contar('cadeira-cafeteria') === 4, 'Mesas e cadeiras');
+      verificar(CAFETERIA.mesas.every(mesa => !cena.cafeteria.grupo.children.some(o => o.isMesh
+        && Math.abs(o.position.x - mesa.x) < 0.7 && Math.abs(o.position.z - mesa.z) < 0.7
+        && o.position.y > 1.22)), 'Mesas sem vasos ou plantas');
+      const mesas = [];
+      cena.cafeteria.grupo.traverse(o => { if (o.name === 'mesa-cafeteria') mesas.push(o); });
+      verificar(mesas[0].position.x === mesas[1].position.x
+        && Math.abs((mesas[0].position.z + mesas[1].position.z) / 2 - CAFETERIA.fechamento.z) < 1e-8,
+        'Mesas centralizadas no balcão');
+      const cadeiras = cena.cafeteria.grupo.children.filter(o => o.name === 'cadeira-cafeteria');
+      for (const [indice, cadeira] of cadeiras.entries()) {
+        const assento = ASSENTOS_CAFETERIA[indice];
+        verificar(Math.abs(cadeira.position.x - assento.x) < 1e-8
+          && Math.abs(cadeira.position.z - assento.z) < 1e-8
+          && Math.abs(cadeira.rotation.y - assento.angulo) < 1e-8, 'Posição e orientação da cadeira ' + indice);
+      }
       verificar(sim.encomendarImportacoes({ importarCafe: 1 }).quantidade === 24, 'Importação');
       for (let i = 0; i < 18000 && (sim.estado.deposito.pedidos.length || sim.entregas.caminhao); i++) sim.entregas.atualizar(sim, 0.05);
       verificar(sim.estado.produtos.cafe.horta === 24, 'Entrega de café'); cena.atualizar(0);
@@ -110,13 +125,42 @@ try {
       for (const id of ['pao', 'bolo', 'donut', 'eclair']) sim.estado.produtos[id].prateleira = 12;
       verificar(resumoProducao(sim.estado).some(p => p.id === 'cafeteria'), 'Painel de insumos');
       sim.criarClienteCafeteria(); const cliente = sim.clientes[0]; cliente.pedidoCafe = ['cappuccino', 'donut'];
+      let pediu = false, pronto = false, retirado = false;
       for (let i = 0; i < 4000 && cliente.fase !== 'cafeConsumindo'; i++) {
         sim.atualizar(0.05);
+        if (cliente.fase === 'cafeFila' && cliente.preparoCafe > 0 && !pediu) {
+          const angulo = Math.atan2(sim.barista.x - cliente.x, sim.barista.z - cliente.z);
+          verificar(Math.abs(cliente.angulo - angulo) < 1e-8 && !cliente.andando, 'Cliente pede olhando para o barista');
+          cena.atualizar(0.4);
+          verificar(Math.cos(cena.clientes.get(cliente.id).rotation.y - angulo) > 0.99, 'Modelo voltado ao barista');
+          pediu = true;
+        }
+        verificar(sim.barista.x === CAFETERIA.barista.x && sim.barista.z === CAFETERIA.barista.z && !sim.barista.andando, 'Barista permanece no posto');
+        if (cliente.fase === 'cafeRetirada' && !pronto) {
+          cena.atualizar(0);
+          verificar(cena.cafeteria.bandeja.visible && cena.cafeteria.bandeja.children.length > 1, 'Pedido pronto no balcão');
+          verificar(sim.estado.cafeteria.atendidos === 0 && !cliente.sentado, 'Sem cobrança antes da retirada');
+          pronto = true;
+        }
+        if (cliente.fase === 'cafeVoltando' && !retirado) {
+          cena.atualizar(0);
+          verificar(!cena.cafeteria.bandeja.visible && contar('bandeja-cliente-cafeteria') === 1, 'Cliente leva o pedido à mesa');
+          verificar(sim.estado.cafeteria.atendidos === 1 && cliente.pagoCafe, 'Pagamento na retirada');
+          retirado = true;
+        }
         if (i % 40 === 0) cena.atualizar(0.05);
       }
+      verificar(pediu && pronto && retirado, 'Pedido, retirada e volta à mesa');
       verificar(cliente.fase === 'cafeConsumindo', 'Pedido servido: ' + JSON.stringify(cliente));
-      cena.atualizar(0.3);
+      cena.atualizar(0.4);
       const modelo = cena.clientes.get(cliente.id);
+      modelo.updateMatrixWorld(true);
+      const cadeirasCafe = cena.cafeteria.grupo.children.filter(o => o.name === 'cadeira-cafeteria');
+      const assento = cadeirasCafe[cliente.assento].getObjectByName('assento-cadeira-cafeteria');
+      const topoAssento = assento.getWorldPosition(assento.position.clone()).y + assento.geometry.parameters.height / 2;
+      verificar(modelo.userData.coxas.every(coxa => Math.abs(
+        coxa.getWorldPosition(coxa.position.clone()).y - coxa.geometry.parameters.height / 2 - topoAssento) < 1e-6),
+        'Cliente apoiado no assento, sem atravessar a cadeira');
       verificar(!modelo.userData.cesta.visible && !cliente.temCesta && !cliente.usaCarrinho, 'Cliente sem cesta/carrinho');
       verificar(cliente.sentado && sim.estado.cafeteria.atendidos === 1, 'Consumo sentado');
       const painel = document.createElement('div'); painel.innerHTML = '<span id="clientes-ativos"></span><span id="clientes-vazio"></span><div id="lista-clientes"></div>';
@@ -127,7 +171,7 @@ try {
       verificar(sim.estado.cafeteria.atendidos === antes, 'Pausa');
       verificar(document.documentElement.scrollWidth <= innerWidth, 'Transbordamento');
       cena.renderer.dispose?.(); container.remove();
-      return { mobile: ${mobile}, canvas: ${canvas}, mesas: 4, lugares: 8, importacao: true, abastecimento: true, barista: true, clienteSentado: true, recarga: true };
+      return { mobile: ${mobile}, canvas: ${canvas}, mesas: 2, lugares: 4, importacao: true, abastecimento: true, barista: true, clienteSentado: true, recarga: true };
     })()`);
     console.log(JSON.stringify(resultado));
   }

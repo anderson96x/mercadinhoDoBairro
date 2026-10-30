@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
-import { Cena } from '../src/jogo/cena.js';
+import { Cena, alturaEnquadramentoCamera } from '../src/jogo/cena.js';
 import { ALA_PRODUCAO, CONFIG } from '../src/jogo/configuracao.js';
 
 function criarCameraDeTeste() {
@@ -18,6 +18,13 @@ function criarCameraDeTeste() {
     baseCamera: () => ({ x: 0, z: 0 })
   };
 }
+
+test('expansões mantêm o enquadramento próximo em desktop e celular', () => {
+  assert.equal(alturaEnquadramentoCamera(false, 16 / 9), 28);
+  assert.equal(alturaEnquadramentoCamera(false, 4 / 3), 28);
+  assert.equal(alturaEnquadramentoCamera(false, 1), 37);
+  assert.equal(alturaEnquadramentoCamera(true, 9 / 16), 18.8);
+});
 
 test('arrastar desloca o mapa na mesma direção do ponteiro', () => {
   const cena = criarCameraDeTeste();

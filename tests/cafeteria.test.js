@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Simulacao, estadoInicial, validarEstado } from '../src/jogo/simulacao.js';
 import { CAFETERIA, ASSENTOS_CAFETERIA, INSUMOS_CAFETERIA, porcoesCafeteria, criarPedidoCafe, pedidoCafeDisponivel, servirPedidoCafe } from '../src/jogo/cafeteria.js';
+import { MODELO_PADARIA, volumePadaria } from '../src/jogo/planta.js';
 import { CONFIG, PRODUTOS } from '../src/jogo/configuracao.js';
 import { prepararMelhoriasAnteriores } from './helpers/progressao.js';
 
@@ -33,6 +34,44 @@ test('cafeteria exige nível 27, pré-requisitos e saldo, amplia o salão em 50%
   assert.equal(cafe.limitesMundo.maxX, 34.5);
   assert.equal(cafe.obstaculos().some(p => p.lateralContinua), false);
   assert.equal(cafe.comprarMelhoria('cafeteria').sucesso, false);
+});
+
+test('mantém somente duas mesas alinhadas ao balcão, com dois lugares cada', () => {
+  assert.equal(CAFETERIA.mesas.length, 2);
+  assert.equal(ASSENTOS_CAFETERIA.length, 4);
+  assert.equal(CAFETERIA.mesas[0].x, CAFETERIA.mesas[1].x);
+  const centros = CAFETERIA.mesas.map(m => m.z);
+  assert.ok(Math.abs((Math.min(...centros) + Math.max(...centros)) / 2 - CAFETERIA.fechamento.z) < 1e-8);
+  const margemSuperior = Math.min(...centros) - 0.675 - (CAFETERIA.fechamento.z - CAFETERIA.fechamento.d / 2);
+  const margemInferior = CAFETERIA.fechamento.z + CAFETERIA.fechamento.d / 2 - Math.max(...centros) - 0.675;
+  assert.ok(Math.abs(margemSuperior - margemInferior) < 1e-8);
+  for (const mesa of CAFETERIA.mesas) {
+    assert.equal(mesa.angulo || 0, 0);
+    assert.ok(mesa.z - 0.675 >= CAFETERIA.fechamento.z - CAFETERIA.fechamento.d / 2);
+    assert.ok(mesa.z + 0.675 <= CAFETERIA.fechamento.z + CAFETERIA.fechamento.d / 2);
+  }
+  for (const [indice, mesa] of CAFETERIA.mesas.entries()) {
+    const assentos = ASSENTOS_CAFETERIA.filter(p => p.mesa === indice);
+    assert.equal(assentos.length, 2);
+    for (const p of assentos) {
+      assert.ok(Math.abs(Math.hypot(p.x - mesa.x, p.z - mesa.z) - 1.15) < 1e-8);
+      assert.ok(Math.abs(Math.sin(p.angulo) - (mesa.x - p.x) / 1.15) < 1e-8);
+      assert.ok(Math.abs(Math.cos(p.angulo) - (mesa.z - p.z) / 1.15) < 1e-8);
+    }
+  }
+});
+
+test('cliente parado na fila olha para o barista ao fazer o pedido', () => {
+  const sim = abrirCafe();
+  sim.criarClienteCafeteria();
+  const cliente = sim.clientes[0];
+  Object.assign(cliente, CAFETERIA.pedido, { fase: 'cafeFila', angulo: 0 });
+  sim.atualizar(0.05);
+  const esperado = Math.atan2(CAFETERIA.barista.x - cliente.x, CAFETERIA.barista.z - cliente.z);
+  assert.equal(cliente.angulo, esperado);
+  assert.equal(cliente.andando, false);
+  assert.ok(cliente.preparoCafe > 0);
+  assert.equal(cliente.fase, 'cafeFila');
 });
 
 test('quatro cafés de R$ 5 a R$ 10 aceitam combinações e consomem estoques reais uma vez', () => {
@@ -85,7 +124,7 @@ test('jogador importa café pelo caminhão e abastece café, leite, ovos e sucos
   assert.ok(sim.clientes.every(c => c.compras.every(p => p.produto !== 'cafe')));
 });
 
-test('cliente entra sem cesta, pede, senta, recebe do barista, consome e sai', () => {
+test('cliente pede, espera sentado, retira e paga no balcão, volta à mesa e sai; barista fica no posto', () => {
   const sim = abrirCafe();
   for (const id of INSUMOS_CAFETERIA) sim.estado.cafeteria.ingredientes[id] = 24;
   for (const id of ['pao', 'bolo', 'donut', 'eclair']) sim.estado.produtos[id].prateleira = 12;
@@ -94,10 +133,25 @@ test('cliente entra sem cesta, pede, senta, recebe do barista, consome e sai', (
   const fases = new Set();
   const dinheiro = sim.estado.dinheiro;
   for (let i = 0; i < 6000 && cliente.fase !== 'fim'; i++) {
+    const pagoAntes = cliente.pagoCafe;
     sim.atualizar(0.05); fases.add(cliente.fase);
+    assert.equal(sim.barista.x, CAFETERIA.barista.x);
+    assert.equal(sim.barista.z, CAFETERIA.barista.z);
+    assert.equal(sim.barista.andando, false);
+    if (['cafeEspera', 'cafeRetirada'].includes(cliente.fase)) {
+      assert.equal(sim.estado.dinheiro, dinheiro, 'pedido pronto não é cobrado antes da retirada');
+      assert.equal(sim.estado.cafeteria.ingredientes.leite, 24);
+    }
+    if (cliente.fase === 'cafeVoltando') {
+      if (!pagoAntes) assert.ok(Math.hypot(cliente.x - CAFETERIA.retirada.x, cliente.z - CAFETERIA.retirada.z) < 0.2);
+      assert.equal(cliente.pagoCafe, true);
+      assert.equal(cliente.sentado, false);
+    }
   }
   assert.ok(fases.has('cafeFila'));
   assert.ok(fases.has('cafeEspera'), JSON.stringify(cliente));
+  assert.ok(fases.has('cafeRetirada'));
+  assert.ok(fases.has('cafeVoltando'));
   assert.ok(fases.has('cafeConsumindo'), JSON.stringify({ cliente, barista: sim.barista }));
   assert.equal(cliente.fase, 'fim');
   assert.equal(cliente.temCesta, false); assert.equal(cliente.usaCarrinho, false);
@@ -107,7 +161,32 @@ test('cliente entra sem cesta, pede, senta, recebe do barista, consome e sai', (
   assert.equal(sim.estado.dinheiro - dinheiro, 8 + PRODUTOS.pao.preco + PRODUTOS.ovos.preco + PRODUTOS.sucoLaranja.preco);
 });
 
-test('cada assento tem rota de ida e saída e o barista alcança todas as mesas', () => {
+test('pedido pronto respeita pausa e recarga sem cobrança e libera o preparo após desistência', () => {
+  const sim = abrirCafe();
+  sim.estado.cafeteria.ingredientes.cafe = 1;
+  sim.criarClienteCafeteria();
+  const cliente = sim.clientes[0];
+  Object.assign(cliente, ASSENTOS_CAFETERIA[0], { fase: 'cafeEspera', sentado: true, pedidoCafe: ['espresso'] });
+  for (let i = 0; i < 200 && cliente.fase !== 'cafeRetirada'; i++) sim.atualizar(0.05);
+  assert.equal(sim.barista.fase, 'pronto');
+  const antes = structuredClone({ estado: sim.estado, cliente, barista: sim.barista });
+  sim.pausado = true; sim.atualizar(10);
+  assert.deepEqual({ estado: sim.estado, cliente, barista: sim.barista }, antes);
+  const recarregado = new Simulacao(sim.estado);
+  assert.equal(recarregado.estado.dinheiro, antes.estado.dinheiro);
+  assert.equal(recarregado.estado.cafeteria.ingredientes.cafe, 1);
+  assert.equal(recarregado.clientes.length, 0);
+  assert.equal(recarregado.barista.fase, 'livre');
+  sim.pausado = false;
+  cliente.esperaCafe = CAFETERIA.espera;
+  sim.atualizar(0.05);
+  assert.equal(cliente.fase, 'saindo');
+  assert.equal(sim.barista.fase, 'livre');
+  assert.equal(sim.estado.dinheiro, antes.estado.dinheiro);
+  assert.equal(sim.estado.cafeteria.ingredientes.cafe, 1);
+});
+
+test('cada assento permite pedir, sentar, retirar no balcão, voltar à mesa e sair', () => {
   const sim = abrirCafe(); sim.estado.lojaAberta = false;
   const caminhar = (ator, ponto) => {
     for (let i = 0; i < 3500; i++) { sim.tempo += 0.05; if (sim.caminharCliente(ator, ponto, 0.05)) return true; }
@@ -118,10 +197,48 @@ test('cada assento tem rota de ida e saída e o barista alcança todas as mesas'
     sim.clientes = [cliente];
     assert.ok(caminhar(cliente, CAFETERIA.pedido), `balcão ${assento}`);
     assert.ok(caminhar(cliente, ponto), `assento ${assento}: ${JSON.stringify(cliente)}`);
+    assert.ok(caminhar(cliente, CAFETERIA.retirada), `retirada ${assento}`);
+    assert.ok(caminhar(cliente, ponto), `volta à mesa ${assento}`);
     assert.ok(caminhar(cliente, CONFIG.inicio), `saída ${assento}`);
-    assert.ok(caminhar(sim.barista, { x: ponto.x, z: ponto.z + 1 }), `entrega ${assento}`);
-    assert.ok(caminhar(sim.barista, CAFETERIA.barista), `volta ${assento}`);
   }
+  for (let indice = 0; indice < ASSENTOS_CAFETERIA.length; indice++) {
+    const cliente = { ...CONFIG.inicio, cafeteria: true, assento: indice };
+    sim.clientes = [cliente];
+    assert.ok(caminhar(cliente, {
+      x: CAFETERIA.pedido.x + Math.min(indice, CAFETERIA.fila.porLinha - 1) * CAFETERIA.fila.x,
+      z: CAFETERIA.pedido.z + Math.max(0, indice - CAFETERIA.fila.porLinha + 1) * CAFETERIA.fila.z
+    }), `fila ${indice}`);
+  }
+  const jogador = Object.assign(sim.estado.jogador, CONFIG.inicio);
+  assert.ok(caminhar(jogador, CAFETERIA.entrega), 'jogador abastece pela face externa do balcão fechado');
+  assert.ok(caminhar(jogador, CONFIG.inicio), 'saída após abastecimento');
+});
+
+test('fechamento posterior liga a padaria à lateral da cafeteria sem vãos', () => {
+  const posterior = CAFETERIA.fechamentoPosterior, lateral = CAFETERIA.fechamento;
+  const padaria = volumePadaria(MODELO_PADARIA.fechamento.find(p => p.entregaTrigo));
+  assert.equal(posterior.z, padaria.z);
+  assert.ok(Math.abs(posterior.x - posterior.w / 2 - (padaria.x + padaria.w / 2)) < 1e-8);
+  assert.ok(Math.abs(posterior.z + posterior.d / 2 - (lateral.z - lateral.d / 2)) < 1e-8);
+  assert.equal(posterior.x + posterior.w / 2, lateral.x + lateral.w / 2);
+});
+
+test('quatro pedidos são preparados e retirados uma vez sem deslocar o barista', () => {
+  const sim = abrirCafe();
+  sim.estado.cafeteria.ingredientes.cafe = 4;
+  for (let i = 0; i < ASSENTOS_CAFETERIA.length; i++) {
+    sim.criarClienteCafeteria();
+    Object.assign(sim.clientes[i], ASSENTOS_CAFETERIA[i], { fase: 'cafeEspera', sentado: true, pedidoCafe: ['espresso'] });
+  }
+  const saldo = sim.estado.dinheiro;
+  const clientes = [...sim.clientes];
+  for (let i = 0; i < 6000 && clientes.some(c => c.fase !== 'fim'); i++) sim.atualizar(0.05);
+  assert.equal(sim.estado.cafeteria.atendidos, 4);
+  assert.equal(sim.estado.cafeteria.ingredientes.cafe, 0);
+  assert.equal(sim.estado.dinheiro - saldo, 20);
+  assert.ok(clientes.every(c => c.fase === 'fim' && c.pagoCafe));
+  assert.equal(sim.barista.x, CAFETERIA.barista.x);
+  assert.equal(sim.barista.z, CAFETERIA.barista.z);
 });
 
 test('ala das máquinas se prolonga até a lateral nova com passagem livre e paredes externas', () => {
@@ -141,9 +258,9 @@ test('ala das máquinas se prolonga até a lateral nova com passagem livre e par
 
 test('pausa, falta de insumos, mesas cheias e recarga preservam ingredientes e dinheiro', () => {
   const sim = abrirCafe();
-  for (let i = 0; i < 8; i++) assert.equal(sim.criarClienteCafeteria(), true);
+  for (let i = 0; i < ASSENTOS_CAFETERIA.length; i++) assert.equal(sim.criarClienteCafeteria(), true);
   assert.equal(sim.criarClienteCafeteria(), false);
-  assert.equal(new Set(sim.clientes.map(c => c.assento)).size, 8);
+  assert.equal(new Set(sim.clientes.map(c => c.assento)).size, ASSENTOS_CAFETERIA.length);
   sim.pausado = true;
   const antes = structuredClone(sim.estado);
   sim.atualizar(0.05);

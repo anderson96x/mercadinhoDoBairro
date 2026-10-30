@@ -43,6 +43,7 @@ import { criarMantimento } from './mantimentos.js';
 
 const ZOOM_MINIMO = 0.7;
 const ZOOM_MAXIMO = 2;
+export const alturaEnquadramentoCamera = (mobile, proporcao) => mobile ? 18.8 : Math.max(28, 37 / proporcao);
 const limitesCamera = estado => estado.melhorias?.cafeteria ? { ...PLANTA_EXPANSAO.limiteCamera, maxX: 36 }
   : estado.melhorias?.expansao ? PLANTA_EXPANSAO.limiteCamera : CONFIG.limiteCamera;
 const pontoNoBalcao = (x, y, z) => new THREE.Vector3(CONFIG.balcao.x + z, y, CONFIG.balcao.z - x);
@@ -1642,8 +1643,7 @@ export class Cena {
     this.w = this.container.clientWidth; this.h = this.container.clientHeight;
     const proporcao = this.w / this.h;
     this.mobile = proporcao < 0.92;
-    const camera = this.sim.estado.melhorias?.cafeteria ? CAFETERIA.camera : this.sim.estado.melhorias?.expansao ? PLANTA_EXPANSAO.camera : this.sim.estado.estagioLoja >= ALA_PADARIA.indice ? ALA_PADARIA.camera : this.sim.estado.estagioLoja >= ALA_TRIGO.indice ? ALA_TRIGO.camera : this.sim.estado.estagioLoja >= ALA_LEITE.indice ? ALA_LEITE.camera : ALA_PRODUCAO.camera;
-    const altura = this.mobile ? 18.8 : Math.max(camera.alturaDesktop, 37 / proporcao);
+    const altura = alturaEnquadramentoCamera(this.mobile, proporcao);
     this.camera.left = -altura * proporcao / 2; this.camera.right = altura * proporcao / 2;
     this.camera.top = altura / 2; this.camera.bottom = -altura / 2; this.camera.updateProjectionMatrix();
     this.renderer.setSize(this.w, this.h);
@@ -1770,11 +1770,14 @@ export class Cena {
     const sentado = d.sentar * d.sentar * (3 - 2 * d.sentar);
     const intensidade = marcha.intensidade * (1 - sentado);
     const balanco = Math.sin(marcha.fase) * intensidade;
+    const baseCoxa = d.coxas[0].position.y - d.coxas[0].geometry.parameters.height / 2;
+    const elevacaoAssento = ator.cafeteria
+      ? CAFETERIA.cadeira.assentoY + CAFETERIA.cadeira.espessuraAssento / 2 - modelo.position.y - baseCoxa - 0.08 : 0;
     d.corpo.position.y = Math.sin(tempo * 2) * 0.008 * (1 - marcha.intensidade) * (1 - sentado)
-      + (1 - Math.cos(marcha.fase * 2)) * 0.014 * intensidade + 0.08 * sentado;
+      + (1 - Math.cos(marcha.fase * 2)) * 0.014 * intensidade + (0.08 + elevacaoAssento) * sentado;
     d.corpo.rotation.set(Math.min(marcha.velocidade / 4.3, 1.3) * 0.045 * intensidade,
       balanco * 0.035, -balanco * 0.025);
-    animarPernas(d, sentado);
+    animarPernas(d, sentado, elevacaoAssento);
     if (d.jogador) d.cesta.position.set(0, 0.42, 0.5);
     else {
       const posicaoCarregada = new THREE.Vector3(0, d.corpulento ? 0.2 : 0.26, d.corpulento ? 0.72 : 0.58)

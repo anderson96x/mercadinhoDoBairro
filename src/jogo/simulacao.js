@@ -583,7 +583,7 @@ export class Simulacao {
     this.estado.melhorias[id]++;
     if (id === 'cafeteria') {
       this.estado.produtos.cafe.liberado = true;
-      this.emitir('expansao', { texto: 'Cafeteria aberta! Importe café e leve leite, ovos e sucos ao abastecimento atrás do balcão. O barista serve os pedidos nas mesas; pães e doces vêm das vitrines da padaria.' });
+      this.emitir('expansao', { texto: 'Cafeteria aberta! Importe café e leve leite, ovos e sucos ao abastecimento pela face externa do balcão. O barista prepara os pedidos; os clientes aguardam sentados, retiram e pagam no balcão. Pães e doces vêm das vitrines da padaria.' });
     }
     if (id === 'expansao') {
       this.emitir('expansao', { texto: 'Expansão pronta! O novo anexo fica atrás da loja e da cozinha. Use a porta de produção para acessá-lo e a nova saída dos fundos para chegar à fazenda.' });
